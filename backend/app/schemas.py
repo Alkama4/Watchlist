@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 
+####### Users and authentication #######
+
 class UserIn(BaseModel):
     username: str
     password: str
@@ -10,3 +12,7 @@ class UserOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class PasswordChange(BaseModel):
+    current_password: str
+    new_password: str

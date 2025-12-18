@@ -34,8 +34,13 @@ def get_current_user(
     return user
 
 
+####### Endpoints #######
+
 @router.post("/register", response_model=schemas.UserOut)
-def register(user: schemas.UserIn, db: Session = Depends(get_db)):
+def register(
+    user: schemas.UserIn, 
+    db: Session = Depends(get_db)
+):
 
     existing_user = db.query(models.User).filter(models.User.username == user.username).first()
     if existing_user:
@@ -50,6 +55,27 @@ def register(user: schemas.UserIn, db: Session = Depends(get_db)):
     db.refresh(new_user)
     
     return new_user
+
+
+@router.post("/change-password")
+def change_password(
+    passwords: schemas.PasswordChange,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Verify current password
+    if not verify_password(passwords.current_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect"
+        )
+
+    # Hash new password and save
+    current_user.hashed_password = hash_password(passwords.new_password)
+    db.add(current_user)
+    db.commit()
+
+    return {"detail": "Password updated successfully"}
 
 
 @router.post("/login")
