@@ -13,6 +13,9 @@ class UserOut(BaseModel):
     class Config:
         from_attributes = True
 
+class UserUpdate(BaseModel):
+    username: str
+
 class PasswordChange(BaseModel):
     current_password: str
     new_password: str

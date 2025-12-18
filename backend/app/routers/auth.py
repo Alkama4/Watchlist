@@ -57,27 +57,6 @@ def register(
     return new_user
 
 
-@router.post("/change-password")
-def change_password(
-    passwords: schemas.PasswordChange,
-    current_user: models.User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    # Verify current password
-    if not verify_password(passwords.current_password, current_user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Current password is incorrect"
-        )
-
-    # Hash new password and save
-    current_user.hashed_password = hash_password(passwords.new_password)
-    db.add(current_user)
-    db.commit()
-
-    return {"detail": "Password updated successfully"}
-
-
 @router.post("/login")
 def login(user: schemas.UserIn, db: Session = Depends(get_db)):
     db_user = (
@@ -97,3 +76,39 @@ def login(user: schemas.UserIn, db: Session = Depends(get_db)):
 @router.get("/me", response_model=schemas.UserOut)
 def read_me(current_user = Depends(get_current_user)):
     return current_user
+
+
+@router.put("/me", response_model=schemas.UserOut)
+def update_profile(
+    update: schemas.UserUpdate,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    # Update allowed fields
+    current_user.username = update.username
+    
+    db.add(current_user)
+    db.commit()
+    db.refresh(current_user)  # optional, useful if DB triggers defaults
+    return current_user
+
+
+@router.post("/me/password")
+def change_password(
+    passwords: schemas.PasswordChange,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Verify current password
+    if not verify_password(passwords.current_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect"
+        )
+
+    # Hash new password and save
+    current_user.hashed_password = hash_password(passwords.new_password)
+    db.add(current_user)
+    db.commit()
+
+    return {"detail": "Password updated successfully"}
