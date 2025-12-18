@@ -89,13 +89,33 @@ def update_profile(
     
     db.add(current_user)
     db.commit()
-    db.refresh(current_user)  # optional, useful if DB triggers defaults
+    db.refresh(current_user)
     return current_user
+
+
+@router.delete("/me")
+def delete_account(
+    data: schemas.UserDelete,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    # Verify password
+    if not verify_password(data.password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password is incorrect"
+        )
+
+    # Delete user
+    db.delete(current_user)
+    db.commit()
+
+    return {"detail": "Account deleted successfully"}
 
 
 @router.post("/me/password")
 def change_password(
-    passwords: schemas.PasswordChange,
+    passwords: schemas.PasswordUpdate,
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):

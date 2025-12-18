@@ -16,6 +16,9 @@ class UserOut(BaseModel):
 class UserUpdate(BaseModel):
     username: str
 
-class PasswordChange(BaseModel):
+class UserDelete(BaseModel):
+    password: str
+
+class PasswordUpdate(BaseModel):
     current_password: str
     new_password: str
