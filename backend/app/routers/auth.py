@@ -1,25 +1,21 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from app import models, schemas
 from app.dependencies import get_db
 from app.security import hash_password, verify_password
 from jose import JWTError
-from app.security import (
-    hash_password,
-    verify_password,
-    create_access_token,
-    decode_access_token,
-)
+from app.security import create_access_token, decode_access_token
 
 
 router = APIRouter()
 bearer_scheme = HTTPBearer()
 
 
-def get_current_user(
+async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     token = credentials.credentials
     try:
@@ -28,7 +24,7 @@ def get_current_user(
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-    user = db.get(models.User, user_id)
+    user = await db.get(models.User, user_id)
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
     return user
@@ -37,12 +33,12 @@ def get_current_user(
 ####### Endpoints #######
 
 @router.post("/register", response_model=schemas.UserOut)
-def register(
+async def register(
     user: schemas.UserIn, 
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
-
-    existing_user = db.query(models.User).filter(models.User.username == user.username).first()
+    result = await db.execute(select(models.User).filter(models.User.username == user.username))
+    existing_user = result.scalar_one_or_none()
     if existing_user:
         raise HTTPException(status_code=400, detail="Username already taken")
     
@@ -51,19 +47,19 @@ def register(
         hashed_password=hash_password(user.password)
     )
     db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
+    await db.commit()
+    await db.refresh(new_user)
     
     return new_user
 
 
 @router.post("/login")
-def login(user: schemas.UserIn, db: Session = Depends(get_db)):
-    db_user = (
-        db.query(models.User)
-        .filter(models.User.username == user.username)
-        .first()
-    )
+async def login(
+    user: schemas.UserIn, 
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(select(models.User).filter(models.User.username == user.username))
+    db_user = result.scalar_one_or_none()
 
     if not db_user or not verify_password(user.password, db_user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
@@ -74,61 +70,56 @@ def login(user: schemas.UserIn, db: Session = Depends(get_db)):
 
 
 @router.get("/me", response_model=schemas.UserOut)
-def read_me(current_user = Depends(get_current_user)):
+async def read_me(current_user = Depends(get_current_user)):
     return current_user
 
 
 @router.put("/me", response_model=schemas.UserOut)
-def update_profile(
+async def update_profile(
     update: schemas.UserUpdate,
     current_user: models.User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ):
-    # Update allowed fields
     current_user.username = update.username
     
     db.add(current_user)
-    db.commit()
-    db.refresh(current_user)
+    await db.commit()
+    await db.refresh(current_user)
     return current_user
 
 
 @router.delete("/me")
-def delete_account(
+async def delete_account(
     data: schemas.UserDelete,
     current_user: models.User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ):
-    # Verify password
     if not verify_password(data.password, current_user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Password is incorrect"
         )
 
-    # Delete user
-    db.delete(current_user)
-    db.commit()
+    await db.delete(current_user)
+    await db.commit()
 
     return {"detail": "Account deleted successfully"}
 
 
 @router.post("/me/password")
-def change_password(
+async def change_password(
     passwords: schemas.PasswordUpdate,
     current_user: models.User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
-    # Verify current password
     if not verify_password(passwords.current_password, current_user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Current password is incorrect"
         )
 
-    # Hash new password and save
     current_user.hashed_password = hash_password(passwords.new_password)
     db.add(current_user)
-    db.commit()
+    await db.commit()
 
     return {"detail": "Password updated successfully"}
