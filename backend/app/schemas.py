@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from app.models import TitleType
 
 ####### Users and authentication #######
 
@@ -22,3 +23,10 @@ class UserDelete(BaseModel):
 class PasswordUpdate(BaseModel):
     current_password: str
     new_password: str
+
+
+####### Titles #######
+
+class TitleIn(BaseModel):
+    tmdb_id: int
+    title_type: TitleType
