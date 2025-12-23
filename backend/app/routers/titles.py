@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.dialects.postgresql import insert
 from datetime import datetime
 from app import models, schemas
 from app.dependencies import get_db
@@ -30,8 +31,8 @@ async def store_movie(db: AsyncSession, tmdb_data: dict) -> models.Title:
         # age_rating
         overview=tmdb_data["overview"],
         movie_runtime=tmdb_data["runtime"],
-        movie_revenue=tmdb_data["movie_revenue"],
-        movie_budget=tmdb_data["movie_budget"],
+        movie_revenue=tmdb_data["revenue"],
+        movie_budget=tmdb_data["budget"],
         release_date=release_date,
         original_language=tmdb_data["original_language"],
         origin_country=tmdb_data["origin_country"][0],
@@ -105,6 +106,24 @@ async def fetch_and_store_tv_seasons_and_episodes(
     await db.commit()
 
 
+async def add_title_to_user_watchlist(
+    db: AsyncSession,
+    title_id: int,
+    user: models.User
+):
+    stmt = insert(models.UserTitleDetails).values(
+        user_id=user.user_id,
+        title_id=title_id,
+        in_watchlist=True
+    ).on_conflict_do_update(
+        index_elements=["user_id", "title_id"],
+        set_={"in_watchlist": True}
+    )
+
+    await db.execute(stmt)
+    await db.commit()
+
+
 # ---------- ROUTER ----------
 
 @router.post("/")
@@ -117,7 +136,10 @@ async def add_title_to_watchlist(
         select(models.Title).where(models.Title.tmdb_id == data.tmdb_id)
     )
 
-    if not existing.scalar_one_or_none():
+    title = existing.scalar_one_or_none()
+    if title:
+        title_id = title.title_id
+    else:
         try:
             # Fetch the title
             if data.title_type is schemas.TitleType.movie:
@@ -136,3 +158,10 @@ async def add_title_to_watchlist(
 
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
+
+    await add_title_to_user_watchlist(db=db, title_id=title_id, user=user)
+
+    return {
+        "title_id": title_id,
+        "in_watchlist": True,
+    }

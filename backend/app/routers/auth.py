@@ -64,7 +64,7 @@ async def login(
     if not db_user or not verify_password(user.password, db_user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    token = create_access_token(db_user.id)
+    token = create_access_token(db_user.user_id)
 
     return {"access_token": token, "token_type": "bearer"}
 

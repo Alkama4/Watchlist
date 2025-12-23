@@ -8,7 +8,7 @@ class UserIn(BaseModel):
     password: str
 
 class UserOut(BaseModel):
-    id: int
+    user_id: int
     username: str
 
     class Config:

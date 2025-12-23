@@ -22,7 +22,7 @@ class ImageType(enum.Enum):
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
 
@@ -107,7 +107,7 @@ class Episode(Base):
 class UserTitleDetails(Base):
     __tablename__ = "user_title_details"
 
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), primary_key=True)
     title_id = Column(Integer, ForeignKey("titles.title_id", ondelete="CASCADE"), primary_key=True)
     in_watchlist = Column(Boolean, default=True)
     favourite = Column(Boolean, default=False)
@@ -117,7 +117,8 @@ class UserTitleDetails(Base):
     chosen_poster_image_id = Column(Integer, ForeignKey("images.image_id", ondelete="CASCADE"))
     chosen_backdrop_image_id = Column(Integer, ForeignKey("images.image_id", ondelete="CASCADE"))
     chosen_logo_image_id = Column(Integer, ForeignKey("images.image_id", ondelete="CASCADE"))
-    added_at = Column(TIMESTAMP, default="CURRENT_TIMESTAMP")
+    added_at = Column(TIMESTAMP, server_default=func.now())
+
     last_watched_at = Column(TIMESTAMP)
     last_viewed_at = Column(TIMESTAMP)
 
@@ -125,7 +126,7 @@ class UserTitleDetails(Base):
 class UserSeasonDetails(Base):
     __tablename__ = "user_season_details"
 
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), primary_key=True)
     season_id = Column(Integer, ForeignKey("seasons.season_id", ondelete="CASCADE"), primary_key=True)
     poster_image_id = Column(Integer)
     notes = Column(Text)
@@ -134,11 +135,15 @@ class UserSeasonDetails(Base):
 class UserEpisodeDetails(Base):
     __tablename__ = "user_episode_details"
 
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), primary_key=True)
     episode_id = Column(Integer, ForeignKey("episodes.episode_id", ondelete="CASCADE"), primary_key=True)
     watch_count = Column(Integer, default=0)
     notes = Column(Text)
-    last_updated = Column(TIMESTAMP, default="CURRENT_TIMESTAMP", server_onupdate="CURRENT_TIMESTAMP")
+    last_updated = Column(
+        TIMESTAMP,
+        server_default=func.now(),
+        server_onupdate=func.now()
+    )
 
 
 class Genre(Base):
@@ -147,7 +152,11 @@ class Genre(Base):
     genre_id = Column(Integer, primary_key=True, autoincrement=True)
     tmdb_genre_id = Column(Integer)
     genre_name = Column(String(255), nullable=False)
-    last_updated = Column(TIMESTAMP, default="CURRENT_TIMESTAMP", server_onupdate="CURRENT_TIMESTAMP")
+    last_updated = Column(
+        TIMESTAMP,
+        server_default=func.now(),
+        server_onupdate=func.now()
+    )
 
     titles = relationship("TitleGenre", back_populates="genre", cascade="all, delete-orphan")
 
