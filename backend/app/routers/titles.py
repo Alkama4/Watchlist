@@ -123,6 +123,7 @@ async def add_title_to_user_watchlist(
     await db.execute(stmt)
     await db.commit()
 
+
 async def remove_title_from_user_watchlist(
     db: AsyncSession,
     title_id: int,
@@ -139,6 +140,87 @@ async def remove_title_from_user_watchlist(
 
     await db.execute(stmt)
     await db.commit()
+
+
+async def add_title_to_user_favourites(
+    db: AsyncSession,
+    title_id: int,
+    user: models.User
+):
+    stmt = insert(models.UserTitleDetails).values(
+        user_id=user.user_id,
+        title_id=title_id,
+        in_watchlist=True,
+        is_favourite=True
+    ).on_conflict_do_update(
+        index_elements=["user_id", "title_id"],
+        set_={
+            "in_watchlist": True,
+            "is_favourite": True,
+        }
+    )
+
+    await db.execute(stmt)
+    await db.commit()
+
+
+async def remove_title_from_user_favourites(
+    db: AsyncSession,
+    title_id: int,
+    user: models.User
+):
+    stmt = (
+        update(models.UserTitleDetails)
+        .where(
+            (models.UserTitleDetails.user_id == user.user_id) 
+            & (models.UserTitleDetails.title_id == title_id)
+        )
+        .values(is_favourite=False)
+    )
+
+    await db.execute(stmt)
+    await db.commit()
+
+
+async def add_title_to_users_watch_next(
+    db: AsyncSession,
+    title_id: int,
+    user: models.User
+):
+    stmt = insert(models.UserTitleDetails).values(
+        user_id=user.user_id,
+        title_id=title_id,
+        in_watchlist=True,
+        watch_next=True
+    ).on_conflict_do_update(
+        index_elements=["user_id", "title_id"],
+        set_={
+            "in_watchlist": True,
+            "watch_next": True,
+        }
+    )
+
+    await db.execute(stmt)
+    await db.commit()
+
+
+async def remove_title_from_users_watch_next(
+    db: AsyncSession,
+    title_id: int,
+    user: models.User
+):
+    stmt = (
+        update(models.UserTitleDetails)
+        .where(
+            (models.UserTitleDetails.user_id == user.user_id) 
+            & (models.UserTitleDetails.title_id == title_id)
+        )
+        .values(watch_next=False)
+    )
+
+    await db.execute(stmt)
+    await db.commit()
+
 
 
 # ---------- ROUTER ----------
@@ -202,3 +284,43 @@ async def remove_existing_title_from_watchlist(
 ):
     await remove_title_from_user_watchlist(db, title_id, user)
     return {"title_id": title_id, "in_watchlist": False}
+
+
+@router.put("/{title_id}/favourite")
+async def add_title_to_favourites(
+    title_id: int,
+    user: models.User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    await add_title_to_user_favourites(db, title_id, user)
+    return {"title_id": title_id, "is_favourite": True, "in_watchlist": True}
+
+
+@router.delete("/{title_id}/favourite")
+async def remove_title_from_favourites(
+    title_id: int,
+    user: models.User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    await remove_title_from_user_favourites(db, title_id, user)
+    return {"title_id": title_id, "is_favourite": False}
+
+
+@router.put("/{title_id}/watch-next")
+async def add_title_to_watch_next(
+    title_id: int,
+    user: models.User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    await add_title_to_users_watch_next(db, title_id, user)
+    return {"title_id": title_id, "watch_next": True, "in_watchlist": True}
+
+
+@router.delete("/{title_id}/watch-next")
+async def remove_title_from_watch_next(
+    title_id: int,
+    user: models.User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    await remove_title_from_users_watch_next(db, title_id, user)
+    return {"title_id": title_id, "watch_next": False}
