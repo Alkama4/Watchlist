@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
 from datetime import datetime
@@ -123,11 +123,28 @@ async def add_title_to_user_watchlist(
     await db.execute(stmt)
     await db.commit()
 
+async def remove_title_from_user_watchlist(
+    db: AsyncSession,
+    title_id: int,
+    user: models.User
+):
+    stmt = (
+        update(models.UserTitleDetails)
+        .where(
+            (models.UserTitleDetails.user_id == user.user_id) 
+            & (models.UserTitleDetails.title_id == title_id)
+        )
+        .values(in_watchlist=False)
+    )
+
+    await db.execute(stmt)
+    await db.commit()
+
 
 # ---------- ROUTER ----------
 
 @router.post("/")
-async def add_title_to_watchlist(
+async def add_new_title_to_watchlist(
     data: schemas.TitleIn,
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -165,3 +182,23 @@ async def add_title_to_watchlist(
         "title_id": title_id,
         "in_watchlist": True,
     }
+
+
+@router.put("/{title_id}/watchlist")
+async def add_existing_title_to_watchlist(
+    title_id: int,
+    user: models.User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    await add_title_to_user_watchlist(db, title_id, user)
+    return {"title_id": title_id, "in_watchlist": True}
+
+
+@router.delete("/{title_id}/watchlist")
+async def remove_existing_title_from_watchlist(
+    title_id: int,
+    user: models.User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    await remove_title_from_user_watchlist(db, title_id, user)
+    return {"title_id": title_id, "in_watchlist": False}
