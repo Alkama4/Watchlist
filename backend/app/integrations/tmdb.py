@@ -29,6 +29,7 @@ async def fetch_movie(tmdb_id: int) -> dict:
         f"/movie/{tmdb_id}",
         params={
             "append_to_response": "images,releases,videos",
+            "include_image_language": "en,fi,null",
             "language": "en-US",
         },
     )
@@ -39,6 +40,7 @@ async def fetch_tv(tmdb_id: int) -> dict:
         f"/tv/{tmdb_id}",
         params={
             "append_to_response": "images,content_ratings,videos,external_ids",
+            "include_image_language": "en,fi,null",
             "language": "en-US",
         },
     )
@@ -49,6 +51,7 @@ async def fetch_tv_season(tmdb_id: int, season_number: int) -> dict:
         f"/tv/{tmdb_id}/season/{season_number}",
         params={
             "append_to_response": "images",
+            "include_image_language": "en,fi,null",
             "language": "en-US"
         }
     )

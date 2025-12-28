@@ -133,9 +133,9 @@ class UserTitleDetails(Base):
     watch_next = Column(Boolean, default=False)
     watch_count = Column(Integer, default=0)
     notes = Column(Text)
-    chosen_poster_file_path = Column(String(255), ForeignKey("images.file_path"))
-    chosen_backdrop_file_path = Column(String(255), ForeignKey("images.file_path"))
-    chosen_logo_file_path = Column(String(255), ForeignKey("images.file_path"))
+    chosen_poster_image_path = Column(String(255), ForeignKey("images.file_path"))
+    chosen_backdrop_image_path = Column(String(255), ForeignKey("images.file_path"))
+    chosen_logo_image_path = Column(String(255), ForeignKey("images.file_path"))
 
     added_at = Column(TIMESTAMP, server_default=func.now())
     last_watched_at = Column(TIMESTAMP)
@@ -147,7 +147,7 @@ class UserSeasonDetails(Base):
 
     user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), primary_key=True)
     season_id = Column(Integer, ForeignKey("seasons.season_id", ondelete="CASCADE"), primary_key=True)
-    chosen_poster_file_path = Column(String(255), ForeignKey("images.file_path"))
+    chosen_poster_image_path = Column(String(255), ForeignKey("images.file_path"))
     notes = Column(Text)
 
 
@@ -158,7 +158,7 @@ class UserEpisodeDetails(Base):
     episode_id = Column(Integer, ForeignKey("episodes.episode_id", ondelete="CASCADE"), primary_key=True)
     watch_count = Column(Integer, default=0)
     notes = Column(Text)
-    chosen_backdrop_file_path = Column(String(255), ForeignKey("images.file_path"))
+    chosen_backdrop_image_path = Column(String(255), ForeignKey("images.file_path"))
     last_watched_at = Column(TIMESTAMP)
 
 

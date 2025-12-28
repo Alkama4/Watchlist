@@ -40,13 +40,14 @@ class UserEpisodeDetailsOut(BaseModel):
     watch_count: int
     notes: Optional[str]
     last_watched_at: datetime
+    chosen_backdrop_image_path: Optional[str]
 
     class Config:
         from_attributes = True
 
 class UserSeasonDetailsOut(BaseModel):
     notes: Optional[str]
-    chosen_poster_image_id: Optional[int] = None
+    chosen_poster_image_path: Optional[str]
 
     class Config:
         from_attributes = True
@@ -57,9 +58,9 @@ class UserTitleDetailsOut(BaseModel):
     watch_next: bool
     watch_count: int
     notes: Optional[str]
-    chosen_poster_image_id: Optional[int] = None
-    chosen_backdrop_image_id: Optional[int] = None
-    chosen_logo_image_id: Optional[int] = None
+    chosen_poster_image_path: Optional[str]
+    chosen_backdrop_image_path: Optional[str]
+    chosen_logo_image_path: Optional[str]
 
     added_at: Optional[datetime]
     last_watched_at: Optional[datetime]
@@ -77,6 +78,7 @@ class EpisodeOut(BaseModel):
     overview: Optional[str]
     air_date: Optional[date]
     runtime: Optional[int]
+    default_backdrop_image_path: Optional[str]
     last_updated: datetime
 
     user_details: Optional[UserEpisodeDetailsOut] = None  
@@ -90,6 +92,7 @@ class SeasonOut(BaseModel):
     season_name: Optional[str]
     tmdb_vote_average: Optional[float]
     overview: Optional[str]
+    default_poster_image_path: Optional[str]
     last_updated: datetime
 
     episodes: List[EpisodeOut]
@@ -119,6 +122,9 @@ class TitleOut(BaseModel):
     origin_country: Optional[str]
     awards: Optional[str]
     homepage: Optional[str]
+    default_poster_image_path: Optional[str]
+    default_backdrop_image_path: Optional[str]
+    default_logo_image_path: Optional[str]
     last_updated: datetime
 
     seasons: List[SeasonOut] = []
