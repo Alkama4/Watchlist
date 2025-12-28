@@ -117,8 +117,8 @@ class UserTitleDetails(Base):
     chosen_poster_image_id = Column(Integer, ForeignKey("images.image_id", ondelete="CASCADE"))
     chosen_backdrop_image_id = Column(Integer, ForeignKey("images.image_id", ondelete="CASCADE"))
     chosen_logo_image_id = Column(Integer, ForeignKey("images.image_id", ondelete="CASCADE"))
-    added_at = Column(TIMESTAMP, server_default=func.now())
 
+    added_at = Column(TIMESTAMP, server_default=func.now())
     last_watched_at = Column(TIMESTAMP)
     last_viewed_at = Column(TIMESTAMP)
 
@@ -128,7 +128,7 @@ class UserSeasonDetails(Base):
 
     user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), primary_key=True)
     season_id = Column(Integer, ForeignKey("seasons.season_id", ondelete="CASCADE"), primary_key=True)
-    poster_image_id = Column(Integer)
+    chosen_poster_image_id = Column(Integer)
     notes = Column(Text)
 
 
@@ -139,11 +139,7 @@ class UserEpisodeDetails(Base):
     episode_id = Column(Integer, ForeignKey("episodes.episode_id", ondelete="CASCADE"), primary_key=True)
     watch_count = Column(Integer, default=0)
     notes = Column(Text)
-    last_updated = Column(
-        TIMESTAMP,
-        server_default=func.now(),
-        server_onupdate=func.now()
-    )
+    last_watched_at = Column(TIMESTAMP)
 
 
 class Genre(Base):
