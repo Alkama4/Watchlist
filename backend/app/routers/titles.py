@@ -15,11 +15,11 @@ router = APIRouter()
 
 # ---------- DB STORAGE ----------
 
-async def store_movie(db: AsyncSession, tmdb_data: dict) -> models.Title:
+async def store_movie(db: AsyncSession, tmdb_data: dict) -> int:
     release_date_str = tmdb_data.get("release_date")
     release_date = datetime.strptime(release_date_str, "%Y-%m-%d").date() if release_date_str else None
 
-    movie = models.Title(
+    stmt = insert(models.Title).values(
         tmdb_id=tmdb_data["id"],
         imdb_id=tmdb_data["imdb_id"],
         type=models.TitleType.movie,
@@ -28,6 +28,7 @@ async def store_movie(db: AsyncSession, tmdb_data: dict) -> models.Title:
         tagline=tmdb_data["tagline"],
         tmdb_vote_average=tmdb_data["vote_average"],
         tmdb_vote_count=tmdb_data["vote_count"],
+        ##### These aren't from TMDB #####
         # imdb_vote_average
         # imdb_vote_count
         # age_rating
@@ -39,15 +40,32 @@ async def store_movie(db: AsyncSession, tmdb_data: dict) -> models.Title:
         original_language=tmdb_data["original_language"],
         origin_country=tmdb_data["origin_country"][0],
         homepage=tmdb_data["homepage"],
-    )
-    db.add(movie)
+    ).on_conflict_do_update(
+        index_elements=["tmdb_id"],
+        set_={
+            "name": tmdb_data["title"],
+            "name_original": tmdb_data["original_title"],
+            "tagline": tmdb_data["tagline"],
+            "tmdb_vote_average": tmdb_data["vote_average"],
+            "tmdb_vote_count": tmdb_data["vote_count"],
+            "overview": tmdb_data["overview"],
+            "movie_runtime": tmdb_data["runtime"],
+            "movie_revenue": tmdb_data["revenue"],
+            "movie_budget": tmdb_data["budget"],
+            "release_date": release_date,
+            "original_language": tmdb_data["original_language"],
+            "origin_country": tmdb_data["origin_country"][0],
+            "homepage": tmdb_data["homepage"],
+        }
+    ).returning(models.Title.title_id)
+
+    result = await db.execute(stmt)
     await db.commit()
-    await db.refresh(movie)
-    return movie.title_id
+    return result.scalar_one()
 
 
-async def store_tv(db: AsyncSession, tmdb_data: dict) -> models.Title:
-    tv = models.Title(
+async def store_tv(db: AsyncSession, tmdb_data: dict) -> int:
+    stmt = insert(models.Title).values(
         tmdb_id=tmdb_data["id"],
         imdb_id=tmdb_data["external_ids"]["imdb_id"],
         type=models.TitleType.tv,
@@ -60,11 +78,27 @@ async def store_tv(db: AsyncSession, tmdb_data: dict) -> models.Title:
         original_language=tmdb_data["original_language"],
         origin_country=",".join(tmdb_data["origin_country"]),
         homepage=tmdb_data["homepage"],
-    )
-    db.add(tv)
+    ).on_conflict_do_update(
+        index_elements=["tmdb_id"],
+        set_={
+            "name": tmdb_data["name"],
+            "tagline": tmdb_data["tagline"],
+            "tmdb_vote_average": tmdb_data["vote_average"],
+            "tmdb_vote_count": tmdb_data["vote_count"],
+            "overview": tmdb_data["overview"],
+            "original_language": tmdb_data["original_language"],
+            "origin_country": ",".join(tmdb_data["origin_country"]),
+            "homepage": tmdb_data["homepage"],
+        }
+    ).returning(models.Title.title_id)
+
+    result = await db.execute(stmt)
+    title_id = result.scalar_one()
     await db.commit()
-    await db.refresh(tv)
-    return tv.title_id
+
+    # Fetch seasons and episodes
+    await fetch_and_store_tv_seasons_and_episodes(db, title_id, tmdb_data)
+    return title_id
 
 
 async def fetch_and_store_tv_seasons_and_episodes(
@@ -78,23 +112,33 @@ async def fetch_and_store_tv_seasons_and_episodes(
             season["season_number"],
         )
 
-        db_season = models.Season(
+        # Upsert season
+        stmt = insert(models.Season).values(
             title_id=title_id,
             season_number=season["season_number"],
             season_name=season["name"],
             tmdb_vote_average=season["vote_average"],
             overview=season["overview"]
-        )
-        db.add(db_season)
-        db.refresh(db_season)
+        ).on_conflict_do_update(
+            index_elements=["title_id", "season_number"],
+            set_={
+                "season_name": season["name"],
+                "tmdb_vote_average": season["vote_average"],
+                "overview": season["overview"]
+            }
+        ).returning(models.Season.season_id)
+
+        result = await db.execute(stmt)
+        season_id = result.scalar_one()
         await db.flush()
 
         for ep in season_data["episodes"]:
             air_date_str = ep.get("air_date")
             air_date = datetime.strptime(air_date_str, "%Y-%m-%d").date() if air_date_str else None
 
-            db.add(models.Episode(
-                season_id=db_season.season_id,
+            # Upsert episode
+            stmt = insert(models.Episode).values(
+                season_id=season_id,
                 title_id=title_id,
                 episode_number=ep["episode_number"],
                 episode_name=ep["name"],
@@ -103,10 +147,23 @@ async def fetch_and_store_tv_seasons_and_episodes(
                 overview=ep["overview"],
                 air_date=air_date,
                 runtime=ep["runtime"]
-            ))
+            ).on_conflict_do_update(
+                index_elements=["season_id", "episode_number"],
+                set_={
+                    "episode_name": ep["name"],
+                    "tmdb_vote_average": ep["vote_average"],
+                    "tmdb_vote_count": ep["vote_count"],
+                    "overview": ep["overview"],
+                    "air_date": air_date,
+                    "runtime": ep["runtime"]
+                }
+            )
+            await db.execute(stmt)
 
     await db.commit()
 
+
+# ---------- SET FLAGS ----------
 
 async def set_user_title_flags(
     db: AsyncSession,
@@ -126,6 +183,8 @@ async def set_user_title_flags(
     await db.execute(stmt)
     await db.commit()
 
+
+# ---------- FETCHING TITLES ----------
 
 async def fetch_title_with_user_details(db: AsyncSession, title_id: int, user_id: int) -> schemas.TitleOut:
     # Fetch title with seasons and episodes
@@ -194,7 +253,7 @@ def build_title_out(
     return title_out
 
 
-# ---------- ROUTER ----------
+# ---------- ROUTER ENDPOINTS ----------
 
 @router.post("/")
 async def add_new_title_to_watchlist(
