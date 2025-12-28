@@ -48,6 +48,7 @@ async def fetch_tv_season(tmdb_id: int, season_number: int) -> dict:
     return await tmdb_get(
         f"/tv/{tmdb_id}/season/{season_number}",
         params={
+            "append_to_response": "images",
             "language": "en-US"
         }
     )

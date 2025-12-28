@@ -60,8 +60,12 @@ async def store_movie(db: AsyncSession, tmdb_data: dict) -> int:
     ).returning(models.Title.title_id)
 
     result = await db.execute(stmt)
+    title_id = result.scalar_one()
     await db.commit()
-    return result.scalar_one()
+
+    await store_image_details(db=db, title_id=title_id, images=tmdb_data["images"])
+
+    return title_id
 
 
 async def store_tv(db: AsyncSession, tmdb_data: dict) -> int:
@@ -97,35 +101,31 @@ async def store_tv(db: AsyncSession, tmdb_data: dict) -> int:
     title_id = result.scalar_one()
     await db.commit()
 
+    await store_image_details(db=db, title_id=title_id, images=tmdb_data["images"])
+
     # Fetch seasons and episodes
     await fetch_and_store_tv_seasons_and_episodes(db, title_id, tmdb_data)
     return title_id
 
 
-async def fetch_and_store_tv_seasons_and_episodes(
-    db: AsyncSession,
-    title_id: int,
-    tmdb_data: dict,
-):
-    for season in tmdb_data["seasons"]:
-        season_data = await tmdb.fetch_tv_season(
-            tmdb_data["id"],
-            season["season_number"],
-        )
+async def fetch_and_store_tv_seasons_and_episodes(db: AsyncSession, title_id: int, tmdb_data: dict):
+    for season in tmdb_data.get("seasons", []):
+        # Fetch full season data
+        season_data = await tmdb.fetch_tv_season(tmdb_data["id"], season["season_number"])
 
         # Upsert season
         stmt = insert(models.Season).values(
             title_id=title_id,
             season_number=season["season_number"],
-            season_name=season["name"],
-            tmdb_vote_average=season["vote_average"],
-            overview=season["overview"]
+            season_name=season.get("name"),
+            tmdb_vote_average=season.get("vote_average"),
+            overview=season.get("overview")
         ).on_conflict_do_update(
             index_elements=["title_id", "season_number"],
             set_={
-                "season_name": season["name"],
-                "tmdb_vote_average": season["vote_average"],
-                "overview": season["overview"]
+                "season_name": season.get("name"),
+                "tmdb_vote_average": season.get("vote_average"),
+                "overview": season.get("overview")
             }
         ).returning(models.Season.season_id)
 
@@ -133,7 +133,13 @@ async def fetch_and_store_tv_seasons_and_episodes(
         season_id = result.scalar_one()
         await db.flush()
 
-        for ep in season_data["episodes"]:
+        # Store season images
+        await store_image_details(db=db, season_id=season_id, images=season_data.get("images", {}))
+
+        # Accumulate episode images
+        episode_images = []
+
+        for ep in season_data.get("episodes", []):
             air_date_str = ep.get("air_date")
             air_date = datetime.strptime(air_date_str, "%Y-%m-%d").date() if air_date_str else None
 
@@ -142,25 +148,85 @@ async def fetch_and_store_tv_seasons_and_episodes(
                 season_id=season_id,
                 title_id=title_id,
                 episode_number=ep["episode_number"],
-                episode_name=ep["name"],
-                tmdb_vote_average=ep["vote_average"],
-                tmdb_vote_count=ep["vote_count"],
-                overview=ep["overview"],
+                episode_name=ep.get("name"),
+                tmdb_vote_average=ep.get("vote_average"),
+                tmdb_vote_count=ep.get("vote_count"),
+                overview=ep.get("overview"),
                 air_date=air_date,
-                runtime=ep["runtime"]
+                runtime=ep.get("runtime")
             ).on_conflict_do_update(
                 index_elements=["season_id", "episode_number"],
                 set_={
-                    "episode_name": ep["name"],
-                    "tmdb_vote_average": ep["vote_average"],
-                    "tmdb_vote_count": ep["vote_count"],
-                    "overview": ep["overview"],
+                    "episode_name": ep.get("name"),
+                    "tmdb_vote_average": ep.get("vote_average"),
+                    "tmdb_vote_count": ep.get("vote_count"),
+                    "overview": ep.get("overview"),
                     "air_date": air_date,
-                    "runtime": ep["runtime"]
+                    "runtime": ep.get("runtime")
                 }
-            )
-            await db.execute(stmt)
+            ).returning(models.Episode.episode_id)
 
+            result = await db.execute(stmt)
+            episode_id = result.scalar_one()
+
+            # Collect episode backdrop if available
+            still_path = ep.get("still_path")
+            if still_path:
+                episode_images.append({
+                    "file_path": still_path,
+                    "episode_id": episode_id,
+                    "type": models.ImageType.backdrop
+                })
+
+        # Batch store episode images
+        if episode_images:
+            await store_image_details(db=db, images={"backdrops": episode_images})
+
+    await db.commit()
+
+
+async def store_image_details(db: AsyncSession, title_id: int = None, season_id: int = None, episode_id: int = None, images: dict = None):
+    if not images:
+        return
+
+    type_fk_map = {
+        "backdrops": {"type": models.ImageType.backdrop, "fk": {"title_id": title_id, "season_id": None}},
+        "posters": {"type": models.ImageType.poster, "fk": {"title_id": title_id, "season_id": season_id}},
+        "logos": {"type": models.ImageType.logo, "fk": {"title_id": title_id, "season_id": None}},
+    }
+
+    image_records = []
+
+    for key, meta in type_fk_map.items():
+        for img in images.get(key, []):
+            record = {
+                "file_path": img["file_path"],
+                "type": meta["type"],
+                "title_id": meta["fk"]["title_id"],
+                "season_id": meta["fk"]["season_id"],
+                "episode_id": img.get("episode_id"),
+                "width": img.get("width"),
+                "height": img.get("height"),
+                "iso_3166_1": img.get("iso_3166_1"),
+                "iso_639_1": img.get("iso_639_1"),
+                "vote_average": img.get("vote_average"),
+                "vote_count": img.get("vote_count")
+            }
+            image_records.append(record)
+
+    if not image_records:
+        return
+
+    insert_stmt = insert(models.Image).values(image_records)
+    stmt = insert_stmt.on_conflict_do_update(
+        index_elements=["file_path"],
+        set_={
+            "vote_average": insert_stmt.excluded.vote_average,
+            "vote_count": insert_stmt.excluded.vote_count
+        }
+    )
+
+    await db.execute(stmt)
     await db.commit()
 
 
