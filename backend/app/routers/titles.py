@@ -106,116 +106,19 @@ async def fetch_and_store_tv_seasons_and_episodes(
     await db.commit()
 
 
-async def add_title_to_user_watchlist(
+async def set_user_title_flags(
     db: AsyncSession,
+    user_id: int,
     title_id: int,
-    user: models.User
+    **flags: bool
 ):
     stmt = insert(models.UserTitleDetails).values(
-        user_id=user.user_id,
+        user_id=user_id,
         title_id=title_id,
-        in_watchlist=True
+        **flags
     ).on_conflict_do_update(
         index_elements=["user_id", "title_id"],
-        set_={"in_watchlist": True}
-    )
-
-    await db.execute(stmt)
-    await db.commit()
-
-
-async def remove_title_from_user_watchlist(
-    db: AsyncSession,
-    title_id: int,
-    user: models.User
-):
-    stmt = (
-        update(models.UserTitleDetails)
-        .where(
-            (models.UserTitleDetails.user_id == user.user_id) 
-            & (models.UserTitleDetails.title_id == title_id)
-        )
-        .values(in_watchlist=False)
-    )
-
-    await db.execute(stmt)
-    await db.commit()
-
-
-async def add_title_to_user_favourites(
-    db: AsyncSession,
-    title_id: int,
-    user: models.User
-):
-    stmt = insert(models.UserTitleDetails).values(
-        user_id=user.user_id,
-        title_id=title_id,
-        in_watchlist=True,
-        is_favourite=True
-    ).on_conflict_do_update(
-        index_elements=["user_id", "title_id"],
-        set_={
-            "in_watchlist": True,
-            "is_favourite": True,
-        }
-    )
-
-    await db.execute(stmt)
-    await db.commit()
-
-
-async def remove_title_from_user_favourites(
-    db: AsyncSession,
-    title_id: int,
-    user: models.User
-):
-    stmt = (
-        update(models.UserTitleDetails)
-        .where(
-            (models.UserTitleDetails.user_id == user.user_id) 
-            & (models.UserTitleDetails.title_id == title_id)
-        )
-        .values(is_favourite=False)
-    )
-
-    await db.execute(stmt)
-    await db.commit()
-
-
-async def add_title_to_users_watch_next(
-    db: AsyncSession,
-    title_id: int,
-    user: models.User
-):
-    stmt = insert(models.UserTitleDetails).values(
-        user_id=user.user_id,
-        title_id=title_id,
-        in_watchlist=True,
-        watch_next=True
-    ).on_conflict_do_update(
-        index_elements=["user_id", "title_id"],
-        set_={
-            "in_watchlist": True,
-            "watch_next": True,
-        }
-    )
-
-    await db.execute(stmt)
-    await db.commit()
-
-
-async def remove_title_from_users_watch_next(
-    db: AsyncSession,
-    title_id: int,
-    user: models.User
-):
-    stmt = (
-        update(models.UserTitleDetails)
-        .where(
-            (models.UserTitleDetails.user_id == user.user_id) 
-            & (models.UserTitleDetails.title_id == title_id)
-        )
-        .values(watch_next=False)
+        set_=flags
     )
 
     await db.execute(stmt)
@@ -258,7 +161,12 @@ async def add_new_title_to_watchlist(
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
-    await add_title_to_user_watchlist(db=db, title_id=title_id, user=user)
+    await set_user_title_flags(
+        db,
+        user.user_id,
+        title_id,
+        in_watchlist=True
+    )
 
     return {
         "title_id": title_id,
@@ -272,7 +180,12 @@ async def add_existing_title_to_watchlist(
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    await add_title_to_user_watchlist(db, title_id, user)
+    await set_user_title_flags(
+        db,
+        user.user_id,
+        title_id,
+        in_watchlist=True
+    )
     return {"title_id": title_id, "in_watchlist": True}
 
 
@@ -282,7 +195,12 @@ async def remove_existing_title_from_watchlist(
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    await remove_title_from_user_watchlist(db, title_id, user)
+    await set_user_title_flags(
+        db,
+        user.user_id,
+        title_id,
+        in_watchlist=False
+    )
     return {"title_id": title_id, "in_watchlist": False}
 
 
@@ -292,7 +210,13 @@ async def add_title_to_favourites(
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    await add_title_to_user_favourites(db, title_id, user)
+    await set_user_title_flags(
+        db,
+        user.user_id,
+        title_id,
+        is_favourite=True,
+        in_watchlist=True
+    )
     return {"title_id": title_id, "is_favourite": True, "in_watchlist": True}
 
 
@@ -302,7 +226,12 @@ async def remove_title_from_favourites(
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    await remove_title_from_user_favourites(db, title_id, user)
+    await set_user_title_flags(
+        db,
+        user.user_id,
+        title_id,
+        is_favourite=False
+    )
     return {"title_id": title_id, "is_favourite": False}
 
 
@@ -312,7 +241,13 @@ async def add_title_to_watch_next(
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    await add_title_to_users_watch_next(db, title_id, user)
+    await set_user_title_flags(
+        db,
+        user.user_id,
+        title_id,
+        watch_next=True,
+        in_watchlist=True
+    )
     return {"title_id": title_id, "watch_next": True, "in_watchlist": True}
 
 
@@ -322,5 +257,10 @@ async def remove_title_from_watch_next(
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    await remove_title_from_users_watch_next(db, title_id, user)
+    await set_user_title_flags(
+        db,
+        user.user_id,
+        title_id,
+        watch_next=False
+    )
     return {"title_id": title_id, "watch_next": False}
