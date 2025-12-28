@@ -82,6 +82,7 @@ async def store_tv(db: AsyncSession, tmdb_data: dict) -> int:
         index_elements=["tmdb_id"],
         set_={
             "name": tmdb_data["name"],
+            "name_original": tmdb_data["original_name"],
             "tagline": tmdb_data["tagline"],
             "tmdb_vote_average": tmdb_data["vote_average"],
             "tmdb_vote_count": tmdb_data["vote_count"],
@@ -309,6 +310,36 @@ async def get_title_details(
 ):
     title = await fetch_title_with_user_details(db, title_id, user.user_id)
     return title
+
+
+@router.put("/{title_id}")
+async def update_title_details(
+    title_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    # Fetch the existing title by internal ID
+    result = await db.execute(select(models.Title).where(models.Title.title_id == title_id))
+    title = result.scalar_one_or_none()
+
+    if not title:
+        raise HTTPException(status_code=404, detail="Title not found")
+
+    try:
+        # Fetch updated TMDB data based on the type
+        if title.type == models.TitleType.movie:
+            tmdb_data = await tmdb.fetch_movie(title.tmdb_id)
+            updated_title_id = await store_movie(db, tmdb_data)
+        elif title.type == models.TitleType.tv:
+            tmdb_data = await tmdb.fetch_tv(title.tmdb_id)
+            updated_title_id = await store_tv(db, tmdb_data)
+            await fetch_and_store_tv_seasons_and_episodes(db, updated_title_id, tmdb_data)
+        else:
+            raise HTTPException(status_code=400, detail="Invalid title type")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    return {"title_id": updated_title_id, "updated": True}
 
 
 @router.put("/{title_id}/watchlist")

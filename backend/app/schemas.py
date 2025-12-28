@@ -77,6 +77,7 @@ class EpisodeOut(BaseModel):
     overview: Optional[str]
     air_date: Optional[date]
     runtime: Optional[int]
+    last_updated: datetime
 
     user_details: Optional[UserEpisodeDetailsOut] = None  
 
@@ -118,6 +119,7 @@ class TitleOut(BaseModel):
     origin_country: Optional[str]
     awards: Optional[str]
     homepage: Optional[str]
+    last_updated: datetime
 
     seasons: List[SeasonOut] = []
     user_details: Optional[UserTitleDetailsOut] = None
