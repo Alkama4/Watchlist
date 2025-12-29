@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Body
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Cookie
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -56,7 +56,11 @@ async def register(
 
 
 @router.post("/login")
-async def login(user: schemas.UserIn, db: AsyncSession = Depends(get_db)):
+async def login(
+    user: schemas.UserIn, 
+    response: Response, 
+    db: AsyncSession = Depends(get_db)
+):
     result = await db.execute(
         select(models.User).where(models.User.username == user.username)
     )
@@ -77,15 +81,28 @@ async def login(user: schemas.UserIn, db: AsyncSession = Depends(get_db)):
     db.add(refresh_token_db)
     await db.commit()
 
-    return {
-        "access_token": access_token,
-        "refresh_token": refresh_token,
-        "token_type": "bearer",
-    }
+    # Set HTTP-only cookie
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        # secure=True,       # True if using HTTPS
+        samesite="lax",      # or "strict"
+        max_age=60*60*24*REFRESH_TOKEN_EXPIRE_DAYS   # e.g., 7 days
+    )
+
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
 @router.post("/refresh")
-async def refresh(refresh_token: str, db: AsyncSession = Depends(get_db)):
+async def refresh(
+    response: Response, 
+    refresh_token: str = Cookie(None), 
+    db: AsyncSession = Depends(get_db)
+):
+    if not refresh_token:
+        raise HTTPException(status_code=401, detail="Missing refresh token")
+
     token_hash = hash_refresh_token(refresh_token)
 
     result = await db.execute(
@@ -113,34 +130,36 @@ async def refresh(refresh_token: str, db: AsyncSession = Depends(get_db)):
     access_token = create_access_token(stored_token.user_id)
     await db.commit()
 
-    return {
-        "access_token": access_token,
-        "refresh_token": new_refresh,
-        "token_type": "bearer",
-    }
+    # set new cookie
+    response.set_cookie(
+        key="refresh_token",
+        value=new_refresh,
+        httponly=True,
+        # secure=True,
+        samesite="lax",
+        max_age=60*60*24*7
+    )
+
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
 @router.post("/logout")
-async def logout(
-    refresh_token: str,
-    current_user: models.User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    token_hash = hash_refresh_token(refresh_token)
-
+async def logout(response: Response, current_user: models.User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(models.RefreshToken).where(
             models.RefreshToken.user_id == current_user.user_id,
-            models.RefreshToken.token_hash == token_hash,
             models.RefreshToken.revoked_at.is_(None),
             models.RefreshToken.expires_at > datetime.now(timezone.utc),
         )
     )
-    token = result.scalar_one_or_none()
-    if token:
+    tokens = result.scalars().all()
+    for token in tokens:
         token.revoked_at = datetime.now(timezone.utc)
         db.add(token)
-        await db.commit()
+    await db.commit()
+
+    # remove cookie
+    response.delete_cookie("refresh_token")
 
     return {"detail": "Logged out successfully"}
 
