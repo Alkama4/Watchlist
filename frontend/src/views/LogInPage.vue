@@ -1,25 +1,29 @@
 <script setup>
-function handleSubmit(event) {
-    event.preventDefault(); // optional, because of .prevent
-    const form = event.target;
-    const username = form[0].value;
-    const password = form[1].value;
-    alert(`Username: ${username}, Password: ${password}`);
+import { fastApi } from '@/utils/fastApi';
+import { useAuthStore } from '@/stores/auth';
+
+async function logIn() {
+    const auth = useAuthStore();
+    await auth.login({ password: "string", username: "string" })
 }
+
+async function checkState() {
+    const auth = useAuthStore();
+    console.log(auth.$state);
+}
+
+async function checkMe() {
+    console.log(await fastApi.auth.me.get())
+}
+
 </script>
 
 <template>
     <div>
         <h1>Login</h1>
 
-        <form @submit.prevent="handleSubmit">
-            <label>Username</label>
-            <input type="text" required>
-
-            <label>Password</label>
-            <input type="password" required>
-
-            <button type="submit">Login</button>
-        </form>
+        <button @click="logIn">Log In</button>
+        <button @click="checkState">Check state</button>
+        <button @click="checkMe">Check me</button>
     </div>
 </template>
