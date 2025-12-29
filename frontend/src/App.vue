@@ -6,7 +6,8 @@
       <h2>Watchlist</h2>
       <nav>
         <router-link to="/">Home</router-link>
-        <router-link to="/user">Account</router-link>
+        <router-link to="/account">Account</router-link>
+        <router-link to="/login">Login</router-link>
       </nav>
     </header>
     <main>
