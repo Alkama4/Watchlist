@@ -1,12 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Body
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from jose import JWTError
+from datetime import datetime, timedelta, timezone
 from app import models, schemas
 from app.dependencies import get_db
 from app.security import hash_password, verify_password
-from jose import JWTError
 from app.security import create_access_token, decode_access_token
+from app.security import create_refresh_token, hash_refresh_token, REFRESH_TOKEN_EXPIRE_DAYS
 
 
 router = APIRouter()
@@ -54,19 +56,93 @@ async def register(
 
 
 @router.post("/login")
-async def login(
-    user: schemas.UserIn, 
-    db: AsyncSession = Depends(get_db)
-):
-    result = await db.execute(select(models.User).filter(models.User.username == user.username))
+async def login(user: schemas.UserIn, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(models.User).where(models.User.username == user.username)
+    )
     db_user = result.scalar_one_or_none()
 
     if not db_user or not verify_password(user.password, db_user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    token = create_access_token(db_user.user_id)
+    access_token = create_access_token(db_user.user_id)
 
-    return {"access_token": token, "token_type": "bearer"}
+    refresh_token = create_refresh_token()
+    refresh_token_db = models.RefreshToken(
+        user_id=db_user.user_id,
+        token_hash=hash_refresh_token(refresh_token),
+        expires_at=datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS),
+    )
+
+    db.add(refresh_token_db)
+    await db.commit()
+
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+    }
+
+
+@router.post("/refresh")
+async def refresh(refresh_token: str, db: AsyncSession = Depends(get_db)):
+    token_hash = hash_refresh_token(refresh_token)
+
+    result = await db.execute(
+        select(models.RefreshToken).where(
+            models.RefreshToken.token_hash == token_hash,
+            models.RefreshToken.revoked_at.is_(None),
+            models.RefreshToken.expires_at > datetime.now(timezone.utc),
+        )
+    )
+    stored_token = result.scalar_one_or_none()
+
+    if not stored_token:
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
+
+    # rotate token
+    stored_token.revoked_at = datetime.now(timezone.utc)
+
+    new_refresh = create_refresh_token()
+    db.add(models.RefreshToken(
+        user_id=stored_token.user_id,
+        token_hash=hash_refresh_token(new_refresh),
+        expires_at=datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS),
+    ))
+
+    access_token = create_access_token(stored_token.user_id)
+    await db.commit()
+
+    return {
+        "access_token": access_token,
+        "refresh_token": new_refresh,
+        "token_type": "bearer",
+    }
+
+
+@router.post("/logout")
+async def logout(
+    refresh_token: str,
+    current_user: models.User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    token_hash = hash_refresh_token(refresh_token)
+
+    result = await db.execute(
+        select(models.RefreshToken).where(
+            models.RefreshToken.user_id == current_user.user_id,
+            models.RefreshToken.token_hash == token_hash,
+            models.RefreshToken.revoked_at.is_(None),
+            models.RefreshToken.expires_at > datetime.now(timezone.utc),
+        )
+    )
+    token = result.scalar_one_or_none()
+    if token:
+        token.revoked_at = datetime.now(timezone.utc)
+        db.add(token)
+        await db.commit()
+
+    return {"detail": "Logged out successfully"}
 
 
 @router.get("/me", response_model=schemas.UserOut)

@@ -1,11 +1,11 @@
-from sqlalchemy import Column, Integer, String, DECIMAL, BigInteger, Date, Text, Boolean, Enum, ForeignKey, TIMESTAMP, UniqueConstraint
+import enum
+from sqlalchemy import Column, Integer, String, DECIMAL, BigInteger, Date, Text, Boolean, Enum, ForeignKey, UniqueConstraint, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database import Base
-import enum
 
 
-####### Enums #######
+# Enums
 
 class TitleType(enum.Enum):
     movie = "movie"
@@ -17,7 +17,7 @@ class ImageType(enum.Enum):
     logo = "logo"
 
 
-####### Tables #######
+##### USER AND AUTH #####
 
 class User(Base):
     __tablename__ = "users"
@@ -26,6 +26,21 @@ class User(Base):
     username = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
 
+
+class RefreshToken(Base):
+    __tablename__ = "refresh_tokens"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"))
+    token_hash = Column(String, nullable=False, index=True)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    revoked_at = Column(DateTime(timezone=True), nullable=True)
+
+    user = relationship("User")
+
+
+##### TITLE DETAILS #####
 
 class Title(Base):
     __tablename__ = "titles"
@@ -55,7 +70,7 @@ class Title(Base):
     default_backdrop_image_path = Column(String(255), ForeignKey("images.file_path"))
     default_logo_image_path = Column(String(255), ForeignKey("images.file_path"))
     last_updated = Column(
-        TIMESTAMP,
+        DateTime(timezone=True),
         server_default=func.now(),
         server_onupdate=func.now()
     )
@@ -82,7 +97,7 @@ class Season(Base):
     overview = Column(Text)
     default_poster_image_path = Column(String(255), ForeignKey("images.file_path"))
     last_updated = Column(
-        TIMESTAMP,
+        DateTime(timezone=True),
         server_default=func.now(),
         server_onupdate=func.now()
     )
@@ -111,7 +126,7 @@ class Episode(Base):
     runtime = Column(Integer)
     default_backdrop_image_path = Column(String(255), ForeignKey("images.file_path"))
     last_updated = Column(
-        TIMESTAMP,
+        DateTime(timezone=True),
         server_default=func.now(),
         server_onupdate=func.now()
     )
@@ -122,6 +137,7 @@ class Episode(Base):
     default_backdrop = relationship("Image", foreign_keys=[default_backdrop_image_path], viewonly=True)
 
 
+##### USER TITLE DETAILS #####
 
 class UserTitleDetails(Base):
     __tablename__ = "user_title_details"
@@ -137,9 +153,9 @@ class UserTitleDetails(Base):
     chosen_backdrop_image_path = Column(String(255), ForeignKey("images.file_path"))
     chosen_logo_image_path = Column(String(255), ForeignKey("images.file_path"))
 
-    added_at = Column(TIMESTAMP, server_default=func.now())
-    last_watched_at = Column(TIMESTAMP)
-    last_viewed_at = Column(TIMESTAMP)
+    added_at = Column(DateTime(timezone=True), server_default=func.now())
+    last_watched_at = Column(DateTime(timezone=True))
+    last_viewed_at = Column(DateTime(timezone=True))
 
 
 class UserSeasonDetails(Base):
@@ -159,8 +175,10 @@ class UserEpisodeDetails(Base):
     watch_count = Column(Integer, default=0)
     notes = Column(Text)
     chosen_backdrop_image_path = Column(String(255), ForeignKey("images.file_path"))
-    last_watched_at = Column(TIMESTAMP)
+    last_watched_at = Column(DateTime(timezone=True))
 
+
+##### GENERES #####
 
 class Genre(Base):
     __tablename__ = "genres"
@@ -169,7 +187,7 @@ class Genre(Base):
     tmdb_genre_id = Column(Integer)
     genre_name = Column(String(255), nullable=False)
     last_updated = Column(
-        TIMESTAMP,
+        DateTime(timezone=True),
         server_default=func.now(),
         server_onupdate=func.now()
     )
@@ -186,6 +204,8 @@ class TitleGenre(Base):
     title = relationship("Title", back_populates="genres")
     genre = relationship("Genre", back_populates="titles")
 
+
+##### MEDIA #####
 
 class Image(Base):
     __tablename__ = "images"
