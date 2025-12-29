@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from app import config
 from app.database import engine, Base
-from app.routers import auth, titles
+from app.routers import auth, titles, media
 
 # Setup ENVs
 config
@@ -18,3 +18,4 @@ app = FastAPI(lifespan=lifespan)
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(titles.router, prefix="/titles", tags=["titles"])
+app.include_router(media.router, prefix="/media", tags=["media"])
