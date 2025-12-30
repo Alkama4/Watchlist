@@ -2,13 +2,18 @@
 /* ----------- Colors ----------- */
 :root {
     --c-bg: hsl(0, 0%, 0%);
+    --c-bg-section: hsl(0, 0%, 4%);
+
     --c-text: hsl(0, 0%, 95%);
     --c-text-1: hsl(0, 0%, 85%);
     --c-text-2: hsl(0, 0%, 70%);
     --c-text-3: hsl(0, 0%, 55%);
     --c-text-alt: hsl(0, 0%, 0%);
 
-    --c-border: hsla(0, 0%, 40%, 0.5);
+    --c-border: hsla(0, 0%, 50%, 0.25);
+    --c-border-1: hsla(0, 0%, 50%, 0.5);
+
+    --c-input: hsla(0, 0%, 50%, 0.1);
 
     /* Lightness offsets */
     --c-light-amount: 6%;

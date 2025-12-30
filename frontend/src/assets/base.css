@@ -2,6 +2,8 @@ body {
     font-family: 'Inter';
     background-color: var(--c-bg);
     color: var(--c-text);
+    margin: 0;
+    padding: 0;
 }
 
 *:focus-visible {
@@ -9,7 +11,7 @@ body {
 }
 
 
-button {
+button, .btn {
     font-family: 'Inter';
     font-weight: 600;
 
@@ -25,82 +27,89 @@ button {
 
     transition: background-color 0.1s var(--transition-quick);
 }
-button:hover {
+button:hover, .btn:hover {
     background-color: var(--c-neutral-lighter);
 }
-button:active {
+button:active, .btn:active {
     background-color: var(--c-neutral-light);
 }
 
 
 /* Button primary */
-button.btn-primary {
+.btn-primary {
     color: var(--c-text-alt);
     background-color: var(--c-primary);
 }
-button.btn-primary:hover {
+.btn-primary:hover {
     background-color: var(--c-primary-lighter);
 }
-button.btn-primary:active {
+.btn-primary:active {
     background-color: var(--c-primary-light);
 }
 
 /* Button text */
-button.btn-text {
+.btn-text {
     background-color: transparent;
     /* border: 1px solid transparent; */
 }
-button.btn-text:hover {
+.btn-text:hover {
     background-color: var(--c-neutral);
     /* border: 1px solid var(--c-border); */
 }
-button.btn-text:active {
+.btn-text:active {
     background-color: var(--c-neutral-light);
 }
 
 
 /* Button positive */
-button.btn-positive {
+.btn-positive {
     background-color: var(--c-positive);
 }
-button.btn-positive:hover {
+.btn-positive:hover {
     background-color: var(--c-positive-lighter);
 }
-button.btn-positive:active {
+.btn-positive:active {
     background-color: var(--c-positive-light);
 }
 
 /* Button warning */
-button.btn-warning {
+.btn-warning {
     background-color: var(--c-warning);
 }
-button.btn-warning:hover {
+.btn-warning:hover {
     background-color: var(--c-warning-lighter);
 }
-button.btn-warning:active {
+.btn-warning:active {
     background-color: var(--c-warning-light);
 }
 
 /* Button negative */
-button.btn-negative {
+.btn-negative {
     background-color: var(--c-negative);
 }
-button.btn-negative:hover {
+.btn-negative:hover {
     background-color: var(--c-negative-lighter);
 }
-button.btn-negative:active {
+.btn-negative:active {
     background-color: var(--c-negative-light);
 }
 
 
 /* Input */
 input {
-    background-color: black;
+    background-color: var(--c-input);
     color: var(--c-text);
+    font-family: 'Inter';
+    font-size: var(--fs-0);
 
     border: 1px solid var(--c-border);
     border-radius: 8px;
     padding: var(--spacing-sm);
+
+    transition: border-color 0.1s var(--transition-quick);
+}
+input:hover {
+    border-color: var(--c-border-1);
 }
 
 /* Form */
@@ -110,6 +119,7 @@ form {
     max-width: 600px;
 }
 form input {
+    margin-top: var(--spacing-xs);
     margin-bottom: var(--spacing-md);
 }
 form label {

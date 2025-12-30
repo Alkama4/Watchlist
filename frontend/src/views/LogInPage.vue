@@ -26,9 +26,6 @@ async function logIn() {
 
         <button type="submit">Login</button>
     </form>
-
-    <button class="positive">Button</button>
-    <button class="primary">Button</button>
 </template>
 
 
