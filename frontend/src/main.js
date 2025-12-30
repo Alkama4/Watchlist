@@ -1,12 +1,12 @@
 import { createApp } from 'vue'
-import App from './App.vue'
-import router from './router'
+import App from '@/App.vue'
+import router from '@/router'
 import { createPinia } from 'pinia'
-import { useAuthStore } from './stores/auth'
-import './assets/variables.css'
-import './assets/fonts.css'
-import './assets/global.css'
-import './assets/default-elements.css'
+import { useAuthStore } from '@/stores/auth'
+import '@/assets/variables.css'
+import '@/assets/fonts.css'
+import '@/assets/base.css'
+import '@/assets/default-elements.css'
 
 const app = createApp(App)
 const pinia = createPinia()

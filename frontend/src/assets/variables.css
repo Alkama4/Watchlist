@@ -1,3 +1,102 @@
+
+/* ----------- Colors ----------- */
 :root {
-    
+    --c-bg: hsl(0, 0%, 0%);
+    --c-text: hsl(0, 0%, 95%);
+    --c-text-1: hsl(0, 0%, 85%);
+    --c-text-2: hsl(0, 0%, 70%);
+    --c-text-3: hsl(0, 0%, 55%);
+    --c-text-alt: hsl(0, 0%, 0%);
+
+    --c-border: hsla(0, 0%, 40%, 0.5);
+
+    /* Lightness offsets */
+    --c-light-amount: 6%;
+    --c-lighter-amount: 10%;
+
+    /* primary */
+    --c-primary-h: 0;
+    --c-primary-s: 0%;
+    --c-primary-l: 90%;
+    --c-primary: hsl(var(--c-primary-h), var(--c-primary-s), var(--c-primary-l));
+    --c-primary-light: hsl(var(--c-primary-h), var(--c-primary-s), calc(var(--c-primary-l) + var(--c-light-amount)));
+    --c-primary-lighter: hsl(var(--c-primary-h), var(--c-primary-s), calc(var(--c-primary-l) + var(--c-lighter-amount)));
+
+    /* accent */
+    --c-accent-h: 228;
+    --c-accent-s: 72%;
+    --c-accent-l: 60%;
+    --c-accent: hsl(var(--c-accent-h), var(--c-accent-s), var(--c-accent-l));
+    --c-accent-light: hsl(var(--c-accent-h), var(--c-accent-s), calc(var(--c-accent-l) + var(--c-light-amount)));
+    --c-accent-lighter: hsl(var(--c-accent-h), var(--c-accent-s), calc(var(--c-accent-l) + var(--c-lighter-amount)));
+
+    /* neutral */
+    --c-neutral-h: 0;
+    --c-neutral-s: 0%;
+    --c-neutral-l: 12%;
+    --c-neutral: hsl(var(--c-neutral-h), var(--c-neutral-s), var(--c-neutral-l));
+    --c-neutral-light: hsl(var(--c-neutral-h), var(--c-neutral-s), calc(var(--c-neutral-l) + var(--c-light-amount)));
+    --c-neutral-lighter: hsl(var(--c-neutral-h), var(--c-neutral-s), calc(var(--c-neutral-l) + var(--c-lighter-amount)));
+
+    /* Positive */
+    --c-positive-h: 142;
+    --c-positive-s: 50%;
+    --c-positive-l: 45%;
+    --c-positive: hsl(var(--c-positive-h), var(--c-positive-s), var(--c-positive-l));
+    --c-positive-light: hsl(var(--c-positive-h), var(--c-positive-s), calc(var(--c-positive-l) + var(--c-light-amount)));
+    --c-positive-lighter: hsl(var(--c-positive-h), var(--c-positive-s), calc(var(--c-positive-l) + var(--c-lighter-amount)));
+
+    /* Warning */
+    --c-warning-h: 40;
+    --c-warning-s: 60%;
+    --c-warning-l: 55%;
+    --c-warning: hsl(var(--c-warning-h), var(--c-warning-s), var(--c-warning-l));
+    --c-warning-light: hsl(var(--c-warning-h), var(--c-warning-s), calc(var(--c-warning-l) + var(--c-light-amount)));
+    --c-warning-lighter: hsl(var(--c-warning-h), var(--c-warning-s), calc(var(--c-warning-l) + var(--c-lighter-amount)));
+
+    /* Negative */
+    --c-negative-h: 0;
+    --c-negative-s: 60%;
+    --c-negative-l: 60%;
+    --c-negative: hsl(var(--c-negative-h), var(--c-negative-s), var(--c-negative-l));
+    --c-negative-light: hsl(var(--c-negative-h), var(--c-negative-s), calc(var(--c-negative-l) + var(--c-light-amount)));
+    --c-negative-lighter: hsl(var(--c-negative-h), var(--c-negative-s), calc(var(--c-negative-l) + var(--c-lighter-amount)));
 }
+
+
+/* ----------- Spacings ----------- */
+:root {
+    --spacing-xs: 4px;
+    --spacing-xs-sm: 6px;
+    --spacing-sm: 8px;
+    --spacing-sm-md: 12px;
+    --spacing-md: 16px;
+    --spacing-md-lg: 24px;
+    --spacing-lg: 32px;
+    --spacing-lg-xl: 48px;
+    --spacing-xl: 64px;
+}
+
+
+/* ----------- Font sizes ----------- */
+:root {
+    --font-size-base: 1rem;
+
+    --fs-multiplier: 1.125;
+
+    --fs-neg-2: calc(var(--fs-neg-1) / var(--fs-multiplier));
+    --fs-neg-1: calc(var(--fs-0) / var(--fs-multiplier));
+    --fs-0   : var(--font-size-base);
+    --fs-1   : calc(var(--fs-0) * var(--fs-multiplier));
+    --fs-2   : calc(var(--fs-1) * var(--fs-multiplier));
+    --fs-3   : calc(var(--fs-2) * var(--fs-multiplier));
+    --fs-4   : calc(var(--fs-3) * var(--fs-multiplier));
+}
+
+
+/* ----------- Transitions ----------- */
+:root {
+    --transition-quick: cubic-bezier(.23,.52,.4,.95);
+}
+
+
