@@ -1,7 +1,11 @@
-<script setup></script>
+<script setup>
+import { useRoute } from 'vue-router';
+const route = useRoute();
+
+</script>
 
 <template>
-    <header>
+    <header v-if="route.meta.requiresAuth">
         <nav>
             <router-link to="/" class="no-deco">
                 <h2 class="name">Watchlist</h2>
@@ -40,12 +44,12 @@
         </nav>
     </header>
 
-    <main>
+    <main :class="{'header-visible': route.meta.requiresAuth}">
         <router-view/>
     </main>
 
     <footer>
-        © Aleksi Malkki 2026
+        © Aleksi Malkki 2026. All Rights Reserved.
     </footer>
 </template>
 
@@ -100,6 +104,8 @@ header .btn {
 
 main {    
     padding-inline: var(--spacing-md);
+}
+main.header-visible {
     margin-top: 63px;
 }
 
@@ -109,6 +115,6 @@ footer {
     justify-content: center;
     display: flex;
     padding: var(--spacing-sm) 0;
-    color: var(--c-text-3);
+    color: var(--c-text-fine-print);
 }
 </style>
