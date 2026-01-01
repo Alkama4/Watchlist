@@ -42,3 +42,11 @@ After the initial setup, you can quickly start the server:
 cd backend
 uvicorn app.main:app --reload
 ```
+
+### LAN access
+
+If you want to access the server using other devices in your LAN remember to add `--host 0.0.0.0` flag to the command. Like so:
+
+```bash
+uvicorn app.main:app --reload --host 0.0.0.0
+```

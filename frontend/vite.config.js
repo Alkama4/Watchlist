@@ -15,4 +15,9 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  server: {
+    host: true, // allows LAN access
+    port: 80,
+    strictPort: false, // if true, fails if port is in use
+  }
 })

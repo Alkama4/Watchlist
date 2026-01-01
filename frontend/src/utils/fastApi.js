@@ -1,7 +1,10 @@
 import axios from 'axios';
 import { useAuthStore } from '../stores/auth';
 
-const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:8000' : '/api';
+const localIP = window.location.hostname; // will be the IP the browser used
+const API_BASE_URL = import.meta.env.DEV 
+    ? `http://${localIP}:8000` 
+    : '/api';
 
 // Axios client
 const apiClient = axios.create({
