@@ -19,7 +19,7 @@ async function logIn() {
         const status = e.response?.status
         const detail = e.response?.data?.detail
 
-        if (status === 403) {
+        if (status === 401) {
             loginError.value = "Invalid username or password. Please try again."
         } else if (status) {
             loginError.value = `Error ${status}: ${detail || 'Something went wrong.'}`
