@@ -1,3 +1,6 @@
+
+/* --------- All/Base --------- */
+
 body {
     font-family: 'Inter';
     background-color: var(--c-bg);
@@ -19,6 +22,9 @@ body {
     outline: 2px solid var(--c-primary);
 }
 
+
+
+/* --------- Inputs --------- */
 
 button, .btn {
     font-family: 'Inter';
@@ -43,6 +49,10 @@ button:hover, .btn:hover {
 }
 button:active, .btn:active {
     background-color: var(--c-neutral-light);
+}
+
+.btn-square {
+    padding: var(--spacing-sm)
 }
 
 
@@ -125,12 +135,19 @@ input {
 input:hover {
     border-color: var(--c-border-1);
 }
+input:user-invalid {
+    border-color: var(--c-negative);
+}
+/* input:user-valid {
+    border-color: var(--c-positive);
+} */
 
 /* Form */
 form {
     display: flex;
     flex-direction: column;
-    max-width: 600px;
+    width: 100%;
+    max-width: 500px;
 }
 form input {
     margin-top: var(--spacing-xs);
@@ -140,21 +157,61 @@ form label {
     font-size: var(--fs-neg-1);
     color: var(--c-text-1);
 }
+form h1 {
+    margin-top: 0;
+    margin-bottom: 0;
+    /* margin-bottom: var(--spacing-sm); */
+}
+
+
+
+/* --------- Basic elements --------- */
+
+/* Headers */
+h1, h2, h3, h4, h5, h6 {
+    margin: 0;
+    margin-top: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+}
+
+/* h1:first-child,
+h2:first-child,
+h3:first-child,
+h4:first-child,
+h5:first-child,
+h6:first-child {
+    margin-top: 0;
+} */
 
 
 /* Link */
 a {
-    text-decoration: none;
-    color: var(--c-accent);
+    /* text-decoration: none; */
+    color: var(--c-text-1);
+    transition: color 0.1s var(--transition-quick);
 }
 a:hover {
-    text-decoration: underline;
+    /* text-decoration: underline; */
+    color: var(--c-text-0);
 }
 
+a.subtle {
+    color: var(--c-text-3);
+}
+a.subtle:hover {
+    color: var(--c-text-2)
+}
+
+/* Paragraph/card/section */
 p {
     margin: var(--spacing-md) 0;
 }
 
+.card {
+    background-color: var(--c-bg-section);
+    border-radius: 16px;
+    padding: var(--spacing-md-lg);
+}
 
 /* Listing */
 dl {
