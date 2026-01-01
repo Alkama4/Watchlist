@@ -46,7 +46,8 @@ defineExpose({ open })
     background-color: var(--c-negative);
     border-radius: 8px;
     padding: 0px var(--spacing-sm);
-    margin: var(--spacing-sm) 0px;
+    /* margin-top: var(--spacing-sm); */
+    margin-bottom: var(--spacing-md);
 
     display: flex;
     justify-content: space-between;
