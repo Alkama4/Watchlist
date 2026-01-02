@@ -94,7 +94,7 @@ async function register() {
                     required
                 >
                 <label for="termsCheckbox">
-                    I accept that nothing happens when I check this.
+                    I assure that I will remember my password (it cannot be recovered)
                 </label>
             </div>
     
