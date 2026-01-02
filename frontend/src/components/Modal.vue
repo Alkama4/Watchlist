@@ -1,0 +1,87 @@
+<script setup>
+import { ref } from 'vue'
+
+const visible = ref(false)
+
+const emit = defineEmits(['closed'])
+
+defineProps({
+    header: {
+        type: String,
+        required: false
+    }
+})
+
+function open() {
+    visible.value = true
+}
+
+function close() {
+    emit('closed')
+    visible.value = false
+}
+
+defineExpose({ open, close })
+</script>
+
+<template>
+    <teleport to="body">
+        <Transition name="modal-fade">
+            <div 
+                v-if="visible"
+                class="modal-backdrop"
+                @click="close"
+            >
+                <div class="card" @click.stop>
+                    <h2 v-if="header" class="no-top">{{ header }}</h2>
+                    <slot></slot>
+                </div>
+            </div>
+        </Transition>
+    </teleport>
+</template>
+
+<style scoped>
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--c-bg-backdrop);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-lg);
+    cursor: pointer;
+    
+    z-index: var(--z-modal);
+}
+
+.modal-fade-enter-active {
+    transition: opacity 0.15s ease-out;
+}
+.modal-fade-leave-active {
+    transition: opacity 0.15s ease-in;
+}
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+    opacity: 0;
+}
+
+.modal-fade-enter-active .card {
+    transition: transform 0.15s ease-out;
+}
+.modal-fade-leave-active .card {
+    transition: transform 0.15s ease-in;
+}
+.modal-fade-enter-from .card,
+.modal-fade-leave-to .card {
+    transform: translateY(16px);
+}
+
+.card {
+    cursor: auto;
+}
+
+</style>

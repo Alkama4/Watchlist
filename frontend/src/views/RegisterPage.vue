@@ -2,13 +2,14 @@
 import { ref } from 'vue'
 import { fastApi } from '@/utils/fastApi'
 import FormMessage from '@/components/FormMessage.vue'
-import router from '@/router'
+import Modal from '@/components/Modal.vue'
 
 const username = ref('')
 const password = ref('')
 const passwordRepeat = ref('')
 const formError = ref('')
 const formMessage = ref(null)
+const modal = ref(null)
 
 function validateRepeatPassword(e) {
     const input = e.target
@@ -26,14 +27,8 @@ async function register() {
             password: password.value
         })
 
-        alert("Account created! Plase log in.")
-        router.push("/login")
-        
-        console.log(response)
-        // alert("ACCOUNT CREATED! User id:", response.user_id)
-
-        // HERE THROW A MODAL THAT TELLS TO LOGIN
-        // RESET FORM?
+        console.debug(response)
+        modal.value.open();
     } catch (e) {
         const status = e.response?.status
         const detail = e.response?.data?.detail
@@ -103,11 +98,24 @@ async function register() {
                 </label>
             </div>
     
-            <div class="actions">
-                <router-link class="subtle" to="/login">Already have an account?</router-link>
-                <button type="submit" class="btn-primary">Create account</button>
-            </div>
+            <button type="submit" class="btn-primary">Create account</button>
         </form>
+        <span class="subtle" style="font-size: var(--fs-neg-1);">
+            Already have an account?
+            <router-link class="subtle" to="/login">
+                Login.
+            </router-link>
+        </span>
+
+        <Modal ref="modal" header="Account Created">
+            <p>Your account has been created successfully. You can now log in.</p>
+            <div class="button-row">
+                <button @click="close">Close</button>
+                <router-link to="/login" class="btn btn-primary no-deco">
+                    Go to login
+                </router-link>
+            </div>
+        </Modal>
     </div>
 </template>
 
@@ -118,6 +126,8 @@ async function register() {
     padding: var(--spacing-xl) 0;
     box-sizing: border-box;
     display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
     align-items: center;
     justify-content: center;
 }
