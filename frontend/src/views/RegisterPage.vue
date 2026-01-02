@@ -46,7 +46,7 @@ async function register() {
             formError.value = `Unexpected error: ${e.message || 'Please try again later.'}`
         }
 
-        formMessage.value.open()
+        formMessage.value.show()
     }
 }
 </script>

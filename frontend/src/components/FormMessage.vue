@@ -20,11 +20,11 @@ function close() {
     emit('close')
 }
 
-function open() {
+function show() {
     visible.value = true
 }
 
-defineExpose({ open })
+defineExpose({ show })
 </script>
 
 <template>

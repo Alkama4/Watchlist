@@ -27,9 +27,8 @@ async function logIn() {
             formError.value = `Unexpected error: ${e.message || 'Please try again later.'}`
         }
 
-        formMessage.value.open()
+        formMessage.value.show()
     }
-
 }
 </script>
 
@@ -64,11 +63,14 @@ async function logIn() {
                 placeholder="Enter your password"
             >
     
-            <div class="actions">
-                <router-link class="subtle" to="/register">No account?</router-link>
-                <button type="submit" class="btn-primary">Login</button>
-            </div>
+            <button type="submit" class="btn-primary">Login</button>
         </form>
+        <span class="subtle" style="font-size: var(--fs-neg-1);">
+            Don't have an account?
+            <router-link class="subtle" to="/register">
+                Register here.
+            </router-link>
+        </span>
     </div>
 </template>
 
@@ -79,6 +81,8 @@ async function logIn() {
     padding: var(--spacing-xl) 0;
     box-sizing: border-box;
     display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
     align-items: center;
     justify-content: center;
 }
