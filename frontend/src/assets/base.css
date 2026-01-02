@@ -1,6 +1,10 @@
 
 /* --------- All/Base --------- */
 
+.no-scroll {
+    overflow: hidden;
+}
+
 body {
     font-family: 'Inter';
     background-color: var(--c-bg);
@@ -159,7 +163,12 @@ form label {
     font-size: var(--fs-neg-1);
     color: var(--c-text-1);
 }
-form h1 {
+form h1,
+form h2,
+form h3,
+form h4,
+form h5,
+form h6 {
     margin-top: 0;
     /* margin-bottom: 0; */
 }

@@ -1,3 +1,16 @@
+<script setup>
+import { ref } from 'vue'
+import Modal from '@/components/Modal.vue';
+
+const modal = ref(null)
+
+
+function openModal() {
+    modal.value.open();
+}
+
+</script>
+
 <template>
     <div>
         <h2>Buttons</h2>
@@ -16,8 +29,17 @@
             <button class="btn-positive">Positive button</button>
         </div>
 
+        <h2>Modals</h2>
+            <button @click="openModal">Open modal</button>
+            <Modal header="Modal header" ref="modal">
+                <p>Some text</p>
+                <button>A button</button>
+            </Modal>
+
         <h2>Form</h2>
-        <form @submit.prevent="">
+        <form @submit.prevent="" class="card">
+            <h2>Form header</h2>
+
             <label for="1">Text field</label>
             <input id="1" type="text">
 

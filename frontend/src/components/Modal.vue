@@ -14,14 +14,21 @@ defineProps({
 
 function open() {
     visible.value = true
+    document.body.classList.add('no-scroll');
 }
 
 function close() {
     emit('closed')
     visible.value = false
+    document.body.classList.remove('no-scroll');
 }
 
 defineExpose({ open, close })
+
+// ensure scroll lock is cleaned up on unmount
+onUnmounted(() => {
+    document.body.classList.remove('no-scroll')
+})
 </script>
 
 <template>
