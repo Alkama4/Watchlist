@@ -30,6 +30,7 @@ button, .btn {
     font-family: 'Inter';
     font-weight: 600;
     font-size: var(--fs-neg-1);
+    display: inline-block;
 
     gap: var(--spacing-xs);
     padding: var(--spacing-sm) var(--spacing-md-lg);
@@ -62,6 +63,7 @@ button:active, .btn:active {
     background-color: var(--c-primary);
 }
 .btn-primary:hover {
+    color: var(--c-text-alt);
     background-color: var(--c-primary-lighter);
 }
 .btn-primary:active {
@@ -171,13 +173,6 @@ form .checkbox-row {
 form .checkbox-row input[type="checkbox"] {
     margin: 0;
 }
-form .actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--spacing-md);
-}
-
 
 /* --------- Basic elements --------- */
 
@@ -200,23 +195,11 @@ a:hover {
     color: var(--c-text-0);
 }
 
-a.subtle {
-    color: var(--c-text-3);
-}
-a.subtle:hover {
-    color: var(--c-text-2)
-}
-
 /* Paragraph/card/section */
 p {
     margin: var(--spacing-md) 0;
 }
 
-.card {
-    background-color: var(--c-bg-section);
-    border-radius: 16px;
-    padding: var(--spacing-md-lg);
-}
 
 /* Listing */
 dl {

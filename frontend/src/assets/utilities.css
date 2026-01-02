@@ -12,10 +12,54 @@
     justify-content: center;
 }
 
+.justify-end {
+    justify-content: end;
+}
+
 .align-center {
     align-items: center;
 }
 
 .no-deco {
     text-decoration: none !important;
+}
+
+.no-top {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+.button-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: end;
+    gap: var(--spacing-sm);
+}
+
+.gap-xs {
+    gap: var(--spacing-xs);
+}
+.gap-xs-sm {
+    gap: var(--spacing-xs-sm);
+}
+.gap-sm {
+    gap: var(--spacing-sm);
+}
+.gap-sm-md {
+    gap: var(--spacing-sm-md);
+}
+.gap-md {
+    gap: var(--spacing-md);
+}
+.gap-md-lg {
+    gap: var(--spacing-md-lg);
+}
+.gap-lg {
+    gap: var(--spacing-lg);
+}
+.gap-lg-xl {
+    gap: var(--spacing-lg-xl);
+}
+.gap-xl {
+    gap: var(--spacing-xl);
 }
