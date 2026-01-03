@@ -1,14 +1,15 @@
 from typing import List, Optional, Dict
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select, update
+from sqlalchemy import select, update, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, aliased
 from datetime import datetime
 from app import models, schemas
 from app.dependencies import get_db
 from app.integrations import tmdb
 from app.routers.auth import get_current_user
+from app.config import DEFAULT_MAX_QUERY_LIMIT
 
 router = APIRouter()
 
@@ -397,6 +398,131 @@ def build_title_out(
     return title_out
 
 
+# ---------- TITLE SEARCH LOGIC ----------
+
+def _base_title_query(user_id: int, utd):
+    stmt = (
+        select(models.Title, utd)
+        .outerjoin(
+            utd,
+            and_(
+                utd.title_id == models.Title.title_id,
+                utd.user_id == user_id,
+            )
+        ).where(utd.in_library == True)
+    )
+
+    return stmt
+
+
+def _apply_filters(stmt, utd, q: schemas.TitleQueryIn):
+
+    # TODO: setup a smarter search. get rid of special chars and split by space and just try to fit the sections to the name or original name
+
+    # TODO: setup remaining missing filters that are in the TitleQueryIn schema
+
+    if q.search:
+        stmt = stmt.where(models.Title.name.ilike(f"%{q.search}%"))
+
+    if q.title_type:
+        stmt = stmt.where(models.Title.type == q.title_type)
+
+    if q.is_favourite is not None:
+        stmt = stmt.where(utd.is_favourite == q.is_favourite)
+
+    if q.in_watchlist is not None:
+        stmt = stmt.where(utd.in_watchlist == q.in_watchlist)
+
+    if q.release_year_min:
+        stmt = stmt.where(func.extract("year", models.Title.release_date) >= q.release_year_min)
+
+    if q.release_year_max:
+        stmt = stmt.where(func.extract("year", models.Title.release_date) <= q.release_year_max)
+
+    if q.min_tmdb_rating:
+        stmt = stmt.where(models.Title.tmdb_vote_average >= q.min_tmdb_rating)
+
+    if q.min_imdb_rating:
+        stmt = stmt.where(models.Title.imdb_vote_average >= q.min_imdb_rating)
+
+    return stmt
+
+
+def _apply_sorting(stmt, q: schemas.TitleQueryIn):
+    sort_map = {
+        "tmdb_score": models.Title.tmdb_vote_average,
+        "imdb_score": models.Title.imdb_vote_average,
+        "popularity": models.Title.tmdb_vote_count,
+        "title_name": models.Title.name,
+        "runtime": models.Title.movie_runtime,
+        "release_date": models.Title.release_date,
+        "last_viewed_at": models.UserTitleDetails.last_viewed_at,
+    }
+
+    # TODO: runtime and release_date should add handling for tv cases
+
+    # TODO: setup default sort that has a system wide default, but the user can change via a setting.
+
+    col = sort_map.get(q.sort_by)
+    if col is not None:
+        stmt = stmt.order_by(col.desc() if q.sort_direction == "desc" else col.asc())
+
+    return stmt
+
+
+def _apply_pagination(stmt, q: schemas.TitleQueryIn):
+    page = q.page_number or 1
+    size = q.page_size or DEFAULT_MAX_QUERY_LIMIT
+    return stmt.limit(size).offset((page - 1) * size), page, size
+
+
+def _build_title_list_out(rows, total, page, size) -> schemas.TitleListOut:
+    titles = []
+
+    for title, user_details in rows:
+        out = schemas.CompactTitleOut.model_validate(
+            title,
+            from_attributes=True
+        )
+
+        if user_details:
+            out.user_details = schemas.CompactUserTitleDetailsOut.model_validate(
+                user_details,
+                from_attributes=True
+            )
+
+        titles.append(out)
+
+    return schemas.TitleListOut(
+        titles=titles,
+        page_number=page,
+        page_size=size,
+        total_items=total,
+        total_pages=(total + size - 1) // size
+    )
+
+
+async def run_title_search(
+    db,
+    user_id: int,
+    q: schemas.TitleQueryIn
+) -> schemas.TitleListOut:
+    
+    utd = aliased(models.UserTitleDetails)
+
+    base_stmt = _base_title_query(user_id, utd)
+    base_stmt = _apply_filters(base_stmt, utd, q)
+
+    count_stmt = select(func.count()).select_from(base_stmt.subquery())
+    total = (await db.execute(count_stmt)).scalar_one()
+
+    stmt = _apply_sorting(base_stmt, q)
+    stmt, page, size = _apply_pagination(stmt, q)
+
+    rows = (await db.execute(stmt)).all()
+    return _build_title_list_out(rows, total, page, size)
+
+
 # ---------- ROUTER ENDPOINTS ----------
 
 @router.post("/")
@@ -443,6 +569,14 @@ async def add_new_title_to_watchlist(
         "title_id": title_id,
         "in_watchlist": True,
     }
+
+@router.post("/search", response_model=schemas.TitleListOut)
+async def search_for_titles(
+    data: schemas.TitleQueryIn,
+    user: models.User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    return await run_title_search(db, user.user_id, data)
 
 
 @router.get("/{title_id}", response_model=schemas.TitleOut)

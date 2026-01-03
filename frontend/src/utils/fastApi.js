@@ -111,6 +111,11 @@ export const fastApi = {
             url: '/titles/',
             data
         }),
+        search: async (data) => fetchData({
+            method: 'post',
+            url: '/titles/search',
+            data
+        }),
         getById: async (title_id) => fetchData({
             method: 'get',
             url: `/titles/${title_id}`

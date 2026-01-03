@@ -1,7 +1,8 @@
 from typing import List, Optional
-from pydantic import BaseModel
-from app.models import TitleType
+from pydantic import BaseModel, Field
 from datetime import datetime, date
+from app.models import TitleType
+from app.config import DEFAULT_MAX_QUERY_LIMIT, ABSOLUTE_MAX_QUERY_LIMIT
 
 ####### Users and authentication #######
 
@@ -32,6 +33,70 @@ class PasswordUpdate(BaseModel):
 class TitleIn(BaseModel):
     tmdb_id: int
     title_type: TitleType
+
+class TitleQueryIn(BaseModel):
+    search: Optional[str] = None
+    title_type: Optional[str] = None
+    is_favourite: Optional[bool] = None
+    in_watchlist: Optional[bool] = None
+    watch_status: Optional[str] = Field(
+        None,
+        pattern="^(not_watched|partial|completed)$"
+    )
+    release_year_min: Optional[int] = None
+    release_year_max: Optional[int] = None
+    is_released: Optional[int] = None
+    genres_include: Optional[List[str]] = None
+    genres_exclude: Optional[List[str]] = None
+    min_tmdb_rating: Optional[int] = Field(None, ge=0, le=10)
+    min_imdb_rating: Optional[int] = Field(None, ge=0, le=10)
+    sort_by: Optional[str] = Field(
+        "default",
+        pattern="^(default|tmdb_score|imdb_score|popularity|title_name|runtime|release_date|last_viewed_at|random)$"
+    )
+    sort_direction: Optional[str] = Field(
+        "desc",
+        pattern="^(asc|desc)$"
+    )
+    page_number: Optional[int] = Field(1, ge=1)
+    page_size: Optional[int] = Field(
+        DEFAULT_MAX_QUERY_LIMIT, 
+        ge=1, 
+        le=ABSOLUTE_MAX_QUERY_LIMIT
+    )
+
+class CompactUserTitleDetailsOut(BaseModel):
+    is_favourite: bool
+    in_watchlist: bool
+    watch_count: int
+
+    chosen_poster_image_path: Optional[str] = None
+    chosen_backdrop_image_path: Optional[str] = None
+    chosen_logo_image_path: Optional[str] = None
+
+class CompactTitleOut(BaseModel):
+    title_id: int
+    type: TitleType
+    name: str
+    movie_runtime: Optional[int] = None
+    release_date: Optional[date] = None
+    tmdb_vote_average: Optional[float] = None
+    tmdb_vote_count: Optional[int] = None
+    imdb_vote_average: Optional[float] = None
+    imdb_vote_count: Optional[int] = None
+
+    default_poster_image_path: Optional[str] = None
+    default_backdrop_image_path: Optional[str] = None
+    default_logo_image_path: Optional[str] = None
+
+    user_details: Optional[CompactUserTitleDetailsOut] = None
+
+class TitleListOut(BaseModel):
+    titles: List[CompactTitleOut]
+    page_number: int
+    page_size: int
+    total_items: int
+    total_pages: int
 
 
 #### Title out stack ####
