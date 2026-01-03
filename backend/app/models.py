@@ -144,9 +144,9 @@ class UserTitleDetails(Base):
 
     user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), primary_key=True)
     title_id = Column(Integer, ForeignKey("titles.title_id", ondelete="CASCADE"), primary_key=True)
-    in_watchlist = Column(Boolean, default=False)
+    in_library = Column(Boolean, default=True)
     is_favourite = Column(Boolean, default=False)
-    watch_next = Column(Boolean, default=False)
+    in_watchlist = Column(Boolean, default=False)
     watch_count = Column(Integer, default=0)
     notes = Column(Text)
     chosen_poster_image_path = Column(String(255), ForeignKey("images.file_path"))

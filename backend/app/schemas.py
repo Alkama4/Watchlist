@@ -53,9 +53,9 @@ class UserSeasonDetailsOut(BaseModel):
         from_attributes = True
 
 class UserTitleDetailsOut(BaseModel):
-    in_watchlist: bool
+    in_library: bool
     is_favourite: bool
-    watch_next: bool
+    in_watchlist: bool
     watch_count: int
     notes: Optional[str]
     chosen_poster_image_path: Optional[str]

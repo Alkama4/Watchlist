@@ -485,8 +485,8 @@ async def update_title_details(
     return {"title_id": updated_title_id, "updated": True}
 
 
-@router.put("/{title_id}/watchlist")
-async def add_existing_title_to_watchlist(
+@router.put("/{title_id}/library")
+async def add_existing_title_to_library(
     title_id: int,
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -495,13 +495,13 @@ async def add_existing_title_to_watchlist(
         db,
         user.user_id,
         title_id,
-        in_watchlist=True
+        in_library=True
     )
-    return {"title_id": title_id, "in_watchlist": True}
+    return {"title_id": title_id, "in_library": True}
 
 
-@router.delete("/{title_id}/watchlist")
-async def remove_existing_title_from_watchlist(
+@router.delete("/{title_id}/library")
+async def remove_existing_title_from_library(
     title_id: int,
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -510,9 +510,9 @@ async def remove_existing_title_from_watchlist(
         db,
         user.user_id,
         title_id,
-        in_watchlist=False
+        in_library=False
     )
-    return {"title_id": title_id, "in_watchlist": False}
+    return {"title_id": title_id, "in_library": False}
 
 
 @router.put("/{title_id}/favourite")
@@ -526,9 +526,9 @@ async def add_title_to_favourites(
         user.user_id,
         title_id,
         is_favourite=True,
-        in_watchlist=True
+        in_library=True
     )
-    return {"title_id": title_id, "is_favourite": True, "in_watchlist": True}
+    return {"title_id": title_id, "is_favourite": True, "in_library": True}
 
 
 @router.delete("/{title_id}/favourite")
@@ -546,8 +546,8 @@ async def remove_title_from_favourites(
     return {"title_id": title_id, "is_favourite": False}
 
 
-@router.put("/{title_id}/watch-next")
-async def add_title_to_watch_next(
+@router.put("/{title_id}/watchlist")
+async def add_title_to_watchlist(
     title_id: int,
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -556,14 +556,14 @@ async def add_title_to_watch_next(
         db,
         user.user_id,
         title_id,
-        watch_next=True,
+        in_library=True,
         in_watchlist=True
     )
-    return {"title_id": title_id, "watch_next": True, "in_watchlist": True}
+    return {"title_id": title_id, "in_library": True, "in_watchlist": True}
 
 
-@router.delete("/{title_id}/watch-next")
-async def remove_title_from_watch_next(
+@router.delete("/{title_id}/watchlist")
+async def remove_title_from_watchlist(
     title_id: int,
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -572,6 +572,6 @@ async def remove_title_from_watch_next(
         db,
         user.user_id,
         title_id,
-        watch_next=False
+        watchlist=False
     )
-    return {"title_id": title_id, "watch_next": False}
+    return {"title_id": title_id, "watchlist": False}
