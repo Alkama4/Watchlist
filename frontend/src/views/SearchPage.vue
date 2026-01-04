@@ -2,6 +2,7 @@
 import { ref, watch } from 'vue';
 import { useSearchStore } from '@/stores/search';
 import { fastApi } from '@/utils/fastApi';
+import TitleCard from '@/components/TitleCard.vue';
 
 const searchStore = useSearchStore();
 
@@ -72,7 +73,9 @@ watch(
         <h3>Search results for {{ searchStore.query }}:</h3>
 
         <div v-for="title in searchResults?.titles" :key="title.id">
-            {{ title }}
+            <TitleCard
+                :title-info="title"
+            />
         </div>
     </div>
 </template>

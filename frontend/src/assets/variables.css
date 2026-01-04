@@ -83,6 +83,10 @@
     --spacing-lg: 32px;
     --spacing-lg-xl: 48px;
     --spacing-xl: 64px;
+
+    --border-radius-sm: 4px;
+    --border-radius-md: 8px;
+    --border-radius-lg: 16px;
 }
 
 
