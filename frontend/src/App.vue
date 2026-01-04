@@ -1,6 +1,16 @@
 <script setup>
 import { useRoute } from 'vue-router';
+import router from './router';
+import { useSearchStore } from './stores/search';
+
 const route = useRoute();
+const searchStore = useSearchStore();
+
+function onSearchFocus() {
+    if (router.currentRoute.value.name !== 'search') {
+        router.push({ name: 'Search' });
+    }
+}
 
 </script>
 
@@ -10,8 +20,13 @@ const route = useRoute();
             <router-link to="/" class="no-deco">
                 <h2 class="name">Watchlist</h2>
             </router-link>
-            <form role="search">
-                <input type="search" placeholder="Search for titles">
+            <form role="search" @submit.prevent>
+                <input 
+                    type="search" 
+                    placeholder="Search for titles"
+                    @focus="onSearchFocus"
+                    v-model="searchStore.query"
+                >
             </form>
             <div class="flex-row align-center">
                 <ul>

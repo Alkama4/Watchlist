@@ -8,6 +8,12 @@ const routes = [
         component: () => import('@/views/HomePage.vue'),
         meta: { requiresAuth: true }
     },
+        {
+        path: '/search',
+        name: 'Search',
+        component: () => import('@/views/SearchPage.vue'),
+        meta: { requiresAuth: true }
+    },
     {
         path: '/account',
         name: 'Account',
