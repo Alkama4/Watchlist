@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { useSearchStore } from '@/stores/search';
 import { fastApi } from '@/utils/fastApi';
 
@@ -25,12 +25,9 @@ watch(
     ],
     ([q]) => {
         search(q);
-    }
+    },
+    { immediate: true }
 );
-
-onMounted(() => {
-    search(searchStore.query);
-});
 </script>
 
 <template>
