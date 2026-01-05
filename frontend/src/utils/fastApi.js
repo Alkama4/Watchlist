@@ -113,6 +113,11 @@ export const fastApi = {
             url: '/titles/search',
             data
         }),
+        searchTMDB: async (data) => fetchData({
+            method: 'post',
+            url: '/titles/search/tmdb',
+            data
+        }),
         getById: async (title_id) => fetchData({
             method: 'get',
             url: `/titles/${title_id}`

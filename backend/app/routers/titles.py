@@ -650,7 +650,7 @@ async def search_for_titles(
 
 
 @router.post("/search/tmdb", response_model=schemas.TitleListOut)
-async def search_for_titles(
+async def search_for_titles_from_tmdb(
     data: schemas.TMDBTitleQueryIn
 ):
     return await run_and_process_tmdb_search(data)

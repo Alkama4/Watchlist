@@ -12,6 +12,10 @@ function onSearchFocus() {
     }
 }
 
+function onSearchSubmit() {
+    
+}
+
 </script>
 
 <template>
@@ -20,7 +24,7 @@ function onSearchFocus() {
             <router-link to="/" class="no-deco">
                 <h2 class="name">Watchlist</h2>
             </router-link>
-            <form role="search" @submit.prevent>
+            <form role="search" @submit.prevent="onSearchSubmit">
                 <input 
                     type="search" 
                     placeholder="Search for titles"
