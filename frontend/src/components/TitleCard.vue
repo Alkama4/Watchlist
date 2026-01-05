@@ -25,7 +25,7 @@ defineProps({
             <div class="detail-row">
                 {{ titleInfo?.tmdb_vote_average }}
                 &bull;
-                {{ timeFormatters.timestampToYear(titleInfo?.movie_release_date) }}
+                {{ timeFormatters.timestampToYear(titleInfo?.release_date) }}
             </div>
             <div class="detail-row">
                 <span>{{ timeFormatters.minutesToHrAndMin(titleInfo?.movie_runtime) }}</span>

@@ -55,7 +55,7 @@ async def store_movie(db: AsyncSession, tmdb_data: dict) -> int:
         movie_runtime=tmdb_data["runtime"],
         movie_revenue=tmdb_data["revenue"],
         movie_budget=tmdb_data["budget"],
-        movie_release_date=release_date,
+        release_date=release_date,
         original_language=tmdb_data["original_language"],
         origin_country=",".join(tmdb_data["origin_country"]),
         homepage=tmdb_data["homepage"]
@@ -71,7 +71,7 @@ async def store_movie(db: AsyncSession, tmdb_data: dict) -> int:
             "movie_runtime": tmdb_data["runtime"],
             "movie_revenue": tmdb_data["revenue"],
             "movie_budget": tmdb_data["budget"],
-            "movie_release_date": release_date,
+            "release_date": release_date,
             "original_language": tmdb_data["original_language"],
             "origin_country": ",".join(tmdb_data["origin_country"]),
             "homepage": tmdb_data["homepage"]
@@ -108,6 +108,9 @@ async def store_movie(db: AsyncSession, tmdb_data: dict) -> int:
 
 
 async def store_tv(db: AsyncSession, tmdb_data: dict) -> int:
+    release_date_str = tmdb_data.get("first_air_date")
+    release_date = datetime.strptime(release_date_str, "%Y-%m-%d").date() if release_date_str else None
+
     # Insert or upsert the title without default images
     stmt = insert(models.Title).values(
         tmdb_id=tmdb_data["id"],
@@ -119,6 +122,7 @@ async def store_tv(db: AsyncSession, tmdb_data: dict) -> int:
         tmdb_vote_average=tmdb_data["vote_average"],
         tmdb_vote_count=tmdb_data["vote_count"],
         overview=tmdb_data["overview"],
+        release_date=release_date,
         original_language=tmdb_data["original_language"],
         origin_country=",".join(tmdb_data["origin_country"]),
         homepage=tmdb_data["homepage"]
@@ -131,6 +135,7 @@ async def store_tv(db: AsyncSession, tmdb_data: dict) -> int:
             "tmdb_vote_average": tmdb_data["vote_average"],
             "tmdb_vote_count": tmdb_data["vote_count"],
             "overview": tmdb_data["overview"],
+            "release_date": release_date,
             "original_language": tmdb_data["original_language"],
             "origin_country": ",".join(tmdb_data["origin_country"]),
             "homepage": tmdb_data["homepage"]
@@ -434,10 +439,10 @@ def _apply_filters(stmt, utd, q: schemas.TitleQueryIn):
         stmt = stmt.where(utd.in_watchlist == q.in_watchlist)
 
     if q.release_year_min:
-        stmt = stmt.where(func.extract("year", models.Title.movie_release_date) >= q.release_year_min)
+        stmt = stmt.where(func.extract("year", models.Title.release_date) >= q.release_year_min)
 
     if q.release_year_max:
-        stmt = stmt.where(func.extract("year", models.Title.movie_release_date) <= q.release_year_max)
+        stmt = stmt.where(func.extract("year", models.Title.release_date) <= q.release_year_max)
 
     if q.min_tmdb_rating:
         stmt = stmt.where(models.Title.tmdb_vote_average >= q.min_tmdb_rating)
@@ -455,7 +460,7 @@ def _apply_sorting(stmt, q: schemas.TitleQueryIn):
         "popularity": models.Title.tmdb_vote_count,
         "title_name": models.Title.name,
         "runtime": models.Title.movie_runtime,
-        "release_date": models.Title.movie_release_date,
+        "release_date": models.Title.release_date,
         "last_viewed_at": models.UserTitleDetails.last_viewed_at,
     }
 
@@ -488,7 +493,6 @@ def _add_subqueries(stmt):
         season_count_subq.label("show_season_count"),
         episode_count_subq.label("show_episode_count")
     )
-
 
 
 def _apply_pagination(stmt, q: schemas.TitleQueryIn):

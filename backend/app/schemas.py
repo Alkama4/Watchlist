@@ -78,8 +78,8 @@ class CompactTitleOut(BaseModel):
     title_id: int
     type: TitleType
     name: str
+    release_date: Optional[date] = None
     movie_runtime: Optional[int] = None
-    movie_release_date: Optional[date] = None
     show_season_count: Optional[int] = None
     show_episode_count: Optional[int] = None
     tmdb_vote_average: Optional[float] = None
@@ -184,7 +184,7 @@ class TitleOut(BaseModel):
     movie_runtime: Optional[int]
     movie_revenue: Optional[int]
     movie_budget: Optional[int]
-    movie_release_date: Optional[date]
+    release_date: Optional[date]
     original_language: Optional[str]
     origin_country: Optional[str]
     awards: Optional[str]
