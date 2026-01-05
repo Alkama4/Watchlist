@@ -2,17 +2,59 @@
 import { resolveImagePath } from '@/utils/imagePath';
 import { timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg'
+import { useSearchStore } from '@/stores/search';
+import { fastApi } from '@/utils/fastApi';
+import { ref } from 'vue';
 
-defineProps({
+const searchStore = useSearchStore();
+
+const waiting = ref(null)
+
+async function addTitle() {
+    waiting.value = true;
+
+    if (titleInfo.title_id) {
+        await fastApi.titles.library.put(titleInfo.title_id)
+    } else {
+        // Brand new title so need to use tmdb_id
+        const response = await fastApi.titles.post({
+            tmdb_id: titleInfo.tmdb_id,
+            title_type: titleInfo.type
+        })
+
+        // Need to init some data
+        titleInfo.title_id = response.title_id;
+        titleInfo.user_details = {
+            in_library: response.in_library,
+            is_favourite: false,
+            in_watchlist: false,
+            watch_count: 0,
+        }
+    }
+
+    titleInfo.user_details.in_library = true
+
+    waiting.value = false;
+}
+
+async function removeTitle() {
+    waiting.value = true;
+    await fastApi.titles.library.delete(titleInfo.title_id)
+    titleInfo.user_details.in_library = false;
+    waiting.value = false;
+}
+
+const { titleInfo } = defineProps({
     titleInfo: {
         type: Object,
         required: true,
     }
 })
+
 </script>
 
 <template>
-    <router-link :to="`/title/${titleInfo.title_id}`">
+    <router-link :to="`/title/${titleInfo.title_id}`" class="title-card">
         <img 
             :src="resolveImagePath(
                 '800',
@@ -21,11 +63,37 @@ defineProps({
             )"
             :alt="`${titleInfo?.type === 'tv' ? 'TV show' : 'Movie'} poster: ${titleInfo?.name}`"
         >
+    
+        <div class="button-row" v-if="searchStore.tmdbFallback" @click.prevent>
+            <button 
+                v-if="!titleInfo?.user_details?.in_library" 
+                class="btn-primary"
+                @click="addTitle(titleInfo.title_id, titleInfo.tmdb_id, titleInfo.type)"
+            >
+                <i class="bx bx-plus"></i>
+                Add
+            </button>
+    
+            <button v-else @click="removeTitle(titleInfo.title_id)">
+                <i class="bx bx-trash"></i>
+                Remove
+            </button>
+
+            <a 
+                class="btn no-deco"
+                :href="`https://www.themoviedb.org/${titleInfo?.type}/${titleInfo?.tmdb_id}`"
+                target="_blank"
+                @click.stop
+            >
+                <i class="bx bx-link-external"></i>
+            </a>
+        </div>
+
         <div class="details">
             <h5>{{ titleInfo?.name }}</h5>
             <div class="detail-row">
                 <Tmdb/>
-                {{ titleInfo?.tmdb_vote_average }}
+                {{ titleInfo?.tmdb_vote_average?.toFixed(1) }}
                 &bull;
                 {{ timeFormatters.timestampToYear(titleInfo?.release_date) }}
             </div>
@@ -37,6 +105,7 @@ defineProps({
                 <template v-else>{{ timeFormatters.minutesToHrAndMin(titleInfo?.movie_runtime) }}</template>
             </div>
         </div>
+
         <div v-if="titleInfo?.user_details?.watch_count" class="watch-count-marker">
             <template v-if="titleInfo?.user_details?.watch_count >= 2">
                 {{ titleInfo?.user_details?.watch_count }}
@@ -48,7 +117,7 @@ defineProps({
 
 
 <style scoped>
-a {
+a.title-card {
     width: 200px;
     display: flex;
     flex-direction: column;
@@ -60,6 +129,18 @@ img {
     border-radius: var(--border-radius-md);
     aspect-ratio: 2/3;
     object-fit: cover;
+}
+
+.button-row {
+    margin-top: var(--spacing-sm);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--spacing-sm);
+}
+.button-row a {
+    padding: var(--spacing-sm);
+    width: 32px;
+    box-sizing: border-box;
 }
 
 .details {

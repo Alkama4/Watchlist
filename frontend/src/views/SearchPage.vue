@@ -3,6 +3,7 @@ import { ref, watch } from 'vue';
 import { useSearchStore } from '@/stores/search';
 import { fastApi } from '@/utils/fastApi';
 import TitleCard from '@/components/TitleCard.vue';
+import LoadingIndicator from '@/components/LoadingIndicator.vue';
 
 const searchStore = useSearchStore();
 
@@ -11,33 +12,47 @@ const sp = ref({
 });
 
 const searchResults = ref({});
+const loadingTitles = ref(false)
 
 async function search() {
-    if (searchStore.tmdbFallback) {
-        searchResults.value = await fastApi.titles.searchTMDB({
-            search: searchStore.query,
-        });
-    } else {
-        searchResults.value = await fastApi.titles.search({
-            search: searchStore.query,
-            title_type: sp.value.titleType
-        });
+    loadingTitles.value = true;
+    try {
+        if (searchStore.tmdbFallback) {
+            searchResults.value = await fastApi.titles.searchTMDB({
+                search: searchStore.query,
+            });
+        } else {
+            searchResults.value = await fastApi.titles.search({
+                search: searchStore.query,
+                title_type: sp.value.titleType
+            });
+        }
+    } finally {
+        loadingTitles.value = false;
     }
 }
 
 watch(
     [
         () => searchStore.query,
-        () => searchStore.tmdbFallback,
         () => sp.value.titleType
     ],
-    ([query, tmdbFallback]) => {
-        if (tmdbFallback) return;
+    () => {
+        if (searchStore.tmdbFallback) return;
         search();
     },
     { immediate: true }
 );
 
+watch(
+    () => searchStore.tmdbFallback,
+    () => {
+        searchResults.value = {
+            titles: []
+        };
+        search();
+    }
+)
 </script>
 
 <template>
@@ -80,7 +95,7 @@ watch(
                         type="checkbox"
                         v-model="searchStore.tmdbFallback"
                     />
-                    Fallback to TMDB
+                    "Add titles" mode
                 </label>
             </div>
         </form>
@@ -95,10 +110,11 @@ watch(
             />
         </div>
 
+        <LoadingIndicator v-if="loadingTitles"/>
+
         <div
-            v-if="
+            v-else-if="
                 searchResults?.titles?.length == 0 
-                && searchStore.query.length != 0
             "
             class="card results-not-found" 
         >

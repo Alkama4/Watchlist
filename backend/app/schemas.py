@@ -70,6 +70,7 @@ class TitleQueryIn(BaseModel):
     )
 
 class CompactUserTitleDetailsOut(BaseModel):
+    in_library: bool
     is_favourite: bool
     in_watchlist: bool
     watch_count: int
@@ -79,7 +80,8 @@ class CompactUserTitleDetailsOut(BaseModel):
     chosen_logo_image_path: Optional[str] = None
 
 class CompactTitleOut(BaseModel):
-    title_id: int
+    title_id: Optional[int] = None
+    tmdb_id: Optional[int] = None
     type: TitleType
     name: str
     release_date: Optional[date] = None

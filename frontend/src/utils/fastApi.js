@@ -128,14 +128,14 @@ export const fastApi = {
             data
         }),
 
-        watchlist: {
+        library: {
             put: async (title_id) => fetchData({
                 method: 'put',
-                url: `/titles/${title_id}/watchlist`
+                url: `/titles/${title_id}/library`
             }),
             delete: async (title_id) => fetchData({
                 method: 'delete',
-                url: `/titles/${title_id}/watchlist`
+                url: `/titles/${title_id}/library`
             })
         },
 
@@ -150,14 +150,14 @@ export const fastApi = {
             })
         },
         
-        watchNext: {
+        watchlist: {
             put: async (title_id) => fetchData({
                 method: 'put',
-                url: `/titles/${title_id}/watch-next`
+                url: `/titles/${title_id}/watchlist`
             }),
             delete: async (title_id) => fetchData({
                 method: 'delete',
-                url: `/titles/${title_id}/watch-next`
+                url: `/titles/${title_id}/watchlist`
             })
         }
     },

@@ -1,6 +1,6 @@
 from typing import List, Optional, Dict
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select, update, func, and_
+from sqlalchemy import select, tuple_, update, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import selectinload, aliased
@@ -547,9 +547,41 @@ async def run_title_search(
     return _build_title_list_out(rows, total, page, size)
 
 
+async def fetch_existing_titles_with_user(
+    db: AsyncSession,
+    user_id: int,
+    tmdb_items: list[tuple[int, models.TitleType]],
+):
+    utd = aliased(models.UserTitleDetails)
+
+    stmt = (
+        select(models.Title, utd)
+        .outerjoin(
+            utd,
+            and_(
+                utd.title_id == models.Title.title_id,
+                utd.user_id == user_id,
+            )
+        )
+        .where(
+            tuple_(models.Title.tmdb_id, models.Title.type).in_(tmdb_items)
+        )
+    )
+
+    rows = (await db.execute(stmt)).all()
+
+    return {
+        (title.tmdb_id, title.type): (title, user_details)
+        for title, user_details in rows
+    }
+
+
 async def run_and_process_tmdb_search(
-    data: schemas.TMDBTitleQueryIn
+    db: AsyncSession,
+    user_id: int,
+    data: schemas.TMDBTitleQueryIn,
 ) -> schemas.TitleListOut:
+    
     response = await tmdb.search_multi(
         query=data.search,
         page=data.page
@@ -557,31 +589,40 @@ async def run_and_process_tmdb_search(
 
     compact_titles = []
 
-    for r in response.get("results", []):
-        media_type = r.get("media_type")
-        if media_type not in ("movie", "tv"):
+    tmdb_keys = [
+        (r["id"], models.TitleType[r["media_type"]])
+        for r in response["results"]
+        if r.get("media_type") in ("movie", "tv")
+    ]
+
+    existing_map = await fetch_existing_titles_with_user(
+        db,
+        user_id,
+        tmdb_keys,
+    )
+
+    for r in response["results"]:
+        if r.get("media_type") not in ("movie", "tv"):
             continue
 
+        key = (r["id"], models.TitleType[r["media_type"]])
+        title, utd = existing_map.get(key, (None, None))
+
         compact_titles.append({
-            "title_id": r.get("id"),
-            "type": media_type,
+            "title_id": title.title_id if title else None,
+            "tmdb_id": r["id"],
+            "type": r["media_type"],
             "name": r.get("title") or r.get("name"),
-            "release_date": (
-                date.fromisoformat(r.get("release_date") or r.get("first_air_date"))
-                if (r.get("release_date") or r.get("first_air_date"))
-                else None
-            ),
-            "movie_runtime": None,
-            "show_season_count": None,
-            "show_episode_count": None,
             "tmdb_vote_average": r.get("vote_average"),
             "tmdb_vote_count": r.get("vote_count"),
-            "imdb_vote_average": None,
-            "imdb_vote_count": None,
             "default_poster_image_path": r.get("poster_path"),
             "default_backdrop_image_path": r.get("backdrop_path"),
-            "default_logo_image_path": None,
-            "user_details": None
+            "user_details": (
+                schemas.CompactUserTitleDetailsOut.model_validate(
+                    utd, from_attributes=True
+                )
+                if utd else None
+            ),
         })
 
     return {
@@ -632,12 +673,12 @@ async def add_new_title_to_watchlist(
         db,
         user.user_id,
         title_id,
-        in_watchlist=True
+        in_library=True
     )
 
     return {
         "title_id": title_id,
-        "in_watchlist": True,
+        "in_library": True,
     }
 
 @router.post("/search", response_model=schemas.TitleListOut)
@@ -651,9 +692,11 @@ async def search_for_titles(
 
 @router.post("/search/tmdb", response_model=schemas.TitleListOut)
 async def search_for_titles_from_tmdb(
-    data: schemas.TMDBTitleQueryIn
+    data: schemas.TMDBTitleQueryIn,
+    user: models.User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
-    return await run_and_process_tmdb_search(data)
+    return await run_and_process_tmdb_search(db, user.user_id, data)
 
 
 @router.get("/{title_id}", response_model=schemas.TitleOut)
