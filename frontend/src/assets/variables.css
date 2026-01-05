@@ -94,7 +94,7 @@
 :root {
     --font-size-base: 1rem;
 
-    --fs-multiplier: 1.125;
+    --fs-multiplier: 1.2;
 
     --fs-neg-2: calc(var(--fs-neg-1) / var(--fs-multiplier));
     --fs-neg-1: calc(var(--fs-0) / var(--fs-multiplier));
