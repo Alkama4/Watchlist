@@ -72,10 +72,20 @@ watch(
 
         <h3>Search results for {{ searchStore.query }}:</h3>
 
-        <div v-for="title in searchResults?.titles" :key="title.id">
+        <div class="title-card-grid">
             <TitleCard
+                v-for="title in searchResults?.titles"
+                :key="title.id"
                 :title-info="title"
             />
         </div>
     </div>
 </template>
+
+<style scoped>
+.title-card-grid {
+    display: flex;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+}
+</style>

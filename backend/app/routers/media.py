@@ -51,6 +51,10 @@ async def download_original(image_path: str, local_path: str):
 
 @router.get("/image/{size}/{image_path:path}")
 async def get_image(size: str, image_path: str):
+    """
+    Valid size values: `400`, `800`, `1600` & `original`. If value doesn't match it will be rounded up.
+    """
+
     # Determine bucket
     if size == "original":
         bucket = None
