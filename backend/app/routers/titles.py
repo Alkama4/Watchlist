@@ -55,7 +55,7 @@ async def store_movie(db: AsyncSession, tmdb_data: dict) -> int:
         movie_runtime=tmdb_data["runtime"],
         movie_revenue=tmdb_data["revenue"],
         movie_budget=tmdb_data["budget"],
-        release_date=release_date,
+        movie_release_date=release_date,
         original_language=tmdb_data["original_language"],
         origin_country=",".join(tmdb_data["origin_country"]),
         homepage=tmdb_data["homepage"]
@@ -470,6 +470,27 @@ def _apply_sorting(stmt, q: schemas.TitleQueryIn):
     return stmt
 
 
+def _add_subqueries(stmt):
+    season_count_subq = (
+        select(func.count(models.Season.season_id))
+        .where(models.Season.title_id == models.Title.title_id)
+        .scalar_subquery()
+    )
+
+    episode_count_subq = (
+        select(func.count(models.Episode.episode_id))
+        .join(models.Season, models.Season.season_id == models.Episode.season_id)
+        .where(models.Season.title_id == models.Title.title_id)
+        .scalar_subquery()
+    )
+
+    return stmt.add_columns(
+        season_count_subq.label("show_season_count"),
+        episode_count_subq.label("show_episode_count")
+    )
+
+
+
 def _apply_pagination(stmt, q: schemas.TitleQueryIn):
     page = q.page_number or 1
     size = q.page_size or DEFAULT_MAX_QUERY_LIMIT
@@ -479,16 +500,14 @@ def _apply_pagination(stmt, q: schemas.TitleQueryIn):
 def _build_title_list_out(rows, total, page, size) -> schemas.TitleListOut:
     titles = []
 
-    for title, user_details in rows:
-        out = schemas.CompactTitleOut.model_validate(
-            title,
-            from_attributes=True
-        )
+    for title, user_details, season_count, episode_count in rows:
+        out = schemas.CompactTitleOut.model_validate(title, from_attributes=True)
+        out.show_season_count = season_count
+        out.show_episode_count = episode_count
 
         if user_details:
             out.user_details = schemas.CompactUserTitleDetailsOut.model_validate(
-                user_details,
-                from_attributes=True
+                user_details, from_attributes=True
             )
 
         titles.append(out)
@@ -517,6 +536,7 @@ async def run_title_search(
     total = (await db.execute(count_stmt)).scalar_one()
 
     stmt = _apply_sorting(base_stmt, q)
+    stmt = _add_subqueries(stmt)
     stmt, page, size = _apply_pagination(stmt, q)
 
     rows = (await db.execute(stmt)).all()

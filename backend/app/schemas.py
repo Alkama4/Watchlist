@@ -80,6 +80,8 @@ class CompactTitleOut(BaseModel):
     name: str
     movie_runtime: Optional[int] = None
     movie_release_date: Optional[date] = None
+    show_season_count: Optional[int] = None
+    show_episode_count: Optional[int] = None
     tmdb_vote_average: Optional[float] = None
     tmdb_vote_count: Optional[int] = None
     imdb_vote_average: Optional[float] = None
