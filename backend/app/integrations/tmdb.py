@@ -55,3 +55,13 @@ async def fetch_tv_season(tmdb_id: int, season_number: int) -> dict:
             "language": "en-US"
         }
     )
+
+
+async def search_multi(query: str, page: int):
+    return await tmdb_get(
+        f"/search/multi",
+        params={
+            "query": query,
+            "page": page
+        }
+    )

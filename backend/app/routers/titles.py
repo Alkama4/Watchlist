@@ -4,7 +4,7 @@ from sqlalchemy import select, update, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import selectinload, aliased
-from datetime import datetime
+from datetime import datetime, date
 from app import models, schemas
 from app.dependencies import get_db
 from app.integrations import tmdb
@@ -547,6 +547,52 @@ async def run_title_search(
     return _build_title_list_out(rows, total, page, size)
 
 
+async def run_and_process_tmdb_search(
+    data: schemas.TMDBTitleQueryIn
+) -> schemas.TitleListOut:
+    response = await tmdb.search_multi(
+        query=data.search,
+        page=data.page
+    )
+
+    compact_titles = []
+
+    for r in response.get("results", []):
+        media_type = r.get("media_type")
+        if media_type not in ("movie", "tv"):
+            continue
+
+        compact_titles.append({
+            "title_id": r.get("id"),
+            "type": media_type,
+            "name": r.get("title") or r.get("name"),
+            "release_date": (
+                date.fromisoformat(r.get("release_date") or r.get("first_air_date"))
+                if (r.get("release_date") or r.get("first_air_date"))
+                else None
+            ),
+            "movie_runtime": None,
+            "show_season_count": None,
+            "show_episode_count": None,
+            "tmdb_vote_average": r.get("vote_average"),
+            "tmdb_vote_count": r.get("vote_count"),
+            "imdb_vote_average": None,
+            "imdb_vote_count": None,
+            "default_poster_image_path": r.get("poster_path"),
+            "default_backdrop_image_path": r.get("backdrop_path"),
+            "default_logo_image_path": None,
+            "user_details": None
+        })
+
+    return {
+        "titles": compact_titles,
+        "page_number": response.get("page"),
+        "page_size": 20,
+        "total_items": response.get("total_results"),
+        "total_pages": response.get("total_pages")
+    }
+
+
 # ---------- ROUTER ENDPOINTS ----------
 
 @router.post("/")
@@ -601,6 +647,13 @@ async def search_for_titles(
     db: AsyncSession = Depends(get_db),
 ):
     return await run_title_search(db, user.user_id, data)
+
+
+@router.post("/search/tmdb", response_model=schemas.TitleListOut)
+async def search_for_titles(
+    data: schemas.TMDBTitleQueryIn
+):
+    return await run_and_process_tmdb_search(data)
 
 
 @router.get("/{title_id}", response_model=schemas.TitleOut)
