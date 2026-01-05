@@ -10,6 +10,6 @@ export const timeFormatters = {
         return `${hrs}hr ${mins}min`;
     },
     timestampToYear: (timestamp) => {
-        return new Date(timestamp).getFullYear();
+        return timestamp ? new Date(timestamp).getFullYear() : '-';
     }
 };

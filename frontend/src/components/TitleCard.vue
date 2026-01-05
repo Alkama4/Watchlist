@@ -54,7 +54,11 @@ const { titleInfo } = defineProps({
 </script>
 
 <template>
-    <router-link :to="`/title/${titleInfo.title_id}`" class="title-card">
+    <component 
+        :is="titleInfo.title_id ? 'router-link' : 'div'"
+        :to="titleInfo.title_id ? `/title/${titleInfo.title_id}` : null"
+        class="title-card"
+    >
         <img 
             :src="resolveImagePath(
                 '800',
@@ -97,12 +101,16 @@ const { titleInfo } = defineProps({
                 &bull;
                 {{ timeFormatters.timestampToYear(titleInfo?.release_date) }}
             </div>
-            <div class="detail-row">
+
+            <div v-if="!searchStore.tmdbFallback" class="detail-row">
                 <template v-if="titleInfo?.type === 'tv'">
                     {{ titleInfo?.show_season_count }} seasons,
                     {{ titleInfo?.show_episode_count }} episodes
                 </template>
                 <template v-else>{{ timeFormatters.minutesToHrAndMin(titleInfo?.movie_runtime) }}</template>
+            </div>
+            <div v-else class="detail-row">
+                {{ titleInfo?.type == 'tv' ? 'TV' : 'Movie' }}
             </div>
         </div>
 
@@ -112,12 +120,12 @@ const { titleInfo } = defineProps({
             </template>
             <i v-else class="bx bx-check"></i>
         </div>
-    </router-link>
+    </component>
 </template>
 
 
 <style scoped>
-a.title-card {
+.title-card {
     width: 200px;
     display: flex;
     flex-direction: column;
