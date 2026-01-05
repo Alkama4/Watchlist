@@ -61,7 +61,7 @@ class Title(Base):
     movie_runtime = Column(Integer)
     movie_revenue = Column(BigInteger)
     movie_budget = Column(BigInteger)
-    release_date = Column(Date)
+    movie_release_date = Column(Date)
     original_language = Column(String(64))
     origin_country = Column(String(64))
     awards = Column(String(255))

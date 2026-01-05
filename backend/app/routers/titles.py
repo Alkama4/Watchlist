@@ -71,7 +71,7 @@ async def store_movie(db: AsyncSession, tmdb_data: dict) -> int:
             "movie_runtime": tmdb_data["runtime"],
             "movie_revenue": tmdb_data["revenue"],
             "movie_budget": tmdb_data["budget"],
-            "release_date": release_date,
+            "movie_release_date": release_date,
             "original_language": tmdb_data["original_language"],
             "origin_country": ",".join(tmdb_data["origin_country"]),
             "homepage": tmdb_data["homepage"]
@@ -434,10 +434,10 @@ def _apply_filters(stmt, utd, q: schemas.TitleQueryIn):
         stmt = stmt.where(utd.in_watchlist == q.in_watchlist)
 
     if q.release_year_min:
-        stmt = stmt.where(func.extract("year", models.Title.release_date) >= q.release_year_min)
+        stmt = stmt.where(func.extract("year", models.Title.movie_release_date) >= q.release_year_min)
 
     if q.release_year_max:
-        stmt = stmt.where(func.extract("year", models.Title.release_date) <= q.release_year_max)
+        stmt = stmt.where(func.extract("year", models.Title.movie_release_date) <= q.release_year_max)
 
     if q.min_tmdb_rating:
         stmt = stmt.where(models.Title.tmdb_vote_average >= q.min_tmdb_rating)
@@ -455,7 +455,7 @@ def _apply_sorting(stmt, q: schemas.TitleQueryIn):
         "popularity": models.Title.tmdb_vote_count,
         "title_name": models.Title.name,
         "runtime": models.Title.movie_runtime,
-        "release_date": models.Title.release_date,
+        "release_date": models.Title.movie_release_date,
         "last_viewed_at": models.UserTitleDetails.last_viewed_at,
     }
 
