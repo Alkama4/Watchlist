@@ -49,10 +49,16 @@ watch(
     () => searchStore.tmdbFallback,
     () => {
         searchResults.value = {
-            titles: []
+            titles: [],
+            page_number: 1,
+            page_size: 0,
+            total_items: 0,
+            total_pages: 1
         };
-        search();
-    }
+        if (searchStore.query)
+            search();
+    },
+    { immediate: true }
 )
 </script>
 
