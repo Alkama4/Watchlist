@@ -5,6 +5,7 @@ import Tmdb from '@/assets/icons/tmdb.svg'
 import { useSearchStore } from '@/stores/search';
 import { fastApi } from '@/utils/fastApi';
 import { ref } from 'vue';
+import LoadingButton from './LoadingButton.vue';
 
 const searchStore = useSearchStore();
 
@@ -69,19 +70,20 @@ const { titleInfo } = defineProps({
         >
     
         <div class="button-row" v-if="searchStore.tmdbFallback" @click.prevent>
-            <button 
+            <LoadingButton 
                 v-if="!titleInfo?.user_details?.in_library" 
                 class="btn-primary"
+                :loading="waiting"
                 @click="addTitle(titleInfo.title_id, titleInfo.tmdb_id, titleInfo.type)"
             >
                 <i class="bx bx-plus"></i>
                 Add
-            </button>
+            </LoadingButton>
     
-            <button v-else @click="removeTitle(titleInfo.title_id)">
+            <LoadingButton v-else :loading="waiting" @click="removeTitle(titleInfo.title_id)">
                 <i class="bx bx-trash"></i>
                 Remove
-            </button>
+            </LoadingButton>
 
             <a 
                 class="btn no-deco"

@@ -4,6 +4,7 @@ import { useSearchStore } from '@/stores/search';
 import { fastApi } from '@/utils/fastApi';
 import TitleCard from '@/components/TitleCard.vue';
 import LoadingIndicator from '@/components/LoadingIndicator.vue';
+import LoadingButton from '@/components/LoadingButton.vue';
 
 const searchStore = useSearchStore();
 
