@@ -4,12 +4,13 @@ import { useSearchStore } from '@/stores/search';
 import { fastApi } from '@/utils/fastApi';
 import TitleCard from '@/components/TitleCard.vue';
 import LoadingIndicator from '@/components/LoadingIndicator.vue';
-import LoadingButton from '@/components/LoadingButton.vue';
 
 const searchStore = useSearchStore();
 
 const sp = ref({
-    titleType: null,
+    title_type: null,
+    sort_by: 'default',
+    sort_direction: 'desc',
 });
 
 const searchResults = ref({});
@@ -25,7 +26,9 @@ async function search() {
         } else {
             searchResults.value = await fastApi.titles.search({
                 query: searchStore.query,
-                title_type: sp.value.titleType
+                title_type: sp.value.title_type,
+                sort_by: sp.value.sort_by,
+                sort_direction: sp.value.sort_direction,
             });
         }
     } finally {
@@ -36,13 +39,13 @@ async function search() {
 watch(
     [
         () => searchStore.query,
-        () => sp.value.titleType
+        () => sp.value,
     ],
     () => {
         if (searchStore.tmdbFallback) return;
         search();
     },
-    { immediate: true }
+    { immediate: true, deep: true }
 );
 
 watch(
@@ -65,45 +68,47 @@ watch(
 <template>
     <div>
         <h1>Search</h1>
-        <button @click="search">Search</button>
-
         <form @submit.prevent>
-            <div class="checkbox-row"><label>
-                <input
-                    type="radio"
-                    value="tv"
-                    v-model="sp.titleType"
-                    :disabled="searchStore.tmdbFallback"
-                />
-                TV
-            </label></div>
-            <div class="checkbox-row"><label>
-                <input
-                    type="radio"
-                    value="movie"
-                    v-model="sp.titleType"
-                    :disabled="searchStore.tmdbFallback"
-                />
-                Movie
-            </label></div>
-            <div class="checkbox-row"><label>
-                <input
-                    type="radio"
-                    :value="null"
-                    v-model="sp.titleType"
-                    :disabled="searchStore.tmdbFallback"
-                />
-                All
-            </label></div>
+            <label for="typeFilter">Type filter</label>
+            <select id="typeFilter" v-model="sp.title_type" :disabled="searchStore.tmdbFallback">
+                <option :value="null" selected>All</option>
+                <option value="movie">Movie</option>
+                <option value="tv">TV</option>
+            </select>
 
-            <div class="checkbox-row">
-                <label>
-                    <input
-                        type="checkbox"
-                        v-model="searchStore.tmdbFallback"
-                    />
-                    "Add titles" mode
-                </label>
+            <label for="sortBy">Type filter</label>
+            <select
+                id="sortBy"
+                v-model="sp.sort_by"
+                :disabled="searchStore.tmdbFallback"
+            >
+                <option value="default" selected>Default</option>
+                <option value="tmdb_score">TMDB</option>
+                <option value="imdb_score">IMDB</option>
+                <option value="popularity">Popularity</option>
+                <option value="title_name">Title name</option>
+                <option value="runtime">Runtime</option>
+                <option value="release_date">Release date</option>
+                <option value="last_viewed_at">Last viewed</option>
+                <option value="random">Random</option>
+            </select>
+
+            <label for="sortDirection">Type filter</label>
+            <select
+                id="sortDirection"
+                v-model="sp.sort_direction"
+                :disabled="searchStore.tmdbFallback"
+            >
+                <option value="desc" selected>Descending</option>
+                <option value="asc">Ascending</option>
+            </select>
+            
+            <div class="checkbox-row card">
+                <input
+                    type="checkbox"
+                    v-model="searchStore.tmdbFallback"
+                />
+                <label>Add titles from TMDB</label>
             </div>
         </form>
 
