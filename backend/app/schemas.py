@@ -35,11 +35,11 @@ class TitleIn(BaseModel):
     title_type: TitleType
 
 class TMDBTitleQueryIn(BaseModel):
-    search: str
+    query: str
     page: Optional[int] = Field(1, ge=1)
 
 class TitleQueryIn(BaseModel):
-    search: Optional[str] = None
+    query: Optional[str] = None
     title_type: Optional[str] = None
     is_favourite: Optional[bool] = None
     in_watchlist: Optional[bool] = None

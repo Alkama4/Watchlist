@@ -426,8 +426,8 @@ def _apply_filters(stmt, utd, q: schemas.TitleQueryIn):
 
     # TODO: setup remaining missing filters that are in the TitleQueryIn schema
 
-    if q.search:
-        stmt = stmt.where(models.Title.name.ilike(f"%{q.search}%"))
+    if q.query:
+        stmt = stmt.where(models.Title.name.ilike(f"%{q.query}%"))
 
     if q.title_type:
         stmt = stmt.where(models.Title.type == q.title_type)
@@ -583,7 +583,7 @@ async def run_and_process_tmdb_search(
 ) -> schemas.TitleListOut:
     
     response = await tmdb.search_multi(
-        query=data.search,
+        query=data.query,
         page=data.page
     )
 
