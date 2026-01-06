@@ -20,11 +20,11 @@ async function search() {
     try {
         if (searchStore.tmdbFallback) {
             searchResults.value = await fastApi.titles.searchTMDB({
-                search: searchStore.query,
+                query: searchStore.query,
             });
         } else {
             searchResults.value = await fastApi.titles.search({
-                search: searchStore.query,
+                query: searchStore.query,
                 title_type: sp.value.titleType
             });
         }
