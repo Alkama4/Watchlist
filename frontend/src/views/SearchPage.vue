@@ -125,14 +125,6 @@ watch(
 
         <h3>Results</h3>
 
-        <div class="title-card-grid">
-            <TitleCard
-                v-for="title in searchResults?.titles"
-                :key="title.id"
-                :title-info="title"
-            />
-        </div>
-
         <LoadingIndicator v-if="loadingTitles"/>
 
         <div
@@ -153,6 +145,15 @@ watch(
                 Search TMDB for new titles
             </button>
         </div>
+
+        <div v-else class="title-card-grid">
+            <TitleCard
+                v-for="title in searchResults?.titles"
+                :key="title.id"
+                :title-info="title"
+            />
+        </div>
+
     </div>
 </template>
 
