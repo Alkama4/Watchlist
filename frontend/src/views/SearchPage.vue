@@ -49,6 +49,17 @@ watch(
 );
 
 watch(
+    () => searchStore.submitTick,
+    () => {
+        console.log("YEESS")
+
+        if (!searchStore.tmdbFallback) return;
+        if (!searchStore.query) return;
+        search();
+    }
+);
+
+watch(
     () => searchStore.tmdbFallback,
     () => {
         searchResults.value = {

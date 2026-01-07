@@ -3,6 +3,12 @@ import { defineStore } from 'pinia';
 export const useSearchStore = defineStore('search', {
     state: () => ({
         query: '',
-        tmdbFallback: false,
-    })
+        submitTick: 0
+    }),
+    actions: {
+        submit() {
+            console.log("====")
+            this.submitTick++;
+        }
+    }
 });
