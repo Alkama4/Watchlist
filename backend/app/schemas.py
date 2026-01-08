@@ -34,7 +34,17 @@ class SettingOut(BaseModel):
 
     class Config:
         from_attributes = True
-        
+
+class UserSettingOut(BaseModel):
+    user_id: int
+    key: str
+    value: str
+
+    class Config:
+        from_attributes = True
+
+class UserSettingIn(BaseModel):
+    value: str
 
 ####### Titles #######
 

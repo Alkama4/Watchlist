@@ -33,5 +33,6 @@ app.add_middleware(
 
 app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 app.include_router(settings.router, prefix="/settings", tags=["Settings"])
+app.include_router(user_settings.router, prefix="/user_settings", tags=["User Settings"])
 app.include_router(titles.router, prefix="/titles", tags=["Titles"])
 app.include_router(media.router, prefix="/media", tags=["Media"])
