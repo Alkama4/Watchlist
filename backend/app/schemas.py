@@ -27,6 +27,14 @@ class PasswordUpdate(BaseModel):
     current_password: str
     new_password: str
 
+class SettingOut(BaseModel):
+    key: str
+    value_type: str
+    default_value: str
+
+    class Config:
+        from_attributes = True
+        
 
 ####### Titles #######
 

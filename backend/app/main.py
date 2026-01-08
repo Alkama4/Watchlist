@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app import config
 from app.database import engine, Base, AsyncSessionLocal
-from app.routers import auth, titles, media
+from app.routers import auth, titles, media, settings, user_settings
 from app.settings.seed import init_settings
 
 # Setup ENVs
@@ -30,6 +30,8 @@ app.add_middleware(
     allow_credentials=True, # important to send cookies
 )
 
-app.include_router(auth.router, prefix="/auth", tags=["auth"])
-app.include_router(titles.router, prefix="/titles", tags=["titles"])
-app.include_router(media.router, prefix="/media", tags=["media"])
+
+app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
+app.include_router(settings.router, prefix="/settings", tags=["Settings"])
+app.include_router(titles.router, prefix="/titles", tags=["Titles"])
+app.include_router(media.router, prefix="/media", tags=["Media"])
