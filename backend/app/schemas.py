@@ -1,7 +1,7 @@
 from typing import List, Optional
 from pydantic import BaseModel, Field
 from datetime import datetime, date
-from app.models import TitleType
+from app.models import TitleType, SortBy, SortDirection
 from app.config import DEFAULT_MAX_QUERY_LIMIT, ABSOLUTE_MAX_QUERY_LIMIT
 
 ####### Users and authentication #######
@@ -54,14 +54,8 @@ class TitleQueryIn(BaseModel):
     genres_exclude: Optional[List[str]] = None
     min_tmdb_rating: Optional[int] = Field(None, ge=0, le=10)
     min_imdb_rating: Optional[int] = Field(None, ge=0, le=10)
-    sort_by: Optional[str] = Field(
-        "default",
-        pattern="^(default|tmdb_score|imdb_score|popularity|title_name|runtime|release_date|last_viewed_at|random)$"
-    )
-    sort_direction: Optional[str] = Field(
-        "desc",
-        pattern="^(asc|desc)$"
-    )
+    sort_by: Optional[SortBy] = SortBy.default
+    sort_direction: Optional[SortDirection] = SortDirection.default
     page_number: Optional[int] = Field(1, ge=1)
     page_size: Optional[int] = Field(
         DEFAULT_MAX_QUERY_LIMIT, 

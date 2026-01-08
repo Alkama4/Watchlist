@@ -16,6 +16,22 @@ class ImageType(enum.Enum):
     backdrop = "backdrop"
     logo = "logo"
 
+class SortDirection(enum.Enum):
+    default = "default"
+    asc = "asc"
+    desc = "desc"
+
+class SortBy(enum.Enum):
+    default = "default"
+    tmdb_score = "tmdb_score"
+    imdb_score = "imdb_score"
+    popularity = "popularity"
+    title_name = "title_name"
+    runtime = "runtime"
+    release_date = "release_date"
+    last_viewed_at = "last_viewed_at"
+    random = "random"
+
 
 ##### USER AND AUTH #####
 
@@ -30,7 +46,7 @@ class User(Base):
 class RefreshToken(Base):
     __tablename__ = "refresh_tokens"
 
-    id = Column(Integer, primary_key=True)
+    token_id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"))
     token_hash = Column(String, nullable=False, index=True)
     expires_at = Column(DateTime(timezone=True), nullable=False)
@@ -38,6 +54,30 @@ class RefreshToken(Base):
     revoked_at = Column(DateTime(timezone=True), nullable=True)
 
     user = relationship("User")
+
+
+class Setting(Base):
+    __tablename__ = "settings"
+
+    key = Column(String(100), primary_key=True)
+    value_type = Column(String(20), nullable=False)
+    default_value = Column(Text, nullable=False)
+
+
+class UserSetting(Base):
+    __tablename__ = "user_settings"
+
+    user_id = Column(
+        Integer,
+        ForeignKey("users.user_id", ondelete="CASCADE"),
+        primary_key=True
+    )
+    key = Column(
+        String(100),
+        ForeignKey("settings.key", ondelete="CASCADE"),
+        primary_key=True
+    )
+    value = Column(Text, nullable=False)
 
 
 ##### TITLE DETAILS #####
