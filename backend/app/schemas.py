@@ -27,10 +27,15 @@ class PasswordUpdate(BaseModel):
     current_password: str
     new_password: str
 
+class EnumChoice(BaseModel):
+    value: str
+    label: str
+
 class SettingOut(BaseModel):
     key: str
     value_type: str
     default_value: str
+    enum_choices: Optional[List[EnumChoice]] = None
 
     class Config:
         from_attributes = True

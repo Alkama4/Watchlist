@@ -1,23 +1,20 @@
 from sqlalchemy import select
-from app.models import Setting
-
-DEFAULT_SETTINGS = [
-    ("sort_by", "enum", "default"),
-    ("sort_direction", "enum", "default"),
-    ("items_per_page", "int", "25"),
-]
+import enum
+from app import models
+from app.settings.config import DEFAULT_SETTINGS
 
 async def init_settings(db):
-    for key, value_type, default in DEFAULT_SETTINGS:
-        result = await db.execute(
-            select(Setting).where(Setting.key == key)
-        )
+    for key, meta in DEFAULT_SETTINGS.definitions().items():
+        result = await db.execute(select(models.Setting).where(models.Setting.key == key))
         if not result.scalar_one_or_none():
+            default = meta["default"]
+            if isinstance(default, enum.Enum):
+                default = default.value  # store enum value, not str(enum)
             db.add(
-                Setting(
+                models.Setting(
                     key=key,
-                    value_type=value_type,
-                    default_value=default
+                    value_type=meta["type"].__name__,
+                    default_value=str(default)
                 )
             )
     await db.commit()

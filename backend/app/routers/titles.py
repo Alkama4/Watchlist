@@ -10,6 +10,7 @@ from app.dependencies import get_db
 from app.integrations import tmdb
 from app.routers.auth import get_current_user
 from app.config import DEFAULT_MAX_QUERY_LIMIT
+from app.settings.config import DEFAULT_SETTINGS
 
 router = APIRouter()
 
@@ -476,14 +477,14 @@ async def _apply_sorting_with_user_settings(
         user_settings = await _get_user_sort_settings(user_id, db)
 
         if sort_by is models.SortBy.default:
-            sort_by = models.SortBy(
-                user_settings.get("sort_by", "tmdb_score")
-            )
+            sort_by = models.SortBy(user_settings.get(
+                "sort_by", DEFAULT_SETTINGS.sort_by
+            ))
 
         if sort_dir is models.SortDirection.default:
-            sort_dir = models.SortDirection(
-                user_settings.get("sort_direction", "desc")
-            )
+            sort_dir = models.SortDirection(user_settings.get(
+                "sort_direction", DEFAULT_SETTINGS.sort_direction
+            ))
 
     # mapping from enum to column
     sort_map = {

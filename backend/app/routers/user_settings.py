@@ -4,10 +4,12 @@ from sqlalchemy.future import select
 from app import models, schemas
 from app.dependencies import get_db
 from app.routers.auth import get_current_user
+from app.settings.validate import validate_setting_value
+from app.settings.config import DEFAULT_SETTINGS
 
 router = APIRouter()
 
-
+# --- Get user settings ---
 @router.get("/", response_model=list[schemas.UserSettingOut])
 async def get_user_settings(
     current_user: models.User = Depends(get_current_user),
@@ -19,6 +21,7 @@ async def get_user_settings(
     return result.scalars().all()
 
 
+# --- Update user setting ---
 @router.put("/{key}", response_model=schemas.UserSettingOut)
 async def update_user_setting(
     key: str,
@@ -26,12 +29,14 @@ async def update_user_setting(
     current_user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    # Make sure the setting exists
     base_setting = await db.get(models.Setting, key)
     if not base_setting:
         raise HTTPException(status_code=404, detail="Setting not found")
 
-    # Check if the user already has a value
+    # Determine the type from Pydantic defaults
+    expected_type = DEFAULT_SETTINGS.definitions()[key]["type"]
+    validate_setting_value(setting_update.value, expected_type)
+
     user_setting = await db.get(models.UserSetting, (current_user.user_id, key))
     if not user_setting:
         user_setting = models.UserSetting(
