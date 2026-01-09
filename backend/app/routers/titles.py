@@ -467,7 +467,7 @@ async def _get_user_sort_settings(user_id: int, db) -> dict:
 
 
 async def _apply_sorting_with_user_settings(
-    stmt, q: schemas.TitleQueryIn, user_id: int, db
+    stmt, q: schemas.TitleQueryIn, user_id: int, db, utd
 ):
     sort_by = q.sort_by
     sort_dir = q.sort_direction
@@ -494,6 +494,8 @@ async def _apply_sorting_with_user_settings(
         models.SortBy.title_name: models.Title.name,
         models.SortBy.runtime: models.Title.movie_runtime,
         models.SortBy.release_date: models.Title.release_date,
+        models.SortBy.last_viewed_at: utd.last_viewed_at,
+        models.SortBy.random: func.random()
     }
 
     col = sort_map.get(sort_by, models.Title.tmdb_vote_average)
@@ -567,13 +569,15 @@ async def run_title_search(
     count_stmt = select(func.count()).select_from(base_stmt.subquery())
     total = (await db.execute(count_stmt)).scalar_one()
 
-    stmt = await _apply_sorting_with_user_settings(base_stmt, q, user_id, db)
+    stmt = await _apply_sorting_with_user_settings(base_stmt, q, user_id, db, utd)
     stmt = _add_subqueries(stmt)
     stmt, page, size = _apply_pagination(stmt, q)
 
     rows = (await db.execute(stmt)).all()
     return _build_title_list_out(rows, total, page, size)
 
+
+# ---------- TITLE SEARCH LOGIC ----------
 
 async def fetch_existing_titles_with_user(
     db: AsyncSession,
