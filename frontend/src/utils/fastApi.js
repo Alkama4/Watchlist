@@ -102,6 +102,29 @@ export const fastApi = {
         }
     },
 
+    settings: {
+        get: async () => fetchData({
+            method: 'get',
+            url: '/settings/'
+        }),
+        getByKey: async (key) => fetchData({
+            method: 'get',
+            url: `/settings/${key}`
+        }),
+    },
+
+    user_settings: {
+        get: async () => fetchData({
+            method: 'get',
+            url: '/user_settings/'
+        }),
+        put: async (key, data) => fetchData({
+            method: 'put',
+            url: `/user_settings/${key}`,
+            data
+        }),
+    },
+
     titles: {
         post: async (data) => fetchData({
             method: 'post',
