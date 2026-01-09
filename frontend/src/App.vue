@@ -13,9 +13,7 @@ function onSearchFocus() {
 }
 
 function onSearchSubmit() {
-    console.log("1")
     searchStore.submit();
-    console.log("2222")
 }
 
 </script>

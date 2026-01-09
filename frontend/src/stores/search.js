@@ -7,7 +7,6 @@ export const useSearchStore = defineStore('search', {
     }),
     actions: {
         submit() {
-            console.log("====")
             this.submitTick++;
         }
     }

@@ -18,6 +18,7 @@ const loadingTitles = ref(false)
 
 async function search() {
     loadingTitles.value = true;
+    resetResults(); // Wipe values to prevent old images from sticking
     try {
         if (searchStore.tmdbFallback) {
             searchResults.value = await fastApi.titles.searchTMDB({
@@ -36,6 +37,16 @@ async function search() {
     }
 }
 
+function resetResults() {
+    searchResults.value = {
+            titles: [],
+            page_number: 1,
+            page_size: 0,
+            total_items: 0,
+            total_pages: 1
+        };
+}
+
 watch(
     [
         () => searchStore.query,
@@ -51,10 +62,8 @@ watch(
 watch(
     () => searchStore.submitTick,
     () => {
-        console.log("YEESS")
-
-        if (!searchStore.tmdbFallback) return;
-        if (!searchStore.query) return;
+        // Prevent making empty searches to TMDB
+        if (!searchStore.query && searchStore.tmdbFallback) return;
         search();
     }
 );
@@ -62,15 +71,10 @@ watch(
 watch(
     () => searchStore.tmdbFallback,
     () => {
-        searchResults.value = {
-            titles: [],
-            page_number: 1,
-            page_size: 0,
-            total_items: 0,
-            total_pages: 1
-        };
         if (searchStore.query)
             search();
+        else
+            resetResults();
     },
     { immediate: true }
 )
