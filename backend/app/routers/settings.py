@@ -1,4 +1,3 @@
-import enum
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -8,6 +7,8 @@ from app.settings.config import REVERSE_TYPE_MAP
 
 router = APIRouter()
 
+def format_label(value: str) -> str:
+    return value.replace("_", " ").title()
 
 def build_enum_choices(setting: models.Setting):
     if setting.value_type not in REVERSE_TYPE_MAP:
@@ -15,11 +16,22 @@ def build_enum_choices(setting: models.Setting):
 
     enum_cls = REVERSE_TYPE_MAP[setting.value_type]
     choices = []
+
     for option in enum_cls:
         if option.name == "default":
             continue
-        label = option.name.replace("_", " ").title()
-        choices.append(schemas.EnumChoice(value=option.value, label=label))
+        elif option.value == setting.default_value:
+            label = f"{format_label(option.name)} (Default)"
+        else:
+            label = format_label(option.name)
+
+        choices.append(
+            schemas.EnumChoice(
+                value=option.value,
+                label=label
+            )
+        )
+
     return choices
 
 
@@ -36,7 +48,8 @@ async def get_all_settings(db: AsyncSession = Depends(get_db)):
             key=s.key,
             value_type=s.value_type,
             default_value=s.default_value,
-            enum_choices=enum_choices
+            enum_choices=enum_choices,
+            label=format_label(s.key)
         ))
     return out
 

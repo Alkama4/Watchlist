@@ -36,6 +36,7 @@ class SettingOut(BaseModel):
     value_type: str
     default_value: str
     enum_choices: Optional[List[EnumChoice]] = None
+    label: str
 
     class Config:
         from_attributes = True
