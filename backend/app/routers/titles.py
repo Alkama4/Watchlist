@@ -453,25 +453,52 @@ def _apply_filters(stmt, utd, q: schemas.TitleQueryIn):
     return stmt
 
 
-def _apply_sorting(stmt, q: schemas.TitleQueryIn):
+async def _get_user_sort_settings(user_id: int, db) -> dict:
+    result = await db.execute(
+        select(models.UserSetting)
+        .where(
+            models.UserSetting.user_id == user_id,
+            models.UserSetting.key.in_(["sort_by", "sort_direction"])
+        )
+    )
+    rows = result.scalars().all()
+    return {row.key: row.value for row in rows}
+
+
+async def _apply_sorting_with_user_settings(
+    stmt, q: schemas.TitleQueryIn, user_id: int, db
+):
+    sort_by = q.sort_by
+    sort_dir = q.sort_direction
+
+    # Load user settings only if the caller asked for "default"
+    if sort_by is models.SortBy.default or sort_dir is models.SortDirection.default:
+        user_settings = await _get_user_sort_settings(user_id, db)
+
+        if sort_by is models.SortBy.default:
+            sort_by = models.SortBy(
+                user_settings.get("sort_by", "tmdb_score")
+            )
+
+        if sort_dir is models.SortDirection.default:
+            sort_dir = models.SortDirection(
+                user_settings.get("sort_direction", "desc")
+            )
+
+    # mapping from enum to column
     sort_map = {
-        "tmdb_score": models.Title.tmdb_vote_average,
-        "imdb_score": models.Title.imdb_vote_average,
-        "popularity": models.Title.tmdb_vote_count,
-        "title_name": models.Title.name,
-        "runtime": models.Title.movie_runtime,
-        "release_date": models.Title.release_date,
-        "last_viewed_at": models.UserTitleDetails.last_viewed_at,
+        models.SortBy.tmdb_score: models.Title.tmdb_vote_average,
+        models.SortBy.imdb_score: models.Title.imdb_vote_average,
+        models.SortBy.popularity: models.Title.tmdb_vote_count,
+        models.SortBy.title_name: models.Title.name,
+        models.SortBy.runtime: models.Title.movie_runtime,
+        models.SortBy.release_date: models.Title.release_date,
     }
 
-    # TODO: runtime and release_date should add handling for tv cases
-
-    # TODO: setup default sort that has a system wide default, but the user can change via a setting.
-
-    col = sort_map.get(q.sort_by)
-    if col is not None:
-        stmt = stmt.order_by(col.desc() if q.sort_direction == "desc" else col.asc())
-
+    col = sort_map.get(sort_by, models.Title.tmdb_vote_average)
+    stmt = stmt.order_by(
+        col.desc() if sort_dir is models.SortDirection.desc else col.asc()
+    )
     return stmt
 
 
@@ -539,7 +566,7 @@ async def run_title_search(
     count_stmt = select(func.count()).select_from(base_stmt.subquery())
     total = (await db.execute(count_stmt)).scalar_one()
 
-    stmt = _apply_sorting(base_stmt, q)
+    stmt = await _apply_sorting_with_user_settings(base_stmt, q, user_id, db)
     stmt = _add_subqueries(stmt)
     stmt, page, size = _apply_pagination(stmt, q)
 

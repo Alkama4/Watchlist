@@ -10,7 +10,7 @@ const searchStore = useSearchStore();
 const sp = ref({
     title_type: null,
     sort_by: 'default',
-    sort_direction: 'desc',
+    sort_direction: 'default',
 });
 
 const searchResults = ref({});
@@ -110,7 +110,8 @@ watch(
                 v-model="sp.sort_direction"
                 :disabled="searchStore.tmdbFallback"
             >
-                <option value="desc" selected>Descending</option>
+                <option value="default" selected>Default</option>
+                <option value="desc">Descending</option>
                 <option value="asc">Ascending</option>
             </select>
             
