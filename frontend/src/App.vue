@@ -122,10 +122,11 @@ header .btn {
 }
 
 main {    
+    padding: var(--spacing-md);
     padding-inline: var(--spacing-md);
 }
 main.header-visible {
-    margin-top: 63px;
+    margin-top: 64px;
 }
 
 footer {

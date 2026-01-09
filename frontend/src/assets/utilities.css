@@ -36,6 +36,15 @@
     gap: var(--spacing-sm);
 }
 
+.button-column {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    justify-content: end;
+    gap: var(--spacing-md);
+}
+
+
 .gap-xs {
     gap: var(--spacing-xs);
 }

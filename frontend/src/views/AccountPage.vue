@@ -5,13 +5,11 @@ import { useAuthStore } from '@/stores/auth';
 
 const username = ref('')
 const user_id = ref('')
-
 const settings = ref([]);
 
 async function checkMe() {
     try {
         const response = await fastApi.auth.me.get()
-        // response is usually { data: { ... } } depending on your API helper
         const user = response.data || response
         username.value = user.username
         user_id.value = user.user_id
@@ -28,11 +26,7 @@ async function logOut() {
 async function fetchSettings() {
     const baseSettings = await fastApi.settings.get();
     const userSettings = await fastApi.user_settings.get();
-
-    const userMap = Object.fromEntries(
-        userSettings.map(s => [s.key, s.value])
-    );
-
+    const userMap = Object.fromEntries(userSettings.map(s => [s.key, s.value]));
     settings.value = baseSettings.map(setting => ({
         ...setting,
         value: userMap[setting.key] ?? setting.default_value
@@ -40,19 +34,15 @@ async function fetchSettings() {
 }
 
 function inputType(setting) {
-    if (setting.value_type === 'int') {
-        return 'number';
-    }
+    if (setting.value_type === 'int') return 'number';
     return 'text';
 }
 
 async function updateSetting(setting, event) {
-    const input = event.target;
-
-    if (!input.checkValidity()) {
-        return;
+    if (event) {
+        const input = event.target;
+        if (!input.checkValidity()) return;
     }
-
     let value = String(setting.value);
     await fastApi.user_settings.put(setting.key, { value });
 }
@@ -64,61 +54,81 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div>
-        <h1>Account</h1>
-        <p>This will be the settings and account details page.</p>
+    <div class="account-page">
+        <div class="profile-column">
+            <div class="card profile-card">
+                <div class="avatar">
+                    <i class="bx bxs-user"></i>
+                </div>
+                <h2 class="name">{{ username }}</h2>
+                <p>User ID: {{ user_id }}</p>
 
-        <div class="card">
-            <div>
-                <i class="bx bxs-user"></i>
+                <div class="button-column">
+                    <button @click="logOut" class="btn-primary">Log out</button>
+                    <button >Change Password</button>
+                    <button class="btn-negative">Delete Account</button>
+                </div>
             </div>
-            <h2 class="name">{{ username }}</h2>
-            <p>User ID: {{ user_id }}</p>
         </div>
 
-        <button @click="logOut">Log out</button>
+        <div class="settings-column settings-list">
+            <h1>Settings</h1>
+            <template v-for="setting in settings" :key="setting.key">
+                <label>{{ setting.label }}</label>
 
-        <!-- Update details/name -->
-
-        <!-- Change password -->
-
-        <!-- Delete my account -->
-
-        <h1>Settings</h1>
-
-        <div v-for="setting in settings" :key="setting.key">
-            <label>{{ setting.label }}</label>
-
-            <!-- Select when enum choices exist -->
-            <select
-                v-if="setting.enum_choices"
-                v-model="setting.value"
-                @change="updateSetting(setting)"
-            >
-                <option
-                    v-for="choice in setting.enum_choices"
-                    :key="choice.value"
-                    :value="choice.value"
+                <select
+                    v-if="setting.enum_choices"
+                    v-model="setting.value"
+                    @change="updateSetting(setting)"
                 >
-                    {{ choice.label }}
-                </option>
-            </select>
+                    <option
+                        v-for="choice in setting.enum_choices"
+                        :key="choice.value"
+                        :value="choice.value"
+                    >
+                        {{ choice.label }}
+                    </option>
+                </select>
 
-
-            <!-- Input otherwise -->
-            <input
-                v-else
-                v-model="setting.value"
-                :type="inputType(setting)"
-                :placeholder="setting.default_value"
-                @blur="updateSetting(setting, $event)"
-            />
+                <input
+                    v-else
+                    v-model="setting.value"
+                    :type="inputType(setting)"
+                    :placeholder="setting.default_value"
+                    @blur="updateSetting(setting, $event)"
+                />
+            </template>
         </div>
     </div>
 </template>
 
 <style scoped>
-h2.name {
+.account-page {
+    display: flex;
+    gap: var(--spacing-lg);
+    flex-wrap: wrap;
+}
+
+/* Profile / Actions column */
+.profile-column {
+    flex: 1 1 300px;
+}
+.profile-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+.profile-card .avatar {
+    font-size: 3rem;
+}
+.profile-card .name {
     margin: 0;
+}
+
+
+/* Settings column */
+.settings-column {
+    flex: 2 1 400px;
 }
 </style>
