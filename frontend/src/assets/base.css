@@ -10,6 +10,7 @@ body {
     background-color: var(--c-bg);
     color: var(--c-text);
     font-size: var(--fs-0);
+    color-scheme: dark;
 
     margin: 0;
     padding: 0;

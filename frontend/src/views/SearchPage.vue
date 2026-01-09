@@ -91,7 +91,7 @@ watch(
                 <option value="tv">TV</option>
             </select>
 
-            <label for="sortBy">Type filter</label>
+            <label for="sortBy">Sort By</label>
             <select
                 id="sortBy"
                 v-model="sp.sort_by"
@@ -108,7 +108,7 @@ watch(
                 <option value="random">Random</option>
             </select>
 
-            <label for="sortDirection">Type filter</label>
+            <label for="sortDirection">Sort Direction</label>
             <select
                 id="sortDirection"
                 v-model="sp.sort_direction"
@@ -122,9 +122,10 @@ watch(
             <div class="checkbox-row card">
                 <input
                     type="checkbox"
+                    id="tmdbFallback"
                     v-model="searchStore.tmdbFallback"
                 />
-                <label>Add titles from TMDB</label>
+                <label for="tmdbFallback">Add titles from TMDB</label>
             </div>
         </form>
 
