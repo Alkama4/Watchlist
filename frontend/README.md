@@ -1,19 +1,47 @@
 # Frontend
 
-## Project Setup
+## Running the development server
 
-```sh
-npm install
-```
+### Initial setup
 
-### Compile and Hot-Reload for Development
+1. Navigate to the frontend directory:
 
-```sh
+    ```bash
+    cd frontend
+    ```
+
+2. Install dependencies:
+
+    ```bash
+    npm install
+    ```
+
+3. Launch the development server:
+
+    ```bash
+    npm run dev
+    ```
+
+    **OR** do everything in one command:
+
+    ```bash
+    cd frontend && npm install && npm run dev
+    ```
+
+### Subsequent Runs
+
+After the initial setup, you can start the dev server with:
+
+```bash
+cd frontend
 npm run dev
 ```
 
-### Compile and Minify for Production
+### Production Build
 
-```sh
+To build the project for production:
+
+```bash
+cd frontend
 npm run build
 ```
