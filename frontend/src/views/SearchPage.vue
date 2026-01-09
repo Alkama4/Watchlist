@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { onUnmounted, ref, watch } from 'vue';
 import { useSearchStore } from '@/stores/search';
 import { fastApi } from '@/utils/fastApi';
 import TitleCard from '@/components/TitleCard.vue';
@@ -47,37 +47,48 @@ function resetResults() {
         };
 }
 
+// On search parameter change auto search if not in tmdb mode
 watch(
     [
         () => searchStore.query,
         () => sp.value,
     ],
     () => {
-        if (searchStore.tmdbFallback) return;
-        search();
+        if (!searchStore.tmdbFallback) {
+            search();
+        }
     },
     { immediate: true, deep: true }
 );
 
+// On manual submit prevent empty TMDB searches, but keep results
 watch(
     () => searchStore.submitTick,
     () => {
-        // Prevent making empty searches to TMDB
-        if (!searchStore.query && searchStore.tmdbFallback) return;
-        search();
+        if (searchStore.query || !searchStore.tmdbFallback) {
+            search();
+        }
     }
 );
 
+// On mode change prevent empty TMDB searches, but wipe results
 watch(
     () => searchStore.tmdbFallback,
     () => {
-        if (searchStore.query)
+        if (searchStore.query || !searchStore.tmdbFallback) {
             search();
-        else
+        } else {
             resetResults();
+        }
     },
     { immediate: true }
 )
+
+// Disable TMDB mode when leaving, so that we are always using the
+// internal system by default.
+onUnmounted(() => {
+    searchStore.tmdbFallback = false;
+});
 </script>
 
 <template>
