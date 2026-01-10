@@ -21,6 +21,9 @@
     /* Lightness offsets */
     --c-light-amount: 6%;
     --c-lighter-amount: 10%;
+    --c-transprent-amount: 0.5;
+    /* Note that border stacks on bg, so anything above 0 to border amount is additive */
+    --c-transprent-border-amount: 0.8;  
 
     /* primary */
     --c-primary-h: 0;
@@ -37,6 +40,8 @@
     --c-accent: hsl(var(--c-accent-h), var(--c-accent-s), var(--c-accent-l));
     --c-accent-light: hsl(var(--c-accent-h), var(--c-accent-s), calc(var(--c-accent-l) + var(--c-light-amount)));
     --c-accent-lighter: hsl(var(--c-accent-h), var(--c-accent-s), calc(var(--c-accent-l) + var(--c-lighter-amount)));
+    --c-accent-transparent: hsla(var(--c-accent-h), var(--c-accent-s), var(--c-accent-l), var(--c-transprent-amount));
+    --c-accent-border: hsla(var(--c-accent-h), var(--c-accent-s), var(--c-accent-l), var(--c-transprent-border-amount));
 
     /* neutral */
     --c-neutral-h: 0;
@@ -45,6 +50,8 @@
     --c-neutral: hsl(var(--c-neutral-h), var(--c-neutral-s), var(--c-neutral-l));
     --c-neutral-light: hsl(var(--c-neutral-h), var(--c-neutral-s), calc(var(--c-neutral-l) + var(--c-light-amount)));
     --c-neutral-lighter: hsl(var(--c-neutral-h), var(--c-neutral-s), calc(var(--c-neutral-l) + var(--c-lighter-amount)));
+    --c-neutral-transparent: hsla(var(--c-neutral-h), var(--c-neutral-s), var(--c-neutral-l), var(--c-transprent-amount));
+    --c-neutral-border: hsla(var(--c-neutral-h), var(--c-neutral-s), var(--c-neutral-l), var(--c-transprent-border-amount));
 
     /* Positive */
     --c-positive-h: 142;
@@ -53,6 +60,8 @@
     --c-positive: hsl(var(--c-positive-h), var(--c-positive-s), var(--c-positive-l));
     --c-positive-light: hsl(var(--c-positive-h), var(--c-positive-s), calc(var(--c-positive-l) + var(--c-light-amount)));
     --c-positive-lighter: hsl(var(--c-positive-h), var(--c-positive-s), calc(var(--c-positive-l) + var(--c-lighter-amount)));
+    --c-positive-transparent: hsla(var(--c-positive-h), var(--c-positive-s), var(--c-positive-l), var(--c-transprent-amount));
+    --c-positive-border: hsla(var(--c-positive-h), var(--c-positive-s), var(--c-positive-l), var(--c-transprent-border-amount));
 
     /* Warning */
     --c-warning-h: 40;
@@ -61,6 +70,8 @@
     --c-warning: hsl(var(--c-warning-h), var(--c-warning-s), var(--c-warning-l));
     --c-warning-light: hsl(var(--c-warning-h), var(--c-warning-s), calc(var(--c-warning-l) + var(--c-light-amount)));
     --c-warning-lighter: hsl(var(--c-warning-h), var(--c-warning-s), calc(var(--c-warning-l) + var(--c-lighter-amount)));
+    --c-warning-transparent: hsla(var(--c-warning-h), var(--c-warning-s), var(--c-warning-l), var(--c-transprent-amount));
+    --c-warning-border: hsla(var(--c-warning-h), var(--c-warning-s), var(--c-warning-l), var(--c-transprent-border-amount));
 
     /* Negative */
     --c-negative-h: 0;
@@ -69,6 +80,8 @@
     --c-negative: hsl(var(--c-negative-h), var(--c-negative-s), var(--c-negative-l));
     --c-negative-light: hsl(var(--c-negative-h), var(--c-negative-s), calc(var(--c-negative-l) + var(--c-light-amount)));
     --c-negative-lighter: hsl(var(--c-negative-h), var(--c-negative-s), calc(var(--c-negative-l) + var(--c-lighter-amount)));
+    --c-negative-transparent: hsla(var(--c-negative-h), var(--c-negative-s), var(--c-negative-l), var(--c-transprent-amount));
+    --c-negative-border: hsla(var(--c-negative-h), var(--c-negative-s), var(--c-negative-l), var(--c-transprent-border-amount));
 }
 
 
