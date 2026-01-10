@@ -9,6 +9,10 @@ defineProps({
     header: {
         type: String,
         required: false
+    },
+    smallCard: {
+        type: Boolean,
+        default: false,
     }
 })
 
@@ -39,7 +43,7 @@ onUnmounted(() => {
                 class="modal-backdrop"
                 @click="close"
             >
-                <div class="card" @click.stop>
+                <div class="card" :class="{'small': smallCard}" @click.stop>
                     <h2 v-if="header" class="no-top">{{ header }}</h2>
                     <slot></slot>
                 </div>
@@ -89,6 +93,10 @@ onUnmounted(() => {
 
 .card {
     cursor: auto;
+}
+
+.card.small {
+    max-width: 600px;
 }
 
 </style>
