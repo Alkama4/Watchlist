@@ -15,6 +15,7 @@ const { loading } = defineProps({
     <button
         v-bind="attrs"
         :disabled="loading || attrs.disabled"
+        :class="{'loading': loading}"
     >
         <div v-if="loading" class="loader spin"></div>
         <slot v-else />
@@ -30,5 +31,8 @@ const { loading } = defineProps({
     border: var(--thickness) solid currentColor;
     border-top-color: transparent;
     border-radius: 100px;
+}
+.loading {
+    cursor: wait;
 }
 </style>

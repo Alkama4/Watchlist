@@ -61,7 +61,7 @@ button:not(:disabled):active,
     background-color: var(--c-neutral-light);
 }
 button:disabled, .btn:disabled {
-    cursor: wait;
+    cursor: not-allowed;
     filter: opacity(0.75);
 }
 
