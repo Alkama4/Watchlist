@@ -64,6 +64,10 @@ async function fetchData({ method = 'get', url, data = null, config = {} }) {
 }
 
 export const fastApi = {
+    home: async () => fetchData({
+        method: 'get',
+        url: '/home'
+    }),
     auth: {
         register: async (data) => fetchData({
             method: 'post',
