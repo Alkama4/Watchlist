@@ -6,7 +6,6 @@ import ModalConfimation from '@/components/ModalConfimation.vue';
 import Modal from '@/components/Modal.vue';
 import NoticeBlock from '@/components/NoticeBlock.vue';
 import FormMessage from '@/components/FormMessage.vue';
-import { useRouter } from 'vue-router'
 
 const username = ref('')
 const user_id = ref('')
@@ -19,6 +18,7 @@ const deleteError = ref('')
 const formMessageElement = ref(null)
 
 // Modals
+const ModalLogOutConfirm = ref(null)
 const ModalDeleteFirst = ref(null)
 const ModalDeleteSecond = ref(null)
 
@@ -34,6 +34,7 @@ async function checkMe() {
 }
 
 async function logOut() {
+    if (!await ModalLogOutConfirm.value.query()) return;
     const auth = useAuthStore();
     await auth.logout();
 }
@@ -148,6 +149,13 @@ onMounted(async () => {
                 />
             </template>
         </div>
+
+        <ModalConfimation
+            ref="ModalLogOutConfirm"
+            header="Log out"
+            message="Are you sure you want to log out?"
+            confirmLabel="Log out"
+        />
 
         <ModalConfimation
             ref="ModalDeleteFirst"
