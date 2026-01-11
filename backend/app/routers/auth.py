@@ -144,7 +144,11 @@ async def refresh(
 
 
 @router.post("/logout")
-async def logout(response: Response, current_user: models.User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+async def logout(
+    response: Response,
+    current_user: models.User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
     result = await db.execute(
         select(models.RefreshToken).where(
             models.RefreshToken.user_id == current_user.user_id,
@@ -185,6 +189,7 @@ async def update_profile(
 
 @router.delete("/me")
 async def delete_account(
+    response: Response,
     data: schemas.UserDelete,
     current_user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -197,6 +202,8 @@ async def delete_account(
 
     await db.delete(current_user)
     await db.commit()
+
+    response.delete_cookie("refresh_token")
 
     return {"detail": "Account deleted successfully"}
 
