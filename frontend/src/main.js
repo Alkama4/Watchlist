@@ -14,11 +14,6 @@ const app = createApp(App)
 const pinia = createPinia()
 
 app.use(pinia)
-
-// Refresh access token immediately
-const auth = useAuthStore()
-await auth.init()
-
 app.use(router)
 
 app.mount('#app')

@@ -10,13 +10,6 @@ const apiClient = axios.create({
     withCredentials: true // important so cookies are sent automatically
 });
 
-// Seperate client for refreshing
-// This way we prevent going to an infinite loop of refresh
-const refreshClient = axios.create({
-    baseURL: API_BASE_URL,
-    headers: { 'Content-Type': 'application/json' },
-    withCredentials: true
-});
 
 // Set the access token into the headers
 apiClient.interceptors.request.use((config) => {
@@ -34,24 +27,34 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
     response => response,
     async error => {
-        const auth = useAuthStore?.();
+        const auth = useAuthStore();
         const originalRequest = error.config;
 
-        if (error.response?.status === 401 && !originalRequest._retry && auth) {
-            originalRequest._retry = true; // prevent infinite loop
+        const isAuthEndpoint =
+            originalRequest.url.startsWith('/auth/') &&
+            !originalRequest.url.startsWith('/auth/me');
+
+        if (
+            error.response?.status === 401 &&
+            !originalRequest._retry &&
+            !isAuthEndpoint
+        ) {
+            originalRequest._retry = true;
             try {
-                await auth.refresh(); // get a new access token
-                originalRequest.headers.Authorization = `Bearer ${auth.accessToken}`;
-                return apiClient(originalRequest); // retry original request
-            } catch (refreshError) {
-                await auth.logout();
-                return Promise.reject(refreshError);
+                await auth.refresh();
+                originalRequest.headers.Authorization =
+                    `Bearer ${auth.accessToken}`;
+                return apiClient(originalRequest);
+            } catch {
+                auth.accessToken = null;
+                router.push('/login');
             }
         }
 
         return Promise.reject(error);
     }
 );
+
 
 // Helper to make calls with method, url, and optional data/config
 async function fetchData({ method = 'get', url, data = null, config = {} }) {
@@ -72,8 +75,10 @@ export const fastApi = {
             url: '/auth/login',
             data
         }),
-        refresh: async () =>
-            refreshClient.post('/auth/refresh'), // intentionally not using fetchData
+        refresh: async () => fetchData({
+            method: 'post',
+            url: '/auth/refresh'
+        }),
         logout: async () => fetchData({
             method: 'post',
             url: '/auth/logout'

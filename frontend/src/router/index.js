@@ -23,12 +23,14 @@ const routes = [
     {
         path: '/login',
         name: 'Login',
-        component: () => import('@/views/LogInPage.vue')
+        component: () => import('@/views/LogInPage.vue'),
+        meta: { redirectAuthToAccount: true }
     },
     {
         path: '/register',
         name: 'Register',
-        component: () => import('@/views/RegisterPage.vue')
+        component: () => import('@/views/RegisterPage.vue'),
+        meta: { redirectAuthToAccount: true }
     },
     {
         path: '/debug',
@@ -47,21 +49,25 @@ const router = createRouter({
     routes
 })
 
-// Global guard
+// Router guard
 router.beforeEach(async (to, from, next) => {
-    const auth = useAuthStore()
+    const auth = useAuthStore();
 
-    // if route requires auth and no token → redirect to login
+    // Wait for auth.init() if it hasn't finished
+    if (!auth.initialized) {
+        await auth.init();
+    }
+
     if (to.meta.requiresAuth && !auth.accessToken) {
-        return next({ name: 'Login' })
+        console.log(auth.accessToken)
+        return next({ name: 'Login' });
     }
 
-    // if trying to go to login while logged in → redirect home
-    if (to.name === 'Login' && auth.accessToken) {
-        return next({ name: 'Account' })
+    if (to.meta.redirectAuthToAccount && auth.accessToken) {
+        return next({ name: 'Account' });
     }
 
-    next()
-})
+    next();
+});
 
 export default router

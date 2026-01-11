@@ -4,30 +4,44 @@ import router from '@/router';
 
 export const useAuthStore = defineStore('auth', {
     state: () => ({
-        accessToken: null
+        accessToken: null,
+        initialized: false
     }),
     actions: {
         async init() {
+            if (this.initialized) return this.accessToken;
             try {
                 const response = await fastApi.auth.refresh();
-                this.accessToken = response.data.access_token;
+                this.accessToken = response.access_token;
             } catch {
                 this.accessToken = null;
+            } finally {
+                this.initialized = true;
             }
+            return this.accessToken;
         },
         async login(credentials) {
-            const data = await fastApi.auth.login(credentials);
-            this.accessToken = data.access_token;
-            router.push("/")
+            try {
+                const data = await fastApi.auth.login(credentials);
+                this.accessToken = data.access_token;
+                router.push('/');
+            } catch (e) {
+                this.accessToken = null;
+                throw e;
+            }
         },
         async refresh() {
-            const data = await fastApi.auth.refresh();
-            this.accessToken = data.access_token;
+            const response = await fastApi.auth.refresh();
+            this.accessToken = response.access_token;
+            return data.access_token;
         },
-        async logout() {
-            const data = await fastApi.auth.logout();
-            if (data) this.accessToken = null;
-            router.push("/login")
+        async logout(quiet = false) {
+            try {
+                if (!quiet) await fastApi.auth.logout();
+            } finally {
+                this.$reset();  // Reset store values
+                router.push("/login")
+            }
         }
     }
 });
