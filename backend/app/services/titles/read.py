@@ -3,6 +3,7 @@ from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
+from datetime import datetime, timezone
 from app import models, schemas
 
 
@@ -20,9 +21,21 @@ async def fetch_title_with_user_details(db: AsyncSession, title_id: int, user_id
     if not title:
         raise HTTPException(status_code=404, detail="Title not found")
 
-    # Fetch all user-specific details in bulk
+
+    # Fetch user-specific details
     user_title = await db.get(models.UserTitleDetails, {"user_id": user_id, "title_id": title_id})
-    
+        
+    # Init user details if missing
+    if not user_title:
+        user_title = models.UserTitleDetails(user_id=user_id, title_id=title_id)
+        db.add(user_title)
+
+    # Update the last viewed timestamp
+    user_title.last_viewed_at = datetime.now(timezone.utc)
+    await db.commit()
+    await db.refresh(user_title)
+
+    # Map the data
     season_ids = [s.season_id for s in title.seasons]
     episode_ids = [e.episode_id for s in title.seasons for e in s.episodes]
 
