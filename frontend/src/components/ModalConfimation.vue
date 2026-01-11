@@ -1,11 +1,14 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import Modal from './Modal.vue'
+
+const buttonCancel = ref(null)
+const buttonConfirm = ref(null)
 
 const modalRef = ref(null)
 let resolver = null
 
-defineProps({
+const { negativeAction } = defineProps({
     header: {
         type: String,
         default: 'Confirm action'
@@ -30,6 +33,14 @@ defineProps({
 
 function query() {
     modalRef.value.open()
+
+    setTimeout(() => {
+        if (!negativeAction) {
+            buttonConfirm.value.focus();
+        } else {
+            buttonCancel.value.focus();
+        }
+    }, 1)
 
     return new Promise(resolve => {
         resolver = resolve
@@ -57,10 +68,10 @@ defineExpose({ query })
     <Modal :header="header" ref="modalRef" @closed="catchClose" :smallCard="true">
         <p>{{ message }}</p>
         <div class="button-row">
-            <button @click="cancel">
+            <button ref="buttonCancel" @click="cancel">
                 {{ cancelLabel }}
             </button>
-            <button :class="negativeAction ? 'btn-negative' : 'btn-primary'" @click="confirm">
+            <button ref="buttonConfirm" :class="negativeAction ? 'btn-negative' : 'btn-primary'" @click="confirm">
                 {{ confirmLabel }}
             </button>
         </div>
