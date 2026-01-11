@@ -25,15 +25,21 @@ async function addTitle() {
 
         // Need to init some data
         titleInfo.title_id = response.title_id;
+    }
+    
+    // The user_details might not exist regardless if title_id exists.
+    // Based on if its falsy fill in the data that this component uses
+    // and set to be in library
+    if (!titleInfo.user_details) {
         titleInfo.user_details = {
-            in_library: response.in_library,
+            in_library: true,
             is_favourite: false,
             in_watchlist: false,
             watch_count: 0,
         }
+    } else {
+        titleInfo.user_details.in_library = true
     }
-
-    titleInfo.user_details.in_library = true
 
     waiting.value = false;
 }
