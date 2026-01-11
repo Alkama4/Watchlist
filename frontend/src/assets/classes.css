@@ -5,23 +5,6 @@
 }
 
 
-.divider {
-    height: 1px;
-    background-color: var(--c-border);
-    margin: var(--spacing-md-lg) 0;
-    position: relative;
-}
-.divider span {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: var(--c-text-3);
-    background-color: var(--c-bg-section);
-    padding-inline: var(--spacing-sm);
-}
-
-
 a.subtle {
     color: var(--c-text-3);
 }

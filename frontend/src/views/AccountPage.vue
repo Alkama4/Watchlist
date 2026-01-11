@@ -1,11 +1,26 @@
-<script setup>
+<<script setup>
 import { onMounted, ref } from 'vue'
 import { fastApi } from '@/utils/fastApi';
 import { useAuthStore } from '@/stores/auth';
+import ModalConfimation from '@/components/ModalConfimation.vue';
+import Modal from '@/components/Modal.vue';
+import NoticeBlock from '@/components/NoticeBlock.vue';
+import FormMessage from '@/components/FormMessage.vue';
+import { useRouter } from 'vue-router'
 
 const username = ref('')
 const user_id = ref('')
 const settings = ref([]);
+
+const deletePassword = ref('')
+const deletePasswordElement = ref(null)
+const deleteError = ref('')
+
+const formMessageElement = ref(null)
+
+// Modals
+const ModalDeleteFirst = ref(null)
+const ModalDeleteSecond = ref(null)
 
 async function checkMe() {
     try {
@@ -20,7 +35,7 @@ async function checkMe() {
 
 async function logOut() {
     const auth = useAuthStore();
-    await auth.logout()
+    await auth.logout();
 }
 
 async function fetchSettings() {
@@ -47,6 +62,39 @@ async function updateSetting(setting, event) {
     await fastApi.user_settings.put(setting.key, { value });
 }
 
+async function deleteAccountInit() {
+    if (!await ModalDeleteFirst.value.query()) return;
+    ModalDeleteSecond.value.open();
+    setTimeout(() => {
+        deletePasswordElement.value.focus();
+    }, 1)
+}
+
+async function deleteAccountFinalize() {
+    try {
+        await fastApi.auth.me.delete({
+            password: deletePassword.value
+        })
+        ModalDeleteSecond.value.close();
+
+        const auth = useAuthStore();
+        await auth.logout(true);
+    } catch(e) {
+        const status = e.response?.status
+        const detail = e.response?.data?.detail
+
+        if (status === 400) {
+            deleteError.value = "Invalid password"
+        } else if (status) {
+            deleteError.value = `Error ${status}: ${detail || 'Something went wrong.'}`
+        } else {
+            deleteError.value = `Unexpected error: ${e.message || 'Please try again later.'}`
+        }
+
+        formMessageElement.value.show()
+    }
+}
+
 onMounted(async () => {
     await checkMe();
     await fetchSettings();
@@ -66,7 +114,8 @@ onMounted(async () => {
                 <div class="button-column">
                     <button @click="logOut" class="btn-primary">Log out</button>
                     <button >Change Password</button>
-                    <button class="btn-negative">Delete Account</button>
+                    <hr>
+                    <button @click="deleteAccountInit" class="btn-negative">Delete Account</button>
                 </div>
             </div>
         </div>
@@ -99,6 +148,47 @@ onMounted(async () => {
                 />
             </template>
         </div>
+
+        <ModalConfimation
+            ref="ModalDeleteFirst"
+            header="Delete Account"
+            message="Are you sure you want to delete your account? You'll need to confirm with your password."
+            confirmLabel="Continue"
+            :negativeAction="true"
+        />
+        <Modal ref="ModalDeleteSecond" header="Delete Account">
+            <NoticeBlock
+                type="negative"
+                header="Permanent action"
+                message="Deleting your account will permanently remove all associated data. This action cannot be undone."
+            />
+
+            <form @submit.prevent="deleteAccountFinalize">
+                <FormMessage
+                    ref="formMessageElement"
+                    :msg="deleteError"
+                    :dismissable="true"
+                />
+
+                <label for="deletePassword">Account password</label>
+                <input 
+                    ref="deletePasswordElement"
+                    id="deletePassword"
+                    type="password"
+                    placeholder="Confirm your password"
+                    v-model="deletePassword"
+                />
+    
+                <div class="button-row">
+                    <button @click.prevent="ModalDeleteSecond.close()">
+                        Cancel
+                    </button>
+                    <button type="submit" :disabled="!deletePassword" class="btn-negative">
+                        Delete Account Permanently
+                    </button>
+                </div>
+            </form>
+        </Modal>
     </div>
 </template>
 
@@ -131,4 +221,17 @@ onMounted(async () => {
 .settings-column {
     flex: 2 1 400px;
 }
+
+
+.notice {
+    margin-bottom: var(--spacing-md);
+    max-width: 500px;
+    box-sizing: border-box;
+}
+
+hr {
+    margin: var(--spacing-sm) var(--spacing-md);
+}
+
 </style>
+>
