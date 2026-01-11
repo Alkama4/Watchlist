@@ -64,7 +64,7 @@ class TMDBTitleQueryIn(BaseModel):
 
 class TitleQueryIn(BaseModel):
     query: Optional[str] = None
-    title_type: Optional[str] = None
+    title_type: Optional[TitleType] = None
     is_favourite: Optional[bool] = None
     in_watchlist: Optional[bool] = None
     watch_status: Optional[str] = Field(
@@ -118,11 +118,16 @@ class CompactTitleOut(BaseModel):
     user_details: Optional[CompactUserTitleDetailsOut] = None
 
 class TitleListOut(BaseModel):
+    header: Optional[str] = None
     titles: List[CompactTitleOut]
     page_number: int
     page_size: int
     total_items: int
     total_pages: int
+
+class HomeOverviewOut(BaseModel):
+    hero_cards: Optional[TitleListOut] = None  
+    normal_cards: List[TitleListOut]
 
 
 #### Title out stack ####
