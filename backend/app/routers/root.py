@@ -35,27 +35,94 @@ async def get_home_overview(
     # ------ Normal cards ------
     normal_cards_lists_options = [
         {
+            "header": "Continue watching",
+            "filters": {
+                "watch_status": "partial",
+                "title_type": "tv",
+                "sort_by": "last_viewed_at",
+                "sort_direction": "desc"
+            }
+        },
+        {
+            "header": "Random picks",
+            "filters": {
+                "watch_status": "not_watched",
+                "sort_by": "random",
+                "sort_direction": "desc"
+            }
+        },
+        {
+            "header": "Highest rated",
+            "filters": {
+                "watch_status": "not_watched",
+                "sort_by": "tmdb_score",
+                "sort_direction": "desc"
+            }
+        },
+        {
+            "header": "Most popular",
+            "filters": {
+                "watch_status": "not_watched",
+                "sort_by": "popularity",
+                "sort_direction": "desc"
+            }
+        },
+        {
             "header": "Your Favourites",
             "filters": {
                 "is_favourite": True,
-                "sort_by": "last_viewed_at"
+                "sort_by": "last_viewed_at",
+                "sort_direction": "desc"
             }
         },
         {
             "header": "Your Watchlist",
             "filters": {
                 "in_watchlist": True,
-                "sort_by": "last_viewed_at"
+                "sort_by": "last_viewed_at",
+                "sort_direction": "desc"
             }
         },
         {
-            "header": "Unwatched movies",
+            "header": "Short movies you have time for",
+            "filters": {
+                "type": "movie",
+                "sort_by": "runtime",
+                "sort_direction": "asc"
+            }
+        },
+        {
+            "header": "Just released",
+            "filters": {
+                "is_released": True,
+                "sort_by": "release_date",
+                "sort_direction": "desc"
+            }
+        },
+        {
+            "header": "Upcoming",
+            "filters": {
+                "is_released": False,
+                "sort_by": "release_date",
+                "sort_direction": "asc"
+            }
+        },
+        {
+            "header": "Titles you've forgotten",
             "filters": {
                 "watch_status": "not_watched",
-                "title_type": "movie",
-                "sort_by": "random"
+                "sort_by": "last_viewed_at",
+                "sort_direction": "asc"
             }
-        }
+        },
+        {
+            "header": "Time for a rewatch?",
+            "filters": {
+                "watch_status": "completed",
+                "sort_by": "last_viewed_at",
+                "sort_direction": "asc"
+            }
+        },
     ]
     normal_cards = []
     for normal_card_list in normal_cards_lists_options:
@@ -65,7 +132,9 @@ async def get_home_overview(
             schemas.TitleQueryIn(**normal_card_list["filters"])
         )
         title_list.header = normal_card_list["header"]
-        normal_cards.append(title_list)
+
+        if (len(title_list.titles) > 0):
+            normal_cards.append(title_list)
 
     return schemas.HomeOverviewOut(
         hero_cards=hero_cards,
