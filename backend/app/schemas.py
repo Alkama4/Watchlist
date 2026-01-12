@@ -103,6 +103,7 @@ class CompactTitleOut(BaseModel):
     type: TitleType
     name: str
     release_date: Optional[date] = None
+    overview: Optional[str] = None
     movie_runtime: Optional[int] = None
     show_season_count: Optional[int] = None
     show_episode_count: Optional[int] = None

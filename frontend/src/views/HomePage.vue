@@ -24,7 +24,7 @@ onMounted(async () => {
         />
 
         <div class="carousel-wrapper">
-            <div v-for="list in homeData?.normal_cards" class="card">
+            <div v-for="list in homeData?.normal_cards">
                 <h3>{{ list?.header }}</h3>
                 <div class="carousel">
                     <TitleCard 
