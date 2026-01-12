@@ -1,5 +1,6 @@
 <script setup>
 import TitleCard from '@/components/TitleCard.vue';
+import TitleHeroCards from '@/components/TitleHeroCards.vue';
 import { fastApi } from '@/utils/fastApi';
 import { onMounted, ref } from 'vue';
 
