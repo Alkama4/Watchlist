@@ -2,11 +2,10 @@
 import { resolveImagePath } from '@/utils/imagePath';
 import { timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg'
-import { ref } from 'vue';
-import { onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 
 const currentIndex = ref(0);
-const direction = ref('next');
+const direction = ref('');
 
 function next() {
     direction.value = 'next';
@@ -53,7 +52,8 @@ onUnmounted(() => {
 <template>
     <section class="title-hero-cards">
         <Transition name="hero" mode="default" :class="direction">
-            <router-link 
+            <router-link
+                v-if="heroCards"
                 :key="heroCards?.titles[currentIndex]?.title_id"
                 :to="`/title/${heroCards?.titles[currentIndex]?.title_id}`"
                 class="no-deco hero-card"
@@ -119,7 +119,8 @@ onUnmounted(() => {
     position: relative;
 }
 
-a.hero-card {
+.hero-card {
+    --transition-amount: 40px;
     position: absolute;
     width: 100%;
     height: 100%;
@@ -127,6 +128,10 @@ a.hero-card {
     display: flex;
     flex-direction: column;
     justify-content: center;
+}
+.hero-card * {
+    pointer-events: none;
+    user-select: none;
 }
 
 img.backdrop {
@@ -191,24 +196,26 @@ img.logo {
     transition: opacity 300ms ease, transform 300ms ease;
 }
 
+.hero-enter-from,
+.hero-leave-to {
+    opacity: 0;
+}
+
 /* NEXT */
 .next.hero-enter-from {
-    opacity: 0;
-    transform: translateX(-40px);
+    transform: translateX(var(--transition-amount));
 }
 .next.hero-leave-to {
-    opacity: 0;
-    transform: translateX(40px);
+    transform: translateX(calc(-1 * var(--transition-amount)));
 }
 
 /* PREV */
 .prev.hero-enter-from {
-    opacity: 0;
-    transform: translateX(40px);
+    transform: translateX(calc(-1 * var(--transition-amount)));
 }
 .prev.hero-leave-to {
-    opacity: 0;
-    transform: translateX(-40px);
+    transform: translateX(var(--transition-amount));
 }
+
 
 </style>
