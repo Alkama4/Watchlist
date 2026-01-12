@@ -3,6 +3,7 @@ import { resolveImagePath } from '@/utils/imagePath';
 import { timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg'
 import { ref, onMounted, onUnmounted } from 'vue';
+import PaginationDots from './PaginationDots.vue';
 
 const currentIndex = ref(0);
 const direction = ref('');
@@ -97,8 +98,11 @@ onUnmounted(() => {
                 class="bx bx-chevron-left btn btn-text"
                 @click.stop.prevent="prev"
             ></i>
-             <span>
-                {{ currentIndex }}
+            <span>
+                <PaginationDots
+                    v-model="currentIndex"
+                    :count="heroCards?.titles?.length"
+                />
             </span>
             <i
                 class="bx bx-chevron-right btn btn-text"
@@ -176,15 +180,16 @@ img.logo {
 .controls {
     position: absolute;
     bottom: 0;
-    width: 100%;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
     gap: var(--spacing-sm);
     align-items: center;
-    justify-content: space-evenly;
+    justify-content: center;
 }
 .controls i {
-    font-size: var(--fs-4);
-    padding: 0;
+    font-size: 2.5rem;
+    padding: var(--spacing-sm);
     border-radius: 100px;
 }
 
