@@ -23,7 +23,7 @@ onMounted(async () => {
             :heroCards="homeData?.hero_cards"
         />
 
-        <div class="carousel-wrapper">
+        <div class="carousel-wrapper layout-contained">
             <div v-for="list in homeData?.normal_cards">
                 <h3>{{ list?.header }}</h3>
                 <div class="carousel">

@@ -68,7 +68,7 @@ onUnmounted(() => {
                     class="backdrop"
                 >
                 
-                <div class="details">
+                <div class="details layout-contained">
                     <img
                         :src="resolveImagePath(
                             'original', 
@@ -112,7 +112,8 @@ onUnmounted(() => {
 
 <style scoped>
 .title-hero-cards {
-    height: 700px;
+    height: clamp(60vh, 70vh, 80vh);
+    max-height: 750px;
     width: 100vw;
     overflow: hidden;
     position: relative;
@@ -148,9 +149,9 @@ img.logo {
 }
 
 .details {
+    width: 100%;
     display: flex;
     flex-direction: column;
-    padding: 5vw;
 }
 
 .details .stats {
@@ -159,7 +160,7 @@ img.logo {
 }
 
 .details p {
-
+    max-width: 80ch;
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 4;
