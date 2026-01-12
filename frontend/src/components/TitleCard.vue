@@ -13,42 +13,46 @@ const waiting = ref(null)
 
 async function addTitle() {
     waiting.value = true;
-
-    if (titleInfo.title_id) {
-        await fastApi.titles.library.put(titleInfo.title_id)
-    } else {
-        // Brand new title so need to use tmdb_id
-        const response = await fastApi.titles.post({
-            tmdb_id: titleInfo.tmdb_id,
-            title_type: titleInfo.type
-        })
-
-        // Need to init some data
-        titleInfo.title_id = response.title_id;
-    }
+    try {
+        if (titleInfo.title_id) {
+            await fastApi.titles.library.put(titleInfo.title_id)
+        } else {
+            // Brand new title so need to use tmdb_id
+            const response = await fastApi.titles.post({
+                tmdb_id: titleInfo.tmdb_id,
+                title_type: titleInfo.type
+            })
     
-    // The user_details might not exist regardless if title_id exists.
-    // Based on if its falsy fill in the data that this component uses
-    // and set to be in library
-    if (!titleInfo.user_details) {
-        titleInfo.user_details = {
-            in_library: true,
-            is_favourite: false,
-            in_watchlist: false,
-            watch_count: 0,
+            // Need to init some data
+            titleInfo.title_id = response.title_id;
         }
-    } else {
-        titleInfo.user_details.in_library = true
+        
+        // The user_details might not exist regardless if title_id exists.
+        // Based on if its falsy fill in the data that this component uses
+        // and set to be in library
+        if (!titleInfo.user_details) {
+            titleInfo.user_details = {
+                in_library: true,
+                is_favourite: false,
+                in_watchlist: false,
+                watch_count: 0,
+            }
+        } else {
+            titleInfo.user_details.in_library = true
+        }
+    } finally {
+        waiting.value = false;
     }
-
-    waiting.value = false;
 }
 
 async function removeTitle() {
     waiting.value = true;
-    await fastApi.titles.library.delete(titleInfo.title_id)
-    titleInfo.user_details.in_library = false;
-    waiting.value = false;
+    try {
+        await fastApi.titles.library.delete(titleInfo.title_id)
+        titleInfo.user_details.in_library = false;
+    } finally {
+        waiting.value = false;
+    }
 }
 
 const { titleInfo } = defineProps({
