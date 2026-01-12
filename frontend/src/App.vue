@@ -82,6 +82,7 @@ header {
     border-bottom: 1px solid var(--c-border);
     backdrop-filter: blur(30px);
     background-color: rgba(0, 0, 0, 0.66);
+    z-index: 1000;
 }
 
 nav {
@@ -121,10 +122,6 @@ header .btn {
     font-size: var(--fs-1) !important;
 }
 
-main {    
-    padding: var(--spacing-md);
-    padding-inline: var(--spacing-md);
-}
 main.header-visible {
     margin-top: 64px;
 }

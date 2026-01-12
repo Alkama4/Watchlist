@@ -1,4 +1,4 @@
-<<script setup>
+<script setup>
 import { onMounted, ref } from 'vue'
 import { fastApi } from '@/utils/fastApi';
 import { useAuthStore } from '@/stores/auth';
@@ -103,7 +103,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="account-page">
+    <div class="account-page layout-contained">
         <div class="profile-column">
             <div class="card profile-card">
                 <div class="avatar">

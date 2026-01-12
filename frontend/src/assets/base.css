@@ -27,6 +27,15 @@ body {
     outline: 2px solid var(--c-primary);
 }
 
+.layout-contained {
+    max-width: 1200px;
+    padding: 0 1rem;
+    margin: 0 auto;
+}
+.layout-full {
+    width: 100%;
+}
+
 
 
 /* --------- Inputs --------- */

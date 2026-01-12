@@ -92,7 +92,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div>
+    <div class="search-page layout-contained">
         <h1>Search</h1>
         <form @submit.prevent>
             <label for="typeFilter">Type filter</label>
