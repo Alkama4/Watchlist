@@ -1,0 +1,33 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Vue Dev Server",
+            "type": "shell",
+            "command": "npm run dev",
+            "options": {
+                "cwd": "frontend"
+            },
+            "problemMatcher": [],
+            "isBackground": true
+        },
+        {
+            "label": "FastAPI Dev Server",
+            "type": "shell",
+            "command": "uvicorn app.main:app --reload --host 0.0.0.0",
+            "options": {
+                "cwd": "backend"
+            },
+            "problemMatcher": [],
+            "isBackground": true
+        },
+        {
+            "label": "Start Full Stack",
+            "dependsOn": [
+                "Vue Dev Server",
+                "FastAPI Dev Server"
+            ],
+            "dependsOrder": "parallel"
+        }
+    ]
+}

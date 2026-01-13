@@ -9,6 +9,3 @@ node_modules/
 dist/
 build/
 .env.local
-
-# General
-.vscode
