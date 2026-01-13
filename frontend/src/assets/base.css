@@ -28,11 +28,13 @@ body {
 }
 
 .layout-contained {
-    max-width: 1600px;
+    box-sizing: border-box;
+    max-width: 2000px;
     padding: 0 5vw;
     margin: 0 auto;
 }
 .layout-full {
+    box-sizing: border-box;
     width: 100%;
 }
 

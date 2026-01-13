@@ -6,7 +6,7 @@ const routes = [
         path: '/',
         name: 'Home',
         component: () => import('@/views/HomePage.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, disableHeaderPadding: true}
     },
         {
         path: '/search',

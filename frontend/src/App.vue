@@ -63,7 +63,7 @@ function onSearchSubmit() {
         </nav>
     </header>
 
-    <main :class="{'header-visible': route.meta.requiresAuth}">
+    <main :class="{'header-visible': route.meta.requiresAuth && !route.meta.disableHeaderPadding}">
         <router-view/>
     </main>
 
