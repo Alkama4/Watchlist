@@ -31,3 +31,8 @@ For the database, it’s recommended to run a local PostgreSQL server and connec
 ## Deployment
 
 The project will be deployable via Docker. Images will be automatically built and published to GHCR.
+
+
+## License
+
+This project is licensed under the [AGPL-3.0](LICENSE). See the LICENSE file for details.
