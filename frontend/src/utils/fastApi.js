@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { useAuthStore } from '../stores/auth';
 import { API_BASE_URL } from './conf';
+import { useRouter } from 'vue-router';
 
 
 // Axios client
@@ -47,6 +48,7 @@ apiClient.interceptors.response.use(
                 return apiClient(originalRequest);
             } catch {
                 auth.accessToken = null;
+                router = useRouter();
                 router.push('/login');
             }
         }
