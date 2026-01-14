@@ -1,3 +1,4 @@
+import asyncio
 import httpx
 import os
 
@@ -65,3 +66,35 @@ async def search_multi(query: str, page: int):
             "page": page
         }
     )
+
+
+async def fetch_movie_genres() -> list[dict]:
+    data = await tmdb_get(
+        "/genre/movie/list",
+        params={
+            "language": "en-US"
+        })
+    return data["genres"]
+
+
+async def fetch_tv_genres() -> list[dict]:
+    data = await tmdb_get(
+        "/genre/tv/list",
+        params={
+            "language": "en-US"
+        })
+    return data["genres"]
+
+
+async def fetch_genres() -> list[dict]:
+    movie_genres, tv_genres = await asyncio.gather(
+        fetch_movie_genres(),
+        fetch_tv_genres(),
+    )
+
+    deduped = {
+        genre["id"]: genre
+        for genre in movie_genres + tv_genres
+    }
+
+    return list(deduped.values())
