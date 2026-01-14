@@ -5,6 +5,7 @@ from app import config
 from app.database import engine, Base, AsyncSessionLocal
 from app.routers import auth, titles, media, settings, user_settings, root
 from app.settings.seed import init_settings
+from app.services.genres import update_genres
 
 # Setup ENVs
 config
@@ -17,6 +18,7 @@ async def lifespan(app: FastAPI):
 
     async with AsyncSessionLocal() as db:
         await init_settings(db)
+        await update_genres(db, force_update=False)
 
     yield
 

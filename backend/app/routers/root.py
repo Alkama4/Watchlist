@@ -4,6 +4,7 @@ from app import models, schemas
 from app.dependencies import get_db
 from app.routers.auth import get_current_user
 from app.services.titles.search_internal import run_title_search
+from app.services.genres import update_genres
 
 router = APIRouter()
 
@@ -140,3 +141,13 @@ async def get_home_overview(
         hero_cards=hero_cards,
         normal_cards=normal_cards
     )
+
+
+@router.put("/genres")
+async def update_genres_from_tmdb(db: AsyncSession = Depends(get_db)):
+    """
+    Manually force refresh all genres from TMDB.
+    The genres are always fetched on server boot if they are missing.
+    """
+    await update_genres(db=db, force_update=True)
+    return {"status": "ok", "message": "Genres updated successfully"}

@@ -224,7 +224,7 @@ class Genre(Base):
     __tablename__ = "genres"
 
     genre_id = Column(Integer, primary_key=True, autoincrement=True)
-    tmdb_genre_id = Column(Integer)
+    tmdb_genre_id = Column(Integer, unique=True)
     genre_name = Column(String(255), nullable=False)
     last_updated = Column(
         DateTime(timezone=True),
