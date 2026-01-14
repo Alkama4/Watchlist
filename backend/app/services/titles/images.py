@@ -16,7 +16,7 @@ def select_best_image(images: List[Dict], iso_639_1_list: List[Optional[str]]) -
     for iso in iso_639_1_list:
         candidates = [img for img in images if iso is None or img.get("iso_639_1") == iso]
         if candidates:
-            best_image = max(candidates, key=lambda img: (img.get("vote_average") or 0) * (img.get("vote_count") or 0))
+            best_image = max(candidates, key=lambda img: (img.get("vote_average") or 0))
             return best_image.get("file_path")
     return None
 
