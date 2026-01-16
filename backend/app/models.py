@@ -223,8 +223,7 @@ class UserEpisodeDetails(Base):
 class Genre(Base):
     __tablename__ = "genres"
 
-    genre_id = Column(Integer, primary_key=True, autoincrement=True)
-    tmdb_genre_id = Column(Integer, unique=True)
+    tmdb_genre_id = Column(Integer, primary_key=True)
     genre_name = Column(String(255), nullable=False)
     last_updated = Column(
         DateTime(timezone=True),
@@ -239,7 +238,7 @@ class TitleGenre(Base):
     __tablename__ = "title_genres"
 
     title_id = Column(Integer, ForeignKey("titles.title_id", ondelete="CASCADE"), primary_key=True)
-    genre_id = Column(Integer, ForeignKey("genres.genre_id", ondelete="CASCADE"), primary_key=True)
+    genre_id = Column(Integer, ForeignKey("genres.tmdb_genre_id", ondelete="CASCADE"), primary_key=True)
 
     title = relationship("Title", back_populates="genres")
     genre = relationship("Genre", back_populates="titles")

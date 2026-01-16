@@ -5,6 +5,7 @@ from datetime import datetime
 from app import models
 from app.integrations import tmdb
 from app.services.titles.images import select_best_image, store_image_details
+from app.services.genres import store_title_genres
 
 
 async def store_movie(db: AsyncSession, tmdb_data: dict) -> int:
@@ -58,6 +59,9 @@ async def store_movie(db: AsyncSession, tmdb_data: dict) -> int:
 
     # Store all images
     await store_image_details(db=db, title_id=title_id, images=tmdb_data.get("images", {}))
+
+    # Store genres
+    await store_title_genres(db=db, title_id=title_id, genres=tmdb_data.get("genres", []))
 
     # Pick the best images for defaults
     chosen_images = {
@@ -122,6 +126,9 @@ async def store_tv(db: AsyncSession, tmdb_data: dict) -> int:
 
     # Store all images for the title
     await store_image_details(db=db, title_id=title_id, images=tmdb_data.get("images", {}))
+
+    # Store genres
+    await store_title_genres(db=db, title_id=title_id, genres=tmdb_data.get("genres", []))
 
     # Pick the best images for default paths
     title_images = tmdb_data.get("images", {})
