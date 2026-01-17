@@ -98,8 +98,10 @@ onUnmounted(() => {
                             {{ timeFormatters.minutesToHrAndMin(heroCards?.titles[currentIndex]?.movie_runtime) }}
                         </span>
                         <span v-else>
-                            {{ heroCards?.titles[currentIndex]?.show_season_count }} Season{{ heroCards?.titles[currentIndex]?.show_season_count >= 2 ? 's': '' }},
-                            {{ heroCards?.titles[currentIndex]?.show_episode_count }} Episode{{ heroCards?.titles[currentIndex]?.show_episode_count >= 2 ? 's': '' }}
+                            {{ heroCards?.titles[currentIndex]?.show_season_count }}
+                            Season{{ heroCards?.titles[currentIndex]?.show_season_count == 1 ? '': 's' }},
+                            {{ heroCards?.titles[currentIndex]?.show_episode_count }}
+                            Episode{{ heroCards?.titles[currentIndex]?.show_episode_count == 1 ? '': 's' }}
                         </span>
 
                         <template v-if="heroCards?.titles[currentIndex]?.age_rating">
