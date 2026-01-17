@@ -78,15 +78,43 @@ onUnmounted(() => {
                         :alt="`Backdrop for the title ${heroCards?.titles[currentIndex]?.name}`"
                         class="logo"
                     >
-                    <h2>{{ heroCards?.titles[currentIndex]?.name }}</h2>
+                    <h2>
+                        {{ heroCards?.titles[currentIndex]?.name }}
+                        ({{ timeFormatters.timestampToYear(heroCards?.titles[currentIndex]?.release_date) }})
+                    </h2>
                     <div class="stats">
-                        {{ heroCards?.titles[currentIndex]?.type == 'movie' ? 'Movie' : 'TV' }}
-                        &bull;
-                        {{ timeFormatters.timestampToYear(heroCards?.titles[currentIndex]?.release_date) }}
-                        &bull;
-                        <Tmdb/>
-                        {{ heroCards?.titles[currentIndex]?.tmdb_vote_average }}
-                        ({{ numberFormatters.formatCompactNumber(heroCards?.titles[currentIndex]?.tmdb_vote_count) }} votes)
+                        <span class="tmdb">
+                            <span>
+                                <Tmdb/>
+                                {{ heroCards?.titles[currentIndex]?.tmdb_vote_average }}
+                            </span>
+                            <span class="tiny">
+                                ({{ numberFormatters.formatCompactNumber(heroCards?.titles[currentIndex]?.tmdb_vote_count) }} votes)
+                            </span>
+                        </span>
+
+                        <span>&vert;</span>
+                        <span v-if="heroCards?.titles[currentIndex]?.type == 'movie'">
+                            {{ timeFormatters.minutesToHrAndMin(heroCards?.titles[currentIndex]?.movie_runtime) }}
+                        </span>
+                        <span v-else>
+                            {{ heroCards?.titles[currentIndex]?.show_season_count }} Season{{ heroCards?.titles[currentIndex]?.show_season_count >= 2 ? 's': '' }},
+                            {{ heroCards?.titles[currentIndex]?.show_episode_count }} Episode{{ heroCards?.titles[currentIndex]?.show_episode_count >= 2 ? 's': '' }}
+                        </span>
+
+                        <template v-if="heroCards?.titles[currentIndex]?.age_rating">
+                            <span>&vert;</span>
+                            <span>{{ heroCards?.titles[currentIndex]?.age_rating }}</span>
+                        </template>
+
+                        <template v-if="heroCards?.titles[currentIndex]?.genres?.length > 0">
+                            <span>&vert;</span>
+                            <div class="genres">
+                                <span v-for="genre in heroCards?.titles[currentIndex]?.genres">
+                                    {{ genre }}
+                                </span>
+                            </div>
+                        </template>
                     </div>
                     <p>{{ heroCards?.titles[currentIndex]?.overview }}</p>
                 </RouterLink>
@@ -161,8 +189,33 @@ img.logo {
 }
 
 .details .stats {
+    margin-bottom: var(--spacing-sm);
+
     font-weight: 600;
-    /* color: var(--c-text-2); */
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+}
+
+.details .tmdb {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: var(--fs-1);
+}
+
+.details .tmdb .tiny {
+    font-size: var(--fs-neg-2);
+    font-weight: 500;
+    filter: brightness(0.75);
+}
+
+.details .genres > span::after {
+    content: ", ";
+}
+.details .genres > span:nth-last-child(1)::after {
+    content: "";
 }
 
 .details p {
