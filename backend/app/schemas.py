@@ -144,8 +144,8 @@ class UserEpisodeDetailsOut(BaseModel):
         from_attributes = True
 
 class UserSeasonDetailsOut(BaseModel):
-    notes: Optional[str] = None
-    chosen_poster_image_path: Optional[str] = None
+    notes: Optional[str]
+    chosen_poster_image_path: Optional[str]
 
     class Config:
         from_attributes = True
@@ -155,14 +155,14 @@ class UserTitleDetailsOut(BaseModel):
     is_favourite: bool
     in_watchlist: bool
     watch_count: int
-    notes: Optional[str] = None
-    chosen_poster_image_path: Optional[str] = None
-    chosen_backdrop_image_path: Optional[str] = None
-    chosen_logo_image_path: Optional[str] = None
+    notes: Optional[str]
+    chosen_poster_image_path: Optional[str]
+    chosen_backdrop_image_path: Optional[str]
+    chosen_logo_image_path: Optional[str]
 
-    added_at: Optional[datetime] = None
-    last_watched_at: Optional[datetime] = None
-    last_viewed_at: Optional[datetime] = None
+    added_at: Optional[datetime]
+    last_watched_at: Optional[datetime]
+    last_viewed_at: Optional[datetime]
 
     class Config:
         from_attributes = True
@@ -170,13 +170,13 @@ class UserTitleDetailsOut(BaseModel):
 class EpisodeOut(BaseModel):
     episode_id: int
     episode_number: int
-    episode_name: Optional[str] = None
-    tmdb_vote_average: Optional[float] = None
-    tmdb_vote_count: Optional[float] = None
-    overview: Optional[str] = None
-    air_date: Optional[date] = None
-    runtime: Optional[int] = None
-    default_backdrop_image_path: Optional[str] = None
+    episode_name: Optional[str]
+    tmdb_vote_average: Optional[float]
+    tmdb_vote_count: Optional[float]
+    overview: Optional[str]
+    air_date: Optional[date]
+    runtime: Optional[int]
+    default_backdrop_image_path: Optional[str]
     last_updated: datetime
 
     user_details: Optional[UserEpisodeDetailsOut] = None  
@@ -187,10 +187,10 @@ class EpisodeOut(BaseModel):
 class SeasonOut(BaseModel):
     season_id: int
     season_number: int
-    season_name: Optional[str] = None
-    tmdb_vote_average: Optional[float] = None
-    overview: Optional[str] = None
-    default_poster_image_path: Optional[str] = None
+    season_name: Optional[str]
+    tmdb_vote_average: Optional[float]
+    overview: Optional[str]
+    default_poster_image_path: Optional[str]
     last_updated: datetime
 
     episodes: List[EpisodeOut]
@@ -206,27 +206,27 @@ class TitleOut(BaseModel):
     type: TitleType
     name: str
     name_original: str
-    genres: Optional[List[str]] = None
-    tmdb_vote_average: Optional[float] = None
-    tmdb_vote_count: Optional[int] = None
-    imdb_vote_average: Optional[float] = None
-    imdb_vote_count: Optional[int] = None
-    age_rating: Optional[str] = None
-    overview: Optional[str] = None
-    movie_runtime: Optional[int] = None
-    movie_revenue: Optional[int] = None
-    movie_budget: Optional[int] = None
-    release_date: Optional[date] = None
-    original_language: Optional[str] = None
-    origin_country: Optional[str] = None
-    awards: Optional[str] = None
-    homepage: Optional[str] = None
-    default_poster_image_path: Optional[str] = None
-    default_backdrop_image_path: Optional[str] = None
-    default_logo_image_path: Optional[str] = None
+    genres: list[str] = None
+    tmdb_vote_average: Optional[float]
+    tmdb_vote_count: Optional[int]
+    imdb_vote_average: Optional[float]
+    imdb_vote_count: Optional[int]
+    age_rating: Optional[str]
+    overview: Optional[str]
+    movie_runtime: Optional[int]
+    movie_revenue: Optional[int]
+    movie_budget: Optional[int]
+    release_date: Optional[date]
+    original_language: Optional[str]
+    origin_country: Optional[str]
+    awards: Optional[str]
+    homepage: Optional[str]
+    default_poster_image_path: Optional[str]
+    default_backdrop_image_path: Optional[str]
+    default_logo_image_path: Optional[str]
     last_updated: datetime
 
-    seasons: List[SeasonOut] = []
+    seasons: List[SeasonOut] = Field(default_factory=list)
     user_details: Optional[UserTitleDetailsOut] = None
 
     class Config:

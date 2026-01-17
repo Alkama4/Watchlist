@@ -123,6 +123,7 @@ class Title(Base):
     default_backdrop = relationship("Image", foreign_keys=[default_backdrop_image_path], viewonly=True)
     default_logo = relationship("Image", foreign_keys=[default_logo_image_path], viewonly=True) 
 
+
 class Season(Base):
     __tablename__ = "seasons"
     __table_args__ = (
