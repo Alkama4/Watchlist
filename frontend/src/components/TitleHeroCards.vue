@@ -4,6 +4,7 @@ import { timeFormatters, numberFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg'
 import { ref, onMounted, onUnmounted } from 'vue';
 import PaginationDots from './PaginationDots.vue';
+import { fastApi } from '@/utils/fastApi';
 
 const currentIndex = ref(0);
 const direction = ref('');
@@ -33,6 +34,39 @@ function handleKeydown(e) {
         prev();
     }
 }
+
+async function toggleFavourite() {
+    const title = heroCards.titles[currentIndex.value];
+
+    let response;
+    if (title.user_details.is_favourite) {
+        response = await fastApi.titles.favourite.delete(title.title_id);
+    } else {
+        response = await fastApi.titles.favourite.put(title.title_id);
+    }
+    if (!response) return;
+
+    title.user_details.is_favourite = response.is_favourite;
+}
+
+async function toggleWatchlist() {
+    const title = heroCards.titles[currentIndex.value];
+
+    let response;
+    if (title.user_details.in_watchlist) {
+        response = await fastApi.titles.watchlist.delete(title.title_id);
+    } else {
+        response = await fastApi.titles.watchlist.put(title.title_id);
+    }
+    if (!response) return;
+    
+    title.user_details.in_watchlist = response.in_watchlist;
+}
+
+function adjustCollections() {
+    alert("Collections are under construction.")
+}
+
 
 const { heroCards } = defineProps({
     heroCards: {
@@ -67,59 +101,76 @@ onUnmounted(() => {
                     :alt="`${heroCards?.titles[currentIndex]?.type} backdrop: ${heroCards?.titles[currentIndex]?.name}`"
                     class="backdrop"
                 >
-                
-                <RouterLink :to="`/title/${heroCards?.titles[currentIndex]?.title_id}`" class="details no-deco layout-contained">
-                    <img
-                        :src="resolveImagePath(
-                            'original', 
-                            heroCards?.titles[currentIndex]?.default_logo_image_path, 
-                            heroCards?.titles[currentIndex]?.user_details?.chosen_logo_image_path
-                        )"
-                        :alt="`Backdrop for the title ${heroCards?.titles[currentIndex]?.name}`"
-                        class="logo"
-                    >
-                    <h2>
-                        {{ heroCards?.titles[currentIndex]?.name }}
-                        ({{ timeFormatters.timestampToYear(heroCards?.titles[currentIndex]?.release_date) }})
-                    </h2>
-                    <div class="stats">
-                        <span class="tmdb">
-                            <span>
-                                <Tmdb/>
-                                {{ heroCards?.titles[currentIndex]?.tmdb_vote_average }}
-                            </span>
-                            <span class="tiny">
-                                ({{ numberFormatters.formatCompactNumber(heroCards?.titles[currentIndex]?.tmdb_vote_count) }} votes)
-                            </span>
-                        </span>
-
-                        <span>&vert;</span>
-                        <span v-if="heroCards?.titles[currentIndex]?.type == 'movie'">
-                            {{ timeFormatters.minutesToHrAndMin(heroCards?.titles[currentIndex]?.movie_runtime) }}
-                        </span>
-                        <span v-else>
-                            {{ heroCards?.titles[currentIndex]?.show_season_count }}
-                            Season{{ heroCards?.titles[currentIndex]?.show_season_count == 1 ? '': 's' }},
-                            {{ heroCards?.titles[currentIndex]?.show_episode_count }}
-                            Episode{{ heroCards?.titles[currentIndex]?.show_episode_count == 1 ? '': 's' }}
-                        </span>
-
-                        <template v-if="heroCards?.titles[currentIndex]?.age_rating">
-                            <span>&vert;</span>
-                            <span>{{ heroCards?.titles[currentIndex]?.age_rating }}</span>
-                        </template>
-
-                        <template v-if="heroCards?.titles[currentIndex]?.genres?.length > 0">
-                            <span>&vert;</span>
-                            <div class="genres">
-                                <span v-for="genre in heroCards?.titles[currentIndex]?.genres">
-                                    {{ genre }}
+                <div class="details-wrapper layout-contained">
+                    <RouterLink :to="`/title/${heroCards?.titles[currentIndex]?.title_id}`" class="details no-deco">
+                        <img
+                            :src="resolveImagePath(
+                                'original', 
+                                heroCards?.titles[currentIndex]?.default_logo_image_path, 
+                                heroCards?.titles[currentIndex]?.user_details?.chosen_logo_image_path
+                            )"
+                            :alt="`Backdrop for the title ${heroCards?.titles[currentIndex]?.name}`"
+                            class="logo"
+                        >
+                        <h2>
+                            {{ heroCards?.titles[currentIndex]?.name }}
+                            ({{ timeFormatters.timestampToYear(heroCards?.titles[currentIndex]?.release_date) }})
+                        </h2>
+                        <div class="stats">
+                            <span class="tmdb">
+                                <span>
+                                    <Tmdb/>
+                                    {{ heroCards?.titles[currentIndex]?.tmdb_vote_average }}
                                 </span>
-                            </div>
-                        </template>
+                                <span class="tiny">
+                                    ({{ numberFormatters.formatCompactNumber(heroCards?.titles[currentIndex]?.tmdb_vote_count) }} votes)
+                                </span>
+                            </span>
+    
+                            <span>&vert;</span>
+                            <span v-if="heroCards?.titles[currentIndex]?.type == 'movie'">
+                                {{ timeFormatters.minutesToHrAndMin(heroCards?.titles[currentIndex]?.movie_runtime) }}
+                            </span>
+                            <span v-else>
+                                {{ heroCards?.titles[currentIndex]?.show_season_count }}
+                                Season{{ heroCards?.titles[currentIndex]?.show_season_count == 1 ? '': 's' }},
+                                {{ heroCards?.titles[currentIndex]?.show_episode_count }}
+                                Episode{{ heroCards?.titles[currentIndex]?.show_episode_count == 1 ? '': 's' }}
+                            </span>
+    
+                            <template v-if="heroCards?.titles[currentIndex]?.age_rating">
+                                <span>&vert;</span>
+                                <span>{{ heroCards?.titles[currentIndex]?.age_rating }}</span>
+                            </template>
+    
+                            <template v-if="heroCards?.titles[currentIndex]?.genres?.length > 0">
+                                <span>&vert;</span>
+                                <div class="genres">
+                                    <span v-for="genre in heroCards?.titles[currentIndex]?.genres">
+                                        {{ genre }}
+                                    </span>
+                                </div>
+                            </template>
+                        </div>
+                        <p>{{ heroCards?.titles[currentIndex]?.overview }}</p>
+                    </RouterLink>
+                    <div class="actions">
+                        <i
+                            class="bx bxs-heart btn btn-text btn-square"
+                            :class="{'btn-favourite': heroCards?.titles[currentIndex]?.user_details?.is_favourite }"
+                            @click="toggleFavourite"
+                        ></i>
+                        <i
+                            class="bx bxs-time btn btn-text btn-square"
+                            :class="{'btn-accent': heroCards?.titles[currentIndex]?.user_details?.in_watchlist }"
+                            @click="toggleWatchlist"
+                        ></i>
+                        <i
+                            class="bx bxs-collection btn btn-text btn-square"
+                            @click="adjustCollections"
+                        ></i>
                     </div>
-                    <p>{{ heroCards?.titles[currentIndex]?.overview }}</p>
-                </RouterLink>
+                </div>
             </div>
         </Transition>
         <div class="controls">
@@ -183,16 +234,20 @@ img.logo {
     object-fit: contain;
 }
 
-.details {
+.details-wrapper {
     width: 100%;
     display: flex;
     flex-direction: column;
     z-index: 10;
 }
 
-.details .stats {
-    margin-bottom: var(--spacing-sm);
+.details {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
 
+.details .stats {
     font-weight: 600;
     display: flex;
     gap: var(--spacing-sm);
@@ -204,13 +259,15 @@ img.logo {
     flex-direction: column;
     align-items: center;
     gap: var(--spacing-xs);
-    font-size: var(--fs-1);
+    /* font-size: var(--fs-1); */
 }
 
 .details .tmdb .tiny {
     font-size: var(--fs-neg-2);
     font-weight: 500;
     filter: brightness(0.75);
+    margin-bottom: 0px;
+    margin-top: -4px;
 }
 
 .details .genres > span::after {
@@ -227,6 +284,15 @@ img.logo {
     -webkit-line-clamp: 4;
             line-clamp: 4; 
     -webkit-box-orient: vertical;
+}
+
+
+.actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+.actions i {
+    font-size: var(--fs-2);
 }
 
 .controls {
