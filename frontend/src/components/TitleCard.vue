@@ -71,11 +71,7 @@ const { titleInfo } = defineProps({
         class="title-card"
     >
         <img 
-            :src="resolveImagePath(
-                '800',
-                titleInfo?.default_poster_image_path,
-                titleInfo?.user_details?.chosen_poster_image_path
-            )"
+            :src="resolveImagePath(titleInfo, '800', 'poster')"
             :alt="`${titleInfo?.type === 'tv' ? 'TV show' : 'Movie'} poster: ${titleInfo?.name}`"
         >
     

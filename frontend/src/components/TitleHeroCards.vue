@@ -93,22 +93,14 @@ onUnmounted(() => {
                 class="hero-card"
             >
                 <img
-                    :src="resolveImagePath(
-                        'original', 
-                        heroCards?.titles[currentIndex]?.default_backdrop_image_path, 
-                        heroCards?.titles[currentIndex]?.user_details?.chosen_backdrop_image_path
-                    )"
+                    :src="resolveImagePath(heroCards?.titles[currentIndex], 'original', 'backdrop')"
                     :alt="`${heroCards?.titles[currentIndex]?.type} backdrop: ${heroCards?.titles[currentIndex]?.name}`"
                     class="backdrop"
                 >
                 <div class="details-wrapper layout-contained">
                     <RouterLink :to="`/title/${heroCards?.titles[currentIndex]?.title_id}`" class="details no-deco">
                         <img
-                            :src="resolveImagePath(
-                                'original', 
-                                heroCards?.titles[currentIndex]?.default_logo_image_path, 
-                                heroCards?.titles[currentIndex]?.user_details?.chosen_logo_image_path
-                            )"
+                            :src="resolveImagePath(heroCards?.titles[currentIndex], 'original', 'logo')"
                             :alt="`Backdrop for the title ${heroCards?.titles[currentIndex]?.name}`"
                             class="logo"
                         >
