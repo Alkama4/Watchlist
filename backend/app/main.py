@@ -24,12 +24,17 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+origins=[
+    "http://localhost",
+    "http://watchlist-frontend",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],    # allow all origins
-    allow_methods=["*"],    # allow all methods
-    allow_headers=["*"],    # allow all headers
-    allow_credentials=True, # important to send cookies
+    allow_origins=origins,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    allow_credentials=True, # lets the browser send cookies / auth headers
 )
 
 
