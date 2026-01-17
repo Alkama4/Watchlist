@@ -34,14 +34,24 @@
     --c-primary-lighter: hsl(var(--c-primary-h), var(--c-primary-s), calc(var(--c-primary-l) + var(--c-lighter-amount)));
 
     /* accent */
-    --c-accent-h: 228;
-    --c-accent-s: 72%;
-    --c-accent-l: 60%;
+    --c-accent-h: 214;
+    --c-accent-s: 45%;
+    --c-accent-l: 24%;
     --c-accent: hsl(var(--c-accent-h), var(--c-accent-s), var(--c-accent-l));
     --c-accent-light: hsl(var(--c-accent-h), var(--c-accent-s), calc(var(--c-accent-l) + var(--c-light-amount)));
     --c-accent-lighter: hsl(var(--c-accent-h), var(--c-accent-s), calc(var(--c-accent-l) + var(--c-lighter-amount)));
     --c-accent-transparent: hsla(var(--c-accent-h), var(--c-accent-s), var(--c-accent-l), var(--c-transprent-amount));
     --c-accent-border: hsla(var(--c-accent-h), var(--c-accent-s), var(--c-accent-l), var(--c-transprent-border-amount));
+
+    /* favourite */
+    --c-favourite-h: 345;
+    --c-favourite-s: 65%;
+    --c-favourite-l: 55%;
+    --c-favourite: hsl(var(--c-favourite-h), var(--c-favourite-s), var(--c-favourite-l));
+    --c-favourite-light: hsl(var(--c-favourite-h), var(--c-favourite-s), calc(var(--c-favourite-l) + var(--c-light-amount)));
+    --c-favourite-lighter: hsl(var(--c-favourite-h), var(--c-favourite-s), calc(var(--c-favourite-l) + var(--c-lighter-amount)));
+    --c-favourite-transparent: hsla(var(--c-favourite-h), var(--c-favourite-s), var(--c-favourite-l), var(--c-transprent-amount));
+    --c-favourite-border: hsla(var(--c-favourite-h), var(--c-favourite-s), var(--c-favourite-l), var(--c-transprent-border-amount));
 
     /* neutral */
     --c-neutral-h: 0;
