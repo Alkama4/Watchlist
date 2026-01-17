@@ -209,6 +209,6 @@ async def remove_title_from_watchlist(
         db,
         user.user_id,
         title_id,
-        watchlist=False
+        in_watchlist=False
     )
-    return {"title_id": title_id, "watchlist": False}
+    return {"title_id": title_id, "in_watchlist": False}
