@@ -1,5 +1,5 @@
 from sqlalchemy import select, func, and_
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import aliased, selectinload
 from app import models, schemas
 from app.config import DEFAULT_MAX_QUERY_LIMIT
 from app.settings.config import DEFAULT_SETTINGS
@@ -8,15 +8,21 @@ from app.settings.config import DEFAULT_SETTINGS
 def _base_title_query(user_id: int, utd):
     stmt = (
         select(models.Title, utd)
-        .outerjoin(
-            utd,
-            and_(
-                utd.title_id == models.Title.title_id,
-                utd.user_id == user_id,
+            .outerjoin(
+                utd,
+                and_(
+                    utd.title_id == models.Title.title_id,
+                    utd.user_id == user_id,
+                )
             )
-        ).where(utd.in_library == True)
-    )
+            .where(utd.in_library == True)
 
+            # Load the many‑to‑many link and the Genre it points to
+            .options(
+                selectinload(models.Title.genres)
+                    .selectinload(models.TitleGenre.genre)
+            )
+    )
     return stmt
 
 
@@ -134,7 +140,18 @@ def _build_title_list_out(rows, total, page, size) -> schemas.TitleListOut:
     titles = []
 
     for title, user_details, season_count, episode_count in rows:
-        out = schemas.CompactTitleOut.model_validate(title, from_attributes=True)
+        # Build a dict that omits the relationship fields
+        data = {
+            f: getattr(title, f)
+            for f in schemas.CompactTitleOut.model_fields
+            if hasattr(title, f) and f not in {"genres", "user_details"}
+        }
+
+        out = schemas.CompactTitleOut.model_validate(data)
+
+        # Convert the TitleGenre, Genre chain into plain names
+        out.genres = [tg.genre.genre_name for tg in title.genres] or []
+
         out.show_season_count = season_count
         out.show_episode_count = episode_count
 
