@@ -30,7 +30,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="title-details-page layout-contained">
+    <div class="title-details-page layout-contained layout-spacing-top layout-spacing-bottom">
         <img 
             :src="resolveImagePath(titleDetails, 'original', 'backdrop')"
             :alt="`${titleDetails?.type} backdrop: ${titleDetails?.name}`"

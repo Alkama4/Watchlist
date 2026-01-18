@@ -103,7 +103,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="account-page layout-contained">
+    <div class="account-page layout-contained layout-spacing-top layout-spacing-bottom">
         <div class="profile-column">
             <div class="card profile-card">
                 <div class="avatar">

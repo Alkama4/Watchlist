@@ -37,6 +37,12 @@ body {
     box-sizing: border-box;
     width: 100%;
 }
+.layout-spacing-top {
+    margin-top: var(--spacing-md);
+}
+.layout-spacing-bottom {
+    margin-bottom: var(--spacing-lg);
+}
 
 
 
