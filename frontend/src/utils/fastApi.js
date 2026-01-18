@@ -156,10 +156,9 @@ export const fastApi = {
             method: 'get',
             url: `/titles/${title_id}`
         }),
-        putById: async (title_id, data) => fetchData({
+        putById: async (title_id) => fetchData({
             method: 'put',
-            url: `/titles/${title_id}`,
-            data
+            url: `/titles/${title_id}`
         }),
 
         library: {
