@@ -50,6 +50,12 @@ def _apply_filters(stmt, utd, q: schemas.TitleQueryIn):
     if q.release_year_max:
         stmt = stmt.where(func.extract("year", models.Title.release_date) <= q.release_year_max)
 
+    if q.is_released is not None:
+        if q.is_released is True:
+            stmt = stmt.where(models.Title.release_date <= datetime.now(timezone.utc).date())
+        elif q.is_released is False:
+            stmt = stmt.where(models.Title.release_date > datetime.now(timezone.utc).date())
+
     if q.min_tmdb_rating:
         stmt = stmt.where(models.Title.tmdb_vote_average >= q.min_tmdb_rating)
 
