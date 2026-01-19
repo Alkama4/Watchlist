@@ -89,7 +89,6 @@ export const fastApi = {
             method: 'post',
             url: '/auth/logout'
         }),
-
         me: {
             get: async () => fetchData({
                 method: 'get',
@@ -105,14 +104,13 @@ export const fastApi = {
                 url: '/auth/me',
                 data
             }),
-            password: async (data) => fetchData({
+            updatePassword: async (data) => fetchData({
                 method: 'post',
                 url: '/auth/me/password',
                 data
             })
         }
     },
-
     settings: {
         get: async () => fetchData({
             method: 'get',
@@ -123,7 +121,6 @@ export const fastApi = {
             url: `/settings/${key}`
         }),
     },
-
     user_settings: {
         get: async () => fetchData({
             method: 'get',
@@ -135,66 +132,61 @@ export const fastApi = {
             data
         }),
     },
-
     titles: {
-        post: async (data) => fetchData({
-            method: 'post',
-            url: '/titles/',
-            data
-        }),
         search: async (data) => fetchData({
             method: 'post',
             url: '/titles/search',
             data
         }),
-        searchTMDB: async (data) => fetchData({
+        searchTmdb: async (data) => fetchData({
             method: 'post',
             url: '/titles/search/tmdb',
             data
         }),
-        getById: async (title_id) => fetchData({
+        addToLibrary: async (data) => fetchData({
+            method: 'post',
+            url: '/titles/library',
+            data
+        }),
+        getById: async (titleId) => fetchData({
             method: 'get',
-            url: `/titles/${title_id}`
+            url: `/titles/${titleId}`
         }),
-        putById: async (title_id) => fetchData({
+        updateById: async (titleId) => fetchData({
             method: 'put',
-            url: `/titles/${title_id}`
+            url: `/titles/${titleId}`
         }),
-
         library: {
-            put: async (title_id) => fetchData({
+            add: async (titleId) => fetchData({
                 method: 'put',
-                url: `/titles/${title_id}/library`
+                url: `/titles/${titleId}/library`
             }),
-            delete: async (title_id) => fetchData({
+            remove: async (titleId) => fetchData({
                 method: 'delete',
-                url: `/titles/${title_id}/library`
+                url: `/titles/${titleId}/library`
             })
         },
-
-        favourite: {
-            put: async (title_id) => fetchData({
-                method: 'put',
-                url: `/titles/${title_id}/favourite`
-            }),
-            delete: async (title_id) => fetchData({
-                method: 'delete',
-                url: `/titles/${title_id}/favourite`
-            })
-        },
-        
-        watchlist: {
-            put: async (title_id) => fetchData({
-                method: 'put',
-                url: `/titles/${title_id}/watchlist`
-            }),
-            delete: async (title_id) => fetchData({
-                method: 'delete',
-                url: `/titles/${title_id}/watchlist`
-            })
-        }
+        setWatchCount: async (titleId, watchCount) => fetchData({
+            method: 'put',
+            url: `/titles/${titleId}/watch_count`,
+            data: { watch_count: watchCount }
+        }),
+        setFavourite: async (titleId, isFavourite) => fetchData({
+            method: 'put',
+            url: `/titles/${titleId}/favourite`,
+            data: { is_favourite: isFavourite }
+        }),
+        setWatchlist: async (titleId, inWatchlist) => fetchData({
+            method: 'put',
+            url: `/titles/${titleId}/watchlist`,
+            data: { in_watchlist: inWatchlist }
+        }),
+        updateNotes: async (titleId, notes) => fetchData({
+            method: 'put',
+            url: `/titles/${titleId}/notes`,
+            data: { notes }
+        })
     },
-
     media: {
         image: async (size, image_path) => fetchData({
             method: 'get',

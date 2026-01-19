@@ -40,9 +40,9 @@ async function toggleFavourite() {
 
     let response;
     if (title.user_details.is_favourite) {
-        response = await fastApi.titles.favourite.delete(title.title_id);
+        response = await fastApi.titles.setFavourite(title.title_id, false);
     } else {
-        response = await fastApi.titles.favourite.put(title.title_id);
+        response = await fastApi.titles.setFavourite(title.title_id, true);
     }
     if (!response) return;
 
@@ -54,9 +54,9 @@ async function toggleWatchlist() {
 
     let response;
     if (title.user_details.in_watchlist) {
-        response = await fastApi.titles.watchlist.delete(title.title_id);
+        response = await fastApi.titles.setWatchlist(title.title_id, false);
     } else {
-        response = await fastApi.titles.watchlist.put(title.title_id);
+        response = await fastApi.titles.setWatchlist(title.title_id, true);
     }
     if (!response) return;
     

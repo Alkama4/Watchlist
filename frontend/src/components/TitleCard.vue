@@ -15,10 +15,10 @@ async function addTitle() {
     waiting.value = true;
     try {
         if (titleInfo.title_id) {
-            await fastApi.titles.library.put(titleInfo.title_id)
+            await fastApi.titles.library.add(titleInfo.title_id)
         } else {
             // Brand new title so need to use tmdb_id
-            const response = await fastApi.titles.post({
+            const response = await fastApi.titles.addToLibrary({
                 tmdb_id: titleInfo.tmdb_id,
                 title_type: titleInfo.type
             })
@@ -48,7 +48,7 @@ async function addTitle() {
 async function removeTitle() {
     waiting.value = true;
     try {
-        await fastApi.titles.library.delete(titleInfo.title_id)
+        await fastApi.titles.library.remove(titleInfo.title_id)
         titleInfo.user_details.in_library = false;
     } finally {
         waiting.value = false;

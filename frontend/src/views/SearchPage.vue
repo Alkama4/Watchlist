@@ -21,7 +21,7 @@ async function search() {
     resetResults(); // Wipe values to prevent old images from sticking
     try {
         if (searchStore.tmdbFallback) {
-            searchResults.value = await fastApi.titles.searchTMDB({
+            searchResults.value = await fastApi.titles.searchTmdb({
                 query: searchStore.query,
             });
         } else {

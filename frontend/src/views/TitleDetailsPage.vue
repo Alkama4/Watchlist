@@ -12,7 +12,7 @@ const waiting = ref({})
 async function updateTitleDetails() {
     waiting.value.titleUpdate = true;
     try {
-        await fastApi.titles.putById(titleDetails.value.title_id);
+        await fastApi.titles.updateById(titleDetails.value.title_id);
         await fetchTitleDetails();
     } finally {
         waiting.value.titleUpdate = false;
