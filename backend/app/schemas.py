@@ -220,6 +220,7 @@ class TitleOut(BaseModel):
     title_type: TitleType
     name: str
     name_original: str
+    tagline: str
     genres: list[str] = None
     tmdb_vote_average: Optional[float]
     tmdb_vote_count: Optional[int]

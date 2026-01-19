@@ -62,7 +62,7 @@ async function addToLibrary() {
 }
 
 async function setTitleWatchCount(count) {
-    const response = await fastApi.titles.setTitleWatchCount(titleDetails.value.title_id, count);
+    const response = await fastApi.titles.setWatchCount(titleDetails.value.title_id, count);
     console.log(response);
     titleDetails.value.user_details.watch_count = response.watch_count;
 }
@@ -94,6 +94,8 @@ onMounted(async () => {
         >
 
         <h1>{{ titleDetails?.name }}</h1>
+        <q>{{ titleDetails?.tagline }}</q>
+
         <div class="actions">
             <i
                 class="bx bxs-heart btn btn-text btn-square"
@@ -109,6 +111,7 @@ onMounted(async () => {
                 class="bx bxs-collection btn btn-text btn-square"
                 @click="adjustCollections"
             ></i>
+
             <!-- Move actions below to a drop down -->
 
             <i
