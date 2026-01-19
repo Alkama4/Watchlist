@@ -228,3 +228,19 @@ async def add_existing_title_to_library(
         watch_count=data.watch_count
     )
     return {"title_id": title_id, "watch_count": data.watch_count}
+
+
+@router.put("/{title_id}/notes")
+async def add_existing_title_to_library(
+    title_id: int,
+    data: schemas.TitleNotesIn,
+    user: models.User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    await set_user_title_value(
+        db,
+        user.user_id,
+        title_id,
+        notes=data.notes
+    )
+    return {"title_id": title_id, "notes": data.notes}
