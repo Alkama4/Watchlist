@@ -3,7 +3,7 @@ from sqlalchemy.dialects.postgresql import insert
 from app import models
 
 
-async def set_user_title_flags(
+async def set_user_title_value(
     db: AsyncSession,
     user_id: int,
     title_id: int,

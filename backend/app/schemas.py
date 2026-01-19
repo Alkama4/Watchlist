@@ -58,6 +58,9 @@ class TitleIn(BaseModel):
     tmdb_id: int
     title_type: TitleType
 
+class TitleWatchCountIn(BaseModel):
+    watch_count: int
+
 class TMDBTitleQueryIn(BaseModel):
     query: str
     page: Optional[int] = Field(1, ge=1)

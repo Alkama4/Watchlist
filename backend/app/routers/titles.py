@@ -9,7 +9,7 @@ from app.services.titles.read import fetch_title_with_user_details
 from app.services.titles.search_internal import run_title_search
 from app.services.titles.search_tmdb import run_and_process_tmdb_search
 from app.services.titles.store import store_movie, store_tv
-from app.services.titles.user_flags import set_user_title_flags
+from app.services.titles.user_flags import set_user_title_value
 
 router = APIRouter()
 
@@ -46,7 +46,7 @@ async def add_new_title_to_watchlist(
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
-    await set_user_title_flags(
+    await set_user_title_value(
         db,
         user.user_id,
         title_id,
@@ -128,7 +128,7 @@ async def add_existing_title_to_library(
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    await set_user_title_flags(
+    await set_user_title_value(
         db,
         user.user_id,
         title_id,
@@ -143,7 +143,7 @@ async def remove_existing_title_from_library(
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    await set_user_title_flags(
+    await set_user_title_value(
         db,
         user.user_id,
         title_id,
@@ -158,7 +158,7 @@ async def add_title_to_favourites(
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    await set_user_title_flags(
+    await set_user_title_value(
         db,
         user.user_id,
         title_id,
@@ -174,7 +174,7 @@ async def remove_title_from_favourites(
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    await set_user_title_flags(
+    await set_user_title_value(
         db,
         user.user_id,
         title_id,
@@ -189,7 +189,7 @@ async def add_title_to_watchlist(
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    await set_user_title_flags(
+    await set_user_title_value(
         db,
         user.user_id,
         title_id,
@@ -205,10 +205,26 @@ async def remove_title_from_watchlist(
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    await set_user_title_flags(
+    await set_user_title_value(
         db,
         user.user_id,
         title_id,
         in_watchlist=False
     )
     return {"title_id": title_id, "in_watchlist": False}
+
+
+@router.put("/{title_id}/watch_count")
+async def add_existing_title_to_library(
+    title_id: int,
+    data: schemas.TitleWatchCountIn,
+    user: models.User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    await set_user_title_value(
+        db,
+        user.user_id,
+        title_id,
+        watch_count=data.watch_count
+    )
+    return {"title_id": title_id, "watch_count": data.watch_count}
