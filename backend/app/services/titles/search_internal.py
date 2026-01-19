@@ -1,26 +1,34 @@
 from datetime import datetime, timezone
 from sqlalchemy import select, func, and_, exists, or_
 from sqlalchemy.orm import aliased, selectinload
-from app import models, schemas
 from app.config import DEFAULT_MAX_QUERY_LIMIT
 from app.settings.config import DEFAULT_SETTINGS
 from app.models import (
+    SortBy,
+    SortDirection,
     Title,
     Season,
     Episode,
+    UserSetting,
     UserTitleDetails,
-    UserSeasonDetails,
-    UserEpisodeDetails
+    UserEpisodeDetails,
+    TitleGenre
+)
+from app.schemas import (
+    CompactTitleOut,
+    CompactUserTitleDetailsOut,
+    TitleListOut,
+    TitleQueryIn,
 )
 
 
 def _base_title_query(user_id: int, utd):
     stmt = (
-        select(models.Title, utd)
+        select(Title, utd)
             .outerjoin(
                 utd,
                 and_(
-                    utd.title_id == models.Title.title_id,
+                    utd.title_id == Title.title_id,
                     utd.user_id == user_id,
                 )
             )
@@ -28,24 +36,24 @@ def _base_title_query(user_id: int, utd):
 
             # Load the many‑to‑many link and the Genre it points to
             .options(
-                selectinload(models.Title.genres)
-                    .selectinload(models.TitleGenre.genre)
+                selectinload(Title.genres)
+                    .selectinload(TitleGenre.genre)
             )
     )
     return stmt
 
 
-def _apply_filters(stmt, utd, q: schemas.TitleQueryIn):
+def _apply_filters(stmt, utd, q: TitleQueryIn):
 
     # TODO: setup a smarter search. get rid of special chars and split by space and just try to fit the sections to the name or original name
 
     # TODO: setup remaining missing filters that are in the TitleQueryIn schema
 
     if q.query:
-        stmt = stmt.where(models.Title.name.ilike(f"%{q.query}%"))
+        stmt = stmt.where(Title.name.ilike(f"%{q.query}%"))
 
     if q.title_type:
-        stmt = stmt.where(models.Title.title_type == q.title_type)
+        stmt = stmt.where(Title.title_type == q.title_type)
 
     if q.is_favourite is not None:
         stmt = stmt.where(utd.is_favourite == q.is_favourite)
@@ -113,32 +121,32 @@ def _apply_filters(stmt, utd, q: schemas.TitleQueryIn):
             )
 
     if q.release_year_min:
-        stmt = stmt.where(func.extract("year", models.Title.release_date) >= q.release_year_min)
+        stmt = stmt.where(func.extract("year", Title.release_date) >= q.release_year_min)
 
     if q.release_year_max:
-        stmt = stmt.where(func.extract("year", models.Title.release_date) <= q.release_year_max)
+        stmt = stmt.where(func.extract("year", Title.release_date) <= q.release_year_max)
 
     if q.is_released is not None:
         if q.is_released is True:
-            stmt = stmt.where(models.Title.release_date <= datetime.now(timezone.utc).date())
+            stmt = stmt.where(Title.release_date <= datetime.now(timezone.utc).date())
         elif q.is_released is False:
-            stmt = stmt.where(models.Title.release_date > datetime.now(timezone.utc).date())
+            stmt = stmt.where(Title.release_date > datetime.now(timezone.utc).date())
 
     if q.min_tmdb_rating:
-        stmt = stmt.where(models.Title.tmdb_vote_average >= q.min_tmdb_rating)
+        stmt = stmt.where(Title.tmdb_vote_average >= q.min_tmdb_rating)
 
     if q.min_imdb_rating:
-        stmt = stmt.where(models.Title.imdb_vote_average >= q.min_imdb_rating)
+        stmt = stmt.where(Title.imdb_vote_average >= q.min_imdb_rating)
 
     return stmt
 
 
 async def _get_user_sort_settings(user_id: int, db) -> dict:
     result = await db.execute(
-        select(models.UserSetting)
+        select(UserSetting)
         .where(
-            models.UserSetting.user_id == user_id,
-            models.UserSetting.key.in_(["sort_by", "sort_direction"])
+            UserSetting.user_id == user_id,
+            UserSetting.key.in_(["sort_by", "sort_direction"])
         )
     )
     rows = result.scalars().all()
@@ -146,55 +154,55 @@ async def _get_user_sort_settings(user_id: int, db) -> dict:
 
 
 async def _apply_sorting_with_user_settings(
-    stmt, q: schemas.TitleQueryIn, user_id: int, db, utd
+    stmt, q: TitleQueryIn, user_id: int, db, utd
 ):
     sort_by = q.sort_by
     sort_dir = q.sort_direction
 
     # Load user settings only if the caller asked for "default"
-    if sort_by is models.SortBy.default or sort_dir is models.SortDirection.default:
+    if sort_by is SortBy.default or sort_dir is SortDirection.default:
         user_settings = await _get_user_sort_settings(user_id, db)
 
-        if sort_by is models.SortBy.default:
-            sort_by = models.SortBy(user_settings.get(
+        if sort_by is SortBy.default:
+            sort_by = SortBy(user_settings.get(
                 "sort_by", DEFAULT_SETTINGS.sort_by
             ))
 
-        if sort_dir is models.SortDirection.default:
-            sort_dir = models.SortDirection(user_settings.get(
+        if sort_dir is SortDirection.default:
+            sort_dir = SortDirection(user_settings.get(
                 "sort_direction", DEFAULT_SETTINGS.sort_direction
             ))
 
     # mapping from enum to column
     sort_map = {
-        models.SortBy.tmdb_score: models.Title.tmdb_vote_average,
-        models.SortBy.imdb_score: models.Title.imdb_vote_average,
-        models.SortBy.popularity: models.Title.tmdb_vote_count,
-        models.SortBy.title_name: models.Title.name,
-        models.SortBy.runtime: models.Title.movie_runtime,
-        models.SortBy.release_date: models.Title.release_date,
-        models.SortBy.last_viewed_at: utd.last_viewed_at,
-        models.SortBy.random: func.random()
+        SortBy.tmdb_score: Title.tmdb_vote_average,
+        SortBy.imdb_score: Title.imdb_vote_average,
+        SortBy.popularity: Title.tmdb_vote_count,
+        SortBy.title_name: Title.name,
+        SortBy.runtime: Title.movie_runtime,
+        SortBy.release_date: Title.release_date,
+        SortBy.last_viewed_at: utd.last_viewed_at,
+        SortBy.random: func.random()
     }
 
-    col = sort_map.get(sort_by, models.Title.tmdb_vote_average)
+    col = sort_map.get(sort_by, Title.tmdb_vote_average)
     stmt = stmt.order_by(
-        col.desc() if sort_dir is models.SortDirection.desc else col.asc()
+        col.desc() if sort_dir is SortDirection.desc else col.asc()
     )
     return stmt
 
 
 def _add_subqueries(stmt):
     season_count_subq = (
-        select(func.count(models.Season.season_id))
-        .where(models.Season.title_id == models.Title.title_id)
+        select(func.count(Season.season_id))
+        .where(Season.title_id == Title.title_id)
         .scalar_subquery()
     )
 
     episode_count_subq = (
-        select(func.count(models.Episode.episode_id))
-        .join(models.Season, models.Season.season_id == models.Episode.season_id)
-        .where(models.Season.title_id == models.Title.title_id)
+        select(func.count(Episode.episode_id))
+        .join(Season, Season.season_id == Episode.season_id)
+        .where(Season.title_id == Title.title_id)
         .scalar_subquery()
     )
 
@@ -204,24 +212,24 @@ def _add_subqueries(stmt):
     )
 
 
-def _apply_pagination(stmt, q: schemas.TitleQueryIn):
+def _apply_pagination(stmt, q: TitleQueryIn):
     page = q.page_number or 1
     size = q.page_size or DEFAULT_MAX_QUERY_LIMIT
     return stmt.limit(size).offset((page - 1) * size), page, size
 
 
-def _build_title_list_out(rows, total, page, size) -> schemas.TitleListOut:
+def _build_title_list_out(rows, total, page, size) -> TitleListOut:
     titles = []
 
     for title, user_details, season_count, episode_count in rows:
         # Build a dict that omits the relationship fields
         data = {
             f: getattr(title, f)
-            for f in schemas.CompactTitleOut.model_fields
+            for f in CompactTitleOut.model_fields
             if hasattr(title, f) and f not in {"genres", "user_details"}
         }
 
-        out = schemas.CompactTitleOut.model_validate(data)
+        out = CompactTitleOut.model_validate(data)
 
         # Convert the TitleGenre, Genre chain into plain names
         out.genres = [tg.genre.genre_name for tg in title.genres] or []
@@ -230,13 +238,13 @@ def _build_title_list_out(rows, total, page, size) -> schemas.TitleListOut:
         out.show_episode_count = episode_count
 
         if user_details:
-            out.user_details = schemas.CompactUserTitleDetailsOut.model_validate(
+            out.user_details = CompactUserTitleDetailsOut.model_validate(
                 user_details, from_attributes=True
             )
 
         titles.append(out)
 
-    return schemas.TitleListOut(
+    return TitleListOut(
         titles=titles,
         page_number=page,
         page_size=size,
@@ -248,10 +256,10 @@ def _build_title_list_out(rows, total, page, size) -> schemas.TitleListOut:
 async def run_title_search(
     db,
     user_id: int,
-    q: schemas.TitleQueryIn
-) -> schemas.TitleListOut:
+    q: TitleQueryIn
+) -> TitleListOut:
     
-    utd = aliased(models.UserTitleDetails)
+    utd = aliased(UserTitleDetails)
 
     base_stmt = _base_title_query(user_id, utd)
     base_stmt = _apply_filters(base_stmt, utd, q)
