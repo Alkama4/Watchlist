@@ -88,8 +88,8 @@ class TitleQueryIn(BaseModel):
     release_year_min: Optional[int] = None
     release_year_max: Optional[int] = None
     is_released: Optional[int] = None
-    genres_include: Optional[List[str]] = None
-    genres_exclude: Optional[List[str]] = None
+    genres_include: Optional[List[int]] = None
+    genres_exclude: Optional[List[int]] = None
     min_tmdb_rating: Optional[int] = Field(None, ge=0, le=10)
     min_imdb_rating: Optional[int] = Field(None, ge=0, le=10)
     sort_by: Optional[SortBy] = SortBy.default

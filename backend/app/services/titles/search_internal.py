@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from sqlalchemy import select, func, and_, exists, or_
+from sqlalchemy import select, func, and_, exists, or_, not_
 from sqlalchemy.orm import aliased, selectinload
 from app.config import DEFAULT_MAX_QUERY_LIMIT
 from app.settings.config import DEFAULT_SETTINGS
@@ -46,8 +46,6 @@ def _base_title_query(user_id: int, utd):
 def _apply_filters(stmt, utd, q: TitleQueryIn):
 
     # TODO: setup a smarter search. get rid of special chars and split by space and just try to fit the sections to the name or original name
-
-    # TODO: setup remaining missing filters that are in the TitleQueryIn schema
 
     if q.query:
         stmt = stmt.where(Title.name.ilike(f"%{q.query}%"))
@@ -131,6 +129,33 @@ def _apply_filters(stmt, utd, q: TitleQueryIn):
             stmt = stmt.where(Title.release_date <= datetime.now(timezone.utc).date())
         elif q.is_released is False:
             stmt = stmt.where(Title.release_date > datetime.now(timezone.utc).date())
+
+    if q.genres_include:
+        stmt = stmt.where(
+            and_(
+                *[
+                    exists().where(
+                        and_(
+                            TitleGenre.title_id == Title.title_id,
+                            TitleGenre.genre_id == genre_id
+                        )
+                    )
+                    for genre_id in q.genres_include
+                ]
+            )
+        )
+
+    if q.genres_exclude:
+        stmt = stmt.where(
+            not_(
+                exists().where(
+                    and_(
+                        TitleGenre.title_id == Title.title_id,
+                        TitleGenre.genre_id.in_(q.genres_exclude)
+                    )
+                )
+            )
+        )
 
     if q.min_tmdb_rating:
         stmt = stmt.where(Title.tmdb_vote_average >= q.min_tmdb_rating)
