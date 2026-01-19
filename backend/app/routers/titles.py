@@ -9,7 +9,7 @@ from app.services.titles.read import fetch_title_with_user_details
 from app.services.titles.search_internal import run_title_search
 from app.services.titles.search_tmdb import run_and_process_tmdb_search
 from app.services.titles.store import store_movie, store_tv
-from app.services.titles.user_flags import set_user_title_value
+from app.services.titles.user_flags import set_user_title_value, set_title_watch_count
 
 router = APIRouter()
 
@@ -159,12 +159,11 @@ async def update_title_watch_count(
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    await set_user_title_value(
+    await set_title_watch_count(
         db,
         user.user_id,
         title_id,
         watch_count=data.watch_count,
-        in_library=True
     )
     return {
         "title_id": title_id,
