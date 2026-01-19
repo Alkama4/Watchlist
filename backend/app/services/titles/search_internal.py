@@ -95,26 +95,39 @@ def _apply_filters(stmt, utd, q: TitleQueryIn):
             )
 
         elif q.watch_status == "completed":
-            # title watch_count >= 1 OR all released episodes have > 0
-            episode_subq = (
-                select(UserEpisodeDetails.episode_id)
-                .join(Episode, Episode.episode_id == UserEpisodeDetails.episode_id)
+            # Subquery: all released episodes of the title
+            released_episodes_subq = (
+                select(Episode.episode_id)
                 .join(Season, Season.season_id == Episode.season_id)
                 .where(
                     Season.title_id == Title.title_id,
-                    UserEpisodeDetails.user_id == UserTitleDetails.user_id,
-                    # check for released episodes not watched
+                    Episode.air_date <= datetime.now(timezone.utc).date()
+                )
+            ).subquery()
+
+            # Subquery: any released episode not watched (including missing UserEpisodeDetails)
+            unwatched_episodes_subq = (
+                select(released_episodes_subq.c.episode_id)
+                .outerjoin(
+                    UserEpisodeDetails,
+                    and_(
+                        UserEpisodeDetails.episode_id == released_episodes_subq.c.episode_id,
+                        UserEpisodeDetails.user_id == utd.user_id
+                    )
+                )
+                .where(
                     or_(
                         UserEpisodeDetails.watch_count == 0,
                         UserEpisodeDetails.watch_count.is_(None)
-                    ),
-                    Episode.air_date <= datetime.now(timezone.utc).date()
+                    )
                 )
             )
+
+            # Completed if either movie watched or no unwatched released episodes exist
             stmt = stmt.where(
                 or_(
-                    UserTitleDetails.watch_count > 0,
-                    ~exists(episode_subq)
+                    utd.watch_count > 0,
+                    ~exists(unwatched_episodes_subq)
                 )
             )
 
