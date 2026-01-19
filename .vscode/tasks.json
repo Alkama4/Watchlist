@@ -27,7 +27,8 @@
                 "Vue Dev Server",
                 "FastAPI Dev Server"
             ],
-            "dependsOrder": "parallel"
+            "dependsOrder": "parallel",
+            "problemMatcher": []
         }
     ]
 }
