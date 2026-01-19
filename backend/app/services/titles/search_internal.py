@@ -1,8 +1,17 @@
-from sqlalchemy import select, func, and_
+from datetime import datetime, timezone
+from sqlalchemy import select, func, and_, exists, or_
 from sqlalchemy.orm import aliased, selectinload
 from app import models, schemas
 from app.config import DEFAULT_MAX_QUERY_LIMIT
 from app.settings.config import DEFAULT_SETTINGS
+from app.models import (
+    Title,
+    Season,
+    Episode,
+    UserTitleDetails,
+    UserSeasonDetails,
+    UserEpisodeDetails
+)
 
 
 def _base_title_query(user_id: int, utd):
@@ -43,6 +52,65 @@ def _apply_filters(stmt, utd, q: schemas.TitleQueryIn):
 
     if q.in_watchlist is not None:
         stmt = stmt.where(utd.in_watchlist == q.in_watchlist)
+
+    if q.watch_status is not None:
+        if q.watch_status == "not_watched":
+            # watch_count is 0 AND all episodes either have 0 or no entry
+            episode_subq = (
+                select(UserEpisodeDetails.episode_id)
+                .join(Episode, Episode.episode_id == UserEpisodeDetails.episode_id)
+                .join(Season, Season.season_id == Episode.season_id)
+                .where(
+                    Season.title_id == Title.title_id,
+                    UserEpisodeDetails.user_id == utd.user_id,
+                    UserEpisodeDetails.watch_count > 0
+                )
+            )
+            stmt = stmt.where(
+                utd.watch_count == 0,
+                ~exists(episode_subq)
+            )
+
+        elif q.watch_status == "partial":
+            # watch_count is 0 but at least one episode has > 0
+            episode_subq = (
+                select(UserEpisodeDetails.episode_id)
+                .join(Episode, Episode.episode_id == UserEpisodeDetails.episode_id)
+                .join(Season, Season.season_id == Episode.season_id)
+                .where(
+                    Season.title_id == Title.title_id,
+                    UserEpisodeDetails.user_id == utd.user_id,
+                    UserEpisodeDetails.watch_count > 0
+                )
+            )
+            stmt = stmt.where(
+                utd.watch_count == 0,
+                exists(episode_subq)
+            )
+
+        elif q.watch_status == "completed":
+            # title watch_count >= 1 OR all released episodes have > 0
+            episode_subq = (
+                select(UserEpisodeDetails.episode_id)
+                .join(Episode, Episode.episode_id == UserEpisodeDetails.episode_id)
+                .join(Season, Season.season_id == Episode.season_id)
+                .where(
+                    Season.title_id == Title.title_id,
+                    UserEpisodeDetails.user_id == UserTitleDetails.user_id,
+                    # check for released episodes not watched
+                    or_(
+                        UserEpisodeDetails.watch_count == 0,
+                        UserEpisodeDetails.watch_count.is_(None)
+                    ),
+                    Episode.air_date <= datetime.now(timezone.utc).date()
+                )
+            )
+            stmt = stmt.where(
+                or_(
+                    UserTitleDetails.watch_count > 0,
+                    ~exists(episode_subq)
+                )
+            )
 
     if q.release_year_min:
         stmt = stmt.where(func.extract("year", models.Title.release_date) >= q.release_year_min)
