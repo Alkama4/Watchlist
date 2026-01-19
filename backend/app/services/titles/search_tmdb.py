@@ -22,14 +22,14 @@ async def _fetch_existing_titles_with_user(
             )
         )
         .where(
-            tuple_(models.Title.tmdb_id, models.Title.type).in_(tmdb_items)
+            tuple_(models.Title.tmdb_id, models.Title.title_type).in_(tmdb_items)
         )
     )
 
     rows = (await db.execute(stmt)).all()
 
     return {
-        (title.tmdb_id, title.type): (title, user_details)
+        (title.tmdb_id, title.title_type): (title, user_details)
         for title, user_details in rows
     }
 
@@ -69,7 +69,7 @@ async def run_and_process_tmdb_search(
         compact_titles.append({
             "title_id": title.title_id if title else None,
             "tmdb_id": r["id"],
-            "type": r["media_type"],
+            "title_type": r["media_type"],
             "name": r.get("title") or r.get("name"),
             "release_date": r.get("release_date") or r.get("first_air_date"),
             "tmdb_vote_average": r.get("vote_average"),

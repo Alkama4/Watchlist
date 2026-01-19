@@ -45,7 +45,7 @@ def _apply_filters(stmt, utd, q: schemas.TitleQueryIn):
         stmt = stmt.where(models.Title.name.ilike(f"%{q.query}%"))
 
     if q.title_type:
-        stmt = stmt.where(models.Title.type == q.title_type)
+        stmt = stmt.where(models.Title.title_type == q.title_type)
 
     if q.is_favourite is not None:
         stmt = stmt.where(utd.is_favourite == q.is_favourite)

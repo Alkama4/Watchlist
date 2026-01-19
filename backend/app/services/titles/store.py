@@ -16,7 +16,7 @@ async def store_movie(db: AsyncSession, tmdb_data: dict) -> int:
     stmt = insert(models.Title).values(
         tmdb_id=tmdb_data["id"],
         imdb_id=tmdb_data["imdb_id"],
-        type=models.TitleType.movie,
+        title_type=models.TitleType.movie,
         name=tmdb_data["title"],
         name_original=tmdb_data["original_title"],
         tagline=tmdb_data["tagline"],
@@ -93,7 +93,7 @@ async def store_tv(db: AsyncSession, tmdb_data: dict) -> int:
     stmt = insert(models.Title).values(
         tmdb_id=tmdb_data["id"],
         imdb_id=tmdb_data["external_ids"]["imdb_id"],
-        type=models.TitleType.tv,
+        title_type=models.TitleType.tv,
         name=tmdb_data["name"],
         name_original=tmdb_data["original_name"],
         tagline=tmdb_data["tagline"],

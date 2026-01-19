@@ -72,7 +72,7 @@ const { titleInfo } = defineProps({
     >
         <img 
             :src="resolveImagePath(titleInfo, '800', 'poster')"
-            :alt="`${titleInfo?.type === 'tv' ? 'TV show' : 'Movie'} poster: ${titleInfo?.name}`"
+            :alt="`${titleInfo?.title_type === 'tv' ? 'TV show' : 'Movie'} poster: ${titleInfo?.name}`"
         >
     
         <div class="button-row" v-if="searchStore.tmdbFallback" @click.prevent>
@@ -80,7 +80,7 @@ const { titleInfo } = defineProps({
                 v-if="!titleInfo?.user_details?.in_library" 
                 class="btn-primary"
                 :loading="waiting"
-                @click="addTitle(titleInfo.title_id, titleInfo.tmdb_id, titleInfo.type)"
+                @click="addTitle(titleInfo.title_id, titleInfo.tmdb_id, titleInfo.title_type)"
             >
                 <i class="bx bx-plus"></i>
                 Add
@@ -93,7 +93,7 @@ const { titleInfo } = defineProps({
 
             <a 
                 class="btn no-deco"
-                :href="`https://www.themoviedb.org/${titleInfo?.type}/${titleInfo?.tmdb_id}`"
+                :href="`https://www.themoviedb.org/${titleInfo?.title_type}/${titleInfo?.tmdb_id}`"
                 target="_blank"
                 @click.stop
             >
@@ -111,14 +111,14 @@ const { titleInfo } = defineProps({
             </div>
 
             <div v-if="!searchStore.tmdbFallback" class="detail-row">
-                <template v-if="titleInfo?.type === 'tv'">
+                <template v-if="titleInfo?.title_type === 'tv'">
                     {{ titleInfo?.show_season_count }} seasons,
                     {{ titleInfo?.show_episode_count }} episodes
                 </template>
                 <template v-else>{{ timeFormatters.minutesToHrAndMin(titleInfo?.movie_runtime) }}</template>
             </div>
             <div v-else class="detail-row">
-                {{ titleInfo?.type == 'tv' ? 'TV' : 'Movie' }}
+                {{ titleInfo?.title_type == 'tv' ? 'TV' : 'Movie' }}
             </div>
         </div>
 

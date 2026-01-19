@@ -88,7 +88,7 @@ class Title(Base):
     title_id = Column(Integer, primary_key=True, autoincrement=True)
     tmdb_id = Column(Integer, unique=True)
     imdb_id = Column(String(10))
-    type = Column(Enum(TitleType), nullable=False)
+    title_type = Column(Enum(TitleType), nullable=False)
     name = Column(String(255))
     name_original = Column(String(255))
     tagline = Column(String(255))

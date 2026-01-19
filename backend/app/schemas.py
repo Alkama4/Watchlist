@@ -114,7 +114,7 @@ class CompactUserTitleDetailsOut(BaseModel):
 class CompactTitleOut(BaseModel):
     title_id: Optional[int] = None
     tmdb_id: Optional[int] = None
-    type: TitleType
+    title_type: TitleType
     name: str
     genres: Optional[List[str]] = None
     release_date: Optional[date] = None
@@ -217,7 +217,7 @@ class TitleOut(BaseModel):
     title_id: int
     tmdb_id: int
     imdb_id: str
-    type: TitleType
+    title_type: TitleType
     name: str
     name_original: str
     genres: list[str] = None

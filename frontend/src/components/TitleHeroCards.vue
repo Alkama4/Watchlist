@@ -94,7 +94,7 @@ onUnmounted(() => {
             >
                 <img
                     :src="resolveImagePath(heroCards?.titles[currentIndex], 'original', 'backdrop')"
-                    :alt="`${heroCards?.titles[currentIndex]?.type} backdrop: ${heroCards?.titles[currentIndex]?.name}`"
+                    :alt="`${heroCards?.titles[currentIndex]?.title_type} backdrop: ${heroCards?.titles[currentIndex]?.name}`"
                     class="backdrop"
                 >
                 <div class="details-wrapper layout-contained">
@@ -120,7 +120,7 @@ onUnmounted(() => {
                             </span>
     
                             <span>&vert;</span>
-                            <span v-if="heroCards?.titles[currentIndex]?.type == 'movie'">
+                            <span v-if="heroCards?.titles[currentIndex]?.title_type == 'movie'">
                                 {{ timeFormatters.minutesToHrAndMin(heroCards?.titles[currentIndex]?.movie_runtime) }}
                             </span>
                             <span v-else>

@@ -87,7 +87,7 @@ async def get_home_overview(
         {
             "header": "Short movies you have time for",
             "filters": {
-                "type": "movie",
+                "title_type": "movie",
                 "sort_by": "runtime",
                 "sort_direction": "asc"
             }

@@ -33,13 +33,13 @@ onMounted(async () => {
     <div class="title-details-page layout-contained layout-spacing-top layout-spacing-bottom">
         <img 
             :src="resolveImagePath(titleDetails, 'original', 'backdrop')"
-            :alt="`${titleDetails?.type} backdrop: ${titleDetails?.name}`"
+            :alt="`${titleDetails?.title_type} backdrop: ${titleDetails?.name}`"
             class="backdrop"
         >
 
         <img 
             :src="resolveImagePath(titleDetails, 'original', 'poster')"
-            :alt="`${titleDetails?.type} poster: ${titleDetails?.name}`"
+            :alt="`${titleDetails?.title_type} poster: ${titleDetails?.name}`"
             class="poster"
         >
 
