@@ -132,16 +132,11 @@ def _apply_filters(stmt, utd, q: TitleQueryIn):
 
     if q.genres_include:
         stmt = stmt.where(
-            and_(
-                *[
-                    exists().where(
-                        and_(
-                            TitleGenre.title_id == Title.title_id,
-                            TitleGenre.genre_id == genre_id
-                        )
-                    )
-                    for genre_id in q.genres_include
-                ]
+            exists().where(
+                and_(
+                    TitleGenre.title_id == Title.title_id,
+                    TitleGenre.genre_id.in_(q.genres_include)
+                )
             )
         )
 
