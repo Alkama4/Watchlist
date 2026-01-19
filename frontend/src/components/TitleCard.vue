@@ -20,7 +20,7 @@ async function addTitle() {
             // Brand new title so need to use tmdb_id
             const response = await fastApi.titles.addToLibrary({
                 tmdb_id: titleInfo.tmdb_id,
-                title_type: titleInfo.type
+                title_type: titleInfo.title_type
             })
     
             // Need to init some data

@@ -54,6 +54,9 @@ button:disabled, .btn:disabled {
     background-color: transparent;
 }
 
+i.btn-text {
+    font-size: var(--fs-2);
+}
 
 
 /* Normal colored buttons */

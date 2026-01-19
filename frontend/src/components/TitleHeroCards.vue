@@ -283,9 +283,6 @@ img.logo {
     display: flex;
     gap: var(--spacing-sm);
 }
-.actions i {
-    font-size: var(--fs-2);
-}
 
 .controls {
     position: absolute;
