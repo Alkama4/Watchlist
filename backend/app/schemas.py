@@ -58,11 +58,19 @@ class TitleIn(BaseModel):
     tmdb_id: int
     title_type: TitleType
 
+
 class TitleWatchCountIn(BaseModel):
     watch_count: int
 
+class TitleIsFavouriteIn(BaseModel):
+    is_favourite: bool
+
+class TitleInWatchlistIn(BaseModel):
+    in_watchlist: bool
+
 class TitleNotesIn(BaseModel):
     notes: str
+
 
 class TMDBTitleQueryIn(BaseModel):
     query: str

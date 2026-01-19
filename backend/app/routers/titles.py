@@ -14,8 +14,28 @@ from app.services.titles.user_flags import set_user_title_value
 router = APIRouter()
 
 
-@router.post("/")
-async def add_new_title_to_watchlist(
+# ---------- SEARCH AND ADD NEW ----------
+
+@router.post("/search", response_model=schemas.TitleListOut)
+async def search_for_titles(
+    data: schemas.TitleQueryIn,
+    user: models.User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    return await run_title_search(db, user.user_id, data)
+
+
+@router.post("/search/tmdb", response_model=schemas.TitleListOut)
+async def search_for_titles_from_tmdb(
+    data: schemas.TMDBTitleQueryIn,
+    user: models.User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    return await run_and_process_tmdb_search(db, user.user_id, data)
+
+
+@router.post("/library")
+async def add_new_title_to_library(
     data: schemas.TitleIn,
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -59,26 +79,6 @@ async def add_new_title_to_watchlist(
     }
 
 
-# ---------- SEARCH ----------
-
-@router.post("/search", response_model=schemas.TitleListOut)
-async def search_for_titles(
-    data: schemas.TitleQueryIn,
-    user: models.User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    return await run_title_search(db, user.user_id, data)
-
-
-@router.post("/search/tmdb", response_model=schemas.TitleListOut)
-async def search_for_titles_from_tmdb(
-    data: schemas.TMDBTitleQueryIn,
-    user: models.User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    return await run_and_process_tmdb_search(db, user.user_id, data)
-
-
 # ---------- SPECIFIC TITLE ----------
 
 @router.get("/{title_id}", response_model=schemas.TitleOut)
@@ -120,7 +120,7 @@ async def update_title_details(
     return {"title_id": updated_title_id, "updated": True}
 
 
-# ---------- SET FLAGS ----------
+# ---------- SET TITLE USER DETAILS ----------
 
 @router.put("/{title_id}/library")
 async def add_existing_title_to_library(
@@ -152,70 +152,8 @@ async def remove_existing_title_from_library(
     return {"title_id": title_id, "in_library": False}
 
 
-@router.put("/{title_id}/favourite")
-async def add_title_to_favourites(
-    title_id: int,
-    user: models.User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    await set_user_title_value(
-        db,
-        user.user_id,
-        title_id,
-        is_favourite=True,
-        in_library=True
-    )
-    return {"title_id": title_id, "is_favourite": True, "in_library": True}
-
-
-@router.delete("/{title_id}/favourite")
-async def remove_title_from_favourites(
-    title_id: int,
-    user: models.User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    await set_user_title_value(
-        db,
-        user.user_id,
-        title_id,
-        is_favourite=False
-    )
-    return {"title_id": title_id, "is_favourite": False}
-
-
-@router.put("/{title_id}/watchlist")
-async def add_title_to_watchlist(
-    title_id: int,
-    user: models.User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    await set_user_title_value(
-        db,
-        user.user_id,
-        title_id,
-        in_library=True,
-        in_watchlist=True
-    )
-    return {"title_id": title_id, "in_library": True, "in_watchlist": True}
-
-
-@router.delete("/{title_id}/watchlist")
-async def remove_title_from_watchlist(
-    title_id: int,
-    user: models.User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    await set_user_title_value(
-        db,
-        user.user_id,
-        title_id,
-        in_watchlist=False
-    )
-    return {"title_id": title_id, "in_watchlist": False}
-
-
 @router.put("/{title_id}/watch_count")
-async def add_existing_title_to_library(
+async def update_title_watch_count(
     title_id: int,
     data: schemas.TitleWatchCountIn,
     user: models.User = Depends(get_current_user),
@@ -225,13 +163,60 @@ async def add_existing_title_to_library(
         db,
         user.user_id,
         title_id,
-        watch_count=data.watch_count
+        watch_count=data.watch_count,
+        in_library=True
     )
-    return {"title_id": title_id, "watch_count": data.watch_count}
+    return {
+        "title_id": title_id,
+        "watch_count": data.watch_count,
+        "in_library": True
+    }
+
+
+@router.put("/{title_id}/favourite")
+async def update_title_favourite_flag(
+    title_id: int,
+    data: schemas.TitleIsFavouriteIn,
+    user: models.User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    await set_user_title_value(
+        db,
+        user.user_id,
+        title_id,
+        is_favourite=data.is_favourite,
+        in_library=True
+    )
+    return {
+        "title_id": title_id,
+        "is_favourite": data.is_favourite,
+        "in_library": True
+    }
+
+
+@router.put("/{title_id}/watchlist")
+async def update_title_watchlist_flag(
+    title_id: int,
+    data: schemas.TitleInWatchlistIn,
+    user: models.User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    await set_user_title_value(
+        db,
+        user.user_id,
+        title_id,
+        in_watchlist=data.in_watchlist,
+        in_library=True
+    )
+    return {
+        "title_id": title_id,
+        "in_watchlist": data.in_watchlist,
+        "in_library": True
+    }
 
 
 @router.put("/{title_id}/notes")
-async def add_existing_title_to_library(
+async def update_title_notes(
     title_id: int,
     data: schemas.TitleNotesIn,
     user: models.User = Depends(get_current_user),
@@ -241,6 +226,11 @@ async def add_existing_title_to_library(
         db,
         user.user_id,
         title_id,
-        notes=data.notes
+        notes=data.notes,
+        in_library=True
     )
-    return {"title_id": title_id, "notes": data.notes}
+    return {
+        "title_id": title_id,
+        "notes": data.notes,
+        "in_library": True
+    }
