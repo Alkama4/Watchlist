@@ -32,7 +32,7 @@ onMounted(async () => {
                         :titleInfo="title"
                     />
                     <router-link 
-                        v-if="list?.total_page > 1"
+                        v-if="list?.total_pages > 1"
                         class="fake-card"
                         :to="'/search'"
                     >
@@ -45,6 +45,7 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+/* TEMP SETUP - DO A COMPONENT */
 .carousel-wrapper {
     display: flex;
     flex-direction: column;
@@ -60,4 +61,5 @@ onMounted(async () => {
     gap: var(--spacing-md);
     overflow-x: scroll;
 }
+/* TEMP SETUP - DO A COMPONENT */
 </style>

@@ -1,5 +1,6 @@
 <script setup>
 import LoadingButton from '@/components/LoadingButton.vue';
+import TitleCard from '@/components/TitleCard.vue';
 import { fastApi } from '@/utils/fastApi';
 import { timeFormatters } from '@/utils/formatters';
 import { resolveImagePath } from '@/utils/imagePath';
@@ -8,11 +9,17 @@ import { useRoute } from 'vue-router';
 
 const route = useRoute();
 const titleDetails = ref({});
-const waitingFor = ref({})
+const waitingFor = ref({});
+const similarTitles = ref({});
 
 async function fetchTitleDetails() {
     const title_id = route.params.title_id;
     titleDetails.value = await fastApi.titles.getById(title_id)
+}
+
+async function fetchSimilarTitles() {
+    const title_id = route.params.title_id;
+    similarTitles.value = await fastApi.titles.similarById(title_id);
 }
 
 async function updateTitleDetails() {
@@ -77,6 +84,7 @@ async function removeFromTitleWatchCount() {
 
 onMounted(async () => {
     await fetchTitleDetails();
+    await fetchSimilarTitles();
 })
 </script>
 
@@ -185,11 +193,48 @@ onMounted(async () => {
             </div>
         </div>
 
+        <div class="carousel-wrapper">
+            <h3>Similar titles</h3>
+            <div class="carousel">
+                <TitleCard
+                    v-for="title in similarTitles?.titles"
+                    :titleInfo="title"
+                />
+                <router-link 
+                    v-if="similarTitles?.total_pages > 1"
+                    class="fake-card"
+                    :to="'/search'"
+                >
+                    Show more
+                </router-link>
+            </div>
+        </div>
+
         <p style="color: var(--c-text-3)">{{ titleDetails }}</p>
     </div>
 </template>
 
 <style scoped>
+/* TEMP SETUP - DO A COMPONENT */
+.carousel-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.carousel-wrapper h3 {
+    margin-bottom: 0;
+}
+
+.carousel {
+    display: flex;
+    gap: var(--spacing-md);
+    overflow-x: scroll;
+}
+/* TEMP SETUP - DO A COMPONENT */
+
+
+
 img.backdrop {
     width: 100vw;
     height: 100vh;
