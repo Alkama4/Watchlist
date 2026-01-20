@@ -1,14 +1,16 @@
 <script setup>
 import LoadingButton from '@/components/LoadingButton.vue';
+import LoadingIndicator from '@/components/LoadingIndicator.vue';
 import TitleCard from '@/components/TitleCard.vue';
 import { fastApi } from '@/utils/fastApi';
 import { timeFormatters } from '@/utils/formatters';
 import { resolveImagePath } from '@/utils/imagePath';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
+import NotFoundPage from './NotFoundPage.vue';
 
 const route = useRoute();
-const titleDetails = ref({});
+const titleDetails = ref(null);
 const waitingFor = ref({});
 const similarTitles = ref({});
 
@@ -25,7 +27,7 @@ async function fetchSimilarTitles() {
 async function updateTitleDetails() {
     waitingFor.value.titleUpdate = true;
     try {
-        await fastApi.titles.putById(titleDetails.value.title_id);
+        await fastApi.titles.updateById(titleDetails.value.title_id);
         await fetchTitleDetails();
     } finally {
         waitingFor.value.titleUpdate = false;
@@ -81,15 +83,40 @@ async function removeFromTitleWatchCount() {
     await setTitleWatchCount(titleDetails.value.user_details.watch_count - 1);
 }
 
+async function loadTitleData() {
+    try {
+        await fetchTitleDetails();
+        await fetchSimilarTitles();
+    } catch (e) {
+        console.error('Failed to fetch title', e);
+        titleDetails.value = false; // signal invalid title
+    }
+}
 
+// Fetch data initially
 onMounted(async () => {
-    await fetchTitleDetails();
-    await fetchSimilarTitles();
-})
+    await loadTitleData();
+});
+
+// Watch for route changes
+watch(
+    () => route.params.title_id,
+    async () => {
+        // Wipe old data
+        titleDetails.value = null;
+        similarTitles.value = null;
+
+        await loadTitleData();
+    }
+);
 </script>
 
 <template>
-    <div class="title-details-page layout-contained layout-spacing-top layout-spacing-bottom">
+    <LoadingIndicator class="page-loading-indicator" v-if="titleDetails === null"/>
+
+    <NotFoundPage v-else-if="titleDetails === false"/>
+
+    <div v-else class="title-details-page layout-contained layout-spacing-top layout-spacing-bottom">
         <img 
             :src="resolveImagePath(titleDetails, 'original', 'backdrop')"
             :alt="`${titleDetails?.type} backdrop: ${titleDetails?.name}`"
@@ -194,7 +221,7 @@ onMounted(async () => {
         </div>
 
         <div class="carousel-wrapper">
-            <h3>Similar titles</h3>
+            <h3>{{ similarTitles?.header }}</h3>
             <div class="carousel">
                 <TitleCard
                     v-for="title in similarTitles?.titles"
@@ -303,4 +330,8 @@ img.poster {
     gap: var(--spacing-sm);
 }
 
+
+.page-loading-indicator {
+    min-height: 50vh;
+}
 </style>
