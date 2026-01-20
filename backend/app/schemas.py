@@ -54,6 +54,11 @@ class UserSettingIn(BaseModel):
 
 ####### Titles #######
 
+class GenreElement(BaseModel):
+    tmdb_genre_id: int
+    genre_name: str
+
+
 class TitleIn(BaseModel):
     tmdb_id: int
     title_type: TitleType
@@ -116,7 +121,7 @@ class CompactTitleOut(BaseModel):
     tmdb_id: Optional[int] = None
     title_type: TitleType
     name: str
-    genres: Optional[List[str]] = None
+    genres: Optional[List[GenreElement]] = None
     release_date: Optional[date] = None
     overview: Optional[str] = None
     movie_runtime: Optional[int] = None
@@ -221,7 +226,7 @@ class TitleOut(BaseModel):
     name: str
     name_original: str
     tagline: str
-    genres: list[str] = None
+    genres: list[GenreElement] = None
     tmdb_vote_average: Optional[float]
     tmdb_vote_count: Optional[int]
     imdb_vote_average: Optional[float]

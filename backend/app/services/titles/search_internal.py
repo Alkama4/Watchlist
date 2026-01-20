@@ -17,6 +17,7 @@ from app.models import (
 from app.schemas import (
     CompactTitleOut,
     CompactUserTitleDetailsOut,
+    GenreElement,
     TitleListOut,
     TitleQueryIn,
 )
@@ -265,7 +266,10 @@ def _build_title_list_out(rows, total, page, size) -> TitleListOut:
         out = CompactTitleOut.model_validate(data)
 
         # Convert the TitleGenre, Genre chain into plain names
-        out.genres = [tg.genre.genre_name for tg in title.genres] or []
+        out.genres = [
+            GenreElement.model_validate(tg.genre, from_attributes=True)
+            for tg in title.genres
+        ]
 
         out.show_season_count = season_count
         out.show_episode_count = episode_count

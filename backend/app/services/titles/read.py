@@ -83,7 +83,10 @@ def _build_title_out(
     title_out = schemas.TitleOut.model_validate(title_data)
 
     # Populate the genre names
-    title_out.genres = [tg.genre.genre_name for tg in title.genres]
+    title_out.genres = [
+        schemas.GenreElement.model_validate(tg.genre, from_attributes=True)
+        for tg in title.genres
+    ]
 
     # Attach user details, season/episode details
     title_out.user_details = (

@@ -139,7 +139,7 @@ onUnmounted(() => {
                                 <span>&vert;</span>
                                 <div class="genres">
                                     <span v-for="genre in heroCards?.titles[currentIndex]?.genres">
-                                        {{ genre }}
+                                        {{ genre?.genre_name }}
                                     </span>
                                 </div>
                             </template>
