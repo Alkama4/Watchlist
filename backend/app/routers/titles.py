@@ -10,6 +10,7 @@ from app.services.titles.search_internal import run_title_search
 from app.services.titles.search_tmdb import run_and_process_tmdb_search
 from app.services.titles.store import store_movie, store_tv
 from app.services.titles.user_flags import set_user_title_value, set_title_watch_count
+from app.services.titles.preset_searches import fetch_similar_titles
 
 router = APIRouter()
 
@@ -88,6 +89,16 @@ async def get_title_details(
     db: AsyncSession = Depends(get_db),
 ):
     title = await fetch_title_with_user_details(db, title_id, user.user_id)
+    return title
+
+
+@router.get("/{title_id}/similar", response_model=schemas.TitleListOut)
+async def get_similar_titles(
+    title_id: int,
+    user: models.User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    title = await fetch_similar_titles(db, title_id, user.user_id)
     return title
 
 
