@@ -97,6 +97,7 @@ class TitleQueryIn(BaseModel):
     genres_exclude: Optional[List[int]] = None
     min_tmdb_rating: Optional[int] = Field(None, ge=0, le=10)
     min_imdb_rating: Optional[int] = Field(None, ge=0, le=10)
+    exclude_title_ids: Optional[list[int]] = None
     sort_by: Optional[SortBy] = SortBy.default
     sort_direction: Optional[SortDirection] = SortDirection.default
     page_number: Optional[int] = Field(1, ge=1)

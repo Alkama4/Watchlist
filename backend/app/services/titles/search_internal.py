@@ -172,6 +172,9 @@ def _apply_filters(stmt, utd, q: TitleQueryIn):
     if q.min_imdb_rating:
         stmt = stmt.where(Title.imdb_vote_average >= q.min_imdb_rating)
 
+    if q.exclude_title_ids:
+        stmt = stmt.where(Title.title_id.notin_(q.exclude_title_ids))
+
     return stmt
 
 
