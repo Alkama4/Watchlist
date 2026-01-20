@@ -116,10 +116,10 @@ async def update_title_details(
 
     try:
         # Fetch updated TMDB data based on the type
-        if title.type == models.TitleType.movie:
+        if title.title_type == models.TitleType.movie:
             tmdb_data = await tmdb.fetch_movie(title.tmdb_id)
             updated_title_id = await store_movie(db, tmdb_data)
-        elif title.type == models.TitleType.tv:
+        elif title.title_type == models.TitleType.tv:
             tmdb_data = await tmdb.fetch_tv(title.tmdb_id)
             updated_title_id = await store_tv(db, tmdb_data)
         else:
