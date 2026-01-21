@@ -1,5 +1,4 @@
 <script setup>
-
 defineProps({
     header: {
         type: String,
@@ -19,19 +18,35 @@ defineProps({
         type: String,
         default: 'Your text here'
     },
+    dismissible: {
+        type: Boolean,
+        default: false
+    }
 })
-
 </script>
 
 <template>
     <div class="notice" :class="type">
         <h5>
-            <i class="bx" :class="icon"></i>
-            <span>{{ header }}</span>
+            <div>
+                <i class="bx" :class="icon"></i>
+                <span>{{ header }}</span>
+            </div>
+
+            <button
+                v-if="dismissible"
+                @click="$emit('dismiss')"
+                class="btn-text btn-square"
+                aria-label="Dismiss notice"
+            >
+                <i class="bx bx-x"></i>
+            </button>
         </h5>
+
         <p v-html="message"></p>
     </div>
 </template>
+
 
 <style scoped>
 .notice {
@@ -55,16 +70,36 @@ defineProps({
     border: 1px solid var(--c-negative-border);
 }
 
+.dismiss {
+    margin-left: auto;
+    background: none;
+    border: none;
+    font-size: 1.2em;
+    cursor: pointer;
+}
+
 h5 {
     display: flex;
-    flex-direction: row;
     align-items: center;
+    gap: var(--spacing-sm);
+
     margin: 0;
     margin-bottom: var(--spacing-sm);
+    justify-content: space-between;
+}
+h5 div {
+    display: flex;
+    align-items: center;
     gap: var(--spacing-sm);
 }
 p {
     font-size: var(--fs-neg-1);
     margin: 0;
+}
+button {
+    padding: 0;
+}
+button i {
+    font-size: var(--fs-2);
 }
 </style>
