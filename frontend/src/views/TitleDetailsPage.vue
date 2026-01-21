@@ -140,7 +140,7 @@ watch(
             v-if="titleDetails?.user_details?.in_library === false"
             type="warning"
             header="Title not in Library"
-            message="Please note that the title is currently not in your library. It won't appear in search or recommendations."
+            message="Please note that the title is currently not in your library. It will not appear in search, listings or recommendations. You can add the title to your library by using either the button below, or by searching for it from TMDB."
         />
 
         <div class="main-info">
@@ -163,39 +163,49 @@ watch(
                 </div>
 
                 <div class="general-stats">
-                    <div class="tmdb">
+                    <div class="stat">
+                        <Tmdb/>
                         <span>
-                            <Tmdb/>
                             {{ titleDetails?.tmdb_vote_average }}
-                        </span>
-                        <span class="tiny">
                             ({{ numberFormatters.formatCompactNumber(titleDetails?.tmdb_vote_count) }} votes)
                         </span>
                     </div>
 
-                    <div v-if="titleDetails?.title_type == 'movie'">
+                    <div v-if="titleDetails?.title_type == 'movie'" class="stat">
+                        <i class="bx bxs-stopwatch"></i>
                         {{ timeFormatters.minutesToHrAndMin(titleDetails?.movie_runtime) }}
                     </div>
-                    <div v-else>
-                        {{ titleDetails?.show_season_count }}
-                        Season{{ titleDetails?.show_season_count == 1 ? '': 's' }},
-                        {{ titleDetails?.show_episode_count }}
-                        Episode{{ titleDetails?.show_episode_count == 1 ? '': 's' }}
+                    <div v-else class="stat">
+                        <i class="bx bxs-stopwatch"></i>
+                        {{ titleDetails?.seasons?.length }}
+                        Season{{ titleDetails?.seasons?.length == 1 ? '': 's' }},
+                        {{ titleDetails?.seasons?.reduce((sum, s) => sum + s.episodes.length, 0) }}
+                        Episode{{ titleDetails?.seasons?.reduce((sum, s) => sum + s.episodes.length, 0) == 1 ? '': 's' }}
                     </div>
 
-                    <template v-if="titleDetails?.age_rating">
-                        <div>{{ titleDetails?.age_rating }}</div>
-                    </template>
+                    <div v-if="titleDetails?.age_rating" class="stat">
+                        <i class="bx bxs-star"></i>
+                        {{ titleDetails?.age_rating }}
+                    </div>
 
-                    <template v-if="titleDetails?.genres?.length > 0">
+                    <div v-if="titleDetails?.genres?.length > 0" class="stat">
+                        <i class="bx bxs-label"></i>
                         <div class="genres">
-                            <routerLink v-for="genre in titleDetails?.genres" to="/search" class="no-deco">
-                                {{ genre?.genre_name }}
+                            <routerLink v-for="(genre, index) in titleDetails?.genres" to="/search" class="no-deco">
+                                {{ genre?.genre_name }}{{ index == titleDetails?.genres?.length - 1 ? '' : ',' }}
                             </routerLink>
                         </div>
-                    </template>
+                    </div>
                 </div>
         
+                <p>{{ titleDetails?.overview }}</p>
+                
+                <div class="flex-row align-center gap-sm" style="margin-top: var(--spacing-md);">
+                    <button @click="addToTitleWatchCount">Add</button>
+                    <div>Watched {{ titleDetails?.user_details?.watch_count }} times</div>
+                    <button @click="removeFromTitleWatchCount">Remove</button>
+                </div>
+
                 <div class="actions">
                     <i
                         class="bx bxs-heart btn btn-text btn-square"
@@ -233,12 +243,6 @@ watch(
                     </LoadingButton>
                     <!-- <a href="">Choose different images</a> -->
                 </div>
-                <div class="flex-row align-center gap-sm" style="margin-top: var(--spacing-md);">
-                    <button @click="addToTitleWatchCount">Add</button>
-                    <div>Watched {{ titleDetails?.user_details?.watch_count }} times</div>
-                    <button @click="removeFromTitleWatchCount">Remove</button>
-                </div>
-                <p>{{ titleDetails?.overview }}</p>
             </div>
         </div>
 
@@ -389,6 +393,23 @@ img.poster {
     margin-top: var(--spacing-md);
     color: var(--c-text-1);
     font-style: italic;
+}
+
+
+.general-stats {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-sm);
+}
+.general-stats .stat {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+.general-stats i {
+    font-size: var(--fs-1);
+    padding-inline: 2px;
 }
 
 .genres {
