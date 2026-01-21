@@ -46,7 +46,10 @@ apiClient.interceptors.response.use(
                 return apiClient(originalRequest);
             } catch {
                 auth.accessToken = null;
-                router.push('/login');
+                router.push({
+                    path: '/login',
+                    query: { redirect_reason: 'session_expired' }
+                })
             }
         }
 
