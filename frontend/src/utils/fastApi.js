@@ -1,8 +1,7 @@
 import axios from 'axios';
 import { useAuthStore } from '../stores/auth';
 import { API_BASE_URL } from './conf';
-import { useRouter } from 'vue-router';
-
+import router from '@/router';
 
 // Axios client
 const apiClient = axios.create({
@@ -43,12 +42,10 @@ apiClient.interceptors.response.use(
             originalRequest._retry = true;
             try {
                 await auth.refresh();
-                originalRequest.headers.Authorization =
-                    `Bearer ${auth.accessToken}`;
+                originalRequest.headers.Authorization = `Bearer ${auth.accessToken}`;
                 return apiClient(originalRequest);
             } catch {
                 auth.accessToken = null;
-                router = useRouter();
                 router.push('/login');
             }
         }

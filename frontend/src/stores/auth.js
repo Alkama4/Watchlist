@@ -33,7 +33,7 @@ export const useAuthStore = defineStore('auth', {
         async refresh() {
             const response = await fastApi.auth.refresh();
             this.accessToken = response.access_token;
-            return data.access_token;
+            return response.access_token;
         },
         async logout(quiet = false) {
             try {
