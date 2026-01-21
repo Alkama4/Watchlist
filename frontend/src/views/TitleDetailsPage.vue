@@ -3,11 +3,12 @@ import LoadingButton from '@/components/LoadingButton.vue';
 import LoadingIndicator from '@/components/LoadingIndicator.vue';
 import TitleCard from '@/components/TitleCard.vue';
 import { fastApi } from '@/utils/fastApi';
-import { timeFormatters } from '@/utils/formatters';
+import { numberFormatters, timeFormatters } from '@/utils/formatters';
 import { resolveImagePath } from '@/utils/imagePath';
 import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import NotFoundPage from './NotFoundPage.vue';
+import Tmdb from '@/assets/icons/tmdb.svg'
 
 const route = useRoute();
 const titleDetails = ref(null);
@@ -123,6 +124,7 @@ watch(
             class="backdrop"
         >
         
+        <div class="logo-wrapper">
         <img 
             :src="resolveImagePath(titleDetails, 'original', 'logo')"
             :alt="`${titleDetails?.type} logo: ${titleDetails?.name}`"
@@ -137,14 +139,50 @@ watch(
             >
             
             <div class="right-side">
+                <div class="name-part">
                 <h1 class="name">
                     {{ titleDetails?.name }}
                     ({{ timeFormatters.timestampToYear(titleDetails?.release_date) }})
                 </h1>
-                <h4 class="name-original" v-if="titleDetails?.name_original != titleDetails?.name">
+                    <h4 v-if="titleDetails?.name_original != titleDetails?.name" class="name-original">
                     {{ titleDetails?.name_original }}
                 </h4>
-                <q class="tagline">{{ titleDetails?.tagline }}</q>
+                    <q v-if="titleDetails?.tagline" class="tagline">{{ titleDetails?.tagline }}</q>
+                </div>
+
+                <div class="general-stats">
+                    <div class="tmdb">
+                        <span>
+                            <Tmdb/>
+                            {{ titleDetails?.tmdb_vote_average }}
+                        </span>
+                        <span class="tiny">
+                            ({{ numberFormatters.formatCompactNumber(titleDetails?.tmdb_vote_count) }} votes)
+                        </span>
+                    </div>
+
+                    <div v-if="titleDetails?.title_type == 'movie'">
+                        {{ timeFormatters.minutesToHrAndMin(titleDetails?.movie_runtime) }}
+                    </div>
+                    <div v-else>
+                        {{ titleDetails?.show_season_count }}
+                        Season{{ titleDetails?.show_season_count == 1 ? '': 's' }},
+                        {{ titleDetails?.show_episode_count }}
+                        Episode{{ titleDetails?.show_episode_count == 1 ? '': 's' }}
+                    </div>
+
+                    <template v-if="titleDetails?.age_rating">
+                        <div>{{ titleDetails?.age_rating }}</div>
+                    </template>
+
+                    <template v-if="titleDetails?.genres?.length > 0">
+                        <div class="genres">
+                            <routerLink v-for="genre in titleDetails?.genres" to="/search" class="no-deco">
+                                {{ genre?.genre_name }}
+                            </routerLink>
+                        </div>
+                    </template>
+                </div>
         
                 <div class="actions">
                     <i
@@ -189,9 +227,12 @@ watch(
                     <button @click="removeFromTitleWatchCount">Remove</button>
                 </div>
                 <p>{{ titleDetails?.overview }}</p>
+            </div>
+        </div>
+
                 <div class="links">
                     <a
-                        :href="`https://www.themoviedb.org/${titleDetails?.type}/${titleDetails?.tmdb_id}`"
+                :href="`https://www.themoviedb.org/${titleDetails?.title_type}/${titleDetails?.tmdb_id}`"
                         target="_blank"
                         class="btn no-deco"
                     >
@@ -216,8 +257,6 @@ watch(
                         Homepage
                         <i class="bx bx-link-external"></i>
                     </a>
-                </div>
-            </div>
         </div>
 
         <div class="carousel-wrapper">
@@ -242,6 +281,13 @@ watch(
 </template>
 
 <style scoped>
+.title-details-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+
 /* TEMP SETUP - DO A COMPONENT */
 .carousel-wrapper {
     display: flex;
@@ -278,19 +324,27 @@ img.backdrop {
     );
 }
 
+.logo-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    height: 50vh;
+    max-height: 800px;
+    min-height: 500px;
+}
 img.logo {
     object-fit: contain;
     object-position: left center;
 
     width: 100%;
-    height: 10vh;
-    margin: 17.5vh 0;
+    max-width: 600px;
+    max-height: 300px;
     box-sizing: border-box;
 }
 
 .main-info {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: auto 1fr;
     gap: var(--spacing-md-lg);
 }
 
@@ -308,17 +362,26 @@ img.poster {
     border-radius: var(--border-radius-lg);
 }
 
+.name-part {
+    margin-bottom: var(--spacing-md);
+}
 .name {
     margin: 0;
 }
 .name-original {
     margin: 0;
+    margin-top: var(--spacing-xs);
 }
 .tagline {
     display: block;
-    margin: var(--spacing-md) 0;
+    margin-top: var(--spacing-md);
     color: var(--c-text-1);
     font-style: italic;
+}
+
+.genres {
+    display: flex;
+    gap: var(--spacing-xs);
 }
 
 .actions {
