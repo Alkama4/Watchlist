@@ -9,6 +9,7 @@ import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import NotFoundPage from './NotFoundPage.vue';
 import Tmdb from '@/assets/icons/tmdb.svg'
+import NoticeBlock from '@/components/NoticeBlock.vue';
 
 const route = useRoute();
 const titleDetails = ref(null);
@@ -45,6 +46,7 @@ async function toggleFavourite() {
     if (!response) return;
 
     titleDetails.value.user_details.is_favourite = response.is_favourite;
+    titleDetails.value.user_details.in_library = response.in_library;
 }
 
 async function toggleWatchlist() {
@@ -57,6 +59,7 @@ async function toggleWatchlist() {
     if (!response) return;
     
     titleDetails.value.user_details.in_watchlist = response.in_watchlist;
+    titleDetails.value.user_details.in_library = response.in_library;
 }
 
 function adjustCollections() {
@@ -76,6 +79,7 @@ async function setTitleWatchCount(count) {
     const response = await fastApi.titles.setWatchCount(titleDetails.value.title_id, count);
     console.log(response);
     titleDetails.value.user_details.watch_count = response.watch_count;
+    titleDetails.value.user_details.in_library = response.in_library;
 }
 async function addToTitleWatchCount() {
     await setTitleWatchCount(titleDetails.value.user_details.watch_count + 1);
@@ -123,13 +127,21 @@ watch(
             :alt="`${titleDetails?.type} backdrop: ${titleDetails?.name}`"
             class="backdrop"
         >
-        
+
         <div class="logo-wrapper">
-        <img 
-            :src="resolveImagePath(titleDetails, 'original', 'logo')"
-            :alt="`${titleDetails?.type} logo: ${titleDetails?.name}`"
-            class="logo"
-        >
+            <img 
+                :src="resolveImagePath(titleDetails, 'original', 'logo')"
+                :alt="`${titleDetails?.type} logo: ${titleDetails?.name}`"
+                class="logo"
+            >
+        </div>
+
+        <NoticeBlock
+            v-if="titleDetails?.user_details?.in_library === false"
+            type="warning"
+            header="Title not in Library"
+            message="Please note that the title is currently not in your library. It won't appear in search or recommendations."
+        />
 
         <div class="main-info">
             <img 
@@ -140,13 +152,13 @@ watch(
             
             <div class="right-side">
                 <div class="name-part">
-                <h1 class="name">
-                    {{ titleDetails?.name }}
-                    ({{ timeFormatters.timestampToYear(titleDetails?.release_date) }})
-                </h1>
+                    <h1 class="name">
+                        {{ titleDetails?.name }}
+                        ({{ timeFormatters.timestampToYear(titleDetails?.release_date) }})
+                    </h1>
                     <h4 v-if="titleDetails?.name_original != titleDetails?.name" class="name-original">
-                    {{ titleDetails?.name_original }}
-                </h4>
+                        {{ titleDetails?.name_original }}
+                    </h4>
                     <q v-if="titleDetails?.tagline" class="tagline">{{ titleDetails?.tagline }}</q>
                 </div>
 
@@ -230,33 +242,33 @@ watch(
             </div>
         </div>
 
-                <div class="links">
-                    <a
+        <div class="links">
+            <a
                 :href="`https://www.themoviedb.org/${titleDetails?.title_type}/${titleDetails?.tmdb_id}`"
-                        target="_blank"
-                        class="btn no-deco"
-                    >
-                        TMDB
-                        <i class="bx bx-link-external"></i>
-                    </a>
-                    <a
-                        v-if="titleDetails?.imdb_id"
-                        :href="`https://www.imdb.com/title/${titleDetails?.imdb_id}`"
-                        target="_blank"
-                        class="btn no-deco"
-                    >
-                        IMDB
-                        <i class="bx bx-link-external"></i>
-                    </a>
-                    <a
-                        v-if="titleDetails?.homepage"
-                        :href="titleDetails?.homepage"
-                        target="_blank"
-                        class="btn no-deco"
-                    >
-                        Homepage
-                        <i class="bx bx-link-external"></i>
-                    </a>
+                target="_blank"
+                class="btn no-deco"
+            >
+                TMDB
+                <i class="bx bx-link-external"></i>
+            </a>
+            <a
+                v-if="titleDetails?.imdb_id"
+                :href="`https://www.imdb.com/title/${titleDetails?.imdb_id}`"
+                target="_blank"
+                class="btn no-deco"
+            >
+                IMDB
+                <i class="bx bx-link-external"></i>
+            </a>
+            <a
+                v-if="titleDetails?.homepage"
+                :href="titleDetails?.homepage"
+                target="_blank"
+                class="btn no-deco"
+            >
+                Homepage
+                <i class="bx bx-link-external"></i>
+            </a>
         </div>
 
         <div class="carousel-wrapper">
