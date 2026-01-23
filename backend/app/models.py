@@ -42,6 +42,8 @@ class User(Base):
     username = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
 
+    collections = relationship("UserCollection", back_populates="user", cascade="all, delete-orphan")
+
 
 class RefreshToken(Base):
     __tablename__ = "refresh_tokens"
@@ -243,6 +245,32 @@ class TitleGenre(Base):
 
     title = relationship("Title", back_populates="genres")
     genre = relationship("Genre", back_populates="titles")
+
+
+##### COLLECTIONS #####
+
+class UserCollection(Base):
+    __tablename__ = "user_collections"
+
+    collection_id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), primary_key=True)
+    name = Column(String(255))
+    description = Column(Text)
+    parent_collection_id = Column(Integer, ForeignKey("user_collections.collection_id", ondelete="SET NULL"))
+
+    user = relationship("User", back_populates="collections")
+    titles = relationship("UserCollectionTitle", back_populates="collection", cascade="all, delete-orphan")
+    child_collections = relationship("UserCollection", backref="parent_collection", remote_side=[collection_id])
+
+
+class UserCollectionTitle(Base):
+    __tablename__ = "user_collection_titles"
+
+    title_id = Column(Integer, ForeignKey("titles.title_id", ondelete="CASCADE"), primary_key=True)
+    collection_id = Column(Integer, ForeignKey("user_collections.collection_id", ondelete="CASCADE"), primary_key=True)
+
+    title = relationship("Title")
+    collection = relationship("UserCollection", back_populates="titles")
 
 
 ##### MEDIA #####
