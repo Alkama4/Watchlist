@@ -1,8 +1,13 @@
 from sqlalchemy import select, tuple_, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased
-from app import models, schemas
+from app import models
 from app.integrations import tmdb
+from app.schemas import (
+    TMDBTitleQueryIn,
+    CompactUserTitleDetailsOut,
+    TitleListOut
+)
 
 
 async def _fetch_existing_titles_with_user(
@@ -37,8 +42,8 @@ async def _fetch_existing_titles_with_user(
 async def run_and_process_tmdb_search(
     db: AsyncSession,
     user_id: int,
-    data: schemas.TMDBTitleQueryIn,
-) -> schemas.TitleListOut:
+    data: TMDBTitleQueryIn,
+) -> TitleListOut:
     
     response = await tmdb.search_multi(
         query=data.query,
@@ -77,7 +82,7 @@ async def run_and_process_tmdb_search(
             "default_poster_image_path": r.get("poster_path"),
             "default_backdrop_image_path": r.get("backdrop_path"),
             "user_details": (
-                schemas.CompactUserTitleDetailsOut.model_validate(
+                CompactUserTitleDetailsOut.model_validate(
                     utd, from_attributes=True
                 )
                 if utd else None

@@ -1,16 +1,21 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from app import models, schemas
+from app import models
 from app.dependencies import get_db
 from app.routers.auth import get_current_user
 from app.settings.validate import validate_setting_value
 from app.settings.config import DEFAULT_SETTINGS
+from app.schemas import (
+    UserSettingOut,
+    UserSettingIn
+)
 
 router = APIRouter()
 
+
 # --- Get user settings ---
-@router.get("/", response_model=list[schemas.UserSettingOut])
+@router.get("/", response_model=list[UserSettingOut])
 async def get_user_settings(
     current_user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
@@ -22,10 +27,10 @@ async def get_user_settings(
 
 
 # --- Update user setting ---
-@router.put("/{key}", response_model=schemas.UserSettingOut)
+@router.put("/{key}", response_model=UserSettingOut)
 async def update_user_setting(
     key: str,
-    setting_update: schemas.UserSettingIn,
+    setting_update: UserSettingIn,
     current_user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):

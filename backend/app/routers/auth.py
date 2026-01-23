@@ -4,12 +4,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from jose import JWTError
 from datetime import datetime, timedelta, timezone
-from app import models, schemas
+from app import models
 from app.dependencies import get_db
 from app.security import hash_password, verify_password
 from app.security import create_access_token, decode_access_token
 from app.security import create_refresh_token, hash_refresh_token, REFRESH_TOKEN_EXPIRE_DAYS
-
+from app.schemas import (
+    UserIn,
+    UserOut,
+    UserUpdate,
+    UserDelete,
+    PasswordUpdate
+)
 
 router = APIRouter()
 bearer_scheme = HTTPBearer()
@@ -34,9 +40,9 @@ async def get_current_user(
 
 ####### Endpoints #######
 
-@router.post("/register", response_model=schemas.UserOut)
+@router.post("/register", response_model=UserOut)
 async def register(
-    user: schemas.UserIn, 
+    user: UserIn, 
     db: AsyncSession = Depends(get_db)
 ):
     result = await db.execute(select(models.User).filter(models.User.username == user.username))
@@ -57,7 +63,7 @@ async def register(
 
 @router.post("/login")
 async def login(
-    user: schemas.UserIn, 
+    user: UserIn, 
     response: Response, 
     db: AsyncSession = Depends(get_db)
 ):
@@ -168,14 +174,14 @@ async def logout(
     return {"detail": "Logged out successfully"}
 
 
-@router.get("/me", response_model=schemas.UserOut)
+@router.get("/me", response_model=UserOut)
 async def read_me(current_user = Depends(get_current_user)):
     return current_user
 
 
-@router.put("/me", response_model=schemas.UserOut)
+@router.put("/me", response_model=UserOut)
 async def update_profile(
-    update: schemas.UserUpdate,
+    update: UserUpdate,
     current_user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -190,7 +196,7 @@ async def update_profile(
 @router.delete("/me")
 async def delete_account(
     response: Response,
-    data: schemas.UserDelete,
+    data: UserDelete,
     current_user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -210,7 +216,7 @@ async def delete_account(
 
 @router.post("/me/password")
 async def change_password(
-    passwords: schemas.PasswordUpdate,
+    passwords: PasswordUpdate,
     current_user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):

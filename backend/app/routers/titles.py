@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app import models, schemas
+from app import models
 from app.dependencies import get_db
 from app.integrations import tmdb
 from app.routers.auth import get_current_user
@@ -11,24 +11,36 @@ from app.services.titles.search_tmdb import run_and_process_tmdb_search
 from app.services.titles.store import store_movie, store_tv
 from app.services.titles.user_flags import set_user_title_value, set_title_watch_count
 from app.services.titles.preset_searches import fetch_similar_titles
+from app.schemas import (
+    TitleType,
+    TitleIn,
+    TitleWatchCountIn,
+    TitleIsFavouriteIn,
+    TitleInWatchlistIn,
+    TitleNotesIn,
+    TMDBTitleQueryIn,
+    TitleQueryIn,
+    TitleListOut,
+    TitleOut
+)
 
 router = APIRouter()
 
 
 # ---------- SEARCH AND ADD NEW ----------
 
-@router.post("/search", response_model=schemas.TitleListOut)
+@router.post("/search", response_model=TitleListOut)
 async def search_for_titles(
-    data: schemas.TitleQueryIn,
+    data: TitleQueryIn,
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     return await run_title_search(db, user.user_id, data)
 
 
-@router.post("/search/tmdb", response_model=schemas.TitleListOut)
+@router.post("/search/tmdb", response_model=TitleListOut)
 async def search_for_titles_from_tmdb(
-    data: schemas.TMDBTitleQueryIn,
+    data: TMDBTitleQueryIn,
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -37,7 +49,7 @@ async def search_for_titles_from_tmdb(
 
 @router.post("/library")
 async def add_new_title_to_library(
-    data: schemas.TitleIn,
+    data: TitleIn,
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -51,15 +63,15 @@ async def add_new_title_to_library(
     else:
         try:
             # Fetch the title
-            if data.title_type is schemas.TitleType.movie:
+            if data.title_type is TitleType.movie:
                 tmdb_data = await tmdb.fetch_movie(data.tmdb_id)
-            elif data.title_type is schemas.TitleType.tv:
+            elif data.title_type is TitleType.tv:
                 tmdb_data = await tmdb.fetch_tv(data.tmdb_id)
             else:
                 raise ValueError("Invalid title type")
 
             # Store
-            if data.title_type is schemas.TitleType.movie:
+            if data.title_type is TitleType.movie:
                 title_id = await store_movie(db, tmdb_data)
             else:
                 title_id = await store_tv(db, tmdb_data)
@@ -82,7 +94,7 @@ async def add_new_title_to_library(
 
 # ---------- SPECIFIC TITLE ----------
 
-@router.get("/{title_id}", response_model=schemas.TitleOut)
+@router.get("/{title_id}", response_model=TitleOut)
 async def get_title_details(
     title_id: int,
     user: models.User = Depends(get_current_user),
@@ -92,7 +104,7 @@ async def get_title_details(
     return title
 
 
-@router.get("/{title_id}/similar", response_model=schemas.TitleListOut)
+@router.get("/{title_id}/similar", response_model=TitleListOut)
 async def get_similar_titles(
     title_id: int,
     user: models.User = Depends(get_current_user),
@@ -166,7 +178,7 @@ async def remove_existing_title_from_library(
 @router.put("/{title_id}/watch_count")
 async def update_title_watch_count(
     title_id: int,
-    data: schemas.TitleWatchCountIn,
+    data: TitleWatchCountIn,
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -186,7 +198,7 @@ async def update_title_watch_count(
 @router.put("/{title_id}/favourite")
 async def update_title_favourite_flag(
     title_id: int,
-    data: schemas.TitleIsFavouriteIn,
+    data: TitleIsFavouriteIn,
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -207,7 +219,7 @@ async def update_title_favourite_flag(
 @router.put("/{title_id}/watchlist")
 async def update_title_watchlist_flag(
     title_id: int,
-    data: schemas.TitleInWatchlistIn,
+    data: TitleInWatchlistIn,
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -228,7 +240,7 @@ async def update_title_watchlist_flag(
 @router.put("/{title_id}/notes")
 async def update_title_notes(
     title_id: int,
-    data: schemas.TitleNotesIn,
+    data: TitleNotesIn,
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):

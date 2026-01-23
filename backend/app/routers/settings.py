@@ -1,11 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from app import models, schemas
+from app import models
 from app.dependencies import get_db
 from app.settings.config import REVERSE_TYPE_MAP
+from app.schemas import (
+    EnumChoice,
+    SettingOut
+)
 
 router = APIRouter()
+
 
 def format_label(value: str) -> str:
     return value.replace("_", " ").title()
@@ -26,7 +31,7 @@ def build_enum_choices(setting: models.Setting):
             label = format_label(option.name)
 
         choices.append(
-            schemas.EnumChoice(
+            EnumChoice(
                 value=option.value,
                 label=label
             )
@@ -35,7 +40,7 @@ def build_enum_choices(setting: models.Setting):
     return choices
 
 
-@router.get("/", response_model=list[schemas.SettingOut])
+@router.get("/", response_model=list[SettingOut])
 async def get_all_settings(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(models.Setting))
     settings = result.scalars().all()
@@ -44,7 +49,7 @@ async def get_all_settings(db: AsyncSession = Depends(get_db)):
     out = []
     for s in settings:
         enum_choices = build_enum_choices(s)
-        out.append(schemas.SettingOut(
+        out.append(SettingOut(
             key=s.key,
             value_type=s.value_type,
             default_value=s.default_value,
@@ -54,14 +59,14 @@ async def get_all_settings(db: AsyncSession = Depends(get_db)):
     return out
 
 
-@router.get("/{key}", response_model=schemas.SettingOut)
+@router.get("/{key}", response_model=SettingOut)
 async def get_setting(key: str, db: AsyncSession = Depends(get_db)):
     setting = await db.get(models.Setting, key)
     if not setting:
         raise HTTPException(status_code=404, detail="Setting not found")
 
     enum_choices = build_enum_choices(setting)
-    return schemas.SettingOut(
+    return SettingOut(
         key=setting.key,
         value_type=setting.value_type,
         default_value=setting.default_value,

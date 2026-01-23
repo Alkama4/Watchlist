@@ -1,15 +1,19 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from app import models, schemas
+from app import models
 from app.dependencies import get_db
 from app.routers.auth import get_current_user
 from app.services.titles.search_internal import run_title_search
 from app.services.genres import update_genres
+from app.schemas import (
+    TitleQueryIn,
+    HomeOverviewOut
+)
 
 router = APIRouter()
 
 
-@router.get("/home", response_model=schemas.HomeOverviewOut)
+@router.get("/home", response_model=HomeOverviewOut)
 async def get_home_overview(
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -29,7 +33,7 @@ async def get_home_overview(
     hero_cards = await run_title_search(
         db,
         user.user_id,
-        schemas.TitleQueryIn(**hero_cards_options["filters"])
+        TitleQueryIn(**hero_cards_options["filters"])
     )
     hero_cards.header = hero_cards_options["header"]
 
@@ -130,14 +134,14 @@ async def get_home_overview(
         title_list = await run_title_search(
             db,
             user.user_id,
-            schemas.TitleQueryIn(**normal_card_list["filters"])
+            TitleQueryIn(**normal_card_list["filters"])
         )
         title_list.header = normal_card_list["header"]
 
         if (len(title_list.titles) > 0):
             normal_cards.append(title_list)
 
-    return schemas.HomeOverviewOut(
+    return HomeOverviewOut(
         hero_cards=hero_cards,
         normal_cards=normal_cards
     )

@@ -4,10 +4,17 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from datetime import datetime, timezone
-from app import models, schemas
+from app import models
+from app.schemas import (
+    GenreElement,
+    UserEpisodeDetailsOut,
+    UserSeasonDetailsOut,
+    UserTitleDetailsOut,
+    TitleOut
+)
 
 
-async def fetch_title_with_user_details(db: AsyncSession, title_id: int, user_id: int) -> schemas.TitleOut:
+async def fetch_title_with_user_details(db: AsyncSession, title_id: int, user_id: int) -> TitleOut:
     # Fetch title with seasons and episodes
     result = await db.execute(
         select(models.Title)
@@ -71,33 +78,33 @@ def _build_title_out(
     user_title: Optional[models.UserTitleDetails],
     season_details_map: dict[int, models.UserSeasonDetails],
     episode_details_map: dict[int, models.UserEpisodeDetails],
-) -> schemas.TitleOut:
+) -> TitleOut:
     # Build a dict of attributes that exist on the SQLAlchemy instance
     title_data = {
         field: getattr(title, field)
-        for field in schemas.TitleOut.model_fields
+        for field in TitleOut.model_fields
         if hasattr(title, field) and field not in {"genres", "user_details"}
     }
 
     # Create the Pydantic model (no genres yet)
-    title_out = schemas.TitleOut.model_validate(title_data)
+    title_out = TitleOut.model_validate(title_data)
 
     # Populate the genre names
     title_out.genres = [
-        schemas.GenreElement.model_validate(tg.genre, from_attributes=True)
+        GenreElement.model_validate(tg.genre, from_attributes=True)
         for tg in title.genres
     ]
 
     # Attach user details, season/episode details
     title_out.user_details = (
-        schemas.UserTitleDetailsOut.model_validate(user_title, from_attributes=True)
+        UserTitleDetailsOut.model_validate(user_title, from_attributes=True)
         if user_title
         else None
     )
 
     for season in title_out.seasons:
         season.user_details = (
-            schemas.UserSeasonDetailsOut.model_validate(
+            UserSeasonDetailsOut.model_validate(
                 season_details_map.get(season.season_id)
             )
             if season_details_map.get(season.season_id)
@@ -105,7 +112,7 @@ def _build_title_out(
         )
         for episode in season.episodes:
             episode.user_details = (
-                schemas.UserEpisodeDetailsOut.model_validate(
+                UserEpisodeDetailsOut.model_validate(
                     episode_details_map.get(episode.episode_id)
                 )
                 if episode_details_map.get(episode.episode_id)
