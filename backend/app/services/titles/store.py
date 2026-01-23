@@ -2,21 +2,26 @@ from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
 from datetime import datetime
-from app import models
 from app.integrations import tmdb
 from app.services.titles.images import select_best_image, store_image_details
 from app.services.genres import store_title_genres
-
+from app.models import (
+    TitleType,
+    ImageType,
+    Title,
+    Season,
+    Episode
+)
 
 async def store_movie(db: AsyncSession, tmdb_data: dict) -> int:
     release_date_str = tmdb_data.get("release_date")
     release_date = datetime.strptime(release_date_str, "%Y-%m-%d").date() if release_date_str else None
 
     # Insert or upsert the title without default images
-    stmt = insert(models.Title).values(
+    stmt = insert(Title).values(
         tmdb_id=tmdb_data["id"],
         imdb_id=tmdb_data["imdb_id"],
-        title_type=models.TitleType.movie,
+        title_type=TitleType.movie,
         name=tmdb_data["title"],
         name_original=tmdb_data["original_title"],
         tagline=tmdb_data["tagline"],
@@ -51,7 +56,7 @@ async def store_movie(db: AsyncSession, tmdb_data: dict) -> int:
             "origin_country": ",".join(tmdb_data["origin_country"]),
             "homepage": tmdb_data["homepage"]
         }
-    ).returning(models.Title.title_id)
+    ).returning(Title.title_id)
 
     result = await db.execute(stmt)
     title_id = result.scalar_one()
@@ -72,8 +77,8 @@ async def store_movie(db: AsyncSession, tmdb_data: dict) -> int:
 
     # Update title with default images
     await db.execute(
-        update(models.Title)
-        .where(models.Title.title_id == title_id)
+        update(Title)
+        .where(Title.title_id == title_id)
         .values(
             default_poster_image_path=chosen_images["poster"],
             default_backdrop_image_path=chosen_images["backdrop"],
@@ -90,10 +95,10 @@ async def store_tv(db: AsyncSession, tmdb_data: dict) -> int:
     release_date = datetime.strptime(release_date_str, "%Y-%m-%d").date() if release_date_str else None
 
     # Insert or upsert the title without default images
-    stmt = insert(models.Title).values(
+    stmt = insert(Title).values(
         tmdb_id=tmdb_data["id"],
         imdb_id=tmdb_data["external_ids"]["imdb_id"],
-        title_type=models.TitleType.tv,
+        title_type=TitleType.tv,
         name=tmdb_data["name"],
         name_original=tmdb_data["original_name"],
         tagline=tmdb_data["tagline"],
@@ -118,7 +123,7 @@ async def store_tv(db: AsyncSession, tmdb_data: dict) -> int:
             "origin_country": ",".join(tmdb_data["origin_country"]),
             "homepage": tmdb_data["homepage"]
         }
-    ).returning(models.Title.title_id)
+    ).returning(Title.title_id)
 
     result = await db.execute(stmt)
     title_id = result.scalar_one()
@@ -140,8 +145,8 @@ async def store_tv(db: AsyncSession, tmdb_data: dict) -> int:
 
     # Update title with default image paths
     await db.execute(
-        update(models.Title)
-        .where(models.Title.title_id == title_id)
+        update(Title)
+        .where(Title.title_id == title_id)
         .values(
             default_poster_image_path=chosen_images["poster"],
             default_backdrop_image_path=chosen_images["backdrop"],
@@ -161,7 +166,7 @@ async def _fetch_and_store_tv_seasons_and_episodes(db: AsyncSession, title_id: i
         season_data = await tmdb.fetch_tv_season(tmdb_data["id"], season["season_number"])
 
         # Upsert season without default poster
-        stmt = insert(models.Season).values(
+        stmt = insert(Season).values(
             title_id=title_id,
             season_number=season["season_number"],
             season_name=season.get("name"),
@@ -174,7 +179,7 @@ async def _fetch_and_store_tv_seasons_and_episodes(db: AsyncSession, title_id: i
                 "tmdb_vote_average": season.get("vote_average"),
                 "overview": season.get("overview")
             }
-        ).returning(models.Season.season_id)
+        ).returning(Season.season_id)
 
         result = await db.execute(stmt)
         season_id = result.scalar_one()
@@ -187,8 +192,8 @@ async def _fetch_and_store_tv_seasons_and_episodes(db: AsyncSession, title_id: i
         poster_image_path = select_best_image(season_data.get("images", {}).get("posters"), ["en", "fi", None])
         if poster_image_path:
             await db.execute(
-                update(models.Season)
-                .where(models.Season.season_id == season_id)
+                update(Season)
+                .where(Season.season_id == season_id)
                 .values(default_poster_image_path=poster_image_path)
             )
 
@@ -198,7 +203,7 @@ async def _fetch_and_store_tv_seasons_and_episodes(db: AsyncSession, title_id: i
             air_date_str = ep.get("air_date")
             air_date = datetime.strptime(air_date_str, "%Y-%m-%d").date() if air_date_str else None
 
-            stmt = insert(models.Episode).values(
+            stmt = insert(Episode).values(
                 season_id=season_id,
                 title_id=title_id,
                 episode_number=ep["episode_number"],
@@ -218,7 +223,7 @@ async def _fetch_and_store_tv_seasons_and_episodes(db: AsyncSession, title_id: i
                     "air_date": air_date,
                     "runtime": ep.get("runtime")
                 }
-            ).returning(models.Episode.episode_id)
+            ).returning(Episode.episode_id)
 
             result = await db.execute(stmt)
             episode_id = result.scalar_one()
@@ -229,7 +234,7 @@ async def _fetch_and_store_tv_seasons_and_episodes(db: AsyncSession, title_id: i
                 episode_images.append({
                     "file_path": still_path,
                     "episode_id": episode_id,
-                    "type": models.ImageType.backdrop
+                    "type": ImageType.backdrop
                 })
 
         # Store episode images
@@ -240,9 +245,9 @@ async def _fetch_and_store_tv_seasons_and_episodes(db: AsyncSession, title_id: i
         for ep in season_data.get("episodes", []):
             if ep.get("still_path"):
                 await db.execute(
-                    update(models.Episode)
-                    .where(models.Episode.episode_number == ep["episode_number"], 
-                           models.Episode.season_id == season_id)
+                    update(Episode)
+                    .where(Episode.episode_number == ep["episode_number"], 
+                           Episode.season_id == season_id)
                     .values(default_backdrop_image_path=ep["still_path"])
                 )
 

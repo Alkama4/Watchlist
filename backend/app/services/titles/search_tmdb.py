@@ -1,33 +1,37 @@
 from sqlalchemy import select, tuple_, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased
-from app import models
 from app.integrations import tmdb
 from app.schemas import (
     TMDBTitleQueryIn,
     CompactUserTitleDetailsOut,
     TitleListOut
 )
+from app.models import (
+    TitleType,
+    Title,
+    UserTitleDetails
+)
 
 
 async def _fetch_existing_titles_with_user(
     db: AsyncSession,
     user_id: int,
-    tmdb_items: list[tuple[int, models.TitleType]],
+    tmdb_items: list[tuple[int, TitleType]],
 ):
-    utd = aliased(models.UserTitleDetails)
+    utd = aliased(UserTitleDetails)
 
     stmt = (
-        select(models.Title, utd)
+        select(Title, utd)
         .outerjoin(
             utd,
             and_(
-                utd.title_id == models.Title.title_id,
+                utd.title_id == Title.title_id,
                 utd.user_id == user_id,
             )
         )
         .where(
-            tuple_(models.Title.tmdb_id, models.Title.title_type).in_(tmdb_items)
+            tuple_(Title.tmdb_id, Title.title_type).in_(tmdb_items)
         )
     )
 
@@ -53,7 +57,7 @@ async def run_and_process_tmdb_search(
     compact_titles = []
 
     tmdb_keys = [
-        (r["id"], models.TitleType[r["media_type"]])
+        (r["id"], TitleType[r["media_type"]])
         for r in response["results"]
         if r.get("media_type") in ("movie", "tv")
     ]
@@ -68,7 +72,7 @@ async def run_and_process_tmdb_search(
         if r.get("media_type") not in ("movie", "tv"):
             continue
 
-        key = (r["id"], models.TitleType[r["media_type"]])
+        key = (r["id"], TitleType[r["media_type"]])
         title, utd = existing_map.get(key, (None, None))
 
         compact_titles.append({

@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app import models
 from app.dependencies import get_db
 from app.integrations import tmdb
 from app.routers.auth import get_current_user
@@ -23,6 +22,10 @@ from app.schemas import (
     TitleListOut,
     TitleOut
 )
+from app.models import (
+    User,
+    Title
+)
 
 router = APIRouter()
 
@@ -32,7 +35,7 @@ router = APIRouter()
 @router.post("/search", response_model=TitleListOut)
 async def search_for_titles(
     data: TitleQueryIn,
-    user: models.User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     return await run_title_search(db, user.user_id, data)
@@ -41,7 +44,7 @@ async def search_for_titles(
 @router.post("/search/tmdb", response_model=TitleListOut)
 async def search_for_titles_from_tmdb(
     data: TMDBTitleQueryIn,
-    user: models.User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     return await run_and_process_tmdb_search(db, user.user_id, data)
@@ -50,11 +53,11 @@ async def search_for_titles_from_tmdb(
 @router.post("/library")
 async def add_new_title_to_library(
     data: TitleIn,
-    user: models.User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     existing = await db.execute(
-        select(models.Title).where(models.Title.tmdb_id == data.tmdb_id)
+        select(Title).where(Title.tmdb_id == data.tmdb_id)
     )
 
     title = existing.scalar_one_or_none()
@@ -97,7 +100,7 @@ async def add_new_title_to_library(
 @router.get("/{title_id}", response_model=TitleOut)
 async def get_title_details(
     title_id: int,
-    user: models.User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     title = await fetch_title_with_user_details(db, title_id, user.user_id)
@@ -107,7 +110,7 @@ async def get_title_details(
 @router.get("/{title_id}/similar", response_model=TitleListOut)
 async def get_similar_titles(
     title_id: int,
-    user: models.User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     title = await fetch_similar_titles(db, title_id, user.user_id)
@@ -120,7 +123,7 @@ async def update_title_details(
     db: AsyncSession = Depends(get_db)
 ):
     # Fetch the existing title by internal ID
-    result = await db.execute(select(models.Title).where(models.Title.title_id == title_id))
+    result = await db.execute(select(Title).where(Title.title_id == title_id))
     title = result.scalar_one_or_none()
 
     if not title:
@@ -128,10 +131,10 @@ async def update_title_details(
 
     try:
         # Fetch updated TMDB data based on the type
-        if title.title_type == models.TitleType.movie:
+        if title.title_type == TitleType.movie:
             tmdb_data = await tmdb.fetch_movie(title.tmdb_id)
             updated_title_id = await store_movie(db, tmdb_data)
-        elif title.title_type == models.TitleType.tv:
+        elif title.title_type == TitleType.tv:
             tmdb_data = await tmdb.fetch_tv(title.tmdb_id)
             updated_title_id = await store_tv(db, tmdb_data)
         else:
@@ -148,7 +151,7 @@ async def update_title_details(
 @router.put("/{title_id}/library")
 async def add_existing_title_to_library(
     title_id: int,
-    user: models.User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     await set_user_title_value(
@@ -163,7 +166,7 @@ async def add_existing_title_to_library(
 @router.delete("/{title_id}/library")
 async def remove_existing_title_from_library(
     title_id: int,
-    user: models.User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     await set_user_title_value(
@@ -179,7 +182,7 @@ async def remove_existing_title_from_library(
 async def update_title_watch_count(
     title_id: int,
     data: TitleWatchCountIn,
-    user: models.User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     await set_title_watch_count(
@@ -199,7 +202,7 @@ async def update_title_watch_count(
 async def update_title_favourite_flag(
     title_id: int,
     data: TitleIsFavouriteIn,
-    user: models.User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     await set_user_title_value(
@@ -220,7 +223,7 @@ async def update_title_favourite_flag(
 async def update_title_watchlist_flag(
     title_id: int,
     data: TitleInWatchlistIn,
-    user: models.User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     await set_user_title_value(
@@ -241,7 +244,7 @@ async def update_title_watchlist_flag(
 async def update_title_notes(
     title_id: int,
     data: TitleNotesIn,
-    user: models.User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     await set_user_title_value(

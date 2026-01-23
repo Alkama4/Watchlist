@@ -4,7 +4,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from jose import JWTError
 from datetime import datetime, timedelta, timezone
-from app import models
 from app.dependencies import get_db
 from app.security import hash_password, verify_password
 from app.security import create_access_token, decode_access_token
@@ -15,6 +14,10 @@ from app.schemas import (
     UserUpdate,
     UserDelete,
     PasswordUpdate
+)
+from app.models import (
+    User,
+    RefreshToken
 )
 
 router = APIRouter()
@@ -32,7 +35,7 @@ async def get_current_user(
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-    user = await db.get(models.User, user_id)
+    user = await db.get(User, user_id)
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
     return user
@@ -45,12 +48,12 @@ async def register(
     user: UserIn, 
     db: AsyncSession = Depends(get_db)
 ):
-    result = await db.execute(select(models.User).filter(models.User.username == user.username))
+    result = await db.execute(select(User).filter(User.username == user.username))
     existing_user = result.scalar_one_or_none()
     if existing_user:
         raise HTTPException(status_code=400, detail="Username already taken")
     
-    new_user = models.User(
+    new_user = User(
         username=user.username,
         hashed_password=hash_password(user.password)
     )
@@ -68,7 +71,7 @@ async def login(
     db: AsyncSession = Depends(get_db)
 ):
     result = await db.execute(
-        select(models.User).where(models.User.username == user.username)
+        select(User).where(User.username == user.username)
     )
     db_user = result.scalar_one_or_none()
 
@@ -78,7 +81,7 @@ async def login(
     access_token = create_access_token(db_user.user_id)
 
     refresh_token = create_refresh_token()
-    refresh_token_db = models.RefreshToken(
+    refresh_token_db = RefreshToken(
         user_id=db_user.user_id,
         token_hash=hash_refresh_token(refresh_token),
         expires_at=datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS),
@@ -112,10 +115,10 @@ async def refresh(
     token_hash = hash_refresh_token(refresh_token)
 
     result = await db.execute(
-        select(models.RefreshToken).where(
-            models.RefreshToken.token_hash == token_hash,
-            models.RefreshToken.revoked_at.is_(None),
-            models.RefreshToken.expires_at > datetime.now(timezone.utc),
+        select(RefreshToken).where(
+            RefreshToken.token_hash == token_hash,
+            RefreshToken.revoked_at.is_(None),
+            RefreshToken.expires_at > datetime.now(timezone.utc),
         )
     )
     stored_token = result.scalar_one_or_none()
@@ -127,7 +130,7 @@ async def refresh(
     stored_token.revoked_at = datetime.now(timezone.utc)
 
     new_refresh = create_refresh_token()
-    db.add(models.RefreshToken(
+    db.add(RefreshToken(
         user_id=stored_token.user_id,
         token_hash=hash_refresh_token(new_refresh),
         expires_at=datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS),
@@ -152,14 +155,14 @@ async def refresh(
 @router.post("/logout")
 async def logout(
     response: Response,
-    current_user: models.User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     result = await db.execute(
-        select(models.RefreshToken).where(
-            models.RefreshToken.user_id == current_user.user_id,
-            models.RefreshToken.revoked_at.is_(None),
-            models.RefreshToken.expires_at > datetime.now(timezone.utc),
+        select(RefreshToken).where(
+            RefreshToken.user_id == current_user.user_id,
+            RefreshToken.revoked_at.is_(None),
+            RefreshToken.expires_at > datetime.now(timezone.utc),
         )
     )
     tokens = result.scalars().all()
@@ -182,7 +185,7 @@ async def read_me(current_user = Depends(get_current_user)):
 @router.put("/me", response_model=UserOut)
 async def update_profile(
     update: UserUpdate,
-    current_user: models.User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     current_user.username = update.username
@@ -197,7 +200,7 @@ async def update_profile(
 async def delete_account(
     response: Response,
     data: UserDelete,
-    current_user: models.User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     if not verify_password(data.password, current_user.hashed_password):
@@ -217,7 +220,7 @@ async def delete_account(
 @router.post("/me/password")
 async def change_password(
     passwords: PasswordUpdate,
-    current_user: models.User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     if not verify_password(passwords.current_password, current_user.hashed_password):

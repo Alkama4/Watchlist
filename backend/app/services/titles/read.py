@@ -4,7 +4,6 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from datetime import datetime, timezone
-from app import models
 from app.schemas import (
     GenreElement,
     UserEpisodeDetailsOut,
@@ -12,18 +11,26 @@ from app.schemas import (
     UserTitleDetailsOut,
     TitleOut
 )
+from app.models import (
+    Title,
+    Season,
+    UserTitleDetails,
+    UserSeasonDetails,
+    UserEpisodeDetails,
+    TitleGenre
+)
 
 
 async def fetch_title_with_user_details(db: AsyncSession, title_id: int, user_id: int) -> TitleOut:
     # Fetch title with seasons and episodes
     result = await db.execute(
-        select(models.Title)
-        .where(models.Title.title_id == title_id)
+        select(Title)
+        .where(Title.title_id == title_id)
         .options(
-            selectinload(models.Title.seasons.and_(models.Season.season_number != 0))
-                .selectinload(models.Season.episodes),
-            selectinload(models.Title.genres)
-                .selectinload(models.TitleGenre.genre)
+            selectinload(Title.seasons.and_(Season.season_number != 0))
+                .selectinload(Season.episodes),
+            selectinload(Title.genres)
+                .selectinload(TitleGenre.genre)
         )
     )
     title = result.scalar_one_or_none()
@@ -31,11 +38,11 @@ async def fetch_title_with_user_details(db: AsyncSession, title_id: int, user_id
         raise HTTPException(status_code=404, detail="Title not found")
     
     # Fetch user-specific details
-    user_title = await db.get(models.UserTitleDetails, {"user_id": user_id, "title_id": title_id})
+    user_title = await db.get(UserTitleDetails, {"user_id": user_id, "title_id": title_id})
         
     # Init user details if missing
     if not user_title:
-        user_title = models.UserTitleDetails(user_id=user_id, title_id=title_id)
+        user_title = UserTitleDetails(user_id=user_id, title_id=title_id)
         db.add(user_title)
 
     # Update the last viewed timestamp
@@ -50,18 +57,18 @@ async def fetch_title_with_user_details(db: AsyncSession, title_id: int, user_id
     season_details_map = {
         d.season_id: d
         for d in (await db.execute(
-            select(models.UserSeasonDetails)
-            .where(models.UserSeasonDetails.user_id == user_id)
-            .where(models.UserSeasonDetails.season_id.in_(season_ids))
+            select(UserSeasonDetails)
+            .where(UserSeasonDetails.user_id == user_id)
+            .where(UserSeasonDetails.season_id.in_(season_ids))
         )).scalars()
     }
 
     episode_details_map = {
         d.episode_id: d
         for d in (await db.execute(
-            select(models.UserEpisodeDetails)
-            .where(models.UserEpisodeDetails.user_id == user_id)
-            .where(models.UserEpisodeDetails.episode_id.in_(episode_ids))
+            select(UserEpisodeDetails)
+            .where(UserEpisodeDetails.user_id == user_id)
+            .where(UserEpisodeDetails.episode_id.in_(episode_ids))
         )).scalars()
     }
 
@@ -74,10 +81,10 @@ async def fetch_title_with_user_details(db: AsyncSession, title_id: int, user_id
 
 
 def _build_title_out(
-    title: models.Title,
-    user_title: Optional[models.UserTitleDetails],
-    season_details_map: dict[int, models.UserSeasonDetails],
-    episode_details_map: dict[int, models.UserEpisodeDetails],
+    title: Title,
+    user_title: Optional[UserTitleDetails],
+    season_details_map: dict[int, UserSeasonDetails],
+    episode_details_map: dict[int, UserEpisodeDetails],
 ) -> TitleOut:
     # Build a dict of attributes that exist on the SQLAlchemy instance
     title_data = {

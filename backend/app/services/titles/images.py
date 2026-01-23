@@ -1,7 +1,11 @@
 from typing import List, Optional, Dict
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
-from app import models
+
+from app.models import (
+    ImageType,
+    Image
+)
 
 
 def select_best_image(images: List[Dict], iso_639_1_list: List[Optional[str]]) -> Optional[str]:
@@ -26,9 +30,9 @@ async def store_image_details(db: AsyncSession, title_id: int = None, season_id:
         return
 
     type_fk_map = {
-        "backdrops": {"type": models.ImageType.backdrop, "fk": {"title_id": title_id, "season_id": None}},
-        "posters": {"type": models.ImageType.poster, "fk": {"title_id": title_id, "season_id": season_id}},
-        "logos": {"type": models.ImageType.logo, "fk": {"title_id": title_id, "season_id": None}},
+        "backdrops": {"type": ImageType.backdrop, "fk": {"title_id": title_id, "season_id": None}},
+        "posters": {"type": ImageType.poster, "fk": {"title_id": title_id, "season_id": season_id}},
+        "logos": {"type": ImageType.logo, "fk": {"title_id": title_id, "season_id": None}},
     }
 
     image_records = []
@@ -53,7 +57,7 @@ async def store_image_details(db: AsyncSession, title_id: int = None, season_id:
     if not image_records:
         return
 
-    insert_stmt = insert(models.Image).values(image_records)
+    insert_stmt = insert(Image).values(image_records)
     stmt = insert_stmt.on_conflict_do_update(
         index_elements=["file_path"],
         set_={

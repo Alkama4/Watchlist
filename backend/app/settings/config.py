@@ -1,13 +1,12 @@
 import enum
 from pydantic import BaseModel
-from app import models
 from typing import Any, Dict, Type, Callable
 
 
 ######## Default settings using enums and typed fields ########
 class DefaultSettings(BaseModel):
-    sort_by: models.SortBy = models.SortBy.tmdb_score
-    sort_direction: models.SortDirection = models.SortDirection.desc
+    sort_by: SortBy = SortBy.tmdb_score
+    sort_direction: SortDirection = SortDirection.desc
     items_per_page: int = 25
 
     class Config:
@@ -31,8 +30,8 @@ TYPE_MAP: Dict[Type | str, Callable] = {
     int: int,
     float: float,
     bool: lambda v: v.lower() in ("true", "1", "yes"),
-    models.SortBy: models.SortBy,
-    models.SortDirection: models.SortDirection,
+    SortBy: SortBy,
+    SortDirection: SortDirection,
 }
 
 REVERSE_TYPE_MAP = {

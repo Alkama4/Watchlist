@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from app import models
 from app.dependencies import get_db
 from app.routers.auth import get_current_user
 from app.settings.validate import validate_setting_value
@@ -10,6 +9,11 @@ from app.schemas import (
     UserSettingOut,
     UserSettingIn
 )
+from app.models import (
+    User,
+    Setting,
+    UserSetting
+)
 
 router = APIRouter()
 
@@ -17,11 +21,11 @@ router = APIRouter()
 # --- Get user settings ---
 @router.get("/", response_model=list[UserSettingOut])
 async def get_user_settings(
-    current_user: models.User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     result = await db.execute(
-        select(models.UserSetting).where(models.UserSetting.user_id == current_user.user_id)
+        select(UserSetting).where(UserSetting.user_id == current_user.user_id)
     )
     return result.scalars().all()
 
@@ -31,10 +35,10 @@ async def get_user_settings(
 async def update_user_setting(
     key: str,
     setting_update: UserSettingIn,
-    current_user: models.User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    base_setting = await db.get(models.Setting, key)
+    base_setting = await db.get(Setting, key)
     if not base_setting:
         raise HTTPException(status_code=404, detail="Setting not found")
 
@@ -42,9 +46,9 @@ async def update_user_setting(
     expected_type = DEFAULT_SETTINGS.definitions()[key]["type"]
     validate_setting_value(setting_update.value, expected_type)
 
-    user_setting = await db.get(models.UserSetting, (current_user.user_id, key))
+    user_setting = await db.get(UserSetting, (current_user.user_id, key))
     if not user_setting:
-        user_setting = models.UserSetting(
+        user_setting = UserSetting(
             user_id=current_user.user_id,
             key=key,
             value=setting_update.value

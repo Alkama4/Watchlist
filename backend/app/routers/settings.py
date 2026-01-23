@@ -1,12 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from app import models
 from app.dependencies import get_db
 from app.settings.config import REVERSE_TYPE_MAP
 from app.schemas import (
     EnumChoice,
     SettingOut
+)
+from app.models import (
+    Setting
 )
 
 router = APIRouter()
@@ -15,7 +17,7 @@ router = APIRouter()
 def format_label(value: str) -> str:
     return value.replace("_", " ").title()
 
-def build_enum_choices(setting: models.Setting):
+def build_enum_choices(setting: Setting):
     if setting.value_type not in REVERSE_TYPE_MAP:
         return None
 
@@ -42,7 +44,7 @@ def build_enum_choices(setting: models.Setting):
 
 @router.get("/", response_model=list[SettingOut])
 async def get_all_settings(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(models.Setting))
+    result = await db.execute(select(Setting))
     settings = result.scalars().all()
 
     # attach enum choices dynamically
@@ -61,7 +63,7 @@ async def get_all_settings(db: AsyncSession = Depends(get_db)):
 
 @router.get("/{key}", response_model=SettingOut)
 async def get_setting(key: str, db: AsyncSession = Depends(get_db)):
-    setting = await db.get(models.Setting, key)
+    setting = await db.get(Setting, key)
     if not setting:
         raise HTTPException(status_code=404, detail="Setting not found")
 
