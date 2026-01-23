@@ -1,7 +1,10 @@
 import enum
 from pydantic import BaseModel
 from typing import Any, Dict, Type, Callable
-
+from app.models import (
+    SortBy,
+    SortDirection
+)
 
 ######## Default settings using enums and typed fields ########
 class DefaultSettings(BaseModel):

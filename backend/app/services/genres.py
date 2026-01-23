@@ -2,7 +2,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from app.integrations.tmdb import fetch_genres
-
+from app.models import (
+    Genre,
+    TitleGenre
+)
 
 async def update_genres(db: AsyncSession, force_update: bool) -> None:
     if not force_update:

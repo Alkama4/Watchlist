@@ -1,6 +1,9 @@
 from sqlalchemy import select
 import enum
 from app.settings.config import DEFAULT_SETTINGS
+from app.models import (
+    Setting
+)
 
 async def init_settings(db):
     for key, meta in DEFAULT_SETTINGS.definitions().items():
