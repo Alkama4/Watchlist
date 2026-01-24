@@ -19,7 +19,7 @@ export default defineConfig({
   },
   server: {
     host: true, // allows LAN access
-    port: 80,
+    port: 5173,
     strictPort: false, // if true, fails if port is in use
   }
 })
