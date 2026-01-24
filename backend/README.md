@@ -16,6 +16,14 @@
     cd backend
     ```
 
+    Setup and active python virtual enviroment:
+
+    ```bash
+    python -m venv venv
+    source venv/bin/activate    # Linux/MacOS
+    venv/scripts/activate       # Windows
+    ```
+
     Install dependencies:
 
     ```bash
