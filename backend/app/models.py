@@ -253,7 +253,7 @@ class UserCollection(Base):
     __tablename__ = "user_collections"
 
     collection_id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"))
     name = Column(String(255))
     description = Column(Text)
     parent_collection_id = Column(Integer, ForeignKey("user_collections.collection_id", ondelete="SET NULL"))
