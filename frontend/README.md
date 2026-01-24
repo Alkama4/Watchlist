@@ -30,12 +30,15 @@
 
 ### Subsequent Runs
 
-After the initial setup, you can start the dev server with:
+After the initial setup, you can start the dev server with this:
 
 ```bash
 cd frontend
 npm run dev
 ```
+
+or by using the github task (`Ctrl + Shift + P` -> `Tasks: Run tasks` -> `Dev Server - Vue`).
+
 
 ### Production Build
 

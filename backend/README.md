@@ -33,28 +33,16 @@
     Launch the application:
 
     ```bash
-    uvicorn app.main:app --reload
-    ```
-
-    **OR** you can do it all in one command:
-
-    ```bash
-    cd backend && pip install -r requirements.txt && uvicorn app.main:app --reload
+    uvicorn app.main:app --reload --host 0.0.0.0
     ```
 
 ### Subsequent Runs
 
-After the initial setup, you can quickly start the server:
+After the initial setup, you can quickly start the server with this:
 
 ```bash
 cd backend
-uvicorn app.main:app --reload
-```
-
-### LAN access
-
-If you want to access the server using other devices in your LAN remember to add `--host 0.0.0.0` flag to the command. Like so:
-
-```bash
 uvicorn app.main:app --reload --host 0.0.0.0
 ```
+
+or by using the github task (`Ctrl + Shift + P` -> `Tasks: Run tasks` -> `Dev Server - FastAPI`).
