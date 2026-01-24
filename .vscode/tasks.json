@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Vue Dev Server",
+            "label": "Dev Server - Vue",
             "type": "shell",
             "command": "npm run dev",
             "options": {
@@ -12,11 +12,19 @@
             "isBackground": true
         },
         {
-            "label": "FastAPI Dev Server",
+            "label": "Dev Server - FastAPI",
             "type": "shell",
-            "command": "uvicorn app.main:app --reload --host 0.0.0.0",
             "options": {
                 "cwd": "backend"
+            },
+            "linux": {
+                "command": "venv/bin/uvicorn app.main:app --reload --host 0.0.0.0"
+            },
+            "osx": {
+                "command": "venv/bin/uvicorn app.main:app --reload --host 0.0.0.0"
+            },
+            "windows": {
+                "command": "venv\\Scripts\\uvicorn.exe app.main:app --reload --host 0.0.0.0"
             },
             "problemMatcher": [],
             "isBackground": true
@@ -24,8 +32,8 @@
         {
             "label": "Start Full Stack",
             "dependsOn": [
-                "Vue Dev Server",
-                "FastAPI Dev Server"
+                "Dev Server - Vue",
+                "Dev Server - FastAPI"
             ],
             "dependsOrder": "parallel",
             "problemMatcher": []
