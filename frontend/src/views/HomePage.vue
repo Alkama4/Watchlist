@@ -1,9 +1,9 @@
 <script setup>
 import TitleCard from '@/components/TitleCard.vue';
 import TitleHeroCards from '@/components/TitleHeroCards.vue';
+import Carousel from '@/components/Carousel.vue';
 import { fastApi } from '@/utils/fastApi';
 import { onMounted, ref } from 'vue';
-
 const homeData = ref({})
 
 async function fetchHome() {
@@ -23,43 +23,6 @@ onMounted(async () => {
             :heroCards="homeData?.hero_cards"
         />
 
-        <div class="carousel-wrapper layout-contained">
-            <div v-for="list in homeData?.normal_cards">
-                <h3>{{ list?.header }}</h3>
-                <div class="carousel">
-                    <TitleCard 
-                        v-for="title in list?.titles"
-                        :titleInfo="title"
-                    />
-                    <router-link 
-                        v-if="list?.total_pages > 1"
-                        class="fake-card"
-                        :to="'/search'"
-                    >
-                        Show more
-                    </router-link>
-                </div>
-            </div>
-        </div>
+        <Carousel v-for="list in homeData?.normal_cards" :carouselData="list"/>
     </div>
 </template>
-
-<style scoped>
-/* TEMP SETUP - DO A COMPONENT */
-.carousel-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
-}
-
-.carousel-wrapper h3 {
-    margin-top: 0;
-}
-
-.carousel {
-    display: flex;
-    gap: var(--spacing-md);
-    overflow-x: scroll;
-}
-/* TEMP SETUP - DO A COMPONENT */
-</style>

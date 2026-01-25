@@ -30,12 +30,18 @@ body {
 .layout-contained {
     box-sizing: border-box;
     max-width: 2000px;
-    padding: 0 5vw;
+    padding: 0 var(--spacing-layout-inline);
     margin: 0 auto;
 }
 .layout-full {
     box-sizing: border-box;
     width: 100%;
+}
+.layout-full-contained {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 2000px;
+    margin-inline: auto;
 }
 .layout-spacing-top {
     margin-top: var(--spacing-md);

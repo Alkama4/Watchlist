@@ -12,6 +12,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@egjs/vue3-flicking": "^4.15.0",
     "axios": "^1.13.2",
     "boxicons": "^2.1.4",
     "pinia": "^3.0.4",

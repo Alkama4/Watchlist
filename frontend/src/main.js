@@ -9,6 +9,7 @@ import '@/assets/buttons.css'
 import '@/assets/utilities.css'
 import '@/assets/classes.css'
 import 'boxicons/css/boxicons.min.css'
+import "@egjs/vue3-flicking/dist/flicking-inline.css";
 
 const app = createApp(App)
 const pinia = createPinia()

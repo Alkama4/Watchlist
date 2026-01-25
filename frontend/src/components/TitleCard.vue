@@ -69,10 +69,12 @@ const { titleInfo } = defineProps({
         :is="titleInfo.title_id ? 'router-link' : 'div'"
         :to="titleInfo.title_id ? `/title/${titleInfo.title_id}` : null"
         class="title-card"
+        draggable="false"
     >
         <img 
             :src="resolveImagePath(titleInfo, '800', 'poster')"
             :alt="`${titleInfo?.title_type === 'tv' ? 'TV show' : 'Movie'} poster: ${titleInfo?.name}`"
+            draggable="false"
         >
     
         <div class="button-row" v-if="searchStore.tmdbFallback" @click.prevent>
@@ -135,10 +137,14 @@ const { titleInfo } = defineProps({
 <style scoped>
 .title-card {
     width: 200px;
-    display: flex;
+    display: inline-flex;
     flex-direction: column;
     text-decoration: none;
     position: relative;
+    padding-right: var(--spacing-md);
+}
+.title-card:last-of-type {
+    padding-right: 0;
 }
 
 img {

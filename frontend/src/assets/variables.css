@@ -97,6 +97,8 @@
 
 /* ----------- Spacings ----------- */
 :root {
+    --spacing-layout-inline: 5vw;
+
     --spacing-xs: 4px;
     --spacing-xs-sm: 6px;
     --spacing-sm: 8px;
