@@ -1,3 +1,5 @@
+const localeString = "fi-FI";
+
 export const timeFormatters = {
     minutesToHrAndMin: (minutes) => {
         const hrs = Math.floor(minutes / 60);
@@ -11,12 +13,15 @@ export const timeFormatters = {
     },
     timestampToYear: (timestamp) => {
         return timestamp ? new Date(timestamp).getFullYear() : '-';
+    },
+    timestampToFullDate: (timestamp) => {
+        return timestamp ? new Date(timestamp).toLocaleDateString(localeString, ) : '-'
     }
 };
 
 export const numberFormatters = {
     formatCompactNumber: (number) => {
-        return new Intl.NumberFormat('en', {
+        return new Intl.NumberFormat(localeString, {
             notation: 'compact',
             maximumFractionDigits: 1
         }).format(number);

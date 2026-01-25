@@ -154,7 +154,6 @@ watch(
                 <div class="name-part">
                     <h1 class="name">
                         {{ titleDetails?.name }}
-                        ({{ timeFormatters.timestampToYear(titleDetails?.release_date) }})
                     </h1>
                     <h4 v-if="titleDetails?.name_original != titleDetails?.name" class="name-original">
                         {{ titleDetails?.name_original }}
@@ -199,6 +198,11 @@ watch(
                                 {{ genre?.genre_name }}{{ index == titleDetails?.genres?.length - 1 ? '' : ',' }}
                             </router-link>
                         </div>
+                    </div>
+
+                    <div v-if="titleDetails?.release_date" class="stat">
+                        <i class="bx bxs-calendar"></i>
+                        {{ timeFormatters.timestampToFullDate(titleDetails?.release_date) }}
                     </div>
                 </div>
         
