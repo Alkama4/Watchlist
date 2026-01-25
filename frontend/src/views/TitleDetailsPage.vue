@@ -191,9 +191,13 @@ watch(
                     <div v-if="titleDetails?.genres?.length > 0" class="stat">
                         <i class="bx bxs-label"></i>
                         <div class="genres">
-                            <routerLink v-for="(genre, index) in titleDetails?.genres" to="/search" class="no-deco">
+                            <router-link
+                                v-for="(genre, index) in titleDetails?.genres"
+                                :to="`/search?genres_include=${genre.tmdb_genre_id}`"
+                                class="hover-line"
+                            >
                                 {{ genre?.genre_name }}{{ index == titleDetails?.genres?.length - 1 ? '' : ',' }}
-                            </routerLink>
+                            </router-link>
                         </div>
                     </div>
                 </div>
@@ -391,7 +395,7 @@ img.poster {
 .tagline {
     display: block;
     margin-top: var(--spacing-md);
-    color: var(--c-text-1);
+    color: var(--c-text-2);
     font-style: italic;
 }
 

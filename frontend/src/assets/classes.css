@@ -5,12 +5,21 @@
 }
 
 
+a.hover-line {
+    text-decoration: none;
+    color: currentColor !important;
+}
+a.hover-line:hover {
+    text-decoration: underline;
+}
+
 a.subtle {
     color: var(--c-text-3);
 }
 a.subtle:hover {
     color: var(--c-text-2)
 }
+
 
 span.subtle {
     color: var(--c-text-3);
