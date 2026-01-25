@@ -1,7 +1,7 @@
 <script setup>
+import Carousel from '@/components/Carousel.vue';
 import LoadingButton from '@/components/LoadingButton.vue';
 import LoadingIndicator from '@/components/LoadingIndicator.vue';
-import TitleCard from '@/components/TitleCard.vue';
 import { fastApi } from '@/utils/fastApi';
 import { numberFormatters, timeFormatters } from '@/utils/formatters';
 import { resolveImagePath } from '@/utils/imagePath';
@@ -117,190 +117,179 @@ watch(
 </script>
 
 <template>
-    <LoadingIndicator class="page-loading-indicator" v-if="titleDetails === null"/>
+    <div class="title-details-page">
+        <LoadingIndicator class="page-loading-indicator" v-if="titleDetails === null"/>
+    
+        <NotFoundPage v-else-if="titleDetails === false"/>
 
-    <NotFoundPage v-else-if="titleDetails === false"/>
-
-    <div v-else class="title-details-page layout-contained layout-spacing-top layout-spacing-bottom">
-        <img 
-            :src="resolveImagePath(titleDetails, 'original', 'backdrop')"
-            :alt="`${titleDetails?.type} backdrop: ${titleDetails?.name}`"
-            class="backdrop"
-        >
-
-        <div class="logo-wrapper">
+        <div v-else class="layout-contained layout-spacing-top">
             <img 
-                :src="resolveImagePath(titleDetails, 'original', 'logo')"
-                :alt="`${titleDetails?.type} logo: ${titleDetails?.name}`"
-                class="logo"
+                :src="resolveImagePath(titleDetails, 'original', 'backdrop')"
+                :alt="`${titleDetails?.type} backdrop: ${titleDetails?.name}`"
+                class="backdrop"
             >
-        </div>
-
-        <NoticeBlock
-            v-if="titleDetails?.user_details?.in_library === false"
-            type="warning"
-            header="Title not in Library"
-            message="Please note that the title is currently not in your library. It will not appear in search, listings or recommendations. You can add the title to your library by using either the button below, or by searching for it from TMDB."
-        />
-
-        <div class="main-info">
-            <img 
-                :src="resolveImagePath(titleDetails, 'original', 'poster')"
-                :alt="`${titleDetails?.type} poster: ${titleDetails?.name}`"
-                class="poster"
-            >
-            
-            <div class="right-side">
-                <div class="name-part">
-                    <h1 class="name">
-                        {{ titleDetails?.name }}
-                    </h1>
-                    <h4 v-if="titleDetails?.name_original != titleDetails?.name" class="name-original">
-                        {{ titleDetails?.name_original }}
-                    </h4>
-                    <q v-if="titleDetails?.tagline" class="tagline">{{ titleDetails?.tagline }}</q>
-                </div>
-
-                <div class="general-stats">
-                    <div class="stat">
-                        <Tmdb/>
-                        <span>
-                            {{ titleDetails?.tmdb_vote_average }}
-                            ({{ numberFormatters.formatCompactNumber(titleDetails?.tmdb_vote_count) }} votes)
-                        </span>
+    
+            <div class="logo-wrapper">
+                <img 
+                    :src="resolveImagePath(titleDetails, 'original', 'logo')"
+                    :alt="`${titleDetails?.type} logo: ${titleDetails?.name}`"
+                    class="logo"
+                >
+            </div>
+    
+            <NoticeBlock
+                v-if="titleDetails?.user_details?.in_library === false"
+                type="warning"
+                header="Title not in Library"
+                message="Please note that the title is currently not in your library. It will not appear in search, listings or recommendations. You can add the title to your library by using either the button below, or by searching for it from TMDB."
+            />
+    
+            <div class="main-info">
+                <img 
+                    :src="resolveImagePath(titleDetails, 'original', 'poster')"
+                    :alt="`${titleDetails?.type} poster: ${titleDetails?.name}`"
+                    class="poster"
+                >
+                
+                <div class="right-side">
+                    <div class="name-part">
+                        <h1 class="name">
+                            {{ titleDetails?.name }}
+                        </h1>
+                        <h4 v-if="titleDetails?.name_original != titleDetails?.name" class="name-original">
+                            {{ titleDetails?.name_original }}
+                        </h4>
+                        <q v-if="titleDetails?.tagline" class="tagline">{{ titleDetails?.tagline }}</q>
                     </div>
-
-                    <div v-if="titleDetails?.title_type == 'movie'" class="stat">
-                        <i class="bx bxs-stopwatch"></i>
-                        {{ timeFormatters.minutesToHrAndMin(titleDetails?.movie_runtime) }}
-                    </div>
-                    <div v-else class="stat">
-                        <i class="bx bxs-stopwatch"></i>
-                        {{ titleDetails?.seasons?.length }}
-                        Season{{ titleDetails?.seasons?.length == 1 ? '': 's' }},
-                        {{ titleDetails?.seasons?.reduce((sum, s) => sum + s.episodes.length, 0) }}
-                        Episode{{ titleDetails?.seasons?.reduce((sum, s) => sum + s.episodes.length, 0) == 1 ? '': 's' }}
-                    </div>
-
-                    <div v-if="titleDetails?.age_rating" class="stat">
-                        <i class="bx bxs-star"></i>
-                        {{ titleDetails?.age_rating }}
-                    </div>
-
-                    <div v-if="titleDetails?.genres?.length > 0" class="stat">
-                        <i class="bx bxs-label"></i>
-                        <div class="genres">
-                            <router-link
-                                v-for="(genre, index) in titleDetails?.genres"
-                                :to="`/search?genres_include=${genre.tmdb_genre_id}`"
-                                class="hover-line"
-                            >
-                                {{ genre?.genre_name }}{{ index == titleDetails?.genres?.length - 1 ? '' : ',' }}
-                            </router-link>
+    
+                    <div class="general-stats">
+                        <div class="stat">
+                            <Tmdb/>
+                            <span>
+                                {{ titleDetails?.tmdb_vote_average }}
+                                ({{ numberFormatters.formatCompactNumber(titleDetails?.tmdb_vote_count) }} votes)
+                            </span>
+                        </div>
+    
+                        <div v-if="titleDetails?.title_type == 'movie'" class="stat">
+                            <i class="bx bxs-stopwatch"></i>
+                            {{ timeFormatters.minutesToHrAndMin(titleDetails?.movie_runtime) }}
+                        </div>
+                        <div v-else class="stat">
+                            <i class="bx bxs-stopwatch"></i>
+                            {{ titleDetails?.seasons?.length }}
+                            Season{{ titleDetails?.seasons?.length == 1 ? '': 's' }},
+                            {{ titleDetails?.seasons?.reduce((sum, s) => sum + s.episodes.length, 0) }}
+                            Episode{{ titleDetails?.seasons?.reduce((sum, s) => sum + s.episodes.length, 0) == 1 ? '': 's' }}
+                        </div>
+    
+                        <div v-if="titleDetails?.age_rating" class="stat">
+                            <i class="bx bxs-star"></i>
+                            {{ titleDetails?.age_rating }}
+                        </div>
+    
+                        <div v-if="titleDetails?.genres?.length > 0" class="stat">
+                            <i class="bx bxs-label"></i>
+                            <div class="genres">
+                                <router-link
+                                    v-for="(genre, index) in titleDetails?.genres"
+                                    :to="`/search?genres_include=${genre.tmdb_genre_id}`"
+                                    class="hover-line"
+                                >
+                                    {{ genre?.genre_name }}{{ index == titleDetails?.genres?.length - 1 ? '' : ',' }}
+                                </router-link>
+                            </div>
+                        </div>
+    
+                        <div v-if="titleDetails?.release_date" class="stat">
+                            <i class="bx bxs-calendar"></i>
+                            {{ timeFormatters.timestampToFullDate(titleDetails?.release_date) }}
                         </div>
                     </div>
-
-                    <div v-if="titleDetails?.release_date" class="stat">
-                        <i class="bx bxs-calendar"></i>
-                        {{ timeFormatters.timestampToFullDate(titleDetails?.release_date) }}
+            
+                    <p>{{ titleDetails?.overview }}</p>
+                    
+                    <div class="flex-row align-center gap-sm" style="margin-top: var(--spacing-md);">
+                        <button @click="addToTitleWatchCount">Add</button>
+                        <div>Watched {{ titleDetails?.user_details?.watch_count }} times</div>
+                        <button @click="removeFromTitleWatchCount">Remove</button>
+                    </div>
+    
+                    <div class="actions">
+                        <i
+                            class="bx bxs-heart btn btn-text btn-square"
+                            :class="{'btn-favourite': titleDetails?.user_details?.is_favourite }"
+                            @click="toggleFavourite"
+                        ></i>
+                        <i
+                            class="bx bxs-time btn btn-text btn-square"
+                            :class="{'btn-accent': titleDetails?.user_details?.in_watchlist }"
+                            @click="toggleWatchlist"
+                        ></i>
+                        <i
+                            class="bx bxs-collection btn btn-text btn-square"
+                            @click="adjustCollections"
+                        ></i>
+            
+                        <!-- Move actions below to a drop down -->
+            
+                        <i
+                            v-if="titleDetails?.user_details?.in_library"
+                            class="bx bx-list-minus btn btn-text btn-square"
+                            @click="removeFromLibrary"
+                        ></i>
+                        <i
+                            v-else
+                            class="bx bx-list-plus btn btn-text btn-square"
+                            @click="addToLibrary"
+                        ></i>
+            
+                        <LoadingButton
+                            @click="updateTitleDetails"
+                            :loading="waitingFor?.titleUpdate"
+                        >
+                            Update title details
+                        </LoadingButton>
+                        <!-- <a href="">Choose different images</a> -->
                     </div>
                 </div>
-        
-                <p>{{ titleDetails?.overview }}</p>
-                
-                <div class="flex-row align-center gap-sm" style="margin-top: var(--spacing-md);">
-                    <button @click="addToTitleWatchCount">Add</button>
-                    <div>Watched {{ titleDetails?.user_details?.watch_count }} times</div>
-                    <button @click="removeFromTitleWatchCount">Remove</button>
-                </div>
-
-                <div class="actions">
-                    <i
-                        class="bx bxs-heart btn btn-text btn-square"
-                        :class="{'btn-favourite': titleDetails?.user_details?.is_favourite }"
-                        @click="toggleFavourite"
-                    ></i>
-                    <i
-                        class="bx bxs-time btn btn-text btn-square"
-                        :class="{'btn-accent': titleDetails?.user_details?.in_watchlist }"
-                        @click="toggleWatchlist"
-                    ></i>
-                    <i
-                        class="bx bxs-collection btn btn-text btn-square"
-                        @click="adjustCollections"
-                    ></i>
-        
-                    <!-- Move actions below to a drop down -->
-        
-                    <i
-                        v-if="titleDetails?.user_details?.in_library"
-                        class="bx bx-list-minus btn btn-text btn-square"
-                        @click="removeFromLibrary"
-                    ></i>
-                    <i
-                        v-else
-                        class="bx bx-list-plus btn btn-text btn-square"
-                        @click="addToLibrary"
-                    ></i>
-        
-                    <LoadingButton
-                        @click="updateTitleDetails"
-                        :loading="waitingFor?.titleUpdate"
-                    >
-                        Update title details
-                    </LoadingButton>
-                    <!-- <a href="">Choose different images</a> -->
-                </div>
             </div>
-        </div>
-
-        <div class="links">
-            <a
-                :href="`https://www.themoviedb.org/${titleDetails?.title_type}/${titleDetails?.tmdb_id}`"
-                target="_blank"
-                class="btn no-deco"
-            >
-                TMDB
-                <i class="bx bx-link-external"></i>
-            </a>
-            <a
-                v-if="titleDetails?.imdb_id"
-                :href="`https://www.imdb.com/title/${titleDetails?.imdb_id}`"
-                target="_blank"
-                class="btn no-deco"
-            >
-                IMDB
-                <i class="bx bx-link-external"></i>
-            </a>
-            <a
-                v-if="titleDetails?.homepage"
-                :href="titleDetails?.homepage"
-                target="_blank"
-                class="btn no-deco"
-            >
-                Homepage
-                <i class="bx bx-link-external"></i>
-            </a>
-        </div>
-
-        <div class="carousel-wrapper">
-            <h3>{{ similarTitles?.header }}</h3>
-            <div class="carousel">
-                <TitleCard
-                    v-for="title in similarTitles?.titles"
-                    :titleInfo="title"
-                />
-                <router-link 
-                    v-if="similarTitles?.total_pages > 1"
-                    class="fake-card"
-                    :to="'/search'"
+    
+            <div class="links">
+                <a
+                    :href="`https://www.themoviedb.org/${titleDetails?.title_type}/${titleDetails?.tmdb_id}`"
+                    target="_blank"
+                    class="btn no-deco"
                 >
-                    Show more
-                </router-link>
+                    TMDB
+                    <i class="bx bx-link-external"></i>
+                </a>
+                <a
+                    v-if="titleDetails?.imdb_id"
+                    :href="`https://www.imdb.com/title/${titleDetails?.imdb_id}`"
+                    target="_blank"
+                    class="btn no-deco"
+                >
+                    IMDB
+                    <i class="bx bx-link-external"></i>
+                </a>
+                <a
+                    v-if="titleDetails?.homepage"
+                    :href="titleDetails?.homepage"
+                    target="_blank"
+                    class="btn no-deco"
+                >
+                    Homepage
+                    <i class="bx bx-link-external"></i>
+                </a>
             </div>
         </div>
+        
+        <Carousel :carouselData="similarTitles"/>
 
-        <p style="color: var(--c-text-3)">{{ titleDetails }}</p>
+        <div class="layout-contained layout-spacing-bottom">
+            <p style="color: var(--c-text-3)">{{ titleDetails }}</p>
+        </div>
     </div>
 </template>
 
@@ -310,26 +299,6 @@ watch(
     flex-direction: column;
     gap: var(--spacing-md);
 }
-
-
-/* TEMP SETUP - DO A COMPONENT */
-.carousel-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
-}
-
-.carousel-wrapper h3 {
-    margin-bottom: 0;
-}
-
-.carousel {
-    display: flex;
-    gap: var(--spacing-md);
-    overflow-x: scroll;
-}
-/* TEMP SETUP - DO A COMPONENT */
-
 
 
 img.backdrop {
