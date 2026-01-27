@@ -29,11 +29,12 @@ defineProps({
                 :key="title.title_id"
             />
             <router-link 
-                v-if="list?.total_pages > 1"
-                class="fake-card"
+                v-if="carouselData?.total_pages > 1"
+                class="fake-card no-deco"
                 :to="'/search'"
             >
-                Show more
+                <div>Search for more</div>
+                <i class="bx bx-right-arrow-alt"></i>
             </router-link>
         </Flicking>
     </div>
@@ -52,5 +53,28 @@ defineProps({
         var(--c-bg) calc(100% - var(--spacing-layout-inline)), 
         transparent 100%
     );
+}
+
+/* Temp solution */
+.fake-card {
+    width: 200px;
+    height: 300px;
+    background-color: var(--c-bg-section);
+    border-radius: var(--border-radius-md);
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+.fake-card i {
+    font-size: var(--fs-4);
+    transition: 0.3s transform var(--transition-bounce),
+                0.1s scale var(--transition-quick),
+                0.1s color  var(--transition-quick);
+}
+.fake-card:hover i {
+    transform: translateX(8px);
+    scale: 1.05;
 }
 </style>
