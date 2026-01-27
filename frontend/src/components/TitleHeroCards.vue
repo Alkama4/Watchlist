@@ -221,9 +221,12 @@ img.backdrop {
     );
 }
 img.logo {
-    max-height: 150px;
-    max-width: 400px;
     object-fit: contain;
+    object-position: left center;
+    width: 100%;
+    max-width: 450px;
+    max-height: 250px;
+    box-sizing: border-box;
 }
 
 .details-wrapper {
