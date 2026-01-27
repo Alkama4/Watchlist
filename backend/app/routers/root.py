@@ -29,6 +29,7 @@ async def get_home_overview(
         "header": "Latest titles",
         "filters": {
             "sort_by": "release_date",
+            "is_released": True,
             "page_size": 5
         }
     }    
