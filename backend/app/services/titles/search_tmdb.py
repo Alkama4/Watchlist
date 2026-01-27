@@ -80,7 +80,7 @@ async def run_and_process_tmdb_search(
             "tmdb_id": r["id"],
             "title_type": r["media_type"],
             "name": r.get("title") or r.get("name"),
-            "release_date": r.get("release_date") or r.get("first_air_date"),
+            "release_date": r.get("release_date") or r.get("first_air_date") or None,
             "tmdb_vote_average": r.get("vote_average"),
             "tmdb_vote_count": r.get("vote_count"),
             "default_poster_image_path": r.get("poster_path"),
