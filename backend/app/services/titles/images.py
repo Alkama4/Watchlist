@@ -14,11 +14,16 @@ def select_best_image(images: List[Dict], iso_639_1_list: List[Optional[str]]) -
     and returns the file path of that image.
     
     :param images: List of image dictionaries.
-    :param iso_639_1_list: Ordered list of language codes to try (use None for no language filter).
+    :param iso_639_1_list: Ordered list of language codes to try (use None for "no-language").
     :return: The file path of the best image or None if no match.
     """
     for iso in iso_639_1_list:
-        candidates = [img for img in images if iso is None or img.get("iso_639_1") == iso]
+        # If iso is None, look only at images whose iso_639_1 field is actually missing/None
+        if iso is None:
+            candidates = [img for img in images if img.get("iso_639_1") is None]
+        else:
+            candidates = [img for img in images if img.get("iso_639_1") == iso]
+
         if candidates:
             best_image = max(candidates, key=lambda img: (img.get("vote_average") or 0))
             return best_image.get("file_path")
