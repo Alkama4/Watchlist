@@ -26,6 +26,7 @@ defineProps({
             <TitleCard 
                 v-for="title in carouselData?.titles"
                 :titleInfo="title"
+                :key="title.title_id"
             />
             <router-link 
                 v-if="list?.total_pages > 1"
