@@ -1,0 +1,1 @@
+C:\Users\aleks\source\repos\Watchlist\Watchlist.csproj;x64

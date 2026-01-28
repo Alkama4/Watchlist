@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Watchlist (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Watchlist (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
