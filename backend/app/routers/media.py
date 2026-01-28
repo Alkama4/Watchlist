@@ -1,11 +1,12 @@
 import os
-import io
 import asyncio
 from PIL import Image
 import aiofiles
 import httpx
-from fastapi import APIRouter, HTTPException
-from fastapi.responses import FileResponse
+from fastapi import APIRouter, HTTPException, Request, Response
+from fastapi.responses import FileResponse, StreamingResponse
+import subprocess
+import json
 
 router = APIRouter()
 
@@ -49,6 +50,7 @@ async def download_original(image_path: str, local_path: str):
         async with aiofiles.open(local_path, "wb") as f:
             await f.write(resp.content)
 
+
 @router.get("/image/{size}/{image_path:path}")
 async def get_image(size: str, image_path: str):
     """
@@ -89,3 +91,75 @@ async def get_image(size: str, image_path: str):
 
     # Otherwise serve original
     return FileResponse(original_path, media_type="image/jpeg")
+
+
+# VIDEO_PATH = "C:\\Users\\aleks\\Desktop\\large_test_file.mkv"
+VIDEO_PATH = "C:\\Users\\aleks\\Desktop\\small_test_file.mkv"
+
+@router.api_route("/video", methods=["GET", "HEAD"])
+async def stream_video(request: Request):
+    if not os.path.exists(VIDEO_PATH):
+        raise HTTPException(status_code=404)
+
+    file_size = os.path.getsize(VIDEO_PATH)
+    range_header = request.headers.get("range")
+
+    start = 0
+    end = file_size - 1
+
+    if range_header:
+        units, _, value = range_header.partition("=")
+        if units != "bytes":
+            range_header = None
+        elif "," in value:
+            # Multi-range not supported → ignore per common practice
+            range_header = None
+        else:
+            start_str, _, end_str = value.partition("-")
+
+            if start_str == "":
+                if not end_str:
+                    range_header = None
+                else:
+                    length = int(end_str)
+                    start = max(file_size - length, 0)
+                    end = file_size - 1
+            else:
+                start = int(start_str)
+                if end_str:
+                    end = int(end_str)
+
+            if start < 0 or start > end or end >= file_size:
+                range_header = None
+
+    is_range = range_header is not None
+    chunk_size = end - start + 1
+
+    headers = {
+        "Accept-Ranges": "bytes",
+        "Content-Length": str(chunk_size),
+        "Content-Type": "video/x-matroska",
+    }
+
+    if is_range:
+        headers["Content-Range"] = f"bytes {start}-{end}/{file_size}"
+
+    if request.method == "HEAD":
+        return Response(status_code=206 if is_range else 200, headers=headers)
+
+    def iter_file():
+        with open(VIDEO_PATH, "rb") as f:
+            f.seek(start)
+            remaining = chunk_size
+            while remaining > 0:
+                data = f.read(min(1024 * 1024, remaining))
+                if not data:
+                    break
+                remaining -= len(data)
+                yield data
+
+    return StreamingResponse(
+        iter_file(),
+        status_code=206 if is_range else 200,
+        headers=headers,
+    )

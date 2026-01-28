@@ -68,7 +68,7 @@ function onSearchSubmit() {
     </main>
 
     <footer>
-        © Aleksi Malkki 2026. All Rights Reserved.
+        <router-link to="/debug" class="no-deco">© Aleksi Malkki 2026. All Rights Reserved.</router-link>
     </footer>
 </template>
 
@@ -132,6 +132,9 @@ footer {
     justify-content: center;
     display: flex;
     padding: var(--spacing-sm) 0;
+}
+
+footer a {
     color: var(--c-text-fine-print);
 }
 </style>
