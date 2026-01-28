@@ -1,102 +1,79 @@
 ﻿using System;
 using System.Windows;
-using LibVLCSharp.Shared;
-using LibVLCSharp.WPF;
+using System.Windows.Input;
+using Watchlist.Input;
+using Watchlist.Services;
 
 namespace Watchlist
 {
     public partial class MainWindow : Window
     {
-        private LibVLC _libVLC;
-        private MediaPlayer _mediaPlayer;
+        private readonly VlcPlayerService _player;
+        private readonly PlayerKeyController _playerKeys;
+        private readonly WebViewMessageHandler _webHandler;
+        private readonly FullscreenController _fullscreen;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            // Initialize VLC
-            Core.Initialize();
-            _libVLC = new LibVLC();
-            _mediaPlayer = new MediaPlayer(_libVLC);
-            videoView.MediaPlayer = _mediaPlayer;
+            _player = new VlcPlayerService();
+            _playerKeys = new PlayerKeyController(_player);
+            _webHandler = new WebViewMessageHandler();
+            _fullscreen = new FullscreenController();
 
-            // Start paused
-            _mediaPlayer.Pause();
+            videoView.MediaPlayer = _player.MediaPlayer;
 
-            // Initialize WebView2 Core
-            webView2.EnsureCoreWebView2Async().ContinueWith(t =>
+            webView2.EnsureCoreWebView2Async().ContinueWith(_ =>
             {
-                // Subscribe to messages after Core is ready
-                webView2.CoreWebView2.WebMessageReceived += WebView2_WebMessageReceived;
+                webView2.CoreWebView2.WebMessageReceived += WebMessageReceived;
             }, System.Threading.Tasks.TaskScheduler.FromCurrentSynchronizationContext());
         }
 
-        private void WebView2_WebMessageReceived(object sender, Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs e)
+        private void WebMessageReceived(
+            object? sender,
+            Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs e)
         {
-            try
+            if (_webHandler.TryGetVideoUrl(e.WebMessageAsJson, out var url))
             {
-                // Parse the message as JSON
-                dynamic msg = Newtonsoft.Json.JsonConvert.DeserializeObject(e.WebMessageAsJson);
-
-                if (msg.action == "playVideo" && msg.url != null)
-                {
-                    string videoUrl = msg.url;
-
-                    // Play video
-                    videoView.Visibility = Visibility.Visible;
-                    webView2.Visibility = Visibility.Collapsed;
-
-                    _mediaPlayer.Stop(); // stop previous video
-                    _mediaPlayer.Play(new Media(_libVLC, videoUrl, FromType.FromLocation));
-                }
+                videoView.Visibility = Visibility.Visible;
+                webView2.Visibility = Visibility.Collapsed;
+                videoView.Focus();
+                _player.Play(url!);
             }
-            catch (Exception ex)
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+
+            _fullscreen.HandleKey(this, e.Key);
+
+            if (e.Key == Key.Escape && videoView.Visibility == Visibility.Visible)
             {
-                MessageBox.Show("Error handling web message: " + ex.Message);
+                ExitVlcMode();
+                e.Handled = true;
+                return;
             }
+
+            if (videoView.Visibility == Visibility.Visible)
+            {
+                _playerKeys.Handle(e.Key);
+                e.Handled = true;
+            }
+        }
+        private void ExitVlcMode()
+        {
+            _player.Stop();
+            videoView.Visibility = Visibility.Collapsed;
+            webView2.Visibility = Visibility.Visible;
+            webView2.Focus();
         }
 
         protected override void OnClosed(EventArgs e)
         {
-            _mediaPlayer.Stop();
-            _mediaPlayer.Dispose();
-            _libVLC.Dispose();
+            _player.Dispose();
             base.OnClosed(e);
-        }
-
-
-        private bool _isFullscreen = false;
-        private WindowState _prevWindowState;
-        private WindowStyle _prevWindowStyle;
-
-        protected override void OnKeyDown(System.Windows.Input.KeyEventArgs e)
-        {
-            base.OnKeyDown(e);
-
-            if (e.Key == System.Windows.Input.Key.F11)
-            {
-                ToggleFullscreen();
-            }
-        }
-
-        private void ToggleFullscreen()
-        {
-            if (!_isFullscreen)
-            {
-                _prevWindowState = this.WindowState;
-                _prevWindowStyle = this.WindowStyle;
-
-                this.WindowStyle = WindowStyle.None;
-                this.WindowState = WindowState.Maximized;
-
-                _isFullscreen = true;
-            }
-            else
-            {
-                this.WindowStyle = _prevWindowStyle;
-                this.WindowState = _prevWindowState;
-                _isFullscreen = false;
-            }
         }
     }
 }

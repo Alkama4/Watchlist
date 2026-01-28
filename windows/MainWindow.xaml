@@ -3,13 +3,14 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         xmlns:vlc="clr-namespace:LibVLCSharp.WPF;assembly=LibVLCSharp.WPF"
-        Title="Watchlist WPF" Height="1000" Width="1400">
+        Focusable="True" FocusManager.FocusedElement="{Binding RelativeSource={RelativeSource Self}}"
+        Title="Watchlist" Height="1000" Width="1400" Background="Black">
     <Grid>
         <!-- WebView2 -->
         <wv2:WebView2 x:Name="webView2" Source="http://localhost:5173/" />
 
         <!-- VLC VideoView (overlay, hidden initially) -->
-        <vlc:VideoView x:Name="videoView" Visibility="Collapsed" />
+        <vlc:VideoView x:Name="videoView" Visibility="Collapsed" Background="Black"/>
     </Grid>
 </Window>
     
