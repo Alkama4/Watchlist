@@ -1,20 +1,15 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Window
-    x:Class="Watchlist.MainWindow"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:wv2="using:Microsoft.UI.Xaml.Controls"
-    Title="Watchlist">
-
-    <Window.SystemBackdrop>
-        <MicaBackdrop />
-    </Window.SystemBackdrop>
-
+﻿<Window x:Class="Watchlist.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        xmlns:vlc="clr-namespace:LibVLCSharp.WPF;assembly=LibVLCSharp.WPF"
+        Title="Watchlist WPF" Height="1000" Width="1400">
     <Grid>
-        <wv2:WebView2
-            x:Name="MyWebView"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch"
-            Source="http://localhost:5173/"/>
+        <!-- WebView2 -->
+        <wv2:WebView2 x:Name="webView2" Source="http://localhost:5173/" />
+
+        <!-- VLC VideoView (overlay, hidden initially) -->
+        <vlc:VideoView x:Name="videoView" Visibility="Collapsed" />
     </Grid>
 </Window>
+    
