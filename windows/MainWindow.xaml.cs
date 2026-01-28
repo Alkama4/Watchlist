@@ -1,57 +1,101 @@
-using Microsoft.UI;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using WinRT.Interop;
-using Microsoft.UI.Windowing;
-
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+﻿using System;
+using System.Windows;
+using LibVLCSharp.Shared;
+using LibVLCSharp.WPF;
 
 namespace Watchlist
 {
-    /// <summary>
-    /// An empty window that can be used on its own or navigated to within a Frame.
-    /// </summary>
-    public sealed partial class MainWindow : Window
+    public partial class MainWindow : Window
     {
+        private LibVLC _libVLC;
+        private MediaPlayer _mediaPlayer;
+
         public MainWindow()
         {
             InitializeComponent();
-            SetTitleBarColors();
+
+            // Initialize VLC
+            Core.Initialize();
+            _libVLC = new LibVLC();
+            _mediaPlayer = new MediaPlayer(_libVLC);
+            videoView.MediaPlayer = _mediaPlayer;
+
+            // Start paused
+            _mediaPlayer.Pause();
+
+            // Initialize WebView2 Core
+            webView2.EnsureCoreWebView2Async().ContinueWith(t =>
+            {
+                // Subscribe to messages after Core is ready
+                webView2.CoreWebView2.WebMessageReceived += WebView2_WebMessageReceived;
+            }, System.Threading.Tasks.TaskScheduler.FromCurrentSynchronizationContext());
         }
 
-        private void SetTitleBarColors()
+        private void WebView2_WebMessageReceived(object sender, Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs e)
         {
-            IntPtr hwnd = WindowNative.GetWindowHandle(this);
-            WindowId windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
-
-            AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
-
-            AppWindowTitleBar titleBar = appWindow.TitleBar;
-
-            if (AppWindowTitleBar.IsCustomizationSupported())
+            try
             {
-                titleBar.BackgroundColor = Colors.Black;
-                titleBar.ForegroundColor = Colors.White;
+                // Parse the message as JSON
+                dynamic msg = Newtonsoft.Json.JsonConvert.DeserializeObject(e.WebMessageAsJson);
 
-                titleBar.ButtonBackgroundColor = Colors.Black;
-                titleBar.ButtonForegroundColor = Colors.White;
+                if (msg.action == "playVideo" && msg.url != null)
+                {
+                    string videoUrl = msg.url;
 
-                titleBar.ButtonHoverBackgroundColor = Colors.DarkGray;
-                titleBar.ButtonPressedBackgroundColor = Colors.Gray;
+                    // Play video
+                    videoView.Visibility = Visibility.Visible;
+                    webView2.Visibility = Visibility.Collapsed;
+
+                    _mediaPlayer.Stop(); // stop previous video
+                    _mediaPlayer.Play(new Media(_libVLC, videoUrl, FromType.FromLocation));
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error handling web message: " + ex.Message);
+            }
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            _mediaPlayer.Stop();
+            _mediaPlayer.Dispose();
+            _libVLC.Dispose();
+            base.OnClosed(e);
+        }
+
+
+        private bool _isFullscreen = false;
+        private WindowState _prevWindowState;
+        private WindowStyle _prevWindowStyle;
+
+        protected override void OnKeyDown(System.Windows.Input.KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+
+            if (e.Key == System.Windows.Input.Key.F11)
+            {
+                ToggleFullscreen();
+            }
+        }
+
+        private void ToggleFullscreen()
+        {
+            if (!_isFullscreen)
+            {
+                _prevWindowState = this.WindowState;
+                _prevWindowStyle = this.WindowStyle;
+
+                this.WindowStyle = WindowStyle.None;
+                this.WindowState = WindowState.Maximized;
+
+                _isFullscreen = true;
+            }
+            else
+            {
+                this.WindowStyle = _prevWindowStyle;
+                this.WindowState = _prevWindowState;
+                _isFullscreen = false;
             }
         }
     }
