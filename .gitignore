@@ -9,3 +9,16 @@ node_modules/
 dist/
 build/
 .env.local
+
+# Windows app
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+bin/
+obj/
+*.nupkg
+packages/
+AppPackages/
+*.appxupload
