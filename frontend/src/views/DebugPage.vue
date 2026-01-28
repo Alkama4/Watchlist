@@ -9,10 +9,20 @@ function openModal() {
     modal.value.open();
 }
 
+function playVideo() {
+    window.chrome.webview.postMessage({ action: "playVideo", url: "http://localhost:8000/media/video" });
+}
+
 </script>
 
 <template>
     <div>
+        <h2>Video test</h2>
+
+        <div class="buttons">
+            <button @click="playVideo">Test video</button>
+        </div>
+
         <h2>Buttons</h2>
 
         <h3>Basic buttons</h3>
