@@ -10,7 +10,8 @@ from app.models import (
     ImageType,
     Title,
     Season,
-    Episode
+    Episode,
+    TitleAgeRatings
 )
 
 async def store_movie(db: AsyncSession, tmdb_data: dict) -> int:
@@ -188,6 +189,9 @@ async def _fetch_and_store_tv_seasons_and_episodes(db: AsyncSession, title_id: i
         # Store season images
         await store_image_details(db=db, season_id=season_id, images=season_data.get("images", {}))
 
+        # Store title age ratings
+        await _store_tv_age_ratings(db=db, title_id=title_id, ratings=tmdb_data.get("content_ratings", {}).get("results", []))
+
         # Update season with default poster now that images exist
         poster_image_path = select_best_image(season_data.get("images", {}).get("posters"), ["en", "fi", None])
         if poster_image_path:
@@ -252,3 +256,26 @@ async def _fetch_and_store_tv_seasons_and_episodes(db: AsyncSession, title_id: i
                 )
 
     await db.commit()
+
+
+async def _store_tv_age_ratings(db: AsyncSession, title_id: int, ratings: list):
+    if not ratings:
+        return
+    
+    stmt = insert(TitleAgeRatings).values([
+        {
+            "title_id": title_id,
+            "iso_3166_1": r["iso_3166_1"],
+            "rating": r["rating"],
+            "descriptors": ", ".join(r.get("descriptors", []))
+        }
+        for r in ratings
+    ]).on_conflict_do_update(
+        index_elements=["title_id", "iso_3166_1"],
+        set_={
+            "rating": insert(TitleAgeRatings).excluded.rating,
+            "descriptors": insert(TitleAgeRatings).excluded.descriptors,
+        }
+    )
+
+    await db.execute(stmt)
