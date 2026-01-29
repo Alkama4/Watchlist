@@ -59,6 +59,12 @@ class GenreElement(BaseModel):
     genre_name: str
 
 
+class RatingElement(BaseModel):
+    iso_3166_1: str
+    rating: str
+    descriptors: str
+
+
 class TitleIn(BaseModel):
     tmdb_id: int
     title_type: TitleType
@@ -232,7 +238,7 @@ class TitleOut(BaseModel):
     tmdb_vote_count: Optional[int]
     imdb_vote_average: Optional[float]
     imdb_vote_count: Optional[int]
-    age_rating: Optional[str]
+    age_ratings: Optional[RatingElement] = None
     overview: Optional[str]
     movie_runtime: Optional[int]
     movie_revenue: Optional[int]

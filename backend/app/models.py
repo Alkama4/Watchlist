@@ -98,7 +98,6 @@ class Title(Base):
     tmdb_vote_count = Column(Integer)
     imdb_vote_average = Column(DECIMAL(3,1))
     imdb_vote_count = Column(Integer)
-    age_rating = Column(String(10))
     overview = Column(Text)
     release_date = Column(Date)
     movie_runtime = Column(Integer)
@@ -221,7 +220,7 @@ class UserEpisodeDetails(Base):
     last_watched_at = Column(DateTime(timezone=True))
 
 
-##### GENERES #####
+##### GENERES AND OTHER MANY TO ONE DETAILS #####
 
 class Genre(Base):
     __tablename__ = "genres"
@@ -245,6 +244,25 @@ class TitleGenre(Base):
 
     title = relationship("Title", back_populates="genres")
     genre = relationship("Genre", back_populates="titles")
+
+
+class TitleAgeRatings(Base):
+    __tablename__ = "title_age_ratings"
+
+    title_id = Column(
+        Integer,
+        ForeignKey("titles.title_id", ondelete="CASCADE"),
+        primary_key=True
+    )
+    iso_3166_1 = Column(
+        String(5),
+        primary_key=True
+    )
+
+    rating = Column(String(10), nullable=False)
+    descriptors = Column(Text)
+
+    title = relationship("Title")
 
 
 ##### COLLECTIONS #####
