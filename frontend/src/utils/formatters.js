@@ -1,4 +1,4 @@
-const localeString = "fi-FI";
+import { preferredLocale } from "./conf";
 
 export const timeFormatters = {
     minutesToHrAndMin: (minutes) => {
@@ -15,13 +15,13 @@ export const timeFormatters = {
         return timestamp ? new Date(timestamp).getFullYear() : '-';
     },
     timestampToFullDate: (timestamp) => {
-        return timestamp ? new Date(timestamp).toLocaleDateString(localeString, ) : '-'
+        return timestamp ? new Date(timestamp).toLocaleDateString(preferredLocale.tag, ) : '-'
     }
 };
 
 export const numberFormatters = {
     formatCompactNumber: (number) => {
-        return new Intl.NumberFormat(localeString, {
+        return new Intl.NumberFormat(preferredLocale.tag, {
             notation: 'compact',
             maximumFractionDigits: 1
         }).format(number);
