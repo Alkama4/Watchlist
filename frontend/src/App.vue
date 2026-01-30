@@ -82,7 +82,7 @@ header {
     border-bottom: 1px solid var(--c-border);
     backdrop-filter: blur(30px);
     background-color: rgba(0, 0, 0, 0.66);
-    z-index: 1000;
+    z-index: var(--z-nav);
 }
 
 nav {

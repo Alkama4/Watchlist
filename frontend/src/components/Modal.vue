@@ -93,6 +93,9 @@ onUnmounted(() => {
 
 .card {
     cursor: auto;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .card.small {

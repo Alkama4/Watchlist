@@ -11,11 +11,14 @@ import NotFoundPage from './NotFoundPage.vue';
 import Tmdb from '@/assets/icons/tmdb.svg'
 import NoticeBlock from '@/components/NoticeBlock.vue';
 import { preferredLocale } from '@/utils/conf';
+import Modal from '@/components/Modal.vue';
 
 const route = useRoute();
 const titleDetails = ref(null);
 const waitingFor = ref({});
 const similarTitles = ref({});
+
+const AgeRatingsModal = ref(null);
 
 async function fetchTitleDetails() {
     const title_id = route.params.title_id;
@@ -97,6 +100,11 @@ async function loadTitleData() {
         console.error('Failed to fetch title', e);
         titleDetails.value = false; // signal invalid title
     }
+}
+
+function showAllAgeRatings() {
+    AgeRatingsModal.value.open();
+
 }
 
 const chosenAgeRating = computed(() => {
@@ -199,12 +207,14 @@ watch(
                             Episode{{ titleDetails?.seasons?.reduce((sum, s) => sum + s.episodes.length, 0) == 1 ? '': 's' }}
                         </div>
     
-                        <div v-if="chosenAgeRating?.rating" class="stat">
+                        <div v-if="chosenAgeRating?.rating" class="stat" @click="showAllAgeRatings">
                             <i class="bx bxs-star"></i>
-                            {{ chosenAgeRating?.rating }}
-                            <template v-if="chosenAgeRating?.descriptors">
-                                ({{ chosenAgeRating?.descriptors }})
-                            </template>
+                            <span class="btn-underline">
+                                {{ chosenAgeRating?.rating }}
+                                <template v-if="chosenAgeRating?.descriptors">
+                                    ({{ chosenAgeRating?.descriptors }})
+                                </template>
+                            </span>
                         </div>
     
                         <div v-if="titleDetails?.genres?.length > 0" class="stat">
@@ -307,11 +317,17 @@ watch(
         <Carousel :carouselData="similarTitles"/>
 
         <div class="layout-contained layout-spacing-bottom">
-            <div v-for="value in titleDetails?.age_ratings">
-                {{ value }}
-            </div>
+            
             <p style="color: var(--c-text-3)">{{ titleDetails }}</p>
         </div>
+
+        <Modal header="Age ratings" ref="AgeRatingsModal">
+            <div class="age-ratings-wrapper">
+                <div v-for="ageRating in titleDetails?.age_ratings">
+                    {{ ageRating }}
+                </div>
+            </div>
+        </Modal>
     </div>
 </template>
 
@@ -428,5 +444,10 @@ img.poster {
 
 .page-loading-indicator {
     min-height: 50vh;
+}
+
+
+.age-ratings-wrapper {
+    overflow: scroll;
 }
 </style>

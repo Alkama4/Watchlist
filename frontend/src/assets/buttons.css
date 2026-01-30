@@ -58,6 +58,15 @@ i.btn-text {
     font-size: var(--fs-2);
 }
 
+.btn-underline {
+    cursor: pointer;
+    text-decoration: none;
+    color: currentColor !important;
+}
+.btn-underline:hover {
+    text-decoration: underline;
+}
+
 
 /* Normal colored buttons */
 .btn-primary {
