@@ -15,7 +15,8 @@ class DefaultSettings(BaseModel):
     sort_direction: SortDirection = SortDirection.desc
     items_per_page: int = 25
     # locale: default to auto, where it is detected by browser, or just en-US? propably en-US if we are using for TMDB queries as well.
-    # backup_locale: as name states, default en-US
+    # fallback_locale: as name states, default en-US
+    # what to do when fallback local is no found either?
     # auto_remove_from_watchlist: automatically set the tag in_watchlist to false after adding to the watchcount.
 
     class Config:

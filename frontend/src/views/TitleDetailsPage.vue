@@ -116,7 +116,7 @@ const chosenAgeRating = computed(() => {
     if (pref && pref.rating) return pref
 
     // Else fall back to US
-    return ratings.find(r => r.iso_3166_1 === 'US') ?? null
+    return ratings.find(r => r.iso_3166_1 === fallbackLocale.iso_3166_1) ?? null
 })
 
 
