@@ -119,6 +119,7 @@ class Title(Base):
     seasons = relationship("Season", back_populates="title", cascade="all, delete-orphan")
     images = relationship("Image", back_populates="title", cascade="all, delete-orphan", foreign_keys="Image.title_id")
     genres = relationship("TitleGenre", back_populates="title", cascade="all, delete-orphan")
+    age_ratings = relationship("TitleAgeRatings", cascade="all, delete-orphan")
 
     default_poster = relationship("Image", foreign_keys=[default_poster_image_path], viewonly=True)
     default_backdrop = relationship("Image", foreign_keys=[default_backdrop_image_path], viewonly=True)

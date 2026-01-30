@@ -6,6 +6,7 @@ from sqlalchemy.orm import selectinload
 from datetime import datetime, timezone
 from app.schemas import (
     GenreElement,
+    RatingElement,
     UserEpisodeDetailsOut,
     UserSeasonDetailsOut,
     UserTitleDetailsOut,
@@ -30,7 +31,8 @@ async def fetch_title_with_user_details(db: AsyncSession, title_id: int, user_id
             selectinload(Title.seasons.and_(Season.season_number != 0))
                 .selectinload(Season.episodes),
             selectinload(Title.genres)
-                .selectinload(TitleGenre.genre)
+                .selectinload(TitleGenre.genre),
+            selectinload(Title.age_ratings),
         )
     )
     title = result.scalar_one_or_none()
@@ -100,6 +102,12 @@ def _build_title_out(
     title_out.genres = [
         GenreElement.model_validate(tg.genre, from_attributes=True)
         for tg in title.genres
+    ]
+
+    # Populate the age raings
+    title_out.age_ratings = [
+        RatingElement.model_validate(r, from_attributes=True)
+        for r in title.age_ratings
     ]
 
     # Attach user details, season/episode details

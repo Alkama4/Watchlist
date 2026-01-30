@@ -64,6 +64,9 @@ class RatingElement(BaseModel):
     rating: str
     descriptors: str
 
+    class Config:
+        from_attributes = True
+
 
 class TitleIn(BaseModel):
     tmdb_id: int
@@ -238,7 +241,7 @@ class TitleOut(BaseModel):
     tmdb_vote_count: Optional[int]
     imdb_vote_average: Optional[float]
     imdb_vote_count: Optional[int]
-    age_ratings: Optional[RatingElement] = None
+    age_ratings: Optional[List[RatingElement]] = None
     overview: Optional[str]
     movie_runtime: Optional[int]
     movie_revenue: Optional[int]
