@@ -153,7 +153,7 @@ class HeroUserTitleDetailsOut(CardUserTitleDetailsOut):
 
 class HeroTitleOut(CardTitleOut):
     genres: Optional[List[GenreElement]] = None
-    # age_ratings: Optional[List[AgeRatingElement]] = None
+    age_ratings: Optional[List[AgeRatingElement]] = None
     overview: Optional[str] = None
 
     user_details: Optional[HeroUserTitleDetailsOut] = None

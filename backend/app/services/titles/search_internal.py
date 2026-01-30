@@ -21,6 +21,7 @@ from app.schemas import (
     HeroTitleOut,
     HeroUserTitleDetailsOut,
     GenreElement,
+    AgeRatingElement,
     TitleListOut,
     TitleQueryIn,
 )
@@ -42,7 +43,8 @@ def _base_title_query(user_id: int, title_schema):
     if title_schema is HeroTitleOut:
         stmt = stmt.options(
             selectinload(Title.genres)
-                .selectinload(TitleGenre.genre)
+                .selectinload(TitleGenre.genre),
+            selectinload(Title.age_ratings),
         )
 
     return stmt
@@ -276,11 +278,17 @@ def _build_title_list_out(
 
         out = title_schema.model_validate(data)
 
-        # Convert the TitleGenre, Genre chain into plain names
+        # Add hero specifc details
         if (title_schema is HeroTitleOut):
+            # Convert the TitleGenre, Genre chain into plain names
             out.genres = [
                 GenreElement.model_validate(tg.genre, from_attributes=True)
                 for tg in title.genres
+            ]
+
+            out.age_ratings = [
+                AgeRatingElement.model_validate(r, from_attributes=True)
+                for r in title.age_ratings
             ]
 
         out.show_season_count = season_count
