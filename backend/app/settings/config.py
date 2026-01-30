@@ -6,11 +6,17 @@ from app.models import (
     SortDirection
 )
 
+# Here is where we define the settings that the application has.
+# Commented out settings are setting ideas to add to the settings.
+
 ######## Default settings using enums and typed fields ########
 class DefaultSettings(BaseModel):
     sort_by: SortBy = SortBy.tmdb_score
     sort_direction: SortDirection = SortDirection.desc
     items_per_page: int = 25
+    # locale: default to auto, where it is detected by browser, or just en-US? propably en-US if we are using for TMDB queries as well.
+    # backup_locale: as name states, default en-US
+    # auto_remove_from_watchlist: automatically set the tag in_watchlist to false after adding to the watchcount.
 
     class Config:
         extra = "forbid"
