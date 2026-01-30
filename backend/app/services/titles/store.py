@@ -63,11 +63,10 @@ async def store_movie(db: AsyncSession, tmdb_data: dict) -> int:
     title_id = result.scalar_one()
     await db.flush()  # flush to get the ID
 
-    # Store all images
+    # Store less straight forward stuff using helpers
     await store_image_details(db=db, title_id=title_id, images=tmdb_data.get("images", {}))
-
-    # Store genres
     await store_title_genres(db=db, title_id=title_id, genres=tmdb_data.get("genres", []))
+    await _store_movie_age_ratings(db=db, title_id=title_id, ratings=tmdb_data.get("releases", {}).get("countries", []))
 
     # Pick the best images for defaults
     chosen_images = {
@@ -130,11 +129,10 @@ async def store_tv(db: AsyncSession, tmdb_data: dict) -> int:
     title_id = result.scalar_one()
     await db.flush()
 
-    # Store all images for the title
+    # Store less straight forward stuff using helpers
     await store_image_details(db=db, title_id=title_id, images=tmdb_data.get("images", {}))
-
-    # Store genres
     await store_title_genres(db=db, title_id=title_id, genres=tmdb_data.get("genres", []))
+    await _store_tv_age_ratings(db=db, title_id=title_id, ratings=tmdb_data.get("content_ratings", {}).get("results", []))
 
     # Pick the best images for default paths
     title_images = tmdb_data.get("images", {})
@@ -188,9 +186,6 @@ async def _fetch_and_store_tv_seasons_and_episodes(db: AsyncSession, title_id: i
 
         # Store season images
         await store_image_details(db=db, season_id=season_id, images=season_data.get("images", {}))
-
-        # Store title age ratings
-        await _store_tv_age_ratings(db=db, title_id=title_id, ratings=tmdb_data.get("content_ratings", {}).get("results", []))
 
         # Update season with default poster now that images exist
         poster_image_path = select_best_image(season_data.get("images", {}).get("posters"), ["en", "fi", None])
@@ -256,6 +251,46 @@ async def _fetch_and_store_tv_seasons_and_episodes(db: AsyncSession, title_id: i
                 )
 
     await db.commit()
+
+
+async def _store_movie_age_ratings(db: AsyncSession, title_id: int, ratings: list):
+    if not ratings:
+        return
+
+    def _oldest_per_country(ratings):
+        by_country = {}
+
+        for r in ratings:
+            country = r["iso_3166_1"]
+            date = r.get("release_date")
+
+            if not date:
+                continue
+
+            if country not in by_country or date < by_country[country]["release_date"]:
+                by_country[country] = r
+
+        return list(by_country.values())
+
+    ratings = _oldest_per_country(ratings)
+
+    stmt = insert(TitleAgeRatings).values([
+        {
+            "title_id": title_id,
+            "iso_3166_1": r["iso_3166_1"],
+            "rating": r["certification"],
+            "descriptors": ", ".join(r.get("descriptors", []))
+        }
+        for r in ratings
+    ]).on_conflict_do_update(
+        index_elements=["title_id", "iso_3166_1"],
+        set_={
+            "rating": insert(TitleAgeRatings).excluded.rating,
+            "descriptors": insert(TitleAgeRatings).excluded.descriptors,
+        }
+    )
+
+    await db.execute(stmt)
 
 
 async def _store_tv_age_ratings(db: AsyncSession, title_id: int, ratings: list):
