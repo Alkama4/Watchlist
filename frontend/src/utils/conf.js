@@ -7,3 +7,7 @@ export const preferredLocale = {
     iso_3166_1: "FI",
     tag: "fi-FI"
 }
+export const fallbackLocale = {
+    iso_3166_1: "US",
+    tag: "en-US"
+}
