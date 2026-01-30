@@ -6,6 +6,10 @@ from app.services.titles.search_internal import run_title_search
 from app.services.genres import update_genres
 from app.schemas import (
     TitleQueryIn,
+    CardTitleOut,
+    CardUserTitleDetailsOut,
+    HeroTitleOut,
+    HeroUserTitleDetailsOut,
     HomeOverviewOut
 )
 from app.models import (
@@ -36,7 +40,9 @@ async def get_home_overview(
     hero_cards = await run_title_search(
         db,
         user.user_id,
-        TitleQueryIn(**hero_cards_options["filters"])
+        TitleQueryIn(**hero_cards_options["filters"]),
+        HeroTitleOut,
+        HeroUserTitleDetailsOut
     )
     hero_cards.header = hero_cards_options["header"]
 
@@ -137,7 +143,9 @@ async def get_home_overview(
         title_list = await run_title_search(
             db,
             user.user_id,
-            TitleQueryIn(**normal_card_list["filters"])
+            TitleQueryIn(**normal_card_list["filters"]),
+            CardTitleOut,
+            CardUserTitleDetailsOut
         )
         title_list.header = normal_card_list["header"]
 

@@ -19,6 +19,8 @@ from app.schemas import (
     TitleNotesIn,
     TMDBTitleQueryIn,
     TitleQueryIn,
+    CardTitleOut,
+    CardUserTitleDetailsOut,
     TitleListOut,
     TitleOut
 )
@@ -38,7 +40,9 @@ async def search_for_titles(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    return await run_title_search(db, user.user_id, data)
+    return await run_title_search(
+        db, user.user_id, data, CardTitleOut, CardUserTitleDetailsOut
+    )
 
 
 @router.post("/search/tmdb", response_model=TitleListOut)

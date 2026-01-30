@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from sqlalchemy import select, func, and_, exists, or_, not_
 from sqlalchemy.orm import aliased, selectinload
+from typing import Type
 from app.config import DEFAULT_MAX_QUERY_LIMIT
 from app.settings.config import DEFAULT_SETTINGS
 from app.models import (
@@ -15,36 +16,39 @@ from app.models import (
     TitleGenre
 )
 from app.schemas import (
-    CompactTitleOut,
-    CompactUserTitleDetailsOut,
+    CardTitleOut,
+    CardUserTitleDetailsOut,
+    HeroTitleOut,
+    HeroUserTitleDetailsOut,
     GenreElement,
     TitleListOut,
     TitleQueryIn,
 )
 
 
-def _base_title_query(user_id: int, utd):
+def _base_title_query(user_id: int, title_schema):
     stmt = (
-        select(Title, utd)
+        select(Title, UserTitleDetails)
             .outerjoin(
-                utd,
+                UserTitleDetails,
                 and_(
-                    utd.title_id == Title.title_id,
-                    utd.user_id == user_id,
+                    UserTitleDetails.title_id == Title.title_id,
+                    UserTitleDetails.user_id == user_id,
                 )
             )
-            .where(utd.in_library == True)
-
-            # Load the many‑to‑many link and the Genre it points to
-            .options(
-                selectinload(Title.genres)
-                    .selectinload(TitleGenre.genre)
-            )
+            .where(UserTitleDetails.in_library == True)
     )
+
+    if title_schema is HeroTitleOut:
+        stmt = stmt.options(
+            selectinload(Title.genres)
+                .selectinload(TitleGenre.genre)
+        )
+
     return stmt
 
 
-def _apply_filters(stmt, utd, q: TitleQueryIn):
+def _apply_filters(stmt, q: TitleQueryIn):
 
     # TODO: setup a smarter search. get rid of special chars and split by space and just try to fit the sections to the name or original name
 
@@ -55,10 +59,10 @@ def _apply_filters(stmt, utd, q: TitleQueryIn):
         stmt = stmt.where(Title.title_type == q.title_type)
 
     if q.is_favourite is not None:
-        stmt = stmt.where(utd.is_favourite == q.is_favourite)
+        stmt = stmt.where(UserTitleDetails.is_favourite == q.is_favourite)
 
     if q.in_watchlist is not None:
-        stmt = stmt.where(utd.in_watchlist == q.in_watchlist)
+        stmt = stmt.where(UserTitleDetails.in_watchlist == q.in_watchlist)
 
     if q.watch_status is not None:
         if q.watch_status == "not_watched":
@@ -69,12 +73,12 @@ def _apply_filters(stmt, utd, q: TitleQueryIn):
                 .join(Season, Season.season_id == Episode.season_id)
                 .where(
                     Season.title_id == Title.title_id,
-                    UserEpisodeDetails.user_id == utd.user_id,
+                    UserEpisodeDetails.user_id == UserTitleDetails.user_id,
                     UserEpisodeDetails.watch_count > 0
                 )
             )
             stmt = stmt.where(
-                utd.watch_count == 0,
+                UserTitleDetails.watch_count == 0,
                 ~exists(episode_subq)
             )
 
@@ -86,12 +90,12 @@ def _apply_filters(stmt, utd, q: TitleQueryIn):
                 .join(Season, Season.season_id == Episode.season_id)
                 .where(
                     Season.title_id == Title.title_id,
-                    UserEpisodeDetails.user_id == utd.user_id,
+                    UserEpisodeDetails.user_id == UserTitleDetails.user_id,
                     UserEpisodeDetails.watch_count > 0
                 )
             )
             stmt = stmt.where(
-                utd.watch_count == 0,
+                UserTitleDetails.watch_count == 0,
                 exists(episode_subq)
             )
 
@@ -113,7 +117,7 @@ def _apply_filters(stmt, utd, q: TitleQueryIn):
                     UserEpisodeDetails,
                     and_(
                         UserEpisodeDetails.episode_id == released_episodes_subq.c.episode_id,
-                        UserEpisodeDetails.user_id == utd.user_id
+                        UserEpisodeDetails.user_id == UserTitleDetails.user_id
                     )
                 )
                 .where(
@@ -127,7 +131,7 @@ def _apply_filters(stmt, utd, q: TitleQueryIn):
             # Completed if either movie watched or no unwatched released episodes exist
             stmt = stmt.where(
                 or_(
-                    utd.watch_count > 0,
+                    UserTitleDetails.watch_count > 0,
                     ~exists(unwatched_episodes_subq)
                 )
             )
@@ -191,7 +195,7 @@ async def _get_user_sort_settings(user_id: int, db) -> dict:
 
 
 async def _apply_sorting_with_user_settings(
-    stmt, q: TitleQueryIn, user_id: int, db, utd
+    stmt, q: TitleQueryIn, user_id: int, db
 ):
     sort_by = q.sort_by
     sort_dir = q.sort_direction
@@ -218,7 +222,7 @@ async def _apply_sorting_with_user_settings(
         SortBy.title_name: Title.name,
         SortBy.runtime: Title.movie_runtime,
         SortBy.release_date: Title.release_date,
-        SortBy.last_viewed_at: utd.last_viewed_at,
+        SortBy.last_viewed_at: UserTitleDetails.last_viewed_at,
         SortBy.random: func.random()
     }
 
@@ -255,30 +259,35 @@ def _apply_pagination(stmt, q: TitleQueryIn):
     return stmt.limit(size).offset((page - 1) * size), page, size
 
 
-def _build_title_list_out(rows, total, page, size) -> TitleListOut:
+def _build_title_list_out(
+    rows, total, page, size,
+    title_schema: Type[CardTitleOut | HeroTitleOut],
+    user_title_details_schema: Type[CardUserTitleDetailsOut | HeroUserTitleDetailsOut]
+) -> TitleListOut:
     titles = []
 
     for title, user_details, season_count, episode_count in rows:
         # Build a dict that omits the relationship fields
         data = {
             f: getattr(title, f)
-            for f in CompactTitleOut.model_fields
+            for f in title_schema.model_fields
             if hasattr(title, f) and f not in {"genres", "user_details"}
         }
 
-        out = CompactTitleOut.model_validate(data)
+        out = title_schema.model_validate(data)
 
         # Convert the TitleGenre, Genre chain into plain names
-        out.genres = [
-            GenreElement.model_validate(tg.genre, from_attributes=True)
-            for tg in title.genres
-        ]
+        if (title_schema is HeroTitleOut):
+            out.genres = [
+                GenreElement.model_validate(tg.genre, from_attributes=True)
+                for tg in title.genres
+            ]
 
         out.show_season_count = season_count
         out.show_episode_count = episode_count
 
         if user_details:
-            out.user_details = CompactUserTitleDetailsOut.model_validate(
+            out.user_details = user_title_details_schema.model_validate(
                 user_details, from_attributes=True
             )
 
@@ -296,20 +305,19 @@ def _build_title_list_out(rows, total, page, size) -> TitleListOut:
 async def run_title_search(
     db,
     user_id: int,
-    q: TitleQueryIn
+    q: TitleQueryIn,
+    title_schema: Type[CardTitleOut | HeroTitleOut],
+    user_title_details_schema: Type[CardUserTitleDetailsOut | HeroUserTitleDetailsOut]
 ) -> TitleListOut:
-    
-    utd = aliased(UserTitleDetails)
-
-    base_stmt = _base_title_query(user_id, utd)
-    base_stmt = _apply_filters(base_stmt, utd, q)
+    base_stmt = _base_title_query(user_id, title_schema)
+    base_stmt = _apply_filters(base_stmt, q)
 
     count_stmt = select(func.count()).select_from(base_stmt.subquery())
     total = (await db.execute(count_stmt)).scalar_one()
 
-    stmt = await _apply_sorting_with_user_settings(base_stmt, q, user_id, db, utd)
+    stmt = await _apply_sorting_with_user_settings(base_stmt, q, user_id, db)
     stmt = _add_subqueries(stmt)
     stmt, page, size = _apply_pagination(stmt, q)
 
     rows = (await db.execute(stmt)).all()
-    return _build_title_list_out(rows, total, page, size)
+    return _build_title_list_out(rows, total, page, size, title_schema, user_title_details_schema)

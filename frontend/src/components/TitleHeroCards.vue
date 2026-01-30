@@ -5,6 +5,7 @@ import Tmdb from '@/assets/icons/tmdb.svg'
 import { ref, onMounted, onUnmounted } from 'vue';
 import PaginationDots from './PaginationDots.vue';
 import { fastApi } from '@/utils/fastApi';
+import { fallbackLocale, preferredLocale } from '@/utils/conf';
 
 const currentIndex = ref(0);
 const direction = ref('');
@@ -68,6 +69,18 @@ function adjustCollections() {
 }
 
 
+function chooseAgeRating(titleDetails) {
+    const ratings = titleDetails?.age_ratings ?? []
+    console.info(titleDetails)
+
+    const pref = ratings.find(
+        r => r.iso_3166_1 === preferredLocale.iso_3166_1
+    )
+    if (pref && pref.rating) return pref
+
+    return ratings.find(r => r.iso_3166_1 === fallbackLocale.iso_3166_1) ?? null
+}
+
 const { heroCards } = defineProps({
     heroCards: {
         type: Object,
@@ -130,9 +143,9 @@ onUnmounted(() => {
                                 Episode{{ heroCards?.titles[currentIndex]?.show_episode_count == 1 ? '': 's' }}
                             </span>
     
-                            <template v-if="heroCards?.titles[currentIndex]?.age_rating">
+                            <template v-if="chooseAgeRating(heroCards?.titles[currentIndex])?.rating">
                                 <span>&vert;</span>
-                                <span>{{ heroCards?.titles[currentIndex]?.age_rating }}</span>
+                                <span>{{ chooseAgeRating(heroCards?.titles[currentIndex])?.rating }}</span>
                             </template>
     
                             <template v-if="heroCards?.titles[currentIndex]?.genres?.length > 0">

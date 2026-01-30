@@ -6,7 +6,7 @@ from sqlalchemy.orm import selectinload
 from datetime import datetime, timezone
 from app.schemas import (
     GenreElement,
-    RatingElement,
+    AgeRatingElement,
     UserEpisodeDetailsOut,
     UserSeasonDetailsOut,
     UserTitleDetailsOut,
@@ -106,7 +106,7 @@ def _build_title_out(
 
     # Populate the age raings
     title_out.age_ratings = [
-        RatingElement.model_validate(r, from_attributes=True)
+        AgeRatingElement.model_validate(r, from_attributes=True)
         for r in title.age_ratings
     ]
 

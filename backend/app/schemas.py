@@ -59,7 +59,7 @@ class GenreElement(BaseModel):
     genre_name: str
 
 
-class RatingElement(BaseModel):
+class AgeRatingElement(BaseModel):
     iso_3166_1: str
     rating: str
     descriptors: str
@@ -116,7 +116,9 @@ class TitleQueryIn(BaseModel):
         le=ABSOLUTE_MAX_QUERY_LIMIT
     )
 
-class CompactUserTitleDetailsOut(BaseModel):
+
+# Card title out
+class CardUserTitleDetailsOut(BaseModel):
     in_library: bool
     is_favourite: bool
     in_watchlist: bool
@@ -126,31 +128,40 @@ class CompactUserTitleDetailsOut(BaseModel):
     chosen_backdrop_image_path: Optional[str] = None
     chosen_logo_image_path: Optional[str] = None
 
-class CompactTitleOut(BaseModel):
+class CardTitleOut(BaseModel):
     title_id: Optional[int] = None
     tmdb_id: Optional[int] = None
     title_type: TitleType
     name: str
-    genres: Optional[List[GenreElement]] = None
     release_date: Optional[date] = None
-    overview: Optional[str] = None
     movie_runtime: Optional[int] = None
     show_season_count: Optional[int] = None
     show_episode_count: Optional[int] = None
     tmdb_vote_average: Optional[float] = None
     tmdb_vote_count: Optional[int] = None
-    imdb_vote_average: Optional[float] = None
-    imdb_vote_count: Optional[int] = None
 
     default_poster_image_path: Optional[str] = None
     default_backdrop_image_path: Optional[str] = None
     default_logo_image_path: Optional[str] = None
 
-    user_details: Optional[CompactUserTitleDetailsOut] = None
+    user_details: Optional[CardUserTitleDetailsOut] = None
+
+
+# Hero title out
+class HeroUserTitleDetailsOut(CardUserTitleDetailsOut):
+    pass
+
+class HeroTitleOut(CardTitleOut):
+    genres: Optional[List[GenreElement]] = None
+    # age_ratings: Optional[List[AgeRatingElement]] = None
+    overview: Optional[str] = None
+
+    user_details: Optional[HeroUserTitleDetailsOut] = None
+
 
 class TitleListOut(BaseModel):
     header: Optional[str] = None
-    titles: List[CompactTitleOut]
+    titles: List[CardTitleOut | HeroTitleOut]
     page_number: int
     page_size: int
     total_items: int
@@ -241,7 +252,7 @@ class TitleOut(BaseModel):
     tmdb_vote_count: Optional[int]
     imdb_vote_average: Optional[float]
     imdb_vote_count: Optional[int]
-    age_ratings: Optional[List[RatingElement]] = None
+    age_ratings: Optional[List[AgeRatingElement]] = None
     overview: Optional[str]
     movie_runtime: Optional[int]
     movie_revenue: Optional[int]

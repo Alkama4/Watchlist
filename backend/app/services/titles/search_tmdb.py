@@ -4,7 +4,7 @@ from sqlalchemy.orm import aliased
 from app.integrations import tmdb
 from app.schemas import (
     TMDBTitleQueryIn,
-    CompactUserTitleDetailsOut,
+    CardUserTitleDetailsOut,
     TitleListOut
 )
 from app.models import (
@@ -86,7 +86,7 @@ async def run_and_process_tmdb_search(
             "default_poster_image_path": r.get("poster_path"),
             "default_backdrop_image_path": r.get("backdrop_path"),
             "user_details": (
-                CompactUserTitleDetailsOut.model_validate(
+                CardUserTitleDetailsOut.model_validate(
                     utd, from_attributes=True
                 )
                 if utd else None
