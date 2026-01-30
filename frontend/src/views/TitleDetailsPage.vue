@@ -5,11 +5,12 @@ import LoadingIndicator from '@/components/LoadingIndicator.vue';
 import { fastApi } from '@/utils/fastApi';
 import { numberFormatters, timeFormatters } from '@/utils/formatters';
 import { resolveImagePath } from '@/utils/imagePath';
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import NotFoundPage from './NotFoundPage.vue';
 import Tmdb from '@/assets/icons/tmdb.svg'
 import NoticeBlock from '@/components/NoticeBlock.vue';
+import { preferredLocale } from '@/utils/conf';
 
 const route = useRoute();
 const titleDetails = ref(null);
@@ -98,6 +99,21 @@ async function loadTitleData() {
     }
 }
 
+const chosenAgeRating = computed(() => {
+    const ratings = titleDetails.value?.age_ratings ?? []
+
+    // Try to find preferred locale
+    const pref = ratings.find(
+        r => r.iso_3166_1 === preferredLocale.iso_3166_1
+    )
+    if (pref && pref.rating) return pref
+
+    // Else fall back to US
+    return ratings.find(r => r.iso_3166_1 === 'US') ?? null
+})
+
+
+
 // Fetch data initially
 onMounted(async () => {
     await loadTitleData();
@@ -183,9 +199,12 @@ watch(
                             Episode{{ titleDetails?.seasons?.reduce((sum, s) => sum + s.episodes.length, 0) == 1 ? '': 's' }}
                         </div>
     
-                        <div v-if="titleDetails?.age_rating" class="stat">
+                        <div v-if="chosenAgeRating?.rating" class="stat">
                             <i class="bx bxs-star"></i>
-                            {{ titleDetails?.age_rating }}
+                            {{ chosenAgeRating?.rating }}
+                            <template v-if="chosenAgeRating?.descriptors">
+                                ({{ chosenAgeRating?.descriptors }})
+                            </template>
                         </div>
     
                         <div v-if="titleDetails?.genres?.length > 0" class="stat">
@@ -288,6 +307,9 @@ watch(
         <Carousel :carouselData="similarTitles"/>
 
         <div class="layout-contained layout-spacing-bottom">
+            <div v-for="value in titleDetails?.age_ratings">
+                {{ value }}
+            </div>
             <p style="color: var(--c-text-3)">{{ titleDetails }}</p>
         </div>
     </div>
