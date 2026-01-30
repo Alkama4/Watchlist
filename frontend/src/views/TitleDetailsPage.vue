@@ -125,7 +125,7 @@ const tmdbEditAgeRatingUrl = computed(() => {
     const { title_type, tmdb_id } = titleDetails.value;
     const path =
         title_type === 'movie'
-            ? 'active_nav_item=release_information'
+            ? 'edit?active_nav_item=release_information'
             : 'edit?active_nav_item=content_ratings';
     return `https://www.themoviedb.org/${title_type}/${tmdb_id}/${path}`;
 })
@@ -378,7 +378,7 @@ watch(
             <span class="subtle details-missing-note">
                 Can't find age ratings for your country? You can contribute the info on TMDB
                 <a class="subtle" :href="tmdbEditAgeRatingUrl">here</a>.
-                Changes usually take a few hours to show up in update requests.
+                Changes usually take a few hours to appear in the "update title details" requests.
             </span>
         </Modal>
     </div>
