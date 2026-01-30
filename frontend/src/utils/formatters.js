@@ -2,14 +2,13 @@ import { preferredLocale } from "./conf";
 
 export const timeFormatters = {
     minutesToHrAndMin: (minutes) => {
+        if (minutes == null || minutes === 0) return '- min'; // handles null, undefined, 0
+
         const hrs = Math.floor(minutes / 60);
         const mins = minutes % 60;
 
-        if (hrs === 0) {
-            return `${mins}min`;
-        }
-
-        return `${hrs}hr ${mins}min`;
+        if (hrs === 0) return `${mins} min`;
+        return `${hrs} hr, ${mins} min`;
     },
     timestampToYear: (timestamp) => {
         return timestamp ? new Date(timestamp).getFullYear() : '-';

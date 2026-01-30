@@ -115,10 +115,20 @@ const chosenAgeRating = computed(() => {
     )
     if (pref && pref.rating) return pref
 
+    console.info(ratings.find(r => r.iso_3166_1 === fallbackLocale.iso_3166_1) ?? null)
+
     // Else fall back to US
     return ratings.find(r => r.iso_3166_1 === fallbackLocale.iso_3166_1) ?? null
 })
 
+const tmdbEditAgeRatingUrl = computed(() => {
+    const { title_type, tmdb_id } = titleDetails.value;
+    const path =
+        title_type === 'movie'
+            ? 'active_nav_item=release_information'
+            : 'edit?active_nav_item=content_ratings';
+    return `https://www.themoviedb.org/${title_type}/${tmdb_id}/${path}`;
+})
 
 
 // Fetch data initially
@@ -189,7 +199,7 @@ watch(
                         <div class="stat">
                             <Tmdb/>
                             <span>
-                                {{ titleDetails?.tmdb_vote_average }}
+                                {{ titleDetails?.tmdb_vote_average || '-' }}
                                 ({{ numberFormatters.formatCompactNumber(titleDetails?.tmdb_vote_count) }} votes)
                             </span>
                         </div>
@@ -206,17 +216,17 @@ watch(
                             Episode{{ titleDetails?.seasons?.reduce((sum, s) => sum + s.episodes.length, 0) == 1 ? '': 's' }}
                         </div>
     
-                        <div v-if="chosenAgeRating?.rating" class="stat" @click="showAllAgeRatings">
+                        <div class="stat" @click="showAllAgeRatings">
                             <i class="bx bxs-star"></i>
                             <span class="btn-underline">
-                                {{ chosenAgeRating?.rating }}
+                                {{ chosenAgeRating?.rating || '-'  }}
                                 <template v-if="chosenAgeRating?.descriptors">
                                     ({{ chosenAgeRating?.descriptors }})
                                 </template>
                             </span>
                         </div>
     
-                        <div v-if="titleDetails?.genres?.length > 0" class="stat">
+                        <div class="stat">
                             <i class="bx bxs-label"></i>
                             <div class="genres">
                                 <router-link
@@ -226,10 +236,11 @@ watch(
                                 >
                                     {{ genre?.genre_name }}{{ index == titleDetails?.genres?.length - 1 ? '' : ',' }}
                                 </router-link>
+                                <span v-if="!titleDetails?.genres?.length >= 1">-</span>
                             </div>
                         </div>
     
-                        <div v-if="titleDetails?.release_date" class="stat">
+                        <div class="stat">
                             <i class="bx bxs-calendar"></i>
                             {{ timeFormatters.timestampToFullDate(titleDetails?.release_date) }}
                         </div>
@@ -354,9 +365,21 @@ watch(
                             <td>{{ ageRating.rating }}</td>
                             <td>{{ ageRating.descriptors }}</td>
                         </tr>
+                        <tr v-if="!titleDetails?.age_ratings?.length >= 1">
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
+            <span class="subtle details-missing-note">
+                Can't find age ratings for your country? You can contribute the info on TMDB
+                <a class="subtle" :href="tmdbEditAgeRatingUrl">here</a>.
+                Changes usually take a few hours to show up in update requests.
+            </span>
         </Modal>
     </div>
 </template>
@@ -492,5 +515,11 @@ img.poster {
 }
 .age-ratings-table td {
     white-space: nowrap;
+}
+
+.details-missing-note {
+    text-align: center;
+    margin-top: var(--spacing-md-lg);
+    font-size: var(--fs-neg-1);
 }
 </style>
