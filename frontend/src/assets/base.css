@@ -197,3 +197,32 @@ hr {
     margin: var(--spacing-md);
     border: none;
 }
+
+
+/* Table */
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+thead th {
+    background-color: var(--c-bg-section);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+th, td {
+    padding: var(--spacing-sm) var(--spacing-sm-md);
+    text-align: left;
+    border: 1px solid var(--c-border);
+}
+
+/* Table Border fix */
+table td {
+    border-top-width: 0;
+}
+table tr * {
+    border-right-width: 0;
+}
+table tr *:last-child {
+    border-right-width: 1px;
+}
