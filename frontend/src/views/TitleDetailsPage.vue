@@ -3,14 +3,14 @@ import Carousel from '@/components/Carousel.vue';
 import LoadingButton from '@/components/LoadingButton.vue';
 import LoadingIndicator from '@/components/LoadingIndicator.vue';
 import { fastApi } from '@/utils/fastApi';
-import { numberFormatters, timeFormatters } from '@/utils/formatters';
+import { isoFormatters, numberFormatters, timeFormatters } from '@/utils/formatters';
 import { resolveImagePath } from '@/utils/imagePath';
 import { onMounted, ref, watch, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import NotFoundPage from './NotFoundPage.vue';
 import Tmdb from '@/assets/icons/tmdb.svg'
 import NoticeBlock from '@/components/NoticeBlock.vue';
-import { preferredLocale } from '@/utils/conf';
+import { preferredLocale, fallbackLocale } from '@/utils/conf';
 import Modal from '@/components/Modal.vue';
 
 const route = useRoute();
@@ -104,7 +104,6 @@ async function loadTitleData() {
 
 function showAllAgeRatings() {
     AgeRatingsModal.value.open();
-
 }
 
 const chosenAgeRating = computed(() => {
@@ -317,15 +316,46 @@ watch(
         <Carousel :carouselData="similarTitles"/>
 
         <div class="layout-contained layout-spacing-bottom">
-            
             <p style="color: var(--c-text-3)">{{ titleDetails }}</p>
         </div>
 
-        <Modal header="Age ratings" ref="AgeRatingsModal">
-            <div class="age-ratings-wrapper">
-                <div v-for="ageRating in titleDetails?.age_ratings">
-                    {{ ageRating }}
-                </div>
+        <Modal header="Age ratings" ref="AgeRatingsModal" :minimumCard="true">
+            <p>The following list shows age ratings by country for the current title. The star icon indicates your <i class="bx bxs-star"></i> preferred language (or <i class="bx bx-star"></i> fallback). You can adjust your preffered languages in the <router-link to="/account">application settings</router-link>.</p>
+            <div class="age-ratings-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Default</th>
+                            <th>iso_3166_1</th>
+                            <th>Country</th>
+                            <th>Rating</th>
+                            <th>Descriptors</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="ageRating in titleDetails?.age_ratings">
+                            <td>
+                                <span>
+                                    <i
+                                        v-if="ageRating.iso_3166_1 === preferredLocale.iso_3166_1"
+                                        class="bx bxs-star"
+                                        title="Your preferred language"
+                                    ></i>
+                                    <i
+                                        v-else-if="ageRating.iso_3166_1 === fallbackLocale.iso_3166_1"
+                                        class="bx bx-star"
+                                        title="Default backup"
+                                    ></i>
+
+                                </span>
+                            </td>
+                            <td>{{ ageRating.iso_3166_1 }}</td>
+                            <td>{{ isoFormatters.iso_3166_1ToCountry(ageRating.iso_3166_1) }}</td>
+                            <td>{{ ageRating.rating }}</td>
+                            <td>{{ ageRating.descriptors }}</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </Modal>
     </div>
@@ -447,7 +477,16 @@ img.poster {
 }
 
 
-.age-ratings-wrapper {
-    overflow: scroll;
+.age-ratings-table {
+    overflow-y: auto;
+    width: fit-content;
+}
+.age-ratings-table span {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+.age-ratings-table td {
+    white-space: nowrap;
 }
 </style>

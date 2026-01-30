@@ -27,3 +27,10 @@ export const numberFormatters = {
         }).format(number);
     }
 }
+
+
+export const isoFormatters = {
+    iso_3166_1ToCountry: (iso_3166_1) => {
+        return new Intl.DisplayNames(preferredLocale.tag, { type: 'region' }).of(iso_3166_1);
+    }
+}

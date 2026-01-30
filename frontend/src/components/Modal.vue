@@ -13,6 +13,10 @@ defineProps({
     smallCard: {
         type: Boolean,
         default: false,
+    },
+    minimumCard: {
+        type: Boolean,
+        default: false
     }
 })
 
@@ -43,7 +47,11 @@ onUnmounted(() => {
                 class="modal-backdrop"
                 @click="close"
             >
-                <div class="card" :class="{'small': smallCard}" @click.stop>
+                <div 
+                    class="card" 
+                    :class="{'small': smallCard, 'min-content': minimumCard}"
+                    @click.stop
+                >
                     <h2 v-if="header" class="no-top">{{ header }}</h2>
                     <slot></slot>
                 </div>
@@ -97,9 +105,11 @@ onUnmounted(() => {
     display: flex;
     flex-direction: column;
 }
-
 .card.small {
     max-width: 600px;
+}
+.card.min-content {
+    width: min-content;
 }
 
 </style>
