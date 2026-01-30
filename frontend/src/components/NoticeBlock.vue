@@ -52,6 +52,7 @@ defineProps({
 .notice {
     padding: var(--spacing-sm);
     border-radius: var(--border-radius-md);
+    backdrop-filter: blur(var(--blur-light));
 }
 .notice.info {
     background-color: var(--c-accent-transparent);

@@ -80,7 +80,7 @@ header {
     right: 0;
     padding: var(--spacing-sm-md) var(--spacing-md);
     border-bottom: 1px solid var(--c-border);
-    backdrop-filter: blur(30px);
+    backdrop-filter: blur(var(--blur-heavy));
     background-color: rgba(0, 0, 0, 0.66);
     z-index: var(--z-nav);
 }

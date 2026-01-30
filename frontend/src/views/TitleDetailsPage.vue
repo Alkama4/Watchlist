@@ -403,6 +403,10 @@ img.logo {
     box-sizing: border-box;
 }
 
+.notice {
+    margin-bottom: var(--spacing-md);
+}
+
 .main-info {
     display: grid;
     grid-template-columns: auto 1fr;
