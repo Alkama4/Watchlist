@@ -52,8 +52,8 @@ function select(index) {
     border-radius: 100px;
     background-color: var(--c-text-3);
 
-    transition: background-color 0.1s var(--transition-quick),
-                width 0.2s var(--transition-quick);
+    transition: background-color 0.1s var(--transition-ease-out),
+                width 0.2s var(--transition-ease-out);
 }
 
 .dot.active {

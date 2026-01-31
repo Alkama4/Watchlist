@@ -70,8 +70,8 @@ defineProps({
 .fake-card i {
     font-size: var(--fs-4);
     transition: 0.3s transform var(--transition-bounce),
-                0.1s scale var(--transition-quick),
-                0.1s color  var(--transition-quick);
+                0.1s scale var(--transition-ease-out),
+                0.1s color  var(--transition-ease-out);
 }
 .fake-card:hover i {
     transform: translateX(8px);

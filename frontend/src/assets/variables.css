@@ -133,7 +133,7 @@
 
 /* ----------- Transitions ----------- */
 :root {
-    --transition-quick: cubic-bezier(.23,.52,.4,.95);
+    --transition-ease-out: cubic-bezier(.23,.52,.4,.95);
     --transition-bounce: cubic-bezier(.33,.24,.19,1.45);
 }
 

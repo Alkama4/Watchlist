@@ -66,7 +66,7 @@ input, select {
     border-radius: 8px;
     padding: var(--spacing-sm);
 
-    transition: border-color 0.1s var(--transition-quick);
+    transition: border-color 0.1s var(--transition-ease-out);
 }
 input:hover,
 select:hover {
@@ -161,7 +161,7 @@ h6 {
 a {
     text-decoration: underline;
     color: var(--c-text-1);
-    transition: color 0.1s var(--transition-quick);
+    transition: color 0.1s var(--transition-ease-out);
 }
 a:hover {
     color: var(--c-text-0);
