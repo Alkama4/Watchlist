@@ -107,7 +107,7 @@ const { titleInfo } = defineProps({
             <h5>{{ titleInfo?.name }}</h5>
             <div class="detail-row">
                 <Tmdb/>
-                {{ titleInfo?.tmdb_vote_average?.toFixed(1) }}
+                {{ titleInfo?.tmdb_vote_average ? titleInfo?.tmdb_vote_average?.toFixed(1) : "-" }}
                 &bull;
                 {{ timeFormatters.timestampToYear(titleInfo?.release_date) }}
             </div>
