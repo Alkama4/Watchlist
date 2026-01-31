@@ -124,11 +124,21 @@ const { titleInfo } = defineProps({
             </div>
         </div>
 
-        <div v-if="titleInfo?.user_details?.watch_count" class="watch-count-marker">
-            <template v-if="titleInfo?.user_details?.watch_count >= 2">
-                {{ titleInfo?.user_details?.watch_count }}
-            </template>
-            <i v-else class="bx bx-check"></i>
+        <div class="indicator-wrapper">
+            <div v-if="titleInfo?.user_details?.watch_count" class="indicator-circle watch-count">
+                <template v-if="titleInfo?.user_details?.watch_count >= 2">
+                    {{ titleInfo?.user_details?.watch_count }}
+                </template>
+                <i v-else class="bx bx-check"></i>
+            </div>
+    
+            <div v-if="titleInfo?.user_details?.is_favourite" class="indicator-circle favourite">
+                <i class="bx bxs-heart"></i>
+            </div>
+    
+            <div v-if="titleInfo?.user_details?.in_watchlist" class="indicator-circle watchlist">
+                <i class="bx bxs-time"></i>
+            </div>
         </div>
     </component>
 </template>
@@ -187,11 +197,22 @@ h5 {
     font-size: var(--fs-neg-1);
 }
 
-.watch-count-marker {
+
+.indicator-wrapper {
     position: absolute;
-    top: var(--spacing-sm);
-    left: var(--spacing-sm);
-    background-color: var(--c-positive);
+    padding: var(--spacing-sm);
+    top: 0;
+    left: 0;
+    height: var(--spacing-lg);
+    width: calc(var(--spacing-lg) * 3 + var(--spacing-xs) * 2);
+    --spacing-amount: 8px;
+}
+.indicator-wrapper:hover {
+    --spacing-amount: calc(var(--spacing-lg) + var(--spacing-xs));
+}
+
+.indicator-circle {
+    position: absolute;
     width: var(--spacing-lg);
     height: var(--spacing-lg);
     border-radius: 100px;
@@ -200,8 +221,37 @@ h5 {
     align-items: center;
     font-weight: 500;
     color: var(--c-text);
+    transition: left 0.2s var(--transition-ease-out);
 }
-.watch-count-marker i {
+.indicator-circle.watch-count {
+    background-color: var(--c-positive);
+    z-index: 50;
+}
+.indicator-circle.favourite {
+    background-color: var(--c-favourite);
+    z-index: 40;
+}
+.indicator-circle.watchlist {
+    background-color: var(--c-accent);
+    z-index: 30;
+}
+
+.indicator-circle.watch-count i,
+.indicator-circle.watch-count i {
     font-size: var(--fs-3);
 }
+.indicator-circle.watchlist i {
+    font-size: var(--fs-1);
+}
+
+.indicator-wrapper .indicator-circle:nth-child(1) {
+    left: calc(var(--spacing-amount) * 0 + var(--spacing-sm));
+}
+.indicator-wrapper .indicator-circle:nth-child(2) {
+    left: calc(var(--spacing-amount) * 1 + var(--spacing-sm));
+}
+.indicator-wrapper .indicator-circle:nth-child(3) {
+    left: calc(var(--spacing-amount) * 2 + var(--spacing-sm));
+}
+
 </style>
