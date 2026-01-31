@@ -377,7 +377,7 @@ watch(
             </div>
             <span class="subtle details-missing-note">
                 Can't find age ratings for your country? You can contribute the info on TMDB
-                <a class="subtle" :href="tmdbEditAgeRatingUrl">here</a>.
+                <a class="subtle" target="_blank" :href="tmdbEditAgeRatingUrl">here</a>.
                 Changes usually take a few hours to appear in the "update title details" requests.
             </span>
         </Modal>
