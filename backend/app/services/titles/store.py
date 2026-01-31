@@ -132,7 +132,13 @@ async def store_tv(db: AsyncSession, tmdb_data: dict) -> int:
     # Store less straight forward stuff using helpers
     await store_image_details(db=db, title_id=title_id, images=tmdb_data.get("images", {}))
     await store_title_genres(db=db, title_id=title_id, genres=tmdb_data.get("genres", []))
+    print("0000000000000000000000000000000000000000")
+    print("0000000000000000000000000000000000000000")
+    print("0000000000000000000000000000000000000000")
     await _store_tv_age_ratings(db=db, title_id=title_id, ratings=tmdb_data.get("content_ratings", {}).get("results", []))
+    print("111111111111111111111111111")
+    print("111111111111111111111111111")
+    print("111111111111111111111111111")
 
     # Pick the best images for default paths
     title_images = tmdb_data.get("images", {})
@@ -296,6 +302,18 @@ async def _store_movie_age_ratings(db: AsyncSession, title_id: int, ratings: lis
 async def _store_tv_age_ratings(db: AsyncSession, title_id: int, ratings: list):
     if not ratings:
         return
+    
+    # Some titles seem to have accidental duplicate data,
+    # causing duplicate key errors, so we need to sanitize the data.
+    def _dedupe_countries(ratings):
+        by_country = {}
+        for r in ratings:
+            country = r["iso_3166_1"]
+            if country not in by_country:
+                by_country[country] = r
+        return list(by_country.values())
+
+    ratings = _dedupe_countries(ratings)
     
     stmt = insert(TitleAgeRatings).values([
         {

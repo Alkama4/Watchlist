@@ -256,11 +256,11 @@ class TitleAgeRatings(Base):
         primary_key=True
     )
     iso_3166_1 = Column(
-        String(5),
+        String(8),
         primary_key=True
     )
 
-    rating = Column(String(10), nullable=False)
+    rating = Column(String(64))
     descriptors = Column(Text)
 
     title = relationship("Title")
