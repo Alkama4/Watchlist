@@ -1,5 +1,6 @@
 import enum
-from sqlalchemy import Column, Integer, String, DECIMAL, BigInteger, Date, Text, Boolean, Enum, ForeignKey, UniqueConstraint, DateTime
+from sqlalchemy import CheckConstraint, Column, Integer, String, DECIMAL, BigInteger, Date, Text, Boolean, Enum, ForeignKey, UniqueConstraint, DateTime
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database import Base
@@ -107,9 +108,9 @@ class Title(Base):
     origin_country = Column(String(64))
     awards = Column(String(255))
     homepage = Column(Text)
-    default_poster_image_path = Column(String(255), ForeignKey("images.file_path"))
-    default_backdrop_image_path = Column(String(255), ForeignKey("images.file_path"))
-    default_logo_image_path = Column(String(255), ForeignKey("images.file_path"))
+    default_poster_image_path = Column(String(64), ForeignKey("images.file_path"))
+    default_backdrop_image_path = Column(String(64), ForeignKey("images.file_path"))
+    default_logo_image_path = Column(String(64), ForeignKey("images.file_path"))
     last_updated = Column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -117,10 +118,11 @@ class Title(Base):
     )
 
     seasons = relationship("Season", back_populates="title", cascade="all, delete-orphan")
-    images = relationship("Image", back_populates="title", cascade="all, delete-orphan", foreign_keys="Image.title_id")
     genres = relationship("TitleGenre", back_populates="title", cascade="all, delete-orphan")
     age_ratings = relationship("TitleAgeRatings", cascade="all, delete-orphan")
-
+    
+    image_links = relationship("ImageLink", back_populates="title", cascade="all, delete-orphan")
+    images = association_proxy("image_links", "image")
     default_poster = relationship("Image", foreign_keys=[default_poster_image_path], viewonly=True)
     default_backdrop = relationship("Image", foreign_keys=[default_backdrop_image_path], viewonly=True)
     default_logo = relationship("Image", foreign_keys=[default_logo_image_path], viewonly=True) 
@@ -138,7 +140,7 @@ class Season(Base):
     season_name = Column(String(255))
     tmdb_vote_average = Column(DECIMAL(3,1))
     overview = Column(Text)
-    default_poster_image_path = Column(String(255), ForeignKey("images.file_path"))
+    default_poster_image_path = Column(String(64), ForeignKey("images.file_path"))
     last_updated = Column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -147,7 +149,9 @@ class Season(Base):
 
     title = relationship("Title", back_populates="seasons")
     episodes = relationship("Episode", back_populates="season", cascade="all, delete-orphan")
-    images = relationship("Image", foreign_keys="Image.season_id", cascade="all, delete-orphan")
+
+    image_links = relationship("ImageLink", back_populates="season", cascade="all, delete-orphan")
+    images = association_proxy("image_links", "image")
     default_poster = relationship("Image", foreign_keys=[default_poster_image_path], viewonly=True)
 
 
@@ -167,7 +171,7 @@ class Episode(Base):
     overview = Column(Text)
     air_date = Column(Date)
     runtime = Column(Integer)
-    default_backdrop_image_path = Column(String(255), ForeignKey("images.file_path"))
+    default_backdrop_image_path = Column(String(64), ForeignKey("images.file_path"))
     last_updated = Column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -176,7 +180,9 @@ class Episode(Base):
 
     season = relationship("Season", back_populates="episodes")
     title = relationship("Title")
-    images = relationship("Image", foreign_keys="Image.episode_id", cascade="all, delete-orphan")
+
+    image_links = relationship("ImageLink", back_populates="episode", cascade="all, delete-orphan")
+    images = association_proxy("image_links", "image")
     default_backdrop = relationship("Image", foreign_keys=[default_backdrop_image_path], viewonly=True)
 
 
@@ -200,6 +206,10 @@ class UserTitleDetails(Base):
     last_watched_at = Column(DateTime(timezone=True))
     last_viewed_at = Column(DateTime(timezone=True))
 
+    chosen_poster = relationship("Image", foreign_keys=[chosen_poster_image_path], viewonly=True)
+    chosen_backdrop = relationship("Image", foreign_keys=[chosen_backdrop_image_path], viewonly=True)
+    chosen_logo = relationship("Image", foreign_keys=[chosen_logo_image_path], viewonly=True)
+
 
 class UserSeasonDetails(Base):
     __tablename__ = "user_season_details"
@@ -208,6 +218,8 @@ class UserSeasonDetails(Base):
     season_id = Column(Integer, ForeignKey("seasons.season_id", ondelete="CASCADE"), primary_key=True)
     chosen_poster_image_path = Column(String(255), ForeignKey("images.file_path"))
     notes = Column(Text)
+
+    chosen_poster = relationship("Image", foreign_keys=[chosen_poster_image_path], viewonly=True)
 
 
 class UserEpisodeDetails(Base):
@@ -219,6 +231,8 @@ class UserEpisodeDetails(Base):
     notes = Column(Text)
     chosen_backdrop_image_path = Column(String(255), ForeignKey("images.file_path"))
     last_watched_at = Column(DateTime(timezone=True))
+
+    chosen_backdrop = relationship("Image", foreign_keys=[chosen_backdrop_image_path], viewonly=True)
 
 
 ##### GENERES AND OTHER MANY TO ONE DETAILS #####
@@ -297,11 +311,7 @@ class UserCollectionTitle(Base):
 class Image(Base):
     __tablename__ = "images"
 
-    file_path = Column(String(255), primary_key=True)
-    title_id = Column(Integer, ForeignKey("titles.title_id", ondelete="CASCADE"), nullable=True)
-    season_id = Column(Integer, ForeignKey("seasons.season_id", ondelete="CASCADE"), nullable=True)
-    episode_id = Column(Integer, ForeignKey("episodes.episode_id", ondelete="CASCADE"), nullable=True)
-
+    file_path = Column(String(64), primary_key=True)
     type = Column(Enum(ImageType), nullable=False)
     width = Column(Integer)
     height = Column(Integer)
@@ -310,6 +320,28 @@ class Image(Base):
     vote_average = Column(DECIMAL(5,3))
     vote_count = Column(Integer)
 
-    title = relationship("Title", back_populates="images", foreign_keys=[title_id])
-    season = relationship("Season", foreign_keys=[season_id])
-    episode = relationship("Episode", foreign_keys=[episode_id])
+    links = relationship("ImageLink", back_populates="image", cascade="all, delete-orphan")
+
+
+class ImageLink(Base):
+    __tablename__ = "image_links"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    
+    file_path = Column(String(64), ForeignKey("images.file_path", ondelete="CASCADE"), nullable=False)
+    title_id = Column(Integer, ForeignKey("titles.title_id", ondelete="CASCADE"), nullable=True)
+    season_id = Column(Integer, ForeignKey("seasons.season_id", ondelete="CASCADE"), nullable=True)
+    episode_id = Column(Integer, ForeignKey("episodes.episode_id", ondelete="CASCADE"), nullable=True)
+
+    # Unique Constraint to prevent duplicate links
+    __table_args__ = (
+        UniqueConstraint(
+            'file_path', 'title_id', 'season_id', 'episode_id', 
+            name='uix_image_link_identity'
+        ),
+    )
+
+    image = relationship("Image", back_populates="links")
+    title = relationship("Title", back_populates="image_links")
+    season = relationship("Season", back_populates="image_links")
+    episode = relationship("Episode", back_populates="image_links")

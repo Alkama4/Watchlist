@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
 
 from app.models import (
+    ImageLink,
     ImageType,
     Image
 )
@@ -30,46 +31,77 @@ def select_best_image(images: List[Dict], iso_639_1_list: List[Optional[str]]) -
     return None
 
 
-async def store_image_details(db: AsyncSession, title_id: int = None, season_id: int = None, images: dict = None):
+async def store_image_details(
+    db: AsyncSession, 
+    title_id: int = None, 
+    season_id: int = None, 
+    episode_id: int = None, 
+    images: dict = None
+):
     if not images:
         return
 
-    type_fk_map = {
-        "backdrops": {"type": ImageType.backdrop, "fk": {"title_id": title_id, "season_id": None}},
-        "posters": {"type": ImageType.poster, "fk": {"title_id": title_id, "season_id": season_id}},
-        "logos": {"type": ImageType.logo, "fk": {"title_id": title_id, "season_id": None}},
+    type_map = {
+        "backdrops": ImageType.backdrop,
+        "posters": ImageType.poster,
+        "logos": ImageType.logo,
     }
 
-    image_records = []
+    # Use dictionaries keyed by unique identifiers to prevent batch duplicates
+    image_data_map = {}
+    link_data_map = {}
 
-    for key, meta in type_fk_map.items():
+    for key, img_type in type_map.items():
         for img in images.get(key, []):
-            record = {
-                "file_path": img["file_path"],
-                "type": meta["type"],
-                "title_id": meta["fk"]["title_id"],
-                "season_id": meta["fk"]["season_id"],
-                "episode_id": img.get("episode_id"),
-                "width": img.get("width"),
-                "height": img.get("height"),
-                "iso_3166_1": img.get("iso_3166_1"),
-                "iso_639_1": img.get("iso_639_1"),
-                "vote_average": img.get("vote_average"),
-                "vote_count": img.get("vote_count")
+            path = img["file_path"]
+            
+            if path not in image_data_map:
+                image_data_map[path] = {
+                    "file_path": path,
+                    "type": img_type,
+                    "width": img.get("width"),
+                    "height": img.get("height"),
+                    "iso_3166_1": img.get("iso_3166_1"),
+                    "iso_639_1": img.get("iso_639_1"),
+                    "vote_average": img.get("vote_average"),
+                    "vote_count": img.get("vote_count")
+                }
+
+            episode_id = img.get("episode_id")
+            
+            # Create a unique key for the link to prevent duplicates in the batch
+            link_key = (path, title_id, season_id, episode_id)
+            
+            if link_key not in link_data_map:
+                link_data_map[link_key] = {
+                    "file_path": path,
+                    "title_id": title_id,
+                    "season_id": season_id,
+                    "episode_id": episode_id
+                }
+
+    # Convert maps back to lists for SQLAlchemy
+    image_records = list(image_data_map.values())
+    link_records = list(link_data_map.values())
+
+    if image_records:
+        image_stmt = insert(Image).values(image_records)
+        image_stmt = image_stmt.on_conflict_do_update(
+            index_elements=["file_path"],
+            set_={
+                "vote_average": image_stmt.excluded.vote_average,
+                "vote_count": image_stmt.excluded.vote_count,
+                "width": image_stmt.excluded.width,
+                "height": image_stmt.excluded.height,
             }
-            image_records.append(record)
+        )
+        await db.execute(image_stmt)
 
-    if not image_records:
-        return
+    if link_records:
+        link_stmt = insert(ImageLink).values(link_records)
+        link_stmt = link_stmt.on_conflict_do_nothing(
+            constraint="uix_image_link_identity" 
+        )
+        await db.execute(link_stmt)
 
-    insert_stmt = insert(Image).values(image_records)
-    stmt = insert_stmt.on_conflict_do_update(
-        index_elements=["file_path"],
-        set_={
-            "vote_average": insert_stmt.excluded.vote_average,
-            "vote_count": insert_stmt.excluded.vote_count
-        }
-    )
-
-    await db.execute(stmt)
     await db.commit()
