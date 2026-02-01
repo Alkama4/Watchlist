@@ -30,7 +30,7 @@ def select_best_image(images: List[Dict], iso_639_1_list: List[Optional[str]]) -
     return None
 
 
-async def store_image_details(db: AsyncSession, title_id: int = None, season_id: int = None, episode_id: int = None, images: dict = None):
+async def store_image_details(db: AsyncSession, title_id: int = None, season_id: int = None, images: dict = None):
     if not images:
         return
 

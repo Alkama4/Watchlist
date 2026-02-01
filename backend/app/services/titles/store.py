@@ -132,13 +132,7 @@ async def store_tv(db: AsyncSession, tmdb_data: dict) -> int:
     # Store less straight forward stuff using helpers
     await store_image_details(db=db, title_id=title_id, images=tmdb_data.get("images", {}))
     await store_title_genres(db=db, title_id=title_id, genres=tmdb_data.get("genres", []))
-    print("0000000000000000000000000000000000000000")
-    print("0000000000000000000000000000000000000000")
-    print("0000000000000000000000000000000000000000")
     await _store_tv_age_ratings(db=db, title_id=title_id, ratings=tmdb_data.get("content_ratings", {}).get("results", []))
-    print("111111111111111111111111111")
-    print("111111111111111111111111111")
-    print("111111111111111111111111111")
 
     # Pick the best images for default paths
     title_images = tmdb_data.get("images", {})
