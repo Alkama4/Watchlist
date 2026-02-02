@@ -198,7 +198,7 @@ watch(
                     <div class="general-stats">
                         <div class="stat">
                             <Tmdb/>
-                            <span>
+                            <span :title="`${titleDetails?.tmdb_vote_count} votes`">
                                 {{ titleDetails?.tmdb_vote_average || '-' }}
                                 ({{ numberFormatters.formatCompactNumber(titleDetails?.tmdb_vote_count) }} votes)
                             </span>
