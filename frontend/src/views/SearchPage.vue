@@ -168,6 +168,7 @@ onUnmounted(() => {
                 v-for="title in searchResults?.titles"
                 :key="title.id"
                 :title-info="title"
+                :store-image-flag="!searchStore.tmdbFallback"
             />
         </div>
 

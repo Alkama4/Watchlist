@@ -55,10 +55,14 @@ async function removeTitle() {
     }
 }
 
-const { titleInfo } = defineProps({
+const { titleInfo, storeImageFlag } = defineProps({
     titleInfo: {
         type: Object,
         required: true,
+    },
+    storeImageFlag: {
+        type: Boolean,
+        default: true
     }
 })
 
@@ -72,7 +76,7 @@ const { titleInfo } = defineProps({
         draggable="false"
     >
         <img 
-            :src="resolveImagePath(titleInfo, '800', 'poster')"
+            :src="resolveImagePath(titleInfo, '800', 'poster', storeImageFlag)"
             :alt="`${titleInfo?.title_type === 'tv' ? 'TV show' : 'Movie'} poster: ${titleInfo?.name}`"
             draggable="false"
         >

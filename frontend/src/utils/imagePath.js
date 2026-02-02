@@ -2,7 +2,7 @@ import { API_BASE_URL } from "./conf"
 
 const BASE_IMAGE_URL = "/media/image"
 
-export function resolveImagePath(titleDetails, size, type) {
+export function resolveImagePath(titleDetails, size, type, storeImageFlag = true) {
     let defaultPath;
     let userPath;
 
@@ -24,5 +24,5 @@ export function resolveImagePath(titleDetails, size, type) {
     }
 
     if (!defaultPath && !userPath) return null;
-    return `${API_BASE_URL}${BASE_IMAGE_URL}/${size}${userPath ?? defaultPath}`;
+    return `${API_BASE_URL}${BASE_IMAGE_URL}/${size}${userPath ?? defaultPath}${storeImageFlag ? '' : '?store=false'}`;
 }
