@@ -3,17 +3,17 @@ import asyncio
 from PIL import Image
 import aiofiles
 import httpx
-from fastapi import APIRouter, HTTPException, Request, Response
+from fastapi import APIRouter, HTTPException, Query, Request, Response
 from fastapi.responses import FileResponse, StreamingResponse
-import subprocess
-import json
 
 router = APIRouter()
 
-TMDB_IMAGE_BASE_PATH = "https://image.tmdb.org/t/p/original/"
+TMDB_IMAGE_BASE_PATH = "https://image.tmdb.org/t/p"
 LOCAL_IMAGE_BASE_PATH = os.environ["IMAGE_STORAGE_PATH"]
 
 BUCKETS = [400, 800, 1600]  # original handled separately
+
+http_client = httpx.AsyncClient(timeout=None)
 
 def pick_bucket(long_side: int):
     for b in BUCKETS:
@@ -21,11 +21,17 @@ def pick_bucket(long_side: int):
             return b
     return None
 
-async def resize_image(original_path: str, target_path: str, long_side: int):
+async def _resize_image(original_path: str, target_path: str, long_side: int):
     loop = asyncio.get_event_loop()
 
     def _resize():
         with Image.open(original_path) as img:
+            if img.format == 'SVG':
+                os.makedirs(os.path.dirname(target_path), exist_ok=True)
+                import shutil
+                shutil.copy2(original_path, target_path)
+                return
+
             width, height = img.size
             if width >= height:
                 new_width = long_side
@@ -33,14 +39,25 @@ async def resize_image(original_path: str, target_path: str, long_side: int):
             else:
                 new_height = long_side
                 new_width = int(width * (long_side / height))
+            
             img_resized = img.resize((new_width, new_height), Image.LANCZOS)
+
             os.makedirs(os.path.dirname(target_path), exist_ok=True)
-            img_resized.save(target_path, "JPEG")
+
+            # Check if image has transparency
+            if img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info):
+                # Keep as PNG to preserve transparency
+                img_resized.save(target_path, "PNG", optimize=True)
+            else:
+                # Convert to RGB and save as progressive JPEG
+                if img_resized.mode != "RGB":
+                    img_resized = img_resized.convert("RGB")
+                img_resized.save(target_path, "JPEG", progressive=True, quality=85)
 
     await loop.run_in_executor(None, _resize)
 
-async def download_original(image_path: str, local_path: str):
-    url = f"{TMDB_IMAGE_BASE_PATH}{image_path}"
+async def _download_original(image_path: str, local_path: str):
+    url = f"{TMDB_IMAGE_BASE_PATH}/original/{image_path}"
     os.makedirs(os.path.dirname(local_path), exist_ok=True)
 
     async with httpx.AsyncClient(timeout=None) as client:
@@ -50,47 +67,94 @@ async def download_original(image_path: str, local_path: str):
         async with aiofiles.open(local_path, "wb") as f:
             await f.write(resp.content)
 
+async def _make_progressive(input_path: str, output_path: str):
+    """Re-saves an image appropriately: PNG for transparency, Progressive JPEG otherwise."""
+    def _process():
+        with Image.open(input_path) as img:
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            
+            if (img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info)):
+                # Keep as PNG to preserve transparency
+                img.save(output_path, "PNG", optimize=True)
+            else:
+                # Convert to RGB and save as progressive JPEG
+                if img.mode != "RGB":
+                    img = img.convert("RGB")
+                img.save(output_path, "JPEG", progressive=True, quality=95)
+    
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, _process)
+
+async def _proxy_image(image_path: str):
+    url = f"{TMDB_IMAGE_BASE_PATH}/w500/{image_path}"
+    
+    req = http_client.build_request("GET", url)
+    resp = await http_client.send(req, stream=True)
+
+    if resp.status_code != 200:
+        await resp.aclose()
+        raise HTTPException(status_code=resp.status_code, detail="TMDB error")
+
+    return StreamingResponse(
+        resp.aiter_bytes(), 
+        media_type=resp.headers.get("Content-Type", "image/jpeg"),
+        background=resp.aclose
+    )
 
 @router.get("/image/{size}/{image_path:path}")
-async def get_image(size: str, image_path: str):
+async def get_image(
+    size: str, 
+    image_path: str, 
+    store: bool = Query(True)
+):
     """
-    Valid size values: `400`, `800`, `1600` & `original`. If value doesn't match it will be rounded up.
+    Valid size values: `400`, `800`, `1600` & `original`.
+    
+    If store=false:
+    - Checks local storage first to save bandwidth.
+    - If not found, proxies directly from TMDB without saving.
+    - Note: This mode is intended for search result posters; quality is forced to w500.
     """
 
-    # Determine bucket
+    # Determine local pathing
     if size == "original":
         bucket = None
         target_folder = os.path.join(LOCAL_IMAGE_BASE_PATH, "original")
     else:
         try:
             requested_size = int(size)
+            bucket = pick_bucket(requested_size)
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid size")
         
-        bucket = pick_bucket(requested_size)
-        if bucket is None:
-            target_folder = os.path.join(LOCAL_IMAGE_BASE_PATH, "original")
-        else:
-            target_folder = os.path.join(LOCAL_IMAGE_BASE_PATH, str(bucket))
+        target_folder = os.path.join(LOCAL_IMAGE_BASE_PATH, str(bucket) if bucket else "original")
 
     local_file_path = os.path.join(target_folder, image_path)
 
-    # Serve if exists
+    # Serve from files
     if os.path.exists(local_file_path):
-        return FileResponse(local_file_path, media_type="image/jpeg")
+        return FileResponse(local_file_path)
 
-    # Ensure original exists
-    original_path = os.path.join(LOCAL_IMAGE_BASE_PATH, "original", image_path)
-    if not os.path.exists(original_path):
-        await download_original(image_path, original_path)
+    # Passthrough
+    if not store:
+        return await _proxy_image(image_path)
 
-    # Resize if bucketed
-    if bucket is not None:
-        await resize_image(original_path, local_file_path, bucket)
-        return FileResponse(local_file_path, media_type="image/jpeg")
+    # Store originial
+    if size == "original":
+        temp_original = local_file_path + ".tmp"
+        await _download_original(image_path, temp_original)
+        await _make_progressive(temp_original, local_file_path)
+        os.remove(temp_original)
+        return FileResponse(local_file_path)
 
-    # Otherwise serve original
-    return FileResponse(original_path, media_type="image/jpeg")
+    # Store resized
+    else:
+        original_path = os.path.join(LOCAL_IMAGE_BASE_PATH, "original", image_path)
+        if not os.path.exists(original_path):
+            await _download_original(image_path, original_path)
+        
+        await _resize_image(original_path, local_file_path, bucket)
+        return FileResponse(local_file_path)
 
 
 # VIDEO_PATH = "C:\\Users\\aleks\\Desktop\\large_test_file.mkv"
