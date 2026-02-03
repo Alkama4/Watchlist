@@ -13,6 +13,7 @@ import NoticeBlock from '@/components/NoticeBlock.vue';
 import { preferredLocale, fallbackLocale } from '@/utils/conf';
 import Modal from '@/components/Modal.vue';
 import SeasonCarousel from '@/components/carousel/SeasonCarousel.vue';
+import EpisodeMap from '@/components/EpisodeMap.vue';
 
 const route = useRoute();
 const titleDetails = ref(null);
@@ -324,6 +325,11 @@ watch(
         </div>
 
         <SeasonCarousel :seasons="titleDetails?.seasons"/>
+
+        <div class="layout-contained">
+            <h3>Episode map</h3>
+            <EpisodeMap :seasons="titleDetails?.seasons"/>
+        </div>
         
         <TitleCarousel :carouselData="similarTitles" class="layout-spacing-bottom"/>
 
