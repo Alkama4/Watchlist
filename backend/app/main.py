@@ -29,8 +29,11 @@ origins=[
     "http://watchlist-frontend",
 ]
 
+origin_regex = r"https?://192\.168\.0\.\d+(:\d+)?"
+
 app.add_middleware(
     CORSMiddleware,
+    allow_origin_regex=origin_regex,
     allow_origins=origins,
     allow_methods=["*"],
     allow_headers=["*"],
