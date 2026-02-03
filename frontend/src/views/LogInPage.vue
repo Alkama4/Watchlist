@@ -28,9 +28,10 @@ function getRedirectNotice() {
             }
         case 'account_created':
             return {
-                type: 'success',
+                type: 'positive',
                 header: 'Account created',
-                message: 'Your account was created successfully. You can now log in.'
+                message: 'Your account was created successfully. You can now log in.',
+                icon: 'bxs-check-circle'
             }
         case 'logged_out':
             return {
@@ -80,6 +81,7 @@ async function logIn() {
             :type="redirectNotice.type"
             :header="redirectNotice.header"
             :message="redirectNotice.message"
+            :icon="redirectNotice.icon"
             dismissible
             @dismiss="handleNoticeDismiss"
         />

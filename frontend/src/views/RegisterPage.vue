@@ -2,14 +2,15 @@
 import { ref } from 'vue'
 import { fastApi } from '@/utils/fastApi'
 import FormMessage from '@/components/FormMessage.vue'
-import ModalBase from '@/components/modal/ModalBase.vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const username = ref('')
 const password = ref('')
 const passwordRepeat = ref('')
 const formError = ref('')
 const formMessage = ref(null)
-const modal = ref(null)
 
 function validateRepeatPassword(e) {
     const input = e.target
@@ -26,9 +27,11 @@ async function register() {
             username: username.value,
             password: password.value
         })
-
         console.debug(response)
-        modal.value.open();
+        router.push({
+            path: '/login',
+            query: { redirect_reason: 'account_created' }
+        })
     } catch (e) {
         const status = e.response?.status
         const detail = e.response?.data?.detail
@@ -106,16 +109,6 @@ async function register() {
                 Login.
             </router-link>
         </span>
-
-        <ModalBase ref="modal" header="Account Created">
-            <p>Your account has been created successfully. You can now log in.</p>
-            <div class="button-row">
-                <button @click="close">Close</button>
-                <router-link to="/login" class="btn btn-primary no-deco">
-                    Go to login
-                </router-link>
-            </div>
-        </ModalBase>
     </div>
 </template>
 
