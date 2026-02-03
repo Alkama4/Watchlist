@@ -2,7 +2,7 @@
 import { onUnmounted, ref, watch } from 'vue';
 import { useSearchStore } from '@/stores/search';
 import { fastApi } from '@/utils/fastApi';
-import TitleCard from '@/components/TitleCard.vue';
+import TitleCard from '@/components/card/TitleCard.vue';
 import LoadingIndicator from '@/components/LoadingIndicator.vue';
 
 const searchStore = useSearchStore();
