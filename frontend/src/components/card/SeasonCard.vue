@@ -16,7 +16,7 @@ defineEmits(['click'])
 <template>
     <div class="season-card btn-text" @click="$emit('click')">
         <img 
-            :src="resolveImagePath(seasonInfo, 'original', 'poster')"
+            :src="resolveImagePath(seasonInfo, '800', 'poster')"
             :alt="`Season poster: ${seasonInfo?.season_name}`"
             draggable="false"
         >
