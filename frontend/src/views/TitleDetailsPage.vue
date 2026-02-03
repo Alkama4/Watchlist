@@ -289,7 +289,17 @@ watch(
                         >
                             Update title details
                         </LoadingButton>
+                        
                         <!-- <a href="">Choose different images</a> -->
+                         
+                        <button 
+                            v-if="titleDetails?.title_type === 'tv'"
+                            @click="$refs.EpisodeMapModal.open()"
+                        >
+                            Episode Map
+                        </button>
+
+                        <!-- <button @click="$refs.EpisodeGraphModal.open()">Episode Rating Graphs</button> -->
                     </div>
                 </div>
             </div>
@@ -326,11 +336,6 @@ watch(
 
         <SeasonCarousel v-if="titleDetails?.title_type === 'tv'" :titleDetails="titleDetails"/>
 
-        <div v-if="titleDetails?.title_type === 'tv'" class="layout-contained">
-            <h3>Episode map</h3>
-            <EpisodeMap :seasons="titleDetails?.seasons"/>
-        </div>
-        
         <TitleCarousel :carouselData="similarTitles" class="layout-spacing-bottom"/>
 
 
@@ -386,6 +391,10 @@ watch(
                 <a class="subtle" target="_blank" :href="tmdbEditAgeRatingUrl">here</a>.
                 Changes usually take a few hours to appear in the "update title details" requests.
             </span>
+        </ModalBase>
+
+        <ModalBase header="Episode Map" ref="EpisodeMapModal">
+            <EpisodeMap :seasons="titleDetails?.seasons"/>
         </ModalBase>
     </div>
 </template>
