@@ -24,7 +24,8 @@ function getRedirectNotice() {
             return {
                 type: 'warning',
                 header: 'Session expired',
-                message: 'Your session expired. Please log in again.'
+                message: 'Your session expired. Please log in again.',
+                icon: 'bxs-error'
             }
         case 'account_created':
             return {
@@ -37,7 +38,8 @@ function getRedirectNotice() {
             return {
                 type: 'info',
                 header: 'Logged out',
-                message: 'You have been logged out.'
+                message: 'You have been logged out.',
+                icon: 'bxs-info-circle'
             }
         default:
             return null

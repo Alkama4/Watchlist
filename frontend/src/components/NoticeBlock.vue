@@ -6,7 +6,7 @@ defineProps({
     },
     icon: {
         type: String,
-        default: 'bxs-error'
+        default: 'bxs-info-circle'
     },
     type: {
         type: String,

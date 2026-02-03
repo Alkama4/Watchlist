@@ -40,7 +40,10 @@ export const useAuthStore = defineStore('auth', {
                 if (!quiet) await fastApi.auth.logout();
             } finally {
                 this.$reset();  // Reset store values
-                router.push("/login")
+                router.push({
+                    path: '/login',
+                    query: { redirect_reason: 'logged_out' }
+                })
             }
         }
     }
