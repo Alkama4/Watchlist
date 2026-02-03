@@ -12,7 +12,7 @@ import Tmdb from '@/assets/icons/tmdb.svg'
 import NoticeBlock from '@/components/NoticeBlock.vue';
 import { preferredLocale, fallbackLocale } from '@/utils/conf';
 import Modal from '@/components/Modal.vue';
-import ModalSeason from '@/components/ModalSeason.vue';
+import SeasonCarousel from '@/components/carousel/SeasonCarousel.vue';
 
 const route = useRoute();
 const titleDetails = ref(null);
@@ -20,7 +20,6 @@ const waitingFor = ref({});
 const similarTitles = ref({});
 
 const AgeRatingsModal = ref(null);
-const SeasonModal = ref(null);
 
 async function fetchTitleDetails() {
     const title_id = route.params.title_id;
@@ -324,6 +323,8 @@ watch(
             </div>
         </div>
 
+        <SeasonCarousel :seasons="titleDetails?.seasons"/>
+        
         <TitleCarousel :carouselData="similarTitles" class="layout-spacing-bottom"/>
 
 
@@ -380,8 +381,6 @@ watch(
                 Changes usually take a few hours to appear in the "update title details" requests.
             </span>
         </Modal>
-
-        <ModalSeason ref="SeasonModal"/>
     </div>
 </template>
 
