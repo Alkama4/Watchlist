@@ -15,12 +15,12 @@ const getRatingOpacity = (rating) => {
     
     // Mapping buckets to Opacity
     if (bucket >= 9) return 1;
-    if (bucket >= 8) return 0.8;
-    if (bucket >= 7) return 0.6;
-    if (bucket >= 6) return 0.4;
-    if (bucket >= 5) return 0.2;
+    if (bucket >= 8) return 0.725;
+    if (bucket >= 7) return 0.5;
+    if (bucket >= 6) return 0.35;
+    if (bucket >= 5) return 0.25;
     
-    return 0.1; // Floor for anything below 5
+    return 0.175; // Floor for anything below 5
 }
 
 const maxEpisodeCount = computed(() => {
@@ -32,11 +32,9 @@ const maxEpisodeCount = computed(() => {
 <template>
     <div class="episode-map">
         <div class="season-row">
-            <div class="episodes-container">
-                <div class="tile"></div>
-                <div v-for="num in maxEpisodeCount" class="tile label">
-                    E{{ num }}
-                </div>
+            <div class="tile"></div>
+            <div v-for="num in maxEpisodeCount" class="tile label">
+                E{{ num }}
             </div>
         </div>
         <div v-for="season in seasons" :key="season?.id" class="season-row">
@@ -72,6 +70,7 @@ const maxEpisodeCount = computed(() => {
 .season-row {
     display: flex;
     align-items: center;
+    flex-wrap: nowrap;
     gap: var(--spacing-xs);
 }
 
@@ -91,6 +90,7 @@ const maxEpisodeCount = computed(() => {
 .tile {
     font-weight: 400;
     width: 28px; 
+    min-width: 28px;
     padding: var(--spacing-sm);
     display: flex;
     flex-direction: column;
