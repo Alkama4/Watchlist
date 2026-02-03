@@ -1,6 +1,7 @@
 <script setup>
 import Flicking from "@egjs/vue3-flicking";
 import SeasonCard from "../card/SeasonCard.vue";
+import ModalSeason from "../ModalSeason.vue";
 
 defineProps({
     seasons: {
@@ -27,8 +28,11 @@ defineProps({
                 v-for="season in seasons"
                 :key="season.season_id"
                 :seasonInfo="season"
+                @click="$refs.SeasonModal.open(season)"
             />
         </Flicking>
+
+        <ModalSeason ref="SeasonModal"/>
     </div>
 </template>
 
