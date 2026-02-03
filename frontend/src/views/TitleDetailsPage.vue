@@ -324,9 +324,9 @@ watch(
             </div>
         </div>
 
-        <SeasonCarousel v-if="titleDetails?.type === 'tv'" :titleDetails="titleDetails"/>
+        <SeasonCarousel v-if="titleDetails?.title_type === 'tv'" :titleDetails="titleDetails"/>
 
-        <div v-if="titleDetails?.type === 'tv'" class="layout-contained">
+        <div v-if="titleDetails?.title_type === 'tv'" class="layout-contained">
             <h3>Episode map</h3>
             <EpisodeMap :seasons="titleDetails?.seasons"/>
         </div>
