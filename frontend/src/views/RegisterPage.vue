@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { fastApi } from '@/utils/fastApi'
 import FormMessage from '@/components/FormMessage.vue'
-import Modal from '@/components/Modal.vue'
+import Modal from '@/components/modal/Modal.vue'
 
 const username = ref('')
 const password = ref('')

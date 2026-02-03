@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue'
-import Modal from './Modal.vue'
+import Modal from '@/components/modal/Modal.vue'
 
 const buttonCancel = ref(null)
 const buttonConfirm = ref(null)

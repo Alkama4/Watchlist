@@ -11,7 +11,7 @@ import NotFoundPage from './NotFoundPage.vue';
 import Tmdb from '@/assets/icons/tmdb.svg'
 import NoticeBlock from '@/components/NoticeBlock.vue';
 import { preferredLocale, fallbackLocale } from '@/utils/conf';
-import Modal from '@/components/Modal.vue';
+import Modal from '@/components/modal/Modal.vue';
 import SeasonCarousel from '@/components/carousel/SeasonCarousel.vue';
 import EpisodeMap from '@/components/EpisodeMap.vue';
 

@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import Modal from '@/components/Modal.vue';
+import Modal from '@/components/modal/Modal.vue';
 
 const modal = ref(null)
 

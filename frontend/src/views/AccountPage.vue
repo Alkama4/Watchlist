@@ -2,8 +2,8 @@
 import { onMounted, ref } from 'vue'
 import { fastApi } from '@/utils/fastApi';
 import { useAuthStore } from '@/stores/auth';
-import ModalConfimation from '@/components/ModalConfimation.vue';
-import Modal from '@/components/Modal.vue';
+import ModalConfimation from '@/components/modal/ModalConfimation.vue';
+import Modal from '@/components/modal/Modal.vue';
 import NoticeBlock from '@/components/NoticeBlock.vue';
 import FormMessage from '@/components/FormMessage.vue';
 

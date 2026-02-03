@@ -1,7 +1,7 @@
 <script setup>
 import Flicking from "@egjs/vue3-flicking";
 import SeasonCard from "../card/SeasonCard.vue";
-import ModalSeason from "../ModalSeason.vue";
+import ModalSeason from "@/components/modal/ModalSeason.vue";
 
 defineProps({
     seasons: {

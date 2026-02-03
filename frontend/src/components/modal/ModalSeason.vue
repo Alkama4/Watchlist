@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import Modal from './Modal.vue';
+import Modal from '@/components/modal/Modal.vue';
 import { resolveImagePath } from '@/utils/imagePath';
 import { numberFormatters, timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg'
@@ -77,7 +77,7 @@ defineExpose({ open })
     overflow: hidden;
     display: grid;
     grid-template-columns: auto 1fr;
-    gap: var(--spacing-lg);
+    gap: var(--spacing-md-lg);
 }
 
 .season-details {
