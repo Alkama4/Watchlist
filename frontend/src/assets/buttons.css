@@ -42,6 +42,7 @@ button:disabled, .btn:disabled {
 .btn-text {
     background-color: transparent;
     color: var(--c-text-1);
+    cursor: pointer;
 
     transition: color 0.1s var(--transition-ease-out);
 }

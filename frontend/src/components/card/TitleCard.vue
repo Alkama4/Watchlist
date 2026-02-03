@@ -5,7 +5,7 @@ import Tmdb from '@/assets/icons/tmdb.svg'
 import { useSearchStore } from '@/stores/search';
 import { fastApi } from '@/utils/fastApi';
 import { ref } from 'vue';
-import LoadingButton from './LoadingButton.vue';
+import LoadingButton from '@/components/LoadingButton.vue';
 
 const searchStore = useSearchStore();
 
