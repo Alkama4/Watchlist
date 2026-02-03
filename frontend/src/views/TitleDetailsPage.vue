@@ -1,5 +1,5 @@
 <script setup>
-import Carousel from '@/components/Carousel.vue';
+import TitleCarousel from '@/components/carousel/TitleCarousel.vue';
 import LoadingButton from '@/components/LoadingButton.vue';
 import LoadingIndicator from '@/components/LoadingIndicator.vue';
 import { fastApi } from '@/utils/fastApi';
@@ -12,6 +12,7 @@ import Tmdb from '@/assets/icons/tmdb.svg'
 import NoticeBlock from '@/components/NoticeBlock.vue';
 import { preferredLocale, fallbackLocale } from '@/utils/conf';
 import Modal from '@/components/Modal.vue';
+import ModalSeason from '@/components/ModalSeason.vue';
 
 const route = useRoute();
 const titleDetails = ref(null);
@@ -19,6 +20,7 @@ const waitingFor = ref({});
 const similarTitles = ref({});
 
 const AgeRatingsModal = ref(null);
+const SeasonModal = ref(null);
 
 async function fetchTitleDetails() {
     const title_id = route.params.title_id;
@@ -114,8 +116,6 @@ const chosenAgeRating = computed(() => {
         r => r.iso_3166_1 === preferredLocale.iso_3166_1
     )
     if (pref && pref.rating) return pref
-
-    console.info(ratings.find(r => r.iso_3166_1 === fallbackLocale.iso_3166_1) ?? null)
 
     // Else fall back to US
     return ratings.find(r => r.iso_3166_1 === fallbackLocale.iso_3166_1) ?? null
@@ -285,7 +285,7 @@ watch(
             
                         <LoadingButton
                             @click="updateTitleDetails"
-                            :loading="waitingFor?.titleUpdate"
+                            :loading="waitingFor?.titleUpdate ?? false"
                         >
                             Update title details
                         </LoadingButton>
@@ -323,12 +323,11 @@ watch(
                 </a>
             </div>
         </div>
-        
-        <Carousel :carouselData="similarTitles"/>
 
-        <div class="layout-contained layout-spacing-bottom">
-            <p style="color: var(--c-text-3)">{{ titleDetails }}</p>
-        </div>
+        <TitleCarousel :carouselData="similarTitles" class="layout-spacing-bottom"/>
+
+
+        <!-- Modals -->
 
         <Modal header="Age ratings" ref="AgeRatingsModal" :minimumCard="true">
             <p>The following list shows age ratings by country for the current title. The star icon indicates your <i class="bx bxs-star"></i> preferred language (or <i class="bx bx-star"></i> fallback). You can adjust your preffered languages in the <router-link to="/account">application settings</router-link>.</p>
@@ -381,6 +380,8 @@ watch(
                 Changes usually take a few hours to appear in the "update title details" requests.
             </span>
         </Modal>
+
+        <ModalSeason ref="SeasonModal"/>
     </div>
 </template>
 

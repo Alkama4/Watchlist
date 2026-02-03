@@ -1,6 +1,6 @@
 <script setup>
 import Flicking from "@egjs/vue3-flicking";
-import TitleCard from "./TitleCard.vue";
+import TitleCard from "@/components/TitleCard.vue";
 
 defineProps({
     carouselData: {

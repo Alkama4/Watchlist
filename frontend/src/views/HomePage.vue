@@ -1,6 +1,6 @@
 <script setup>
 import TitleHeroCards from '@/components/TitleHeroCards.vue';
-import Carousel from '@/components/Carousel.vue';
+import TitleCarousel from '@/components/carousel/TitleCarousel.vue';
 import { fastApi } from '@/utils/fastApi';
 import { onMounted, ref } from 'vue';
 const homeData = ref({})
@@ -22,6 +22,6 @@ onMounted(async () => {
             :heroCards="homeData?.hero_cards"
         />
 
-        <Carousel v-for="list in homeData?.normal_cards" :carouselData="list"/>
+        <TitleCarousel v-for="list in homeData?.normal_cards" :carouselData="list"/>
     </div>
 </template>
