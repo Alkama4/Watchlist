@@ -53,6 +53,7 @@ const maxEpisodeCount = computed(() => {
                         ${getRatingOpacity(episode?.tmdb_vote_average)})
                     `,
                 }"
+                :title="`S${season?.season_number}E${episode?.episode_number}`"
             >
                 {{ episode?.tmdb_vote_average.toFixed(1) }}
             </div>
