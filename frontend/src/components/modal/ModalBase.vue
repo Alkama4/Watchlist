@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onUnmounted } from 'vue'
+import { ref, onUnmounted, onMounted } from 'vue'
 
 const visible = ref(false)
 
@@ -31,11 +31,22 @@ function close() {
     document.body.classList.remove('no-scroll');
 }
 
+const handleEscape = (event) => {
+    if (event.key === 'Escape') {
+        close();
+    }
+};
+
 defineExpose({ open, close })
 
-// ensure scroll lock is cleaned up on unmount
+
+onMounted(() => {
+    window.addEventListener('keydown', handleEscape);
+})
+
 onUnmounted(() => {
-    document.body.classList.remove('no-scroll')
+    window.addEventListener('keydown', handleEscape);
+    document.body.classList.remove('no-scroll');
 })
 </script>
 
