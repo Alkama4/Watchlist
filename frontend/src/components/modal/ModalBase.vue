@@ -52,7 +52,10 @@ onUnmounted(() => {
                     :class="{'small': smallCard, 'min-content': minimumCard}"
                     @click.stop
                 >
-                    <h2 v-if="header" class="no-top">{{ header }}</h2>
+                    <div class="header-row">
+                        <h2 class="no-top">{{ header }}</h2>
+                        <i class="bx bx-x btn-text subtle" @click="close"></i>
+                    </div>
                     <slot></slot>
                 </div>
             </div>
@@ -112,4 +115,12 @@ onUnmounted(() => {
     width: min-content;
 }
 
+.header-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+.header-row i {
+    font-size: var(--fs-3);
+}
 </style>
