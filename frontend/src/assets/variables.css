@@ -3,6 +3,7 @@
 :root {
     --c-bg: hsl(0, 0%, 0%);
     --c-bg-section: hsl(0, 0%, 7.5%);
+    --c-bg-inner-section: hsl(0, 0%, 11%);
     --c-bg-backdrop: hsla(0, 0%, 0%, 50%);
 
     --c-text-0: hsl(0, 0%, 100%);

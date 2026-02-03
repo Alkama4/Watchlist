@@ -32,7 +32,7 @@ defineExpose({ open })
         <div class="season">
             <div class="season-details">
                 <img 
-                    :src="resolveImagePath(season, 'original', 'poster')"
+                    :src="resolveImagePath(season, '800', 'poster')"
                     :alt="`Season poster: ${season?.season_name}`"
                     class="season-poster"
                 >
@@ -50,7 +50,7 @@ defineExpose({ open })
             <div class="episodes-wrapper">
                 <div v-for="episode in season?.episodes" class="episode">
                     <img 
-                        :src="resolveImagePath(episode, 'original', 'backdrop')"
+                        :src="resolveImagePath(episode, '800', 'backdrop')"
                         :alt="`Episode backdrop: ${episode?.episode_number}. ${episode?.episode_name}`"
                         class="episode-backdrop"
                     >
@@ -79,13 +79,16 @@ defineExpose({ open })
     overflow: hidden;
     display: grid;
     grid-template-columns: auto 1fr;
-    gap: var(--spacing-md-lg);
+    gap: var(--spacing-md);
 }
 
 .season-details {
     width: 400px;
     max-height: 100%;
     overflow: scroll;
+    background-color: var(--c-bg-inner-section);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-lg);
 }
 .season-details img.season-poster {
     width: 100%;
@@ -95,7 +98,6 @@ defineExpose({ open })
 .episodes-wrapper {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
     overflow-y: scroll;
     max-height: 100%;
 }
@@ -105,6 +107,12 @@ defineExpose({ open })
     grid-template-columns: auto 1fr;
     gap: var(--spacing-md);
     max-width: 1400px;
+    padding: var(--spacing-sm-md);
+    border-radius: var(--border-radius-lg);
+    transition: background-color 0.1s ease-out;
+}
+.episode:hover {
+    background-color: var(--c-bg-inner-section);
 }
 .episode img.episode-backdrop {
     width: 400px;
