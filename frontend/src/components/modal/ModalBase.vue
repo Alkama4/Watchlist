@@ -106,6 +106,8 @@ onUnmounted(() => {
 .card {
     cursor: auto;
     max-height: 80vh;
+    max-width: 100%;
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
 }
