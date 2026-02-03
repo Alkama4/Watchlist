@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Dev Server - Vue",
+            "label": "Watchlist Dev: Vue",
             "type": "shell",
             "command": "npm run dev",
             "options": {
@@ -12,7 +12,7 @@
             "isBackground": true
         },
         {
-            "label": "Dev Server - FastAPI",
+            "label": "Watchlist Dev: FastAPI",
             "type": "shell",
             "options": {
                 "cwd": "backend"
@@ -30,10 +30,10 @@
             "isBackground": true
         },
         {
-            "label": "Start Full Stack",
+            "label": "Watchlist Dev: all",
             "dependsOn": [
-                "Dev Server - Vue",
-                "Dev Server - FastAPI"
+                "Watchlist Dev: FastAPI",
+                "Watchlist Dev: Vue"
             ],
             "dependsOrder": "parallel",
             "problemMatcher": []
