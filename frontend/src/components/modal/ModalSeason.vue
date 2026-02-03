@@ -6,10 +6,12 @@ import { numberFormatters, timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg'
 
 const season = ref({});
+const title = ref({});
 const modalRef = ref(null);
 
-function open(seasonObject) {
+function open(seasonObject, titleName) {
     season.value = seasonObject;
+    title.value = titleName;
     modalRef.value.open();
 }
 
@@ -26,7 +28,7 @@ defineExpose({ open })
 </script>
 
 <template>
-    <ModalBase ref="modalRef">
+    <ModalBase ref="modalRef" :header="title">
         <div class="season">
             <div class="season-details">
                 <img 

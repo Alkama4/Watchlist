@@ -4,7 +4,7 @@ import SeasonCard from "../card/SeasonCard.vue";
 import ModalSeason from "@/components/modal/ModalSeason.vue";
 
 defineProps({
-    seasons: {
+    titleDetails: {
         type: Object,
         required: true
     }
@@ -25,10 +25,10 @@ defineProps({
             }"
         >
             <SeasonCard 
-                v-for="season in seasons"
+                v-for="season in titleDetails?.seasons"
                 :key="season.season_id"
                 :seasonInfo="season"
-                @click="$refs.SeasonModal.open(season)"
+                @click="$refs.SeasonModal.open(season, titleDetails?.name)"
             />
         </Flicking>
 

@@ -324,7 +324,7 @@ watch(
             </div>
         </div>
 
-        <SeasonCarousel :seasons="titleDetails?.seasons"/>
+        <SeasonCarousel :titleDetails="titleDetails"/>
 
         <div class="layout-contained">
             <h3>Episode map</h3>
