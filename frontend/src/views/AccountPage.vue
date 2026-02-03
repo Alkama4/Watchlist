@@ -3,7 +3,7 @@ import { onMounted, ref } from 'vue'
 import { fastApi } from '@/utils/fastApi';
 import { useAuthStore } from '@/stores/auth';
 import ModalConfimation from '@/components/modal/ModalConfimation.vue';
-import Modal from '@/components/modal/Modal.vue';
+import ModalBase from '@/components/modal/ModalBase.vue';
 import NoticeBlock from '@/components/NoticeBlock.vue';
 import FormMessage from '@/components/FormMessage.vue';
 
@@ -164,7 +164,7 @@ onMounted(async () => {
             confirmLabel="Continue"
             :negativeAction="true"
         />
-        <Modal ref="ModalDeleteSecond" header="Delete Account">
+        <ModalBase ref="ModalDeleteSecond" header="Delete Account">
             <NoticeBlock
                 type="negative"
                 header="Permanent action"
@@ -196,7 +196,7 @@ onMounted(async () => {
                     </button>
                 </div>
             </form>
-        </Modal>
+        </ModalBase>
     </div>
 </template>
 

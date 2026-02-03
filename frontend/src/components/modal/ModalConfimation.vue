@@ -1,6 +1,6 @@
 <script setup>
-import { onMounted, ref } from 'vue'
-import Modal from '@/components/modal/Modal.vue'
+import { ref } from 'vue'
+import ModalBase from '@/components/modal/ModalBase.vue'
 
 const buttonCancel = ref(null)
 const buttonConfirm = ref(null)
@@ -65,7 +65,7 @@ defineExpose({ query })
 </script>
 
 <template>
-    <Modal :header="header" ref="modalRef" @closed="catchClose" :smallCard="true">
+    <ModalBase :header="header" ref="modalRef" @closed="catchClose" :smallCard="true">
         <p>{{ message }}</p>
         <div class="button-row">
             <button ref="buttonCancel" @click="cancel">
@@ -75,7 +75,7 @@ defineExpose({ query })
                 {{ confirmLabel }}
             </button>
         </div>
-    </Modal>
+    </ModalBase>
 </template>
 
 <style scoped>

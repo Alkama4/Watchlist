@@ -11,7 +11,7 @@ import NotFoundPage from './NotFoundPage.vue';
 import Tmdb from '@/assets/icons/tmdb.svg'
 import NoticeBlock from '@/components/NoticeBlock.vue';
 import { preferredLocale, fallbackLocale } from '@/utils/conf';
-import Modal from '@/components/modal/Modal.vue';
+import ModalBase from '@/components/modal/ModalBase.vue';
 import SeasonCarousel from '@/components/carousel/SeasonCarousel.vue';
 import EpisodeMap from '@/components/EpisodeMap.vue';
 
@@ -336,7 +336,7 @@ watch(
 
         <!-- Modals -->
 
-        <Modal header="Age ratings" ref="AgeRatingsModal" :minimumCard="true">
+        <ModalBase header="Age ratings" ref="AgeRatingsModal" :minimumCard="true">
             <p>The following list shows age ratings by country for the current title. The star icon indicates your <i class="bx bxs-star"></i> preferred language (or <i class="bx bx-star"></i> fallback). You can adjust your preffered languages in the <router-link to="/account">application settings</router-link>.</p>
             <div class="age-ratings-table">
                 <table>
@@ -386,7 +386,7 @@ watch(
                 <a class="subtle" target="_blank" :href="tmdbEditAgeRatingUrl">here</a>.
                 Changes usually take a few hours to appear in the "update title details" requests.
             </span>
-        </Modal>
+        </ModalBase>
     </div>
 </template>
 

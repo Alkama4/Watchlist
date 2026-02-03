@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import Modal from '@/components/modal/Modal.vue';
+import ModalBase from '@/components/modal/ModalBase.vue';
 import { resolveImagePath } from '@/utils/imagePath';
 import { numberFormatters, timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg'
@@ -26,7 +26,7 @@ defineExpose({ open })
 </script>
 
 <template>
-    <Modal ref="modalRef">
+    <ModalBase ref="modalRef">
         <div class="season">
             <div class="season-details">
                 <img 
@@ -68,7 +68,7 @@ defineExpose({ open })
                 </div>
             </div>
         </div>
-    </Modal>
+    </ModalBase>
 </template>
 
 <style scoped>

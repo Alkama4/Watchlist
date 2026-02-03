@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import Modal from '@/components/modal/Modal.vue';
+import ModalBase from '@/components/modal/ModalBase.vue';
 
 const modal = ref(null)
 
@@ -41,10 +41,10 @@ function playVideo() {
 
         <h2>Modals</h2>
             <button @click="openModal">Open modal</button>
-            <Modal header="Modal header" ref="modal">
+            <ModalBase header="Modal header" ref="modal">
                 <p>Some text</p>
                 <button>A button</button>
-            </Modal>
+            </ModalBase>
 
         <h2>Form</h2>
         <form @submit.prevent="" class="card">

@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { fastApi } from '@/utils/fastApi'
 import FormMessage from '@/components/FormMessage.vue'
-import Modal from '@/components/modal/Modal.vue'
+import ModalBase from '@/components/modal/ModalBase.vue'
 
 const username = ref('')
 const password = ref('')
@@ -107,7 +107,7 @@ async function register() {
             </router-link>
         </span>
 
-        <Modal ref="modal" header="Account Created">
+        <ModalBase ref="modal" header="Account Created">
             <p>Your account has been created successfully. You can now log in.</p>
             <div class="button-row">
                 <button @click="close">Close</button>
@@ -115,7 +115,7 @@ async function register() {
                     Go to login
                 </router-link>
             </div>
-        </Modal>
+        </ModalBase>
     </div>
 </template>
 
