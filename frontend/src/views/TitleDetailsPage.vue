@@ -9,6 +9,7 @@ import { onMounted, ref, watch, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import NotFoundPage from './NotFoundPage.vue';
 import Tmdb from '@/assets/icons/tmdb.svg'
+import Imdb from '@/assets/icons/imdb.svg'
 import NoticeBlock from '@/components/NoticeBlock.vue';
 import { preferredLocale, fallbackLocale } from '@/utils/conf';
 import ModalBase from '@/components/modal/ModalBase.vue';
@@ -304,32 +305,30 @@ watch(
                 </div>
             </div>
     
+            <h4>Links</h4>
             <div class="links">
                 <a
                     :href="`https://www.themoviedb.org/${titleDetails?.title_type}/${titleDetails?.tmdb_id}`"
                     target="_blank"
-                    class="btn no-deco"
+                    class="btn-text"
                 >
-                    TMDB
-                    <i class="bx bx-link-external"></i>
+                    <Tmdb/>
                 </a>
                 <a
                     v-if="titleDetails?.imdb_id"
                     :href="`https://www.imdb.com/title/${titleDetails?.imdb_id}`"
                     target="_blank"
-                    class="btn no-deco"
+                    class="btn-text"
                 >
-                    IMDB
-                    <i class="bx bx-link-external"></i>
+                    <Imdb/>
                 </a>
                 <a
                     v-if="titleDetails?.homepage"
                     :href="titleDetails?.homepage"
                     target="_blank"
-                    class="btn no-deco"
+                    class="btn-text"
                 >
-                    Homepage
-                    <i class="bx bx-link-external"></i>
+                    <i class="bx bx-link"></i>
                 </a>
             </div>
         </div>
@@ -511,7 +510,17 @@ img.poster {
 }
 .links {
     display: flex;
-    gap: var(--spacing-sm);
+    gap: var(--spacing-sm-md);
+    font-size: var(--fs-3);
+}
+.links * {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+.links svg {
+    width: 42px;
+    height: auto;
 }
 
 
