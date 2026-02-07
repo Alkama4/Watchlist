@@ -5,7 +5,7 @@ import LoadingIndicator from '@/components/LoadingIndicator.vue';
 import { fastApi } from '@/utils/fastApi';
 import { isoFormatters, numberFormatters, timeFormatters } from '@/utils/formatters';
 import { resolveImagePath } from '@/utils/imagePath';
-import { onMounted, ref, watch, computed } from 'vue';
+import { onMounted, ref, watch, computed, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import NotFoundPage from './NotFoundPage.vue';
 import Tmdb from '@/assets/icons/tmdb.svg'
@@ -16,6 +16,7 @@ import ModalBase from '@/components/modal/ModalBase.vue';
 import SeasonCarousel from '@/components/carousel/SeasonCarousel.vue';
 import EpisodeMap from '@/components/EpisodeMap.vue';
 
+const pageLoading = ref(true);
 const route = useRoute();
 const titleDetails = ref(null);
 const waitingFor = ref({});
@@ -96,12 +97,15 @@ async function removeFromTitleWatchCount() {
 }
 
 async function loadTitleData() {
+    pageLoading.value = true;
     try {
         await fetchTitleDetails();
         await fetchSimilarTitles();
     } catch (e) {
         console.error('Failed to fetch title', e);
         titleDetails.value = false; // signal invalid title
+    } finally {
+        pageLoading.value = false;
     }
 }
 
@@ -148,6 +152,19 @@ watch(
         await loadTitleData();
     }
 );
+
+// Watch for when loading, and scroll to the saved location once 
+// no longer loading. If not for this the scroll is set immiadetly,
+// which is lost since the content isn't on page and the page is 100vh.
+watch(pageLoading, (newLoading) => {
+  if (!newLoading) {
+    // Wait for the DOM to render after loading finishes
+    nextTick(() => {
+       const savedPos = window.history.state.scroll;
+       if (savedPos) window.scrollTo(savedPos);
+    });
+  }
+});
 </script>
 
 <template>

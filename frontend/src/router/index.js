@@ -58,7 +58,16 @@ const routes = [
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
-    routes
+    routes,
+    scrollBehavior(to, from, savedPosition) {
+        if (savedPosition) {
+            // When using back/forward buttons, return to saved spot
+            return savedPosition;
+        } else {
+            // For new navigation, scroll to top
+            return { top: 0 };
+        }
+    }
 })
 
 // Router guard
