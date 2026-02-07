@@ -4,6 +4,7 @@ import { useSearchStore } from '@/stores/search';
 import { fastApi } from '@/utils/fastApi';
 import TitleCard from '@/components/card/TitleCard.vue';
 import LoadingIndicator from '@/components/LoadingIndicator.vue';
+import SearchFilter from '@/components/SearchFilter.vue';
 
 const searchStore = useSearchStore();
 
@@ -15,6 +16,18 @@ const sp = ref({
 
 const searchResults = ref({});
 const loadingTitles = ref(false)
+
+const sortOptions = [
+    { value: 'default', text: 'Default' },
+    { value: 'tmdb_score', text: 'TMDB' },
+    { value: 'imdb_score', text: 'IMDB' },
+    { value: 'popularity', text: 'Popularity' },
+    { value: 'title_name', text: 'Name' },
+    { value: 'runtime', text: 'Runtime' },
+    { value: 'release_date', text: 'Date' },
+    { value: 'last_viewed_at', text: 'Viewed' },
+    { value: 'random', text: 'Random' },
+];
 
 async function search() {
     loadingTitles.value = true;
@@ -94,32 +107,33 @@ onUnmounted(() => {
 <template>
     <div class="search-page layout-contained">
         <h1>Search</h1>
-        <form @submit.prevent>
-            <label for="typeFilter">Type filter</label>
-            <select id="typeFilter" v-model="sp.title_type" :disabled="searchStore.tmdbFallback">
-                <option :value="null" selected>All</option>
-                <option value="movie">Movie</option>
-                <option value="tv">TV</option>
-            </select>
+        <div class="filters">
+            <SearchFilter label="Type" :disabled="searchStore.tmdbFallback">
+                <select id="typeFilter" v-model="sp.title_type" :disabled="searchStore.tmdbFallback">
+                    <option :value="null" selected>All</option>
+                    <option value="movie">Movie</option>
+                    <option value="tv">TV</option>
+                </select>
+            </SearchFilter>
 
-            <label for="sortBy">Sort By</label>
-            <select
-                id="sortBy"
-                v-model="sp.sort_by"
+            <SearchFilter 
+                label="Sort by" 
                 :disabled="searchStore.tmdbFallback"
             >
-                <option value="default" selected>Default</option>
-                <option value="tmdb_score">TMDB</option>
-                <option value="imdb_score">IMDB</option>
-                <option value="popularity">Popularity</option>
-                <option value="title_name">Title name</option>
-                <option value="runtime">Runtime</option>
-                <option value="release_date">Release date</option>
-                <option value="last_viewed_at">Last viewed</option>
-                <option value="random">Random</option>
-            </select>
+                <div v-for="option in sortOptions" :key="option.value" class="input-label-row">
+                    <input 
+                        type="radio" 
+                        :id="option.value" 
+                        name="sortOrder"
+                        :value="option.value" 
+                        v-model="sp.sort_by"
+                        :disabled="searchStore.tmdbFallback"
+                    />
+                    <label :for="option.value">{{ option.text }}</label>
+                </div>
+            </SearchFilter>
 
-            <label for="sortDirection">Sort Direction</label>
+            <!-- <label for="sortDirection">Sort Direction</label> -->
             <select
                 id="sortDirection"
                 v-model="sp.sort_direction"
@@ -130,15 +144,15 @@ onUnmounted(() => {
                 <option value="asc">Ascending</option>
             </select>
             
-            <div class="checkbox-row card">
+            <div class="checkbox-row">
                 <input
                     type="checkbox"
                     id="tmdbFallback"
                     v-model="searchStore.tmdbFallback"
                 />
-                <label for="tmdbFallback">Add titles from TMDB</label>
+                <label for="tmdbFallback">TMDB</label>
             </div>
-        </form>
+        </div>
 
         <h3>Results</h3>
 
@@ -176,6 +190,18 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.filters {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-sm);
+}
+
+.input-label-row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: var(--spacing-sm);
+}
+
 .title-card-grid {
     display: flex;
     gap: var(--spacing-md);
