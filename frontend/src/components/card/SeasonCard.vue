@@ -2,6 +2,9 @@
 import { resolveImagePath } from '@/utils/imagePath';
 import { timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg'
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
 
 defineProps({
     seasonInfo: {
@@ -14,7 +17,7 @@ defineEmits(['click'])
 </script>
 
 <template>
-    <div class="season-card btn-text" @click="$emit('click')">
+    <router-link class="season-card btn-text" :to="`/title/${route.params.title_id}/season/${seasonInfo.season_id}`">
         <img 
             :src="resolveImagePath(seasonInfo, '800', 'poster')"
             :alt="`Season poster: ${seasonInfo?.season_name}`"
@@ -34,7 +37,7 @@ defineEmits(['click'])
                 {{ seasonInfo?.episodes?.length }} episodes
             </div>
         </div>
-    </div>
+    </router-link>
 </template>
 
 

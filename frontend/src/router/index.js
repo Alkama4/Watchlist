@@ -21,6 +21,12 @@ const routes = [
         meta: { requiresAuth: true }
     },
     {
+        path: `/title/:title_id/season/:season_id`,
+        name: 'Season details',
+        component: () => import('@/views/SeasonDetailsPage.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
         path: '/account',
         name: 'Account',
         component: () => import('@/views/AccountPage.vue'),
