@@ -17,13 +17,7 @@ const routes = [
     {
         path: `/title/:title_id`,
         name: 'Title details',
-        component: () => import('@/views/TitleDetailsPage.vue'),
-        meta: { requiresAuth: true }
-    },
-    {
-        path: `/title/:title_id/season/:season_id`,
-        name: 'Season details',
-        component: () => import('@/views/SeasonDetailsPage.vue'),
+        component: () => import('@/views/TitleController.vue'),
         meta: { requiresAuth: true }
     },
     {

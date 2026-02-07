@@ -1,79 +1,72 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { resolveImagePath } from '@/utils/imagePath';
 import { numberFormatters, timeFormatters } from '@/utils/formatters';
-import { useRoute } from 'vue-router';
-import { fastApi } from '@/utils/fastApi';
-import Tmdb from '@/assets/icons/tmdb.svg'
-import router from '@/router';
+import Tmdb from '@/assets/icons/tmdb.svg';
+
+const props = defineProps({
+    titleDetails: {
+        type: Object,
+        required: true
+    }
+});
 
 const route = useRoute();
-const season = ref({});
+const router = useRouter();
 
-async function fetchTitleDetails() {
-    const title_id = route.params.title_id;
-    const season_id = route.params.season_id;
-    
-    const titleDetails = await fastApi.titles.getById(title_id)
-    season.value = titleDetails?.seasons.find((season) => {
-        if (season.season_id == season_id) return season;
-    })
-}
+const activeSeason = computed(() => {
+    const seasonNumber = Number(route.query.season);
+    // Find the season in the prop data that matches the URL query
+    return props.titleDetails?.seasons?.find(s => s.season_number === seasonNumber) || null;
+});
 
-function calculateTotalSeasonRuntime(season) {
-    let runtime = 0;
-    for (let index = 0; index < season?.episodes?.length; index++) {
-        const element = season?.episodes[index];
-        runtime += element?.runtime;
-    }
-    return runtime;
-}
+const totalRuntime = computed(() => {
+    if (!activeSeason.value?.episodes) return 0;
+    return activeSeason.value.episodes.reduce((acc, ep) => acc + (ep.runtime || 0), 0);
+});
 
 const handleBack = () => {
-    const titlePath = `/title/${route.params.title_id}`;
+    // If we came from the overview of the SAME title
     const previousPath = window.history.state.back;
+    const isFromOverview = previousPath && !previousPath.includes('season=');
 
-    // If the history shows we actually came from that Title page
-    if (previousPath && previousPath.includes(titlePath)) {
+    if (isFromOverview) {
         router.back();
     } else {
-        // Fallback: Just navigate normally
-        router.push(titlePath);
+        // Fallback: Strip the query params to go back to the "plain" title page
+        router.push({ path: route.path, query: {} });
     }
 };
-
-onMounted(async () => {
-    await fetchTitleDetails();
-})
 </script>
 
 <template>
     <div class="navigation-row layout-contained layout-spacing-top">
         <button class="btn-text no-deco" @click="handleBack">
             <i class="bx bx-chevron-left"></i>
-            <span>Back to Title</span>
+            <span>Back to Overview</span>
         </button>
     </div>
-    <div class="season layout-contained layout-spacing-bottom">
+    <div v-if="activeSeason" class="season layout-contained layout-spacing-bottom">
         <div class="season-details">
             <img 
-                :src="resolveImagePath(season, '800', 'poster')"
-                :alt="`Season poster: ${season?.season_name}`"
+                :src="resolveImagePath(activeSeason, '800', 'poster')"
+                :alt="`Season poster: ${activeSeason?.season_name}`"
                 class="season-poster"
             >
-            <h3>{{ season?.season_name }}</h3>
+            <h3>{{ activeSeason?.season_name }}</h3>
             <div>
                 <Tmdb/>
-                {{ season?.tmdb_vote_average }}
+                {{ activeSeason?.tmdb_vote_average }}
                 &bull;
-                {{ season?.episodes?.length }} episodes
+                {{ activeSeason?.episodes?.length }} episodes
                 &bull;
-                {{ timeFormatters.minutesToHrAndMin(calculateTotalSeasonRuntime(season)) }}
+                {{ timeFormatters.minutesToHrAndMin(totalRuntime) }}
             </div>
-            <p>{{ season?.overview }}</p>
+            <p>{{ activeSeason?.overview }}</p>
         </div>
         <div class="episodes-wrapper">
-            <div v-for="episode in season?.episodes" class="episode">
+            <div v-for="episode in activeSeason?.episodes" class="episode">
                 <img 
                     :src="resolveImagePath(episode, '800', 'backdrop')"
                     :alt="`Episode backdrop: ${episode?.episode_number}. ${episode?.episode_name}`"

@@ -17,7 +17,7 @@ defineEmits(['click'])
 </script>
 
 <template>
-    <router-link class="season-card btn-text" :to="`/title/${route.params.title_id}/season/${seasonInfo.season_id}`">
+    <router-link class="season-card btn-text" :to="`/title/${route.params.title_id}?season=${seasonInfo.season_number}`">
         <img 
             :src="resolveImagePath(seasonInfo, '800', 'poster')"
             :alt="`Season poster: ${seasonInfo?.season_name}`"

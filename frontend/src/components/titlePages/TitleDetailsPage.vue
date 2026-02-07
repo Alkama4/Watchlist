@@ -1,13 +1,10 @@
 <script setup>
 import TitleCarousel from '@/components/carousel/TitleCarousel.vue';
 import LoadingButton from '@/components/LoadingButton.vue';
-import LoadingIndicator from '@/components/LoadingIndicator.vue';
 import { fastApi } from '@/utils/fastApi';
 import { isoFormatters, numberFormatters, timeFormatters } from '@/utils/formatters';
 import { resolveImagePath } from '@/utils/imagePath';
-import { onMounted, ref, watch, computed, nextTick } from 'vue';
-import { useRoute } from 'vue-router';
-import NotFoundPage from './NotFoundPage.vue';
+import { ref, computed } from 'vue';
 import Tmdb from '@/assets/icons/tmdb.svg'
 import Imdb from '@/assets/icons/imdb.svg'
 import NoticeBlock from '@/components/NoticeBlock.vue';
@@ -16,28 +13,24 @@ import ModalBase from '@/components/modal/ModalBase.vue';
 import SeasonCarousel from '@/components/carousel/SeasonCarousel.vue';
 import EpisodeMap from '@/components/EpisodeMap.vue';
 
-const pageLoading = ref(true);
-const route = useRoute();
-const titleDetails = ref(null);
+const { titleDetails } = defineProps({
+    titleDetails: {
+        type: Object,
+        required: true
+    },
+    similarTitles: {
+        type: Object,
+        required: true
+    }
+})
+
 const waitingFor = ref({});
-const similarTitles = ref({});
-
 const AgeRatingsModal = ref(null);
-
-async function fetchTitleDetails() {
-    const title_id = route.params.title_id;
-    titleDetails.value = await fastApi.titles.getById(title_id)
-}
-
-async function fetchSimilarTitles() {
-    const title_id = route.params.title_id;
-    similarTitles.value = await fastApi.titles.similarById(title_id);
-}
 
 async function updateTitleDetails() {
     waitingFor.value.titleUpdate = true;
     try {
-        await fastApi.titles.updateById(titleDetails.value.title_id);
+        await fastApi.titles.updateById(titleDetails.title_id);
         await fetchTitleDetails();
     } finally {
         waitingFor.value.titleUpdate = false;
@@ -46,28 +39,28 @@ async function updateTitleDetails() {
 
 async function toggleFavourite() {
     let response;
-    if (titleDetails.value.user_details.is_favourite) {
-        response = await fastApi.titles.setFavourite(titleDetails.value.title_id, false);
+    if (titleDetails.user_details.is_favourite) {
+        response = await fastApi.titles.setFavourite(titleDetails.title_id, false);
     } else {
-        response = await fastApi.titles.setFavourite(titleDetails.value.title_id, true);
+        response = await fastApi.titles.setFavourite(titleDetails.title_id, true);
     }
     if (!response) return;
 
-    titleDetails.value.user_details.is_favourite = response.is_favourite;
-    titleDetails.value.user_details.in_library = response.in_library;
+    titleDetails.user_details.is_favourite = response.is_favourite;
+    titleDetails.user_details.in_library = response.in_library;
 }
 
 async function toggleWatchlist() {
     let response;
-    if (titleDetails.value.user_details.in_watchlist) {
-        response = await fastApi.titles.setWatchlist(titleDetails.value.title_id, false);
+    if (titleDetails.user_details.in_watchlist) {
+        response = await fastApi.titles.setWatchlist(titleDetails.title_id, false);
     } else {
-        response = await fastApi.titles.setWatchlist(titleDetails.value.title_id, true);
+        response = await fastApi.titles.setWatchlist(titleDetails.title_id, true);
     }
     if (!response) return;
     
-    titleDetails.value.user_details.in_watchlist = response.in_watchlist;
-    titleDetails.value.user_details.in_library = response.in_library;
+    titleDetails.user_details.in_watchlist = response.in_watchlist;
+    titleDetails.user_details.in_library = response.in_library;
 }
 
 function adjustCollections() {
@@ -75,46 +68,34 @@ function adjustCollections() {
 }
 
 async function removeFromLibrary() {
-    const response = await fastApi.titles.library.remove(titleDetails.value.title_id);
-    titleDetails.value.user_details.in_library = response.in_library;
+    const response = await fastApi.titles.library.remove(titleDetails.title_id);
+    titleDetails.user_details.in_library = response.in_library;
 }
 async function addToLibrary() {
-    const response = await fastApi.titles.library.add(titleDetails.value.title_id);
-    titleDetails.value.user_details.in_library = response.in_library;
+    const response = await fastApi.titles.library.add(titleDetails.title_id);
+    titleDetails.user_details.in_library = response.in_library;
 }
 
 async function setTitleWatchCount(count) {
-    const response = await fastApi.titles.setWatchCount(titleDetails.value.title_id, count);
+    const response = await fastApi.titles.setWatchCount(titleDetails.title_id, count);
     console.log(response);
-    titleDetails.value.user_details.watch_count = response.watch_count;
-    titleDetails.value.user_details.in_library = response.in_library;
+    titleDetails.user_details.watch_count = response.watch_count;
+    titleDetails.user_details.in_library = response.in_library;
 }
 async function addToTitleWatchCount() {
-    await setTitleWatchCount(titleDetails.value.user_details.watch_count + 1);
+    await setTitleWatchCount(titleDetails.user_details.watch_count + 1);
 }
 async function removeFromTitleWatchCount() {
-    await setTitleWatchCount(titleDetails.value.user_details.watch_count - 1);
+    await setTitleWatchCount(titleDetails.user_details.watch_count - 1);
 }
 
-async function loadTitleData() {
-    pageLoading.value = true;
-    try {
-        await fetchTitleDetails();
-        await fetchSimilarTitles();
-    } catch (e) {
-        console.error('Failed to fetch title', e);
-        titleDetails.value = false; // signal invalid title
-    } finally {
-        pageLoading.value = false;
-    }
-}
 
 function showAllAgeRatings() {
     AgeRatingsModal.value.open();
 }
 
 const chosenAgeRating = computed(() => {
-    const ratings = titleDetails.value?.age_ratings ?? []
+    const ratings = titleDetails?.age_ratings ?? []
 
     // Try to find preferred locale
     const pref = ratings.find(
@@ -127,53 +108,18 @@ const chosenAgeRating = computed(() => {
 })
 
 const tmdbEditAgeRatingUrl = computed(() => {
-    const { title_type, tmdb_id } = titleDetails.value;
+    const { title_type, tmdb_id } = titleDetails;
     const path =
         title_type === 'movie'
             ? 'edit?active_nav_item=release_information'
             : 'edit?active_nav_item=content_ratings';
     return `https://www.themoviedb.org/${title_type}/${tmdb_id}/${path}`;
 })
-
-
-// Fetch data initially
-onMounted(async () => {
-    await loadTitleData();
-});
-
-// Watch for route changes
-watch(
-    () => route.params.title_id,
-    async () => {
-        // Wipe old data
-        titleDetails.value = null;
-        similarTitles.value = null;
-
-        await loadTitleData();
-    }
-);
-
-// Watch for when loading, and scroll to the saved location once 
-// no longer loading. If not for this the scroll is set immiadetly,
-// which is lost since the content isn't on page and the page is 100vh.
-watch(pageLoading, (newLoading) => {
-  if (!newLoading) {
-    // Wait for the DOM to render after loading finishes
-    nextTick(() => {
-       const savedPos = window.history.state.scroll;
-       if (savedPos) window.scrollTo(savedPos);
-    });
-  }
-});
 </script>
 
 <template>
     <div class="title-details-page">
-        <LoadingIndicator class="page-loading-indicator" v-if="titleDetails === null"/>
-    
-        <NotFoundPage v-else-if="titleDetails === false"/>
-
-        <div v-else class="layout-contained layout-spacing-top">
+        <div class="layout-contained layout-spacing-top">
             <img 
                 :src="resolveImagePath(titleDetails, 'original', 'backdrop')"
                 :alt="`${titleDetails?.type} backdrop: ${titleDetails?.name}`"
