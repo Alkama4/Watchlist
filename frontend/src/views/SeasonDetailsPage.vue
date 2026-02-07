@@ -48,7 +48,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="layout-contained layout-spacing-top">
+    <div class="navigation-row layout-contained layout-spacing-top">
         <button class="btn-text no-deco" @click="handleBack">
             <i class="bx bx-chevron-left"></i>
             <span>Back to Title</span>
@@ -98,6 +98,13 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.navigation-row {
+    margin-bottom: var(--spacing-md);
+}
+.navigation-row button {
+    font-size: var(--fs-0);
+}
+
 .season {
     height: 100%;
     overflow: hidden;
