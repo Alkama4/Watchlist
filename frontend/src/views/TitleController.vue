@@ -84,10 +84,5 @@ watch(pageLoading, (newLoading) => {
             :titleDetails="titleDetails"
             :similarTitles="similarTitles"
         />
-
     </div>
 </template>
-
-<style scoped>
-
-</style>

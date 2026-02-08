@@ -41,60 +41,72 @@ const handleBack = () => {
 </script>
 
 <template>
-    <div class="navigation-row layout-contained layout-spacing-top">
-        <button class="btn-text no-deco" @click="handleBack">
-            <i class="bx bx-chevron-left"></i>
-            <span>Back to Overview</span>
-        </button>
-    </div>
-    <div v-if="activeSeason" class="season layout-contained layout-spacing-bottom">
-        <div class="season-details">
-            <img 
-                :src="resolveImagePath(activeSeason, '800', 'poster')"
-                :alt="`Season poster: ${activeSeason?.season_name}`"
-                class="season-poster"
-            >
-            <h3>{{ activeSeason?.season_name }}</h3>
-            <div>
-                <Tmdb/>
-                {{ activeSeason?.tmdb_vote_average }}
-                &bull;
-                {{ activeSeason?.episodes?.length }} episodes
-                &bull;
-                {{ timeFormatters.minutesToHrAndMin(totalRuntime) }}
-            </div>
-            <p>{{ activeSeason?.overview }}</p>
+    <div class="season-details-page">
+        <div class="back-button-row layout-contained layout-spacing-top">
+            <button class="btn-text no-deco" @click="handleBack">
+                <i class="bx bx-chevron-left"></i>
+                <span>Back to Overview</span>
+            </button>
         </div>
-        <div class="episodes-wrapper">
-            <div v-for="episode in activeSeason?.episodes" class="episode">
+        <div v-if="activeSeason" :key="activeSeason.season_id" class="season layout-contained layout-spacing-bottom">
+            <div class="season-details">
                 <img 
-                    :src="resolveImagePath(episode, '800', 'backdrop')"
-                    :alt="`Episode backdrop: ${episode?.episode_number}. ${episode?.episode_name}`"
-                    class="episode-backdrop"
+                    :src="resolveImagePath(activeSeason, '800', 'poster')"
+                    :alt="`Season poster: ${activeSeason?.season_name}`"
+                    class="season-poster"
                 >
+                <h3>{{ activeSeason?.season_name }}</h3>
                 <div>
-                    <h4>{{ episode?.episode_number }}. {{ episode?.episode_name }}</h4>
+                    <Tmdb/>
+                    {{ activeSeason?.tmdb_vote_average }}
+                    &bull;
+                    {{ activeSeason?.episodes?.length }} episodes
+                    &bull;
+                    {{ timeFormatters.minutesToHrAndMin(totalRuntime) }}
+                </div>
+                <p>{{ activeSeason?.overview }}</p>
+            </div>
+            <div class="episodes-wrapper">
+                <div v-for="episode in activeSeason?.episodes" class="episode">
+                    <img 
+                        :src="resolveImagePath(episode, '800', 'backdrop')"
+                        :alt="`Episode backdrop: ${episode?.episode_number}. ${episode?.episode_name}`"
+                        class="episode-backdrop"
+                    >
                     <div>
-                        {{ timeFormatters.minutesToHrAndMin(episode.runtime) }}
-                        &bull;
-                        <Tmdb/>
-                        {{ episode.tmdb_vote_average }}
-                        ({{ numberFormatters.formatCompactNumber(episode.tmdb_vote_count) }} votes)
-                        &bull;
-                        {{ timeFormatters.timestampToFullDate(episode.air_date) }}
+                        <h4>{{ episode?.episode_number }}. {{ episode?.episode_name }}</h4>
+                        <div>
+                            {{ timeFormatters.minutesToHrAndMin(episode.runtime) }}
+                            &bull;
+                            <Tmdb/>
+                            {{ episode.tmdb_vote_average }}
+                            ({{ numberFormatters.formatCompactNumber(episode.tmdb_vote_count) }} votes)
+                            &bull;
+                            {{ timeFormatters.timestampToFullDate(episode.air_date) }}
+                        </div>
+                        <p>{{ episode.overview }}</p>
                     </div>
-                    <p>{{ episode.overview }}</p>
                 </div>
             </div>
+        </div>
+        <div v-if="titleDetails?.seasons?.length >= 2" class="season-buttons">
+            <router-link
+                v-for="season in titleDetails?.seasons"
+                :to="`/title/${titleDetails?.title_id}?season=${season.season_number}`"
+                :class="{'btn-primary': route.query.season == season.season_number}"
+                class="btn no-deco"
+            >
+                {{ season.season_name }}
+            </router-link>
         </div>
     </div>
 </template>
 
 <style scoped>
-.navigation-row {
+.back-button-row {
     margin-bottom: var(--spacing-md);
 }
-.navigation-row button {
+.back-button-row button {
     font-size: var(--fs-0);
 }
 
@@ -146,5 +158,29 @@ const handleBack = () => {
 }
 .episode p {
     margin: var(--spacing-sm) 0;
+}
+
+
+.season-buttons {
+    position: fixed;
+    bottom: var(--spacing-lg);
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 90vw;
+    overflow-x: scroll;
+
+    background-color: var(--c-bg-opaque);
+    backdrop-filter: blur(var(--blur-heavy));
+    border: 1px solid var(--c-border);
+
+    padding: var(--spacing-sm-md);
+    border-radius: var(--border-radius-lg);
+
+    display: flex;
+    gap: var(--spacing-sm);
+}
+.season-buttons .btn {
+    white-space: nowrap;
+    padding: var(--spacing-sm-md) var(--spacing-md-lg);
 }
 </style>
