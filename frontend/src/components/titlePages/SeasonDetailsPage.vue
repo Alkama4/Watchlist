@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { resolveImagePath } from '@/utils/imagePath';
 import { numberFormatters, timeFormatters } from '@/utils/formatters';
@@ -38,6 +38,50 @@ const handleBack = () => {
         router.push({ path: route.path, query: {} });
     }
 };
+
+function next() {
+    const nextSeason = Number(route.query.season) + 1;
+    const hasNextSeason = props.titleDetails.seasons.find(s => s.season_number === nextSeason);
+
+    if (hasNextSeason) {
+        router.push({ path: route.path, query: { season: nextSeason } });
+    } else {
+        router.push({ path: route.path, query: { season: 1 } });
+    }
+}
+function prev() {
+    const prevSeason = Number(route.query.season) - 1;
+    const hasPrevSeason = props.titleDetails.seasons.find(s => s.season_number === prevSeason);
+
+    if (hasPrevSeason) {
+        router.push({ path: route.path, query: { season: prevSeason } });
+    } else {
+        const seasonNumbers = props.titleDetails.seasons.map(s => s.season_number);
+        const maxSeason = Math.max(...seasonNumbers);
+        
+        router.push({ path: route.path, query: { season: maxSeason } });
+    }
+}
+function handleKeydown(e) {
+    if (e.key === 'ArrowRight') {
+        next();
+    } else if (e.key === 'ArrowLeft') {
+        prev();
+    } else if (/^\d$/.test(e.key)) { 
+        const targetSeason = Number(e.key);
+        const exists = props.titleDetails.seasons.find(s => s.season_number === targetSeason);
+        if (exists) {
+            router.push({ path: route.path, query: { season: targetSeason } });
+        }
+    }
+}
+onMounted(() => {
+    window.addEventListener('keydown', handleKeydown);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('keydown', handleKeydown);
+});
 </script>
 
 <template>
