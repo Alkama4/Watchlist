@@ -10,7 +10,7 @@ import Imdb from '@/assets/icons/imdb.svg'
 import NoticeBlock from '@/components/NoticeBlock.vue';
 import { preferredLocale, fallbackLocale } from '@/utils/conf';
 import ModalBase from '@/components/modal/ModalBase.vue';
-import SeasonCarousel from '@/components/carousel/SeasonCarousel.vue';
+import SeasonsListing from '@/components/SeasonsListing.vue';
 import EpisodeMap from '@/components/EpisodeMap.vue';
 
 const { titleDetails } = defineProps({
@@ -296,7 +296,7 @@ const tmdbEditAgeRatingUrl = computed(() => {
             </div>
         </div>
 
-        <SeasonCarousel v-if="titleDetails?.title_type === 'tv'" :titleDetails="titleDetails"/>
+        <SeasonsListing v-if="titleDetails?.title_type === 'tv'" :titleDetails="titleDetails"/>
 
         <TitleCarousel :carouselData="similarTitles" class="layout-spacing-bottom"/>
 
