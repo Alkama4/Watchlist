@@ -1,6 +1,6 @@
 <script setup>
 import TitleHeroCards from '@/components/TitleHeroCards.vue';
-import TitleCarousel from '@/components/carousel/TitleCarousel.vue';
+import TitleCarousel from '@/components/TitleCarousel.vue';
 import { fastApi } from '@/utils/fastApi';
 import { onMounted, ref } from 'vue';
 const homeData = ref({})

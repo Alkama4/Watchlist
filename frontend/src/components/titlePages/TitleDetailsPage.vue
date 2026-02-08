@@ -1,5 +1,5 @@
 <script setup>
-import TitleCarousel from '@/components/carousel/TitleCarousel.vue';
+import TitleCarousel from '@/components/TitleCarousel.vue';
 import LoadingButton from '@/components/LoadingButton.vue';
 import { fastApi } from '@/utils/fastApi';
 import { isoFormatters, numberFormatters, timeFormatters } from '@/utils/formatters';
