@@ -64,7 +64,7 @@ function onSearchSubmit() {
     </header>
 
     <main :class="{'header-visible': route.meta.requiresAuth && !route.meta.disableHeaderPadding}">
-        <router-view :key="$route.fullPath"/>
+        <router-view/>
     </main>
 
     <footer>
