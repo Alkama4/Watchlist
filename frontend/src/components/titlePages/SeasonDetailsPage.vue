@@ -213,7 +213,7 @@ onUnmounted(() => {
     max-width: 90vw;
     overflow-x: scroll;
 
-    background-color: var(--c-bg-opaque);
+    background: var(--c-bg-opaque);
     backdrop-filter: blur(var(--blur-heavy));
     border: 1px solid var(--c-border);
 
