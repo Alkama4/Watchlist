@@ -96,6 +96,16 @@ async function deleteAccountFinalize() {
     }
 }
 
+function toggleCustomTheme() {
+    const root = document.documentElement;
+    const current = root.getAttribute('data-theme');
+    
+    const nextTheme = (current === 'true-black') ? 'midnight' : 'true-black';
+    
+    root.setAttribute('data-theme', nextTheme);
+    localStorage.setItem('user-theme', nextTheme);
+}
+
 onMounted(async () => {
     await checkMe();
     await fetchSettings();
@@ -148,6 +158,11 @@ onMounted(async () => {
                     @blur="updateSetting(setting, $event)"
                 />
             </template>
+
+            <!-- To be synced with the back end -->
+            <!-- Impelentation still VERY wip -->
+            <label for="theme-toggle">Theme</label>
+            <button @click="toggleCustomTheme" id="theme-toggle">Toggle the theme</button>
         </div>
 
         <ModalConfimation

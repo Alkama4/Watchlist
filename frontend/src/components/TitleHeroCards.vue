@@ -105,6 +105,7 @@ onUnmounted(() => {
                 :key="heroCards?.titles[currentIndex]?.title_id"
                 class="hero-card"
             >
+                <div class="backdrop black-base"></div>
                 <img
                     :src="resolveImagePath(heroCards?.titles[currentIndex], 'original', 'backdrop')"
                     :alt="`${heroCards?.titles[currentIndex]?.title_type} backdrop: ${heroCards?.titles[currentIndex]?.name}`"
@@ -218,7 +219,7 @@ onUnmounted(() => {
     justify-content: center;
 }
 
-img.backdrop {
+.backdrop {
     position: absolute;
     inset: 0;
     margin-left: calc(-1 * var(--transition-amount));
@@ -232,7 +233,15 @@ img.backdrop {
         rgba(0, 0, 0, 0.35) 30%
     );
 }
-img.logo {
+.backdrop.black-base {
+    background-color: black;
+    mask-image: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, 0.5) 30%
+    );
+}
+.logo {
     object-fit: contain;
     object-position: left center;
     width: 100%;

@@ -49,8 +49,8 @@ defineProps({
     mask-image: linear-gradient(
         to right, 
         transparent 0, 
-        var(--c-bg) var(--spacing-layout-inline), 
-        var(--c-bg) calc(100% - var(--spacing-layout-inline)), 
+        white var(--spacing-layout-inline), 
+        white calc(100% - var(--spacing-layout-inline)), 
         transparent 100%
     );
 }

@@ -1,0 +1,10 @@
+[data-theme='midnight'] {
+    --c-bg: linear-gradient(135deg, hsl(205, 14%, 8%), hsl(205, 20%, 6%));
+    --c-bg-opaque: linear-gradient(135deg, hsla(200, 14%, 8%, 0.6), hsla(204, 20%, 6%, 0.6));
+
+    --c-bg-section: hsl(205, 14%, 10.5%);
+
+    --c-neutral-h: 205;
+    --c-neutral-s: 14%;
+    --c-neutral-l: 15%;
+}
