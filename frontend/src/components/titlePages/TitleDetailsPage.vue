@@ -212,12 +212,36 @@ const tmdbEditAgeRatingUrl = computed(() => {
             
                     <p>{{ titleDetails?.overview }}</p>
                     
-                    <div class="flex-row align-center gap-sm" style="margin-top: var(--spacing-md);">
+                    <!-- <div class="flex-row align-center gap-sm" style="margin-top: var(--spacing-md);">
                         <button @click="addToTitleWatchCount">Add</button>
                         <div>Watched {{ titleDetails?.user_details?.watch_count }} times</div>
-                        <button @click="removeFromTitleWatchCount">Remove</button>
-                    </div>
+                        <button >Remove</button>
+                    </div> -->
     
+                    <div class="watch-count-buttons">
+                        <button
+                            @click="addToTitleWatchCount"
+                            :class="titleDetails?.user_details?.watch_count ? 'btn-positive' : 'btn-primary'"
+                        >
+                            <template v-if="!titleDetails?.user_details?.watch_count">
+                                Mark watched
+                            </template>
+                            <template v-else-if="titleDetails?.user_details?.watch_count == 1">
+                                <i class="bx bx-check"></i>
+                                Watched
+                            </template>
+                            <template v-else-if="titleDetails?.user_details?.watch_count > 1">
+                                {{ titleDetails?.user_details?.watch_count }}
+                                watches
+                            </template>
+                        </button>
+                        <button 
+                            v-if="titleDetails?.user_details?.watch_count"
+                            @click="removeFromTitleWatchCount"
+                        >
+                            <i class="bx bx-minus"></i>
+                        </button>
+                    </div>
                     <div class="actions">
                         <i
                             class="bx bxs-heart btn btn-text btn-square"
@@ -467,6 +491,27 @@ img.poster {
     display: flex;
     gap: var(--spacing-xs);
 }
+
+.watch-count-buttons {
+    margin-bottom: var(--spacing-md);
+
+    i {
+        /* transform: scale(1.5); */
+        font-size: var(--fs-1);
+    }
+    button {
+        height: 35.2px;
+    }
+    button:first-child:not(:last-child) {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+    button:last-child:not(:first-child) {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+}
+
 
 .actions {
     display: flex;
