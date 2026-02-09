@@ -379,10 +379,11 @@ img.backdrop {
     object-fit: cover;
     z-index: -10;
 
+    filter: brightness(calc(var(--details-backdrop-min-brightness) + var(--details-backdrop-fade-intensity) * (1 - var(--details-backdrop-min-brightness))));
     mask-image: linear-gradient(
         to top,
         rgba(0, 0, 0, 0) 0%,
-        rgba(0, 0, 0, 0.25) 50%
+        rgba(0, 0, 0, calc(1 - var(--details-backdrop-fade-intensity))) 50%
     );
 }
 

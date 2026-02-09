@@ -105,7 +105,6 @@ onUnmounted(() => {
                 :key="heroCards?.titles[currentIndex]?.title_id"
                 class="hero-card"
             >
-                <div class="backdrop black-base"></div>
                 <img
                     :src="resolveImagePath(heroCards?.titles[currentIndex], 'original', 'backdrop')"
                     :alt="`${heroCards?.titles[currentIndex]?.title_type} backdrop: ${heroCards?.titles[currentIndex]?.name}`"
@@ -168,7 +167,7 @@ onUnmounted(() => {
                         ></i>
                         <i
                             class="bx bxs-time btn btn-text btn-square"
-                            :class="{'btn-watchlist': heroCards?.titles[currentIndex]?.user_details?.in_watchlist }"
+                            :class="{'btn-accent': heroCards?.titles[currentIndex]?.user_details?.in_watchlist }"
                             @click="toggleWatchlist"
                         ></i>
                         <i
@@ -219,7 +218,7 @@ onUnmounted(() => {
     justify-content: center;
 }
 
-.backdrop {
+img.backdrop {
     position: absolute;
     inset: 0;
     margin-left: calc(-1 * var(--transition-amount));
@@ -227,21 +226,16 @@ onUnmounted(() => {
     height: 100%;
     /* max-height: calc(1200px + 15vh); */
     object-fit: cover;
+
+    filter: brightness(calc(var(--hero-backdrop-min-brightness) + var(--hero-backdrop-fade-intensity) * (1 - var(--hero-backdrop-min-brightness))));
     mask-image: linear-gradient(
         to top,
         rgba(0, 0, 0, 0) 0%,
-        rgba(0, 0, 0, 0.35) 30%
+        rgba(0, 0, 0, calc(1 - var(--hero-backdrop-fade-intensity))) 30%
     );
 }
-.backdrop.black-base {
-    background-color: black;
-    mask-image: linear-gradient(
-        to top,
-        rgba(0, 0, 0, 0) 0%,
-        rgba(0, 0, 0, 0.5) 30%
-    );
-}
-.logo {
+
+img.logo {
     object-fit: contain;
     object-position: left center;
     width: 100%;

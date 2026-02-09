@@ -16,7 +16,7 @@
     --c-negative:   oklch(52% 0.14 27);
 
 
-    /* Offsets */
+    /* Offsets and levels */
     --l-step-1: 0.03;
     --l-step-2: 0.06;
 
@@ -26,6 +26,10 @@
     --a-trans: 0.66;
     --a-border: 0.8;
 
+    --hero-backdrop-fade-intensity: 0;
+    --hero-backdrop-min-brightness: 0.4;
+    --details-backdrop-fade-intensity: 0;
+    --details-backdrop-min-brightness: 0.25;
 
     /* Borders and inputs (TODO) */
     --c-border: hsla(0, 0%, 50%, 0.25);
