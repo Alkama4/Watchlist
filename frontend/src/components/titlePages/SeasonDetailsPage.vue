@@ -166,7 +166,7 @@ onUnmounted(() => {
     width: 400px;
     height: fit-content;
     overflow: scroll;
-    background-color: var(--c-bg-section);
+    background-color: var(--c-bg-level-1);
     padding: var(--spacing-md);
     padding-bottom: var(--spacing-lg);
     border-radius: var(--border-radius-lg);
@@ -213,7 +213,7 @@ onUnmounted(() => {
     max-width: 90vw;
     overflow-x: scroll;
 
-    background: var(--c-bg-opaque);
+    background: var(--c-bg-opaque-base);
     backdrop-filter: blur(var(--blur-heavy));
     border: 1px solid var(--c-border);
 

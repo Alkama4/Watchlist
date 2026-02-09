@@ -1,99 +1,89 @@
 
 /* ----------- Colors ----------- */
 :root {
-    --c-bg: hsl(0, 0%, 0%);
-    --c-bg-opaque: hsl(0, 0%, 0%, 0.66);
-    --c-bg-section: hsl(0, 0%, 7.5%);
-    --c-bg-inner-section: hsl(0, 0%, 11%);
-    --c-bg-backdrop: hsla(0, 0%, 0%, 50%);
+    /* Base Colors */
+    --c-bg-base: oklch(0% 0 0);
 
-    --c-text-0: hsl(0, 0%, 100%);
-    --c-text: hsl(0, 0%, 95%);
-    --c-text-1: hsl(0, 0%, 85%);
-    --c-text-2: hsl(0, 0%, 70%);
-    --c-text-3: hsl(0, 0%, 55%);
-    --c-text-fine-print: hsl(0, 0%, 30%);
-    --c-text-alt: hsl(0, 0%, 0%);
+    --c-text-base: oklch(92.5% 0 0);
+    --c-text-inv-base: oklch(7.5% 0 0);
 
+    --c-primary:    oklch(92% 0 0);
+    --c-accent:     oklch(32.8% 0.065 240);
+    --c-favourite:  oklch(51.196% 0.175 14);
+    --c-neutral:    oklch(22% 0 0);
+    --c-positive:   oklch(58% 0.14 155);
+    --c-warning:    oklch(75% 0.14 80);
+    --c-negative:   oklch(52% 0.14 27);
+
+
+    /* Offsets */
+    --l-step-1: 0.02;
+    --l-step-2: 0.04;
+
+    --bg-step-1: 0.16; 
+    --bg-step-2: 0.20;
+    
+    --a-trans: 0.66;
+    --a-border: 0.8;
+
+
+    /* Borders and inputs (TODO) */
     --c-border: hsla(0, 0%, 50%, 0.25);
     --c-border-1: hsla(0, 0%, 50%, 0.5);
-
     --c-input: hsla(0, 0%, 2%, 0.5);
+    
+    /* Background levels */
+    --c-bg-level-1: oklch(from var(--c-bg-base) calc(l + var(--bg-step-1)) c h);
+    --c-bg-level-2: oklch(from var(--c-bg-base) calc(l + var(--bg-step-2)) c h);
+    --c-bg-opaque-base:     oklch(from var(--c-bg-base) l c h / var(--a-trans));
+    --c-bg-opaque-level-1:  oklch(from var(--c-bg-base) calc(l + var(--l-step-1)) c h / var(--a-trans));
+    --c-bg-opaque-level-2:  oklch(from var(--c-bg-base) calc(l + var(--l-step-2)) c h / var(--a-trans));
+    --c-bg-backdrop: oklch(from var(--c-bg-base) l c h / 50%);
 
-    /* Lightness offsets */
-    --c-light-amount: 6%;
-    --c-lighter-amount: 10%;
-    --c-transprent-amount: 0.5;
-    /* Note that border stacks on bg, so anything above 0 to border amount is additive */
-    --c-transprent-border-amount: 0.8;  
+    /* Text levels */
+    --c-text-strong:  oklch(from var(--c-text-base) 100% c h);
+    --c-text-soft:    oklch(from var(--c-text-base) 75% c h);
+    --c-text-subtle:  oklch(from var(--c-text-base) 50% c h);
 
-    /* primary */
-    --c-primary-h: 0;
-    --c-primary-s: 0%;
-    --c-primary-l: 90%;
-    --c-primary: hsl(var(--c-primary-h), var(--c-primary-s), var(--c-primary-l));
-    --c-primary-light: hsl(var(--c-primary-h), var(--c-primary-s), calc(var(--c-primary-l) + var(--c-light-amount)));
-    --c-primary-lighter: hsl(var(--c-primary-h), var(--c-primary-s), calc(var(--c-primary-l) + var(--c-lighter-amount)));
+    --c-text-inv-strong:  oklch(from var(--c-text-inv-base) 0% c h);
+    --c-text-inv-soft:    oklch(from var(--c-text-inv-base) 25% c h);
+    --c-text-inv-subtle:  oklch(from var(--c-text-inv-base) 50% c h);
+    
+    /* Unique color variations */
+    --c-primary-soft:        oklch(from var(--c-primary) calc(l + var(--l-step-1)) c h);
+    --c-primary-subtle:      oklch(from var(--c-primary) calc(l + var(--l-step-2)) c h);
+    --c-primary-transparent: oklch(from var(--c-primary) l c h / var(--a-trans));
+    --c-primary-border:      oklch(from var(--c-primary) l c h / var(--a-border));
 
-    /* accent */
-    --c-accent-h: 214;
-    --c-accent-s: 45%;
-    --c-accent-l: 24%;
-    --c-accent: hsl(var(--c-accent-h), var(--c-accent-s), var(--c-accent-l));
-    --c-accent-light: hsl(var(--c-accent-h), var(--c-accent-s), calc(var(--c-accent-l) + var(--c-light-amount)));
-    --c-accent-lighter: hsl(var(--c-accent-h), var(--c-accent-s), calc(var(--c-accent-l) + var(--c-lighter-amount)));
-    --c-accent-transparent: hsla(var(--c-accent-h), var(--c-accent-s), var(--c-accent-l), var(--c-transprent-amount));
-    --c-accent-border: hsla(var(--c-accent-h), var(--c-accent-s), var(--c-accent-l), var(--c-transprent-border-amount));
+    --c-accent-soft:        oklch(from var(--c-accent) calc(l + var(--l-step-1)) c h);
+    --c-accent-subtle:      oklch(from var(--c-accent) calc(l + var(--l-step-2)) c h);
+    --c-accent-transparent: oklch(from var(--c-accent) l c h / var(--a-trans));
+    --c-accent-border:      oklch(from var(--c-accent) l c h / var(--a-border));
 
-    /* favourite */
-    --c-favourite-h: 345;
-    --c-favourite-s: 65%;
-    --c-favourite-l: 55%;
-    --c-favourite: hsl(var(--c-favourite-h), var(--c-favourite-s), var(--c-favourite-l));
-    --c-favourite-light: hsl(var(--c-favourite-h), var(--c-favourite-s), calc(var(--c-favourite-l) + var(--c-light-amount)));
-    --c-favourite-lighter: hsl(var(--c-favourite-h), var(--c-favourite-s), calc(var(--c-favourite-l) + var(--c-lighter-amount)));
-    --c-favourite-transparent: hsla(var(--c-favourite-h), var(--c-favourite-s), var(--c-favourite-l), var(--c-transprent-amount));
-    --c-favourite-border: hsla(var(--c-favourite-h), var(--c-favourite-s), var(--c-favourite-l), var(--c-transprent-border-amount));
+    --c-favourite-soft:        oklch(from var(--c-favourite) calc(l + var(--l-step-1)) c h);
+    --c-favourite-subtle:      oklch(from var(--c-favourite) calc(l + var(--l-step-2)) c h);
+    --c-favourite-transparent: oklch(from var(--c-favourite) l c h / var(--a-trans));
+    --c-favourite-border:      oklch(from var(--c-favourite) l c h / var(--a-border));
 
-    /* neutral */
-    --c-neutral-h: 0;
-    --c-neutral-s: 0%;
-    --c-neutral-l: 12%;
-    --c-neutral: hsl(var(--c-neutral-h), var(--c-neutral-s), var(--c-neutral-l));
-    --c-neutral-light: hsl(var(--c-neutral-h), var(--c-neutral-s), calc(var(--c-neutral-l) + var(--c-light-amount)));
-    --c-neutral-lighter: hsl(var(--c-neutral-h), var(--c-neutral-s), calc(var(--c-neutral-l) + var(--c-lighter-amount)));
-    --c-neutral-transparent: hsla(var(--c-neutral-h), var(--c-neutral-s), var(--c-neutral-l), var(--c-transprent-amount));
-    --c-neutral-border: hsla(var(--c-neutral-h), var(--c-neutral-s), var(--c-neutral-l), var(--c-transprent-border-amount));
+    --c-neutral-soft:        oklch(from var(--c-neutral) calc(l + var(--l-step-1)) c h);
+    --c-neutral-subtle:      oklch(from var(--c-neutral) calc(l + var(--l-step-2)) c h);
+    --c-neutral-transparent: oklch(from var(--c-neutral) l c h / var(--a-trans));
+    --c-neutral-border:      oklch(from var(--c-neutral) l c h / var(--a-border));
 
-    /* Positive */
-    --c-positive-h: 142;
-    --c-positive-s: 50%;
-    --c-positive-l: 45%;
-    --c-positive: hsl(var(--c-positive-h), var(--c-positive-s), var(--c-positive-l));
-    --c-positive-light: hsl(var(--c-positive-h), var(--c-positive-s), calc(var(--c-positive-l) + var(--c-light-amount)));
-    --c-positive-lighter: hsl(var(--c-positive-h), var(--c-positive-s), calc(var(--c-positive-l) + var(--c-lighter-amount)));
-    --c-positive-transparent: hsla(var(--c-positive-h), var(--c-positive-s), var(--c-positive-l), var(--c-transprent-amount));
-    --c-positive-border: hsla(var(--c-positive-h), var(--c-positive-s), var(--c-positive-l), var(--c-transprent-border-amount));
+    --c-positive-soft:        oklch(from var(--c-positive) calc(l + var(--l-step-1)) c h);
+    --c-positive-subtle:      oklch(from var(--c-positive) calc(l + var(--l-step-2)) c h);
+    --c-positive-transparent: oklch(from var(--c-positive) l c h / var(--a-trans));
+    --c-positive-border:      oklch(from var(--c-positive) l c h / var(--a-border));
 
-    /* Warning */
-    --c-warning-h: 40;
-    --c-warning-s: 60%;
-    --c-warning-l: 55%;
-    --c-warning: hsl(var(--c-warning-h), var(--c-warning-s), var(--c-warning-l));
-    --c-warning-light: hsl(var(--c-warning-h), var(--c-warning-s), calc(var(--c-warning-l) + var(--c-light-amount)));
-    --c-warning-lighter: hsl(var(--c-warning-h), var(--c-warning-s), calc(var(--c-warning-l) + var(--c-lighter-amount)));
-    --c-warning-transparent: hsla(var(--c-warning-h), var(--c-warning-s), var(--c-warning-l), var(--c-transprent-amount));
-    --c-warning-border: hsla(var(--c-warning-h), var(--c-warning-s), var(--c-warning-l), var(--c-transprent-border-amount));
+    --c-warning-soft:        oklch(from var(--c-warning) calc(l + var(--l-step-1)) c h);
+    --c-warning-subtle:      oklch(from var(--c-warning) calc(l + var(--l-step-2)) c h);
+    --c-warning-transparent: oklch(from var(--c-warning) l c h / var(--a-trans));
+    --c-warning-border:      oklch(from var(--c-warning) l c h / var(--a-border));
 
-    /* Negative */
-    --c-negative-h: 0;
-    --c-negative-s: 60%;
-    --c-negative-l: 60%;
-    --c-negative: hsl(var(--c-negative-h), var(--c-negative-s), var(--c-negative-l));
-    --c-negative-light: hsl(var(--c-negative-h), var(--c-negative-s), calc(var(--c-negative-l) + var(--c-light-amount)));
-    --c-negative-lighter: hsl(var(--c-negative-h), var(--c-negative-s), calc(var(--c-negative-l) + var(--c-lighter-amount)));
-    --c-negative-transparent: hsla(var(--c-negative-h), var(--c-negative-s), var(--c-negative-l), var(--c-transprent-amount));
-    --c-negative-border: hsla(var(--c-negative-h), var(--c-negative-s), var(--c-negative-l), var(--c-transprent-border-amount));
+    --c-negative-soft:        oklch(from var(--c-negative) calc(l + var(--l-step-1)) c h);
+    --c-negative-subtle:      oklch(from var(--c-negative) calc(l + var(--l-step-2)) c h);
+    --c-negative-transparent: oklch(from var(--c-negative) l c h / var(--a-trans));
+    --c-negative-border:      oklch(from var(--c-negative) l c h / var(--a-border));
 }
 
 
@@ -149,5 +139,5 @@
 /* -----------Blur amounts ----------- */
 :root {
     --blur-heavy: 32px;
-    --blur-light: 8px;
+    --blur-subtle: 8px;
 }

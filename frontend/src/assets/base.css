@@ -7,8 +7,8 @@
 
 body {
     font-family: 'Inter';
-    background: var(--c-bg);
-    color: var(--c-text);
+    background: var(--c-bg-base);
+    color: var(--c-text-base);
     font-size: var(--fs-0);
     color-scheme: dark;
 
@@ -58,7 +58,7 @@ body {
 /* Input */
 input, select {
     background-color: var(--c-input);
-    color: var(--c-text);
+    color: var(--c-text-base);
     font-family: 'Inter';
     font-size: var(--fs-0);
 
@@ -100,7 +100,7 @@ form select,
 form label,
 .settings-list label {
     font-size: var(--fs-neg-1);
-    color: var(--c-text-1);
+    color: var(--c-text-base);
 }
 form h1,
 form h2,
@@ -160,11 +160,13 @@ h6 {
 /* Link */
 a {
     text-decoration: underline;
-    color: var(--c-text-1);
+    color: var(--c-text);
     transition: color 0.1s var(--transition-ease-out);
-}
-a:hover {
-    color: var(--c-text-0);
+
+    &:hover,
+    &:active {
+        color: var(--c-text-strong);
+    }
 }
 
 /* Paragraph/card/section */
@@ -181,7 +183,7 @@ dl {
     row-gap: var(--spacing-xs);
 }
 dl dt {
-    color: var(--c-text-2);
+    color: var(--c-text-soft);
 }
 dl dd {
     margin: 0;
@@ -205,7 +207,7 @@ table {
     border-spacing: 0;
 }
 thead th {
-    background-color: var(--c-bg-section);
+    background-color: var(--c-bg-level-1);
     position: sticky;
     top: 0;
     z-index: 1;

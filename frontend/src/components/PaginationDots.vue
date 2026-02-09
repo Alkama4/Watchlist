@@ -50,19 +50,19 @@ function select(index) {
     width: var(--spacing-sm-md);
     height: var(--spacing-sm-md);
     border-radius: 100px;
-    background-color: var(--c-text-3);
+    background-color: var(--c-text-subtle);
 
     transition: background-color 0.1s var(--transition-ease-out),
                 width 0.2s var(--transition-ease-out);
 }
 
 .dot.active {
-    background-color: var(--c-text);
+    background-color: var(--c-text-base);
     width: var(--spacing-md-lg);
 }
 
 .dot-wrapper:hover .dot,
 .dot-wrapper:active .dot{
-    background-color: var(--c-text-0);
+    background-color: var(--c-text-strong);
 }
 </style>

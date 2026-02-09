@@ -81,7 +81,7 @@ header {
     padding: var(--spacing-sm-md) var(--spacing-md);
     border-bottom: 1px solid var(--c-border);
     backdrop-filter: blur(var(--blur-heavy));
-    background: var(--c-bg-opaque);
+    background: var(--c-bg-opaque-base);
     z-index: var(--z-nav);
 }
 
@@ -93,7 +93,7 @@ nav {
 
 .name {
     margin: 0;
-    color: var(--c-text);
+    color: var(--c-text-base);
 }
 
 input[type="search"] {
@@ -135,6 +135,6 @@ footer {
 }
 
 footer a {
-    color: var(--c-text-fine-print);
+    color: var(--c-text-subtle);
 }
 </style>

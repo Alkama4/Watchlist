@@ -16,7 +16,7 @@ function playVideo() {
 </script>
 
 <template>
-    <div>
+    <div class="layout-contained">
         <h2>Video test</h2>
 
         <div class="buttons">
@@ -62,31 +62,43 @@ function playVideo() {
             <button type="submit">Submit</button>
         </form>
 
-        <h2>Listing</h2>
-        <dl>
-            <dt>Progress</dt>
-            <dd>18 / 19 episodes (94.7%)</dd>
+        <br>
+        <button>Button on level 0</button>
+        <br>
+        <br>
 
-            <dt>Season count</dt>
-            <dd>4 seasons</dd>
+        <div class="level-1">
+            <h2>Listing</h2>
+            <dl>
+                <dt>Progress</dt>
+                <dd>18 / 19 episodes (94.7%)</dd>
+    
+                <dt>Season count</dt>
+                <dd>4 seasons</dd>
+    
+                <dt>Episode count</dt>
+                <dd>19 episodes</dd>
+    
+                <dt>First air date</dt>
+                <dd>21. elokuuta 2022</dd>
+    
+                <dt>Last air date</dt>
+                <dd>1. tammikuuta 1970</dd>
+    
+                <dt>Original language</dt>
+                <dd>en</dd>
+            </dl>
+            <button>Button on level 1</button>
+            <br><br>
+            <div class="level-2">
+                <h2>Normal text elements</h2>
+                <p>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras ultricies efficitur nisl, id egestas risus. Etiam quis leo finibus, sollicitudin ante non, vulputate magna. Curabitur non ante nisi. Aenean pellentesque at quam eget aliquet. Sed ultrices dictum odio, in tincidunt ipsum commodo in. Duis ultrices massa ac sapien varius ultricies. <a href="">https://google.com</a> Cras tempus, leo pharetra iaculis tempus, ipsum risus accumsan quam, quis placerat est augue eu velit. Etiam varius turpis non eros porttitor tempor vel a quam. In consequat lectus in diam dapibus, vel viverra mi sodales. Ut nec tincidunt velit. Vestibulum ac posuere nisl.
+                </p>
+                <button>Button on level 2</button>
+            </div>
+        </div>
 
-            <dt>Episode count</dt>
-            <dd>19 episodes</dd>
-
-            <dt>First air date</dt>
-            <dd>21. elokuuta 2022</dd>
-
-            <dt>Last air date</dt>
-            <dd>1. tammikuuta 1970</dd>
-
-            <dt>Original language</dt>
-            <dd>en</dd>
-        </dl>
-
-        <h2>Normal text elements</h2>
-        <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras ultricies efficitur nisl, id egestas risus. Etiam quis leo finibus, sollicitudin ante non, vulputate magna. Curabitur non ante nisi. Aenean pellentesque at quam eget aliquet. Sed ultrices dictum odio, in tincidunt ipsum commodo in. Duis ultrices massa ac sapien varius ultricies. <a href="">https://google.com</a> Cras tempus, leo pharetra iaculis tempus, ipsum risus accumsan quam, quis placerat est augue eu velit. Etiam varius turpis non eros porttitor tempor vel a quam. In consequat lectus in diam dapibus, vel viverra mi sodales. Ut nec tincidunt velit. Vestibulum ac posuere nisl.
-        </p>
         
     </div>
 </template>
@@ -115,4 +127,14 @@ function playVideo() {
     white-space: nowrap;
 }
 
+.level-1 {
+    background-color: var(--c-bg-level-1);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-lg);
+}
+.level-2 {
+    padding: var(--spacing-md);
+    background-color: var(--c-bg-level-2);
+    border-radius: var(--border-radius-lg);
+}
 </style>

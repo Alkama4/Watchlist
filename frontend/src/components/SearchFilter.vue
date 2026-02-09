@@ -74,7 +74,7 @@ button.active i.bx-chevron-down {
     position: absolute;
     top: 100%;
     z-index: 100;
-    background-color: var(--c-bg-section);
+    background-color: var(--c-bg-level-1);
     padding: var(--spacing-sm);
     border-radius: var(--border-radius-md);
 }

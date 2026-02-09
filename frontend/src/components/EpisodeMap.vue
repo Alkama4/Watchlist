@@ -100,6 +100,6 @@ const maxEpisodeCount = computed(() => {
 }
 .tile.label {
     font-size: var(--fs-neg-1);
-    color: var(--c-text-2);
+    color: var(--c-text-soft);
 }
 </style>

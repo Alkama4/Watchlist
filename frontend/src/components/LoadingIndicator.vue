@@ -49,13 +49,13 @@ div {
     --thickness: 4px;
     width: var(--size);
     height: var(--size);
-    border: var(--thickness) solid var(--c-text);
+    border: var(--thickness) solid var(--c-text-base);
     border-top-color: transparent;
     border-radius: 100px;
 }
 
 .hint {
-    color: var(--c-text-3);
+    color: var(--c-text-soft);
     opacity: 0;
     transition: opacity 0.15s ease-out;
 }

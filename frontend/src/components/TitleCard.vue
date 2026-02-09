@@ -197,7 +197,7 @@ h5 {
     display: flex;
     align-items: center;
     gap: var(--spacing-xs);
-    color: var(--c-text-3);
+    color: var(--c-text-soft);
     font-size: var(--fs-neg-1);
 }
 
@@ -224,7 +224,7 @@ h5 {
     justify-content: center;
     align-items: center;
     font-weight: 500;
-    color: var(--c-text);
+    color: var(--c-text-base);
     transition: left 0.2s var(--transition-ease-out);
 }
 .indicator-circle.watch-count {

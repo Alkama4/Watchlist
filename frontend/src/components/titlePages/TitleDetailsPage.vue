@@ -441,7 +441,7 @@ img.poster {
 .tagline {
     display: block;
     margin-top: var(--spacing-md);
-    color: var(--c-text-2);
+    color: var(--c-text-soft);
     font-style: italic;
 }
 

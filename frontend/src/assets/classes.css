@@ -1,5 +1,5 @@
 .card {
-    background-color: var(--c-bg-section);
+    background-color: var(--c-bg-level-1);
     border-radius: 16px;
     padding: var(--spacing-md-lg);
 }
@@ -14,8 +14,8 @@ a.hover-line:hover {
 }
 
 .subtle {
-    color: var(--c-text-3) !important;
+    color: var(--c-text-subtle) !important;
 }
 .subtle:hover {
-    color: var(--c-text-2) !important;
+    color: var(--c-text-soft) !important;
 }

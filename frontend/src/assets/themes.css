@@ -1,10 +1,17 @@
 [data-theme='midnight'] {
-    --c-bg: linear-gradient(135deg, hsl(205, 14%, 8%), hsl(205, 20%, 6%));
-    --c-bg-opaque: linear-gradient(135deg, hsla(200, 14%, 8%, 0.66), hsla(204, 20%, 6%, 0.66));
+    --bg-step-1: 0.02; 
+    --bg-step-2: 0.04;
 
-    --c-bg-section: hsl(205, 14%, 10.5%);
+    --c-bg-base: oklch(19% 0.01 230);
 
-    --c-neutral-h: 205;
-    --c-neutral-s: 14%;
-    --c-neutral-l: 15%;
+    --c-text-base: oklch(92.5% 0.01 230);
+    --c-text-inv-base: oklch(7.5% 0 0);
+
+    --c-primary:    oklch(92% 0 230);
+    --c-accent:     oklch(32.8% 0.065 230);
+    --c-favourite:  oklch(51.196% 0.175 14);
+    --c-neutral:    oklch(35% 0.01 230);
+    --c-positive:   oklch(58% 0.14 155);
+    --c-warning:    oklch(75% 0.14 80);
+    --c-negative:   oklch(52% 0.14 27);
 }

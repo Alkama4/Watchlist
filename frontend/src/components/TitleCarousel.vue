@@ -59,7 +59,7 @@ defineProps({
 .fake-card {
     width: 200px;
     height: 300px;
-    background-color: var(--c-bg-section);
+    background-color: var(--c-bg-level-1);
     border-radius: var(--border-radius-md);
     display: inline-flex;
     flex-direction: column;

@@ -15,17 +15,19 @@ button, .btn {
     cursor: pointer;
 
     background-color: var(--c-neutral);
-    color: var(--c-text);
+    color: var(--c-text-strong);
 
     transition: background-color 0.1s var(--transition-ease-out);
 }
 button:not(:disabled):hover,
 .btn:not(:disabled):hover {
-    background-color: var(--c-neutral-lighter);
+    color: var(--c-text-strong);
+    background-color: var(--c-neutral-subtle);
 }
 button:not(:disabled):active,
 .btn:not(:disabled):active {
-    background-color: var(--c-neutral-light);
+    color: var(--c-text-strong);
+    background-color: var(--c-neutral-soft);
 }
 button:disabled, .btn:disabled {
     cursor: not-allowed;
@@ -41,17 +43,17 @@ button:disabled, .btn:disabled {
 /* Button text */
 .btn-text {
     background-color: transparent;
-    color: var(--c-text-1);
+    color: var(--c-text-base);
     cursor: pointer;
 
     transition: color 0.1s var(--transition-ease-out);
 }
 .btn-text:not(:disabled):hover {
     background-color: transparent;
-    color: var(--c-text-0);
+    color: var(--c-text-strong);
 }
 .btn-text:not(:disabled):active {
-    color: var(--c-text);
+    color: var(--c-text-strong);
     background-color: transparent;
 }
 
@@ -71,42 +73,39 @@ i.btn-text {
 
 /* Normal colored buttons */
 .btn-primary {
-    color: var(--c-text-alt);
+    color: var(--c-text-inv-base);
     background-color: var(--c-primary);
     transition: background-color 0.1s var(--transition-ease-out);
 }
 .btn-primary:not(:disabled):hover {
-    color: var(--c-text-alt);
-    background-color: var(--c-primary-lighter);
+    color: var(--c-text-inv-strong);
+    background-color: var(--c-primary-subtle);
 }
 .btn-primary:not(:disabled):active {
-    background-color: var(--c-primary-light);
+    color: var(--c-text-inv-strong);
+    background-color: var(--c-primary-soft);
 }
 
 .btn-accent {
-    color: var(--c-text);
     background-color: var(--c-accent);
     transition: background-color 0.1s var(--transition-ease-out);
 }
 .btn-accent:not(:disabled):hover {
-    color: var(--c-text);
-    background-color: var(--c-accent-lighter);
+    background-color: var(--c-accent-subtle);
 }
 .btn-accent:not(:disabled):active {
-    background-color: var(--c-accent-light);
+    background-color: var(--c-accent-soft);
 }
 
 .btn-favourite {
-    color: var(--c-text);
     background-color: var(--c-favourite);
     transition: background-color 0.1s var(--transition-ease-out);
 }
 .btn-favourite:not(:disabled):hover {
-    color: var(--c-text);
-    background-color: var(--c-favourite-lighter);
+    background-color: var(--c-favourite-subtle);
 }
 .btn-favourite:not(:disabled):active {
-    background-color: var(--c-favourite-light);
+    background-color: var(--c-favourite-soft);
 }
 
 .btn-positive {
@@ -114,10 +113,10 @@ i.btn-text {
     transition: background-color 0.1s var(--transition-ease-out);
 }
 .btn-positive:not(:disabled):hover {
-    background-color: var(--c-positive-lighter);
+    background-color: var(--c-positive-subtle);
 }
 .btn-positive:not(:disabled):active {
-    background-color: var(--c-positive-light);
+    background-color: var(--c-positive-soft);
 }
 
 .btn-warning {
@@ -125,10 +124,10 @@ i.btn-text {
     transition: background-color 0.1s var(--transition-ease-out);
 }
 .btn-warning:not(:disabled):hover {
-    background-color: var(--c-warning-lighter);
+    background-color: var(--c-warning-subtle);
 }
 .btn-warning:not(:disabled):active {
-    background-color: var(--c-warning-light);
+    background-color: var(--c-warning-soft);
 }
 
 .btn-negative {
@@ -136,10 +135,10 @@ i.btn-text {
     transition: background-color 0.1s var(--transition-ease-out);
 }
 .btn-negative:not(:disabled):hover {
-    background-color: var(--c-negative-lighter);
+    background-color: var(--c-negative-subtle);
 }
 .btn-negative:not(:disabled):active {
-    background-color: var(--c-negative-light);
+    background-color: var(--c-negative-soft);
 }
 
 
