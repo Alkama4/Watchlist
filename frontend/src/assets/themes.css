@@ -1,16 +1,18 @@
 [data-theme='midnight'] {
-    --bg-step-1: 0.02; 
-    --bg-step-2: 0.04;
+    --bg-step-1: 0.025; 
+    --bg-step-2: 0.06;
 
     --c-bg-base: oklch(19% 0.01 230);
 
     --c-text-base: oklch(92.5% 0.01 230);
-    --c-text-inv-base: oklch(7.5% 0 0);
+    --c-text-inv-base: oklch(7.5% 0.01 230);
 
     --c-primary:    oklch(92% 0 230);
-    --c-accent:     oklch(32.8% 0.065 230);
+    --c-neutral:    oklch(40% 0.01 230 / 33%);
+
+    --c-watchlist:  oklch(32.8% 0.065 230);
     --c-favourite:  oklch(51.196% 0.175 14);
-    --c-neutral:    oklch(35% 0.01 230);
+
     --c-positive:   oklch(58% 0.14 155);
     --c-warning:    oklch(75% 0.14 80);
     --c-negative:   oklch(52% 0.14 27);

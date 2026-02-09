@@ -236,7 +236,7 @@ h5 {
     z-index: 40;
 }
 .indicator-circle.watchlist {
-    background-color: var(--c-accent);
+    background-color: var(--c-watchlist);
     z-index: 30;
 }
 

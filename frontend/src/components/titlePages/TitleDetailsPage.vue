@@ -226,7 +226,7 @@ const tmdbEditAgeRatingUrl = computed(() => {
                         ></i>
                         <i
                             class="bx bxs-time btn btn-text btn-square"
-                            :class="{'btn-accent': titleDetails?.user_details?.in_watchlist }"
+                            :class="{'btn-watchlist': titleDetails?.user_details?.in_watchlist }"
                             @click="toggleWatchlist"
                         ></i>
                         <i

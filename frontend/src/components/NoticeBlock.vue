@@ -55,8 +55,8 @@ defineProps({
     backdrop-filter: blur(var(--blur-subtle));
 }
 .notice.info {
-    background-color: var(--c-accent-transparent);
-    border: 1px solid var(--c-accent-border);
+    background-color: var(--c-watchlist-transparent);
+    border: 1px solid var(--c-watchlist-border);
 }
 .notice.positive {
     background-color: var(--c-positive-transparent);

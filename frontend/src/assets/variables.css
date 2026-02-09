@@ -8,20 +8,20 @@
     --c-text-inv-base: oklch(7.5% 0 0);
 
     --c-primary:    oklch(92% 0 0);
-    --c-accent:     oklch(32.8% 0.065 240);
+    --c-watchlist:  oklch(32.8% 0.065 240);
     --c-favourite:  oklch(51.196% 0.175 14);
-    --c-neutral:    oklch(22% 0 0);
+    --c-neutral:    oklch(40% 0 0 / 33%);
     --c-positive:   oklch(58% 0.14 155);
     --c-warning:    oklch(75% 0.14 80);
     --c-negative:   oklch(52% 0.14 27);
 
 
     /* Offsets */
-    --l-step-1: 0.02;
-    --l-step-2: 0.04;
+    --l-step-1: 0.03;
+    --l-step-2: 0.06;
 
-    --bg-step-1: 0.16; 
-    --bg-step-2: 0.20;
+    --bg-step-1: 0.19; 
+    --bg-step-2: 0.22;
     
     --a-trans: 0.66;
     --a-border: 0.8;
@@ -55,10 +55,10 @@
     --c-primary-transparent: oklch(from var(--c-primary) l c h / var(--a-trans));
     --c-primary-border:      oklch(from var(--c-primary) l c h / var(--a-border));
 
-    --c-accent-soft:        oklch(from var(--c-accent) calc(l + var(--l-step-1)) c h);
-    --c-accent-subtle:      oklch(from var(--c-accent) calc(l + var(--l-step-2)) c h);
-    --c-accent-transparent: oklch(from var(--c-accent) l c h / var(--a-trans));
-    --c-accent-border:      oklch(from var(--c-accent) l c h / var(--a-border));
+    --c-watchlist-soft:        oklch(from var(--c-watchlist) calc(l + var(--l-step-1)) c h);
+    --c-watchlist-subtle:      oklch(from var(--c-watchlist) calc(l + var(--l-step-2)) c h);
+    --c-watchlist-transparent: oklch(from var(--c-watchlist) l c h / var(--a-trans));
+    --c-watchlist-border:      oklch(from var(--c-watchlist) l c h / var(--a-border));
 
     --c-favourite-soft:        oklch(from var(--c-favourite) calc(l + var(--l-step-1)) c h);
     --c-favourite-subtle:      oklch(from var(--c-favourite) calc(l + var(--l-step-2)) c h);

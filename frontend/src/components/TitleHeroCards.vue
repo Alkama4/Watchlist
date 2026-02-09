@@ -168,7 +168,7 @@ onUnmounted(() => {
                         ></i>
                         <i
                             class="bx bxs-time btn btn-text btn-square"
-                            :class="{'btn-accent': heroCards?.titles[currentIndex]?.user_details?.in_watchlist }"
+                            :class="{'btn-watchlist': heroCards?.titles[currentIndex]?.user_details?.in_watchlist }"
                             @click="toggleWatchlist"
                         ></i>
                         <i

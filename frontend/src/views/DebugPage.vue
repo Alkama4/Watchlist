@@ -13,6 +13,15 @@ function playVideo() {
     window.chrome.webview.postMessage({ action: "playVideo", url: "http://localhost:8000/media/video" });
 }
 
+function toggleCustomTheme() {
+    const root = document.documentElement;
+    const current = root.getAttribute('data-theme');
+    
+    const nextTheme = (current === 'true-black') ? 'midnight' : 'true-black';
+    
+    root.setAttribute('data-theme', nextTheme);
+    localStorage.setItem('user-theme', nextTheme);
+}
 </script>
 
 <template>
@@ -27,9 +36,9 @@ function playVideo() {
 
         <h3>Basic buttons</h3>
         <div class="buttons">
-            <button>Default button</button>
-            <button class="btn-primary">Primary button</button>
-            <button class="btn-text">Text button</button>
+            <button @click="toggleCustomTheme">Default button</button>
+            <button @click="toggleCustomTheme" class="btn-primary">Primary button</button>
+            <button @click="toggleCustomTheme" class="btn-text">Text button</button>
         </div>
 
         <h3>Color buttons</h3>
@@ -61,6 +70,26 @@ function playVideo() {
 
             <button type="submit">Submit</button>
         </form>
+
+        <h2>Text buttons and links</h2>
+        <div class="flex-col">
+            <button class="btn-text btn-square">sldkfjsdlkf</button>
+            <i class="bx bxs-time btn-text btn-square"></i>
+            
+            <router-link class="btn-text btn-square"><i class="bx bxs-time"></i></router-link>
+            <router-link class="no-deco"><i class="bx bxs-time"></i> Time</router-link>
+
+            <span>not a link, <router-link class="no-deco">hidden link</router-link>, <router-link class="no-deco">hidden link nro 2</router-link></span>
+            <span>within text a <router-link>obivous link</router-link> there is</span>
+            <!-- 
+            Seperate:
+                - buttons with bg
+                - actions with no bg
+                - actions with no bg and underline.
+
+            Action = button/a with the fitting .action class
+            -->
+        </div>
 
         <br>
         <button>Button on level 0</button>
