@@ -50,12 +50,12 @@ button:disabled, .btn:disabled {
     transition: color 0.1s var(--transition-ease-out);
 }
 .btn-text:not(:disabled):hover {
-    background-color: transparent;
+    background-color: var(--c-neutral-soft);
     color: var(--c-text-strong);
 }
 .btn-text:not(:disabled):active {
+    background-color: var(--c-neutral);
     color: var(--c-text-strong);
-    background-color: transparent;
 }
 
 i.btn-text {

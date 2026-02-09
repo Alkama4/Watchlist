@@ -87,7 +87,7 @@ onUnmounted(() => {
 <template>
     <div class="season-details-page">
         <div class="back-button-row layout-contained layout-spacing-top">
-            <button class="btn-text no-deco" @click="handleBack">
+            <button class="btn-text btn-square" @click="handleBack">
                 <i class="bx bx-chevron-left"></i>
                 <span>Back to Overview</span>
             </button>

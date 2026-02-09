@@ -117,6 +117,7 @@ header .btn {
 }
 
 .btn-user {
+    margin-left: var(--spacing-sm);
     border-radius: 100px;
     padding: 10px !important;
     font-size: var(--fs-1) !important;

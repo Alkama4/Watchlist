@@ -297,7 +297,7 @@ const tmdbEditAgeRatingUrl = computed(() => {
                 <a
                     :href="`https://www.themoviedb.org/${titleDetails?.title_type}/${titleDetails?.tmdb_id}`"
                     target="_blank"
-                    class="btn-text"
+                    class="btn btn-square btn-text"
                 >
                     <Tmdb/>
                 </a>
@@ -305,7 +305,7 @@ const tmdbEditAgeRatingUrl = computed(() => {
                     v-if="titleDetails?.imdb_id"
                     :href="`https://www.imdb.com/title/${titleDetails?.imdb_id}`"
                     target="_blank"
-                    class="btn-text"
+                    class="btn btn-square btn-text"
                 >
                     <Imdb/>
                 </a>
@@ -313,7 +313,7 @@ const tmdbEditAgeRatingUrl = computed(() => {
                     v-if="titleDetails?.homepage"
                     :href="titleDetails?.homepage"
                     target="_blank"
-                    class="btn-text"
+                    class="btn btn-square btn-text"
                 >
                     <i class="bx bx-link"></i>
                 </a>
@@ -519,19 +519,19 @@ img.poster {
 }
 .links {
     display: flex;
-    gap: var(--spacing-sm-md);
     font-size: var(--fs-3);
-}
-.links * {
-    display: flex;
-    align-items: center;
-    text-decoration: none;
-}
-.links svg {
-    width: 42px;
-    height: auto;
-}
 
+    .btn {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+
+        svg {
+            width: 42px;
+            height: auto;
+        }
+    }
+}
 
 .page-loading-indicator {
     min-height: 50vh;
