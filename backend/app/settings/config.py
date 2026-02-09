@@ -18,6 +18,7 @@ class DefaultSettings(BaseModel):
     # fallback_locale: as name states, default en-US
     # what to do when fallback local is no found either?
     # auto_remove_from_watchlist: automatically set the tag in_watchlist to false after adding to the watchcount.
+    # color_theme: pure-black, midnight,...
 
     class Config:
         extra = "forbid"
