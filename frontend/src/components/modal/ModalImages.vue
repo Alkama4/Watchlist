@@ -53,8 +53,8 @@ async function open() {
 </script>
 
 <template>
-    <ModalBase header="Choose Title Images" ref="modalRef">
-        <div class="modal-images">
+    <ModalBase header="Title Images" ref="modalRef">
+        <div class="modal-images" :class="activeType">
             <div v-if="availableCategories.length > 1" class="tab-buttons">
                 <button 
                     v-for="cat in imageCategories" 
@@ -75,7 +75,11 @@ async function open() {
                     :class="{'user-choise': image?.is_user_choise, 'default': image?.is_default}"
                 >
                     <a :href="buildImageUrl(image?.file_path, 'original', false)" target="_blank">
-                        <img :src="buildImageUrl(image?.file_path, 400, false)" alt="">
+                        <img 
+                            :src="buildImageUrl(image?.file_path, 400, false)"
+                            :style="{'aspect-ratio': `${image?.width} / ${image?.height}`}"
+                            loading="lazy"
+                        >
                     </a>
 
                     <div class="flex-row">
@@ -91,7 +95,7 @@ async function open() {
     
                         <div class="details">
                             <div>
-                                {{ image?.vote_average }}
+                                {{ image?.vote_average }}/10
                                 ({{ image?.vote_count }} votes)
                             </div>
                             <div class="resolution">{{ image?.width }}px x {{ image?.height }}px</div>
@@ -110,6 +114,8 @@ async function open() {
     flex-direction: column;
     overflow: hidden;
     gap: var(--spacing-md);
+    width: 100vw;
+    max-width: 100%;
 }
 
 .tab-buttons {
@@ -118,11 +124,15 @@ async function open() {
 }
 
 .images-wrapper {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     overflow-y: auto;
-    gap: var(--spacing-md);
+
     padding-top: var(--spacing-md);
+    gap: var(--spacing-md);
+}
+.posters .images-wrapper {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 }
 
 .image {
@@ -197,13 +207,21 @@ i {
     font-size: var(--fs-2);
 }
 
-img {
-    max-width: 300px;
-    max-height: 300px;
+.image img {
+    width: 100%;
     height: auto;
     object-fit: cover;
-    /* border-radius: var(--border-radius-sm); */
+    border-radius: var(--border-radius-sm);
+    background: var(--c-bg-level-1);
 }
-
+.logos img {
+    background: 
+        conic-gradient(
+            transparent 0deg 90deg,
+            var(--c-border) 90deg 180deg,
+            transparent 180deg 270deg,
+            var(--c-border) 270deg 360deg
+        ) top left / 32px 32px;
+}
 
 </style>
