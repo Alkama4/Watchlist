@@ -10,6 +10,7 @@ from app.models import (
     Image
 )
 from app.schemas import (
+    ImageListOut,
     ImageListsOut,
     ImageOut
 )
@@ -122,8 +123,14 @@ async def fetch_title_images(db: AsyncSession, title_id: int, user_id: int) -> I
     title_res = await db.execute(stmt)
     row = title_res.first()
     
+    # Initialize response with empty structures
     if not row:
-        return ImageListsOut(title_id=title_id)
+        return ImageListsOut(
+            title_id=title_id,
+            posters=ImageListOut(total_count=0),
+            backdrops=ImageListOut(total_count=0),
+            logos=ImageListOut(total_count=0)
+        )
 
     title_obj, user_details = row
 
@@ -151,7 +158,13 @@ async def fetch_title_images(db: AsyncSession, title_id: int, user_id: int) -> I
     img_res = await db.execute(img_stmt)
     images = img_res.scalars().all()
 
-    response = ImageListsOut(title_id=title_id)
+    # Temporary storage for processing
+    # Changed: removed iso_3166/639 sets, added 'locales' set
+    categories = {
+        ImageType.poster: {"imgs": [], "locales": set()},
+        ImageType.backdrop: {"imgs": [], "locales": set()},
+        ImageType.logo: {"imgs": [], "locales": set()},
+    }
 
     for img in images:
         img_data = ImageOut(
@@ -164,14 +177,44 @@ async def fetch_title_images(db: AsyncSession, title_id: int, user_id: int) -> I
             vote_average=float(img.vote_average) if img.vote_average else 0.0,
             vote_count=img.vote_count,
             is_default=img.file_path in defaults,
-            is_user_choise=img.file_path in user_choices
+            is_user_choice=img.file_path in user_choices
         )
 
-        if img.type == ImageType.poster:
-            response.posters.append(img_data)
-        elif img.type == ImageType.backdrop:
-            response.backdrops.append(img_data)
-        elif img.type == ImageType.logo:
-            response.logos.append(img_data)
+        cat = categories.get(img.type)
+        if cat:
+            cat["imgs"].append(img_data)
+            
+            # Determine combined locale using logic matching ImageOut.locale
+            # We use img attributes directly to avoid re-accessing pydantic computed props unnecessarily
+            current_locale = None
+            if img.iso_639_1 and img.iso_3166_1:
+                current_locale = f"{img.iso_639_1}-{img.iso_3166_1}"
+            else:
+                current_locale = img.iso_639_1 or img.iso_3166_1
+            
+            # Add to the set (includes None)
+            cat["locales"].add(current_locale)
 
-    return response
+    # Helper to build the ImageListOut objects
+    def build_list_out(img_type: ImageType) -> ImageListOut:
+        data = categories[img_type]
+        
+        # Sort locales: Python cannot natively sort a list mixed with None and str.
+        # This key puts None values first, then sorts strings alphabetically.
+        sorted_locales = sorted(
+            list(data["locales"]), 
+            key=lambda x: (x is not None, x)
+        )
+
+        return ImageListOut(
+            total_count=len(data["imgs"]),
+            available_locale=sorted_locales,
+            images=data["imgs"]
+        )
+
+    return ImageListsOut(
+        title_id=title_id,
+        posters=build_list_out(ImageType.poster),
+        backdrops=build_list_out(ImageType.backdrop),
+        logos=build_list_out(ImageType.logo)
+    )

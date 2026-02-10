@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, computed_field
 from datetime import datetime, date
 from app.models import ImageType, TitleType, SortBy, SortDirection
 from app.config import DEFAULT_MAX_QUERY_LIMIT, ABSOLUTE_MAX_QUERY_LIMIT
@@ -65,16 +65,27 @@ class ImageOut(BaseModel):
     vote_average: Optional[float] = None
     vote_count: Optional[int] = None
     is_default: bool
-    is_user_choise: bool
+    is_user_choice: bool
+
+    @computed_field
+    @property
+    def locale(self) -> Optional[str]:
+        if self.iso_639_1 and self.iso_3166_1:
+            return f"{self.iso_639_1}-{self.iso_3166_1}"
+        return self.iso_639_1 or self.iso_3166_1
+
+class ImageListOut(BaseModel):
+    total_count: int
+    available_locale: List[Optional[str]] = [] 
+    images: Optional[List[ImageOut]] = []
 
 class ImageListsOut(BaseModel):
     title_id: Optional[int] = None
     season_id: Optional[int] = None
     episode_id: Optional[int] = None
-    posters: Optional[List[ImageOut]] = []
-    backdrops: Optional[List[ImageOut]] = []
-    logos: Optional[List[ImageOut]] = []
-
+    posters: ImageListOut
+    backdrops: ImageListOut
+    logos: ImageListOut
 
 ####### Titles #######
 
