@@ -12,6 +12,7 @@ import { preferredLocale, fallbackLocale } from '@/utils/conf';
 import ModalBase from '@/components/modal/ModalBase.vue';
 import SeasonsListing from '@/components/SeasonsListing.vue';
 import EpisodeMap from '@/components/EpisodeMap.vue';
+import ModalImages from '../modal/ModalImages.vue';
 
 const { titleDetails } = defineProps({
     titleDetails: {
@@ -26,6 +27,7 @@ const { titleDetails } = defineProps({
 
 const waitingFor = ref({});
 const AgeRatingsModal = ref(null);
+const TitleImagesModal = ref(null);
 
 async function updateTitleDetails() {
     waitingFor.value.titleUpdate = true;
@@ -65,6 +67,10 @@ async function toggleWatchlist() {
 
 function adjustCollections() {
     alert("Collections are under construction.")
+}
+
+function chooseImages() {
+    TitleImagesModal.value.open();
 }
 
 async function removeFromLibrary() {
@@ -259,6 +265,11 @@ const tmdbEditAgeRatingUrl = computed(() => {
                         ></i>
             
                         <!-- Move actions below to a drop down -->
+
+                        <i
+                            class="bx bxs-image btn btn-text btn-square"
+                            @click="chooseImages"
+                        ></i>
             
                         <i
                             v-if="titleDetails?.user_details?.in_library"
@@ -270,7 +281,7 @@ const tmdbEditAgeRatingUrl = computed(() => {
                             class="bx bx-list-plus btn btn-text btn-square"
                             @click="addToLibrary"
                         ></i>
-            
+
                         <LoadingButton
                             @click="updateTitleDetails"
                             :loading="waitingFor?.titleUpdate ?? false"
@@ -382,6 +393,12 @@ const tmdbEditAgeRatingUrl = computed(() => {
         <ModalBase header="Episode Map" ref="EpisodeMapModal">
             <EpisodeMap :seasons="titleDetails?.seasons"/>
         </ModalBase>
+
+        <ModalImages
+            ref="TitleImagesModal"
+            :titleId="titleDetails?.title_id"
+            :userDetails="titleDetails?.user_details"
+        />
     </div>
 </template>
 

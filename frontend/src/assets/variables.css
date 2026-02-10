@@ -45,10 +45,12 @@
     --c-bg-backdrop: oklch(from var(--c-bg-base) l c h / 50%);
 
     /* Text levels */
+    --c-text:         var(--c-text-base);
     --c-text-strong:  oklch(from var(--c-text-base) 100% c h);
     --c-text-soft:    oklch(from var(--c-text-base) 75% c h);
     --c-text-subtle:  oklch(from var(--c-text-base) 50% c h);
 
+    --c-text-inv:         var(--c-text-inv-base);
     --c-text-inv-strong:  oklch(from var(--c-text-inv-base) 0% c h);
     --c-text-inv-soft:    oklch(from var(--c-text-inv-base) 25% c h);
     --c-text-inv-subtle:  oklch(from var(--c-text-inv-base) 50% c h);

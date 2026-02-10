@@ -30,6 +30,7 @@ export const numberFormatters = {
 
 export const isoFormatters = {
     iso_3166_1ToCountry: (iso_3166_1) => {
+        if (!iso_3166_1) return null;
         return new Intl.DisplayNames(preferredLocale.tag, { type: 'region' }).of(iso_3166_1);
     }
 }
