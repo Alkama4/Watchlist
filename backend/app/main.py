@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app import config
 from app.database import engine, Base, AsyncSessionLocal
-from app.routers import auth, titles, media, settings, user_settings, root
+from app.routers import auth, titles, seasons, media, settings, user_settings, root
 from app.settings.seed import init_settings
 from app.services.genres import update_genres
 
@@ -46,4 +46,5 @@ app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 app.include_router(settings.router, prefix="/settings", tags=["Settings"])
 app.include_router(user_settings.router, prefix="/user_settings", tags=["User Settings"])
 app.include_router(titles.router, prefix="/titles", tags=["Titles"])
+app.include_router(seasons.router, prefix="/seasons", tags=["Seasons"])
 app.include_router(media.router, prefix="/media", tags=["Media"])
