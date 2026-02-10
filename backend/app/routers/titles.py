@@ -10,7 +10,9 @@ from app.services.titles.search_tmdb import run_and_process_tmdb_search
 from app.services.titles.store import store_movie, store_tv
 from app.services.titles.user_flags import set_user_title_value, set_title_watch_count
 from app.services.titles.preset_searches import fetch_similar_titles
+from app.services.images import fetch_title_images
 from app.schemas import (
+    ImageListsOut,
     TitleType,
     TitleIn,
     TitleWatchCountIn,
@@ -119,6 +121,16 @@ async def get_similar_titles(
 ):
     title = await fetch_similar_titles(db, title_id, user.user_id)
     return title
+
+
+@router.get("/{title_id}/images", response_model=ImageListsOut)
+async def get_all_title_images(
+    title_id: int,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    image_data = await fetch_title_images(db=db, title_id=title_id, user_id=user.user_id)
+    return image_data
 
 
 @router.put("/{title_id}")
