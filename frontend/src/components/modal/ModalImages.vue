@@ -80,10 +80,11 @@ async function open() {
                             :style="{'aspect-ratio': `${image?.width} / ${image?.height}`}"
                             loading="lazy"
                         >
+                        <i class="bx bx-link-external"></i>
                     </a>
 
                     <div class="flex-row">
-                        <div class="markers">
+                        <div class="star-wrapper">
                             <button
                                 class="btn-square btn-text"
                                 :class="{'subtle': !image?.is_user_choise}"
@@ -145,6 +146,43 @@ async function open() {
     border-radius: var(--border-radius-md);
     border: 2px solid transparent;
 
+    a {
+        position: relative;
+
+        img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            border-radius: var(--border-radius-sm);
+            background: var(--c-bg-level-1);
+            transition: filter 0.1s ease-out;
+        }
+        i {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: var(--fs-3);
+            opacity: 0;
+            transition: opacity 0.1s ease-out;
+        }
+
+        &:hover {
+            img { filter: brightness(0.5); }
+            i { opacity: 1; }
+        }
+    }
+
+    .star-wrapper {
+        display: flex;
+        align-items: center;
+        margin-right: var(--spacing-xs-sm);
+
+        i {
+            font-size: var(--fs-2);
+        }
+    }
+
     .details {
         font-size: var(--fs-neg-1);
         margin-top: var(--spacing-sm);
@@ -189,38 +227,13 @@ async function open() {
     }
 }
 
-.markers {
-    display: flex;
-    align-items: center;
-    margin-right: var(--spacing-xs-sm);
-
-    button .inactive {
-        color: var(--c-text-subtle);
-
-    }
-    button:hover .inactive {
-        color: var(--c-text-soft);
-    }
-}
-
-i {
-    font-size: var(--fs-2);
-}
-
-.image img {
-    width: 100%;
-    height: auto;
-    object-fit: cover;
-    border-radius: var(--border-radius-sm);
-    background: var(--c-bg-level-1);
-}
-.logos img {
+.logos .image img {
     background: 
         conic-gradient(
             transparent 0deg 90deg,
-            var(--c-border) 90deg 180deg,
+            var(--c-neutral-subtle) 90deg 180deg,
             transparent 180deg 270deg,
-            var(--c-border) 270deg 360deg
+            var(--c-neutral-subtle) 270deg 360deg
         ) top left / 32px 32px;
 }
 
