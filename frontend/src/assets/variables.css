@@ -37,8 +37,10 @@
     --c-input: hsla(0, 0%, 2%, 0.5);
     
     /* Background levels */
+    --c-bg: var(--c-bg-base);
     --c-bg-level-1: oklch(from var(--c-bg-base) calc(l + var(--bg-step-1)) c h);
     --c-bg-level-2: oklch(from var(--c-bg-base) calc(l + var(--bg-step-2)) c h);
+    --c-bg-opaque:          var(var(--c-bg-opaque-base));
     --c-bg-opaque-base:     oklch(from var(--c-bg-base) l c h / var(--a-trans));
     --c-bg-opaque-level-1:  oklch(from var(--c-bg-base) calc(l + var(--l-step-1)) c h / var(--a-trans));
     --c-bg-opaque-level-2:  oklch(from var(--c-bg-base) calc(l + var(--l-step-2)) c h / var(--a-trans));
