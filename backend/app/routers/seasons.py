@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.dependencies import get_db
 from app.routers.auth import get_current_user
-from app.services.images import fetch_season_images
+from app.services.images import fetch_image_details
 from app.schemas import (
     ImageListsOut
 )
@@ -21,7 +21,7 @@ async def get_all_season_images(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    image_data = await fetch_season_images(db=db, season_id=season_id, user_id=user.user_id)
+    image_data = await fetch_image_details(db=db, season_id=season_id, user_id=user.user_id)
     return image_data
 
 

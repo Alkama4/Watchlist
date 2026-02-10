@@ -3,7 +3,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
 from app.models import (
+    Episode,
+    Season,
     Title,
+    UserSeasonDetails,
     UserTitleDetails,
     ImageLink,
     ImageType,
@@ -114,52 +117,92 @@ async def store_image_details(
     await db.commit()
 
 
-async def fetch_title_images(db: AsyncSession, title_id: int, user_id: int) -> ImageListsOut:
-    stmt = (
-        select(Title, UserTitleDetails)
-        .outerjoin(UserTitleDetails, (UserTitleDetails.title_id == Title.title_id) & (UserTitleDetails.user_id == user_id))
-        .where(Title.title_id == title_id)
-    )
-    title_res = await db.execute(stmt)
-    row = title_res.first()
+async def fetch_image_details(
+    db: AsyncSession, 
+    user_id: int, 
+    title_id: int = None, 
+    season_id: int = None, 
+    episode_id: int = None
+) -> ImageListsOut:
     
-    # Initialize response with empty structures
-    if not row:
-        return ImageListsOut(
-            title_id=title_id,
-            posters=ImageListOut(total_count=0),
-            backdrops=ImageListOut(total_count=0),
-            logos=ImageListOut(total_count=0)
-        )
-
-    title_obj, user_details = row
-
-    # Store paths for quick comparison
-    defaults = {
-        title_obj.default_poster_image_path,
-        title_obj.default_backdrop_image_path,
-        title_obj.default_logo_image_path
+    # 1. Configuration Mapping
+    # Maps the provided ID type to its specific Models and known default/choice fields
+    CONFIG = {
+        "title_id": {
+            "val": title_id,
+            "model": Title,
+            "user_model": UserTitleDetails,
+            "pk": Title.title_id,
+            "user_pk": UserTitleDetails.title_id,
+            "path_fields": ["default_poster_image_path", "default_backdrop_image_path", "default_logo_image_path"],
+            "user_fields": ["chosen_poster_image_path", "chosen_backdrop_image_path", "chosen_logo_image_path"]
+        },
+        "season_id": {
+            "val": season_id,
+            "model": Season,
+            "user_model": UserSeasonDetails,
+            "pk": Season.season_id,
+            "user_pk": UserSeasonDetails.season_id,
+            "path_fields": ["default_poster_image_path"],
+            "user_fields": ["chosen_poster_image_path"]
+        },
+        "episode_id": {
+            "val": episode_id,
+            "model": Episode, # Assuming Episode model exists
+            "user_model": None, # Add UserEpisodeDetails if you have it
+            "pk": Episode.episode_id,
+            "user_pk": None,
+            "path_fields": ["default_poster_image_path"],
+            "user_fields": []
+        }
     }
+
+    # Determine which context we are in
+    active_key = next((k for k, v in CONFIG.items() if v["val"] is not None), None)
+    if not active_key:
+        raise ValueError("One of title_id, season_id, or episode_id must be provided.")
+    
+    cfg = CONFIG[active_key]
+    val = cfg["val"]
+
+    # 2. Fetch Main Object and User Details
+    stmt = select(cfg["model"])
+    if cfg["user_model"]:
+        stmt = stmt.add_columns(cfg["user_model"]).outerjoin(
+            cfg["user_model"], 
+            (cfg["user_pk"] == cfg["pk"]) & (cfg["user_model"].user_id == user_id)
+        )
+    
+    stmt = stmt.where(cfg["pk"] == val)
+    res = await db.execute(stmt)
+    row = res.first()
+
+    if not row:
+        return ImageListsOut(**{active_key: val}, posters=ImageListOut(total_count=0), 
+                             backdrops=ImageListOut(total_count=0), logos=ImageListOut(total_count=0))
+
+    # row might be (Object,) or (Object, UserDetails)
+    main_obj = row[0]
+    user_details = row[1] if len(row) > 1 else None
+
+    # 3. Collect Defaults and Choices using getattr
+    defaults = {getattr(main_obj, field, None) for field in cfg["path_fields"]}
     user_choices = set()
     if user_details:
-        user_choices = {
-            user_details.chosen_poster_image_path,
-            user_details.chosen_backdrop_image_path,
-            user_details.chosen_logo_image_path
-        }
+        user_choices = {getattr(user_details, field, None) for field in cfg["user_fields"]}
 
-    # Fetch all images linked to this title
+    # 4. Fetch Linked Images
+    # Dynamically filter ImageLink by the active ID (e.g., ImageLink.title_id == val)
     img_stmt = (
         select(Image)
         .join(ImageLink, Image.file_path == ImageLink.file_path)
-        .where(ImageLink.title_id == title_id)
+        .where(getattr(ImageLink, active_key) == val)
         .order_by(Image.vote_average.desc())
     )
     img_res = await db.execute(img_stmt)
     images = img_res.scalars().all()
 
-    # Temporary storage for processing
-    # Changed: removed iso_3166/639 sets, added 'locales' set
+    # 5. Categorization Logic (Same as before)
     categories = {
         ImageType.poster: {"imgs": [], "locales": set()},
         ImageType.backdrop: {"imgs": [], "locales": set()},
@@ -167,6 +210,10 @@ async def fetch_title_images(db: AsyncSession, title_id: int, user_id: int) -> I
     }
 
     for img in images:
+        current_locale = (f"{img.iso_639_1}-{img.iso_3166_1}" 
+                         if img.iso_639_1 and img.iso_3166_1 
+                         else img.iso_639_1 or img.iso_3166_1)
+        
         img_data = ImageOut(
             file_path=img.file_path,
             type=img.type,
@@ -183,37 +230,15 @@ async def fetch_title_images(db: AsyncSession, title_id: int, user_id: int) -> I
         cat = categories.get(img.type)
         if cat:
             cat["imgs"].append(img_data)
-            
-            # Determine combined locale using logic matching ImageOut.locale
-            # We use img attributes directly to avoid re-accessing pydantic computed props unnecessarily
-            current_locale = None
-            if img.iso_639_1 and img.iso_3166_1:
-                current_locale = f"{img.iso_639_1}-{img.iso_3166_1}"
-            else:
-                current_locale = img.iso_639_1 or img.iso_3166_1
-            
-            # Add to the set (includes None)
             cat["locales"].add(current_locale)
 
-    # Helper to build the ImageListOut objects
     def build_list_out(img_type: ImageType) -> ImageListOut:
         data = categories[img_type]
-        
-        # Sort locales: Python cannot natively sort a list mixed with None and str.
-        # This key puts None values first, then sorts strings alphabetically.
-        sorted_locales = sorted(
-            list(data["locales"]), 
-            key=lambda x: (x is not None, x)
-        )
-
-        return ImageListOut(
-            total_count=len(data["imgs"]),
-            available_locale=sorted_locales,
-            images=data["imgs"]
-        )
+        sorted_locales = sorted(list(data["locales"]), key=lambda x: (x is not None, x))
+        return ImageListOut(total_count=len(data["imgs"]), available_locale=sorted_locales, images=data["imgs"])
 
     return ImageListsOut(
-        title_id=title_id,
+        **{active_key: val},
         posters=build_list_out(ImageType.poster),
         backdrops=build_list_out(ImageType.backdrop),
         logos=build_list_out(ImageType.logo)
