@@ -337,7 +337,8 @@ class ImageLink(Base):
     __table_args__ = (
         UniqueConstraint(
             'file_path', 'title_id', 'season_id', 'episode_id', 
-            name='uix_image_link_identity'
+            name='uix_image_link_identity',
+            postgresql_nulls_not_distinct=True
         ),
     )
 
