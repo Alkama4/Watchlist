@@ -85,8 +85,8 @@ async def _make_progressive(input_path: str, output_path: str):
     loop = asyncio.get_event_loop()
     await loop.run_in_executor(None, _process)
 
-async def _proxy_image(image_path: str):
-    url = f"{TMDB_IMAGE_BASE_PATH}/w500/{image_path}"
+async def _proxy_image(image_path: str, size: int):
+    url = f"{TMDB_IMAGE_BASE_PATH}/{'original' if size == 'original' else 'w500'}/{image_path}"
     
     req = http_client.build_request("GET", url)
     resp = await http_client.send(req, stream=True)
@@ -137,7 +137,7 @@ async def get_image(
 
     # Passthrough
     if not store:
-        return await _proxy_image(image_path)
+        return await _proxy_image(image_path, size)
 
     # Store originial
     if size == "original":
