@@ -19,12 +19,12 @@
     /* Offsets and levels */
     --l-step-1: 0.03;
     --l-step-2: 0.06;
+    --l-border: 0.12;
 
     --bg-step-1: 0.19; 
     --bg-step-2: 0.22;
     
     --a-trans: 0.66;
-    --a-border: 0.8;
 
     --hero-backdrop-fade-intensity: 0;
     --hero-backdrop-min-brightness: 0.4;
@@ -60,38 +60,38 @@
     /* Unique color variations */
     --c-primary-soft:        oklch(from var(--c-primary) calc(l + var(--l-step-1)) c h);
     --c-primary-subtle:      oklch(from var(--c-primary) calc(l + var(--l-step-2)) c h);
+    --c-primary-border:      oklch(from var(--c-primary) calc(l + var(--l-border)) c h);
     --c-primary-transparent: oklch(from var(--c-primary) l c h / var(--a-trans));
-    --c-primary-border:      oklch(from var(--c-primary) l c h / var(--a-border));
 
     --c-watchlist-soft:        oklch(from var(--c-watchlist) calc(l + var(--l-step-1)) c h);
     --c-watchlist-subtle:      oklch(from var(--c-watchlist) calc(l + var(--l-step-2)) c h);
+    --c-watchlist-border:      oklch(from var(--c-watchlist) calc(l + var(--l-border)) c h);
     --c-watchlist-transparent: oklch(from var(--c-watchlist) l c h / var(--a-trans));
-    --c-watchlist-border:      oklch(from var(--c-watchlist) l c h / var(--a-border));
 
     --c-favourite-soft:        oklch(from var(--c-favourite) calc(l + var(--l-step-1)) c h);
     --c-favourite-subtle:      oklch(from var(--c-favourite) calc(l + var(--l-step-2)) c h);
+    --c-favourite-border:      oklch(from var(--c-favourite) calc(l + var(--l-border)) c h);
     --c-favourite-transparent: oklch(from var(--c-favourite) l c h / var(--a-trans));
-    --c-favourite-border:      oklch(from var(--c-favourite) l c h / var(--a-border));
 
     --c-neutral-soft:        oklch(from var(--c-neutral) calc(l + var(--l-step-1)) c h);
     --c-neutral-subtle:      oklch(from var(--c-neutral) calc(l + var(--l-step-2)) c h);
+    --c-neutral-border:      oklch(from var(--c-neutral) calc(l + var(--l-border)) c h);
     --c-neutral-transparent: oklch(from var(--c-neutral) l c h / var(--a-trans));
-    --c-neutral-border:      oklch(from var(--c-neutral) l c h / var(--a-border));
 
     --c-positive-soft:        oklch(from var(--c-positive) calc(l + var(--l-step-1)) c h);
     --c-positive-subtle:      oklch(from var(--c-positive) calc(l + var(--l-step-2)) c h);
+    --c-positive-border:      oklch(from var(--c-positive) calc(l + var(--l-border)) c h);
     --c-positive-transparent: oklch(from var(--c-positive) l c h / var(--a-trans));
-    --c-positive-border:      oklch(from var(--c-positive) l c h / var(--a-border));
 
     --c-warning-soft:        oklch(from var(--c-warning) calc(l + var(--l-step-1)) c h);
     --c-warning-subtle:      oklch(from var(--c-warning) calc(l + var(--l-step-2)) c h);
+    --c-warning-border:      oklch(from var(--c-warning) calc(l + var(--l-border)) c h);
     --c-warning-transparent: oklch(from var(--c-warning) l c h / var(--a-trans));
-    --c-warning-border:      oklch(from var(--c-warning) l c h / var(--a-border));
 
     --c-negative-soft:        oklch(from var(--c-negative) calc(l + var(--l-step-1)) c h);
     --c-negative-subtle:      oklch(from var(--c-negative) calc(l + var(--l-step-2)) c h);
+    --c-negative-border:      oklch(from var(--c-negative) calc(l + var(--l-border)) c h);
     --c-negative-transparent: oklch(from var(--c-negative) l c h / var(--a-trans));
-    --c-negative-border:      oklch(from var(--c-negative) l c h / var(--a-border));
 }
 
 

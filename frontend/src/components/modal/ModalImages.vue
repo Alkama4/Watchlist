@@ -95,7 +95,7 @@ async function open() {
     
                         <div class="details">
                             <div>
-                                {{ image?.vote_average }}/10
+                                {{ image?.vote_average }} / 10
                                 ({{ image?.vote_count }} votes)
                             </div>
                             <div class="resolution">{{ image?.width }}px x {{ image?.height }}px</div>
@@ -180,11 +180,11 @@ async function open() {
         }
     }
     &.user-choise.default {
-        border-color: var(--c-favourite-subtle);
+        border-color: var(--c-favourite-border);
 
         &::after {
             color: var(--c-text);
-            background-color: var(--c-favourite-subtle);
+            background-color: var(--c-favourite-border);
         }
     }
 }
