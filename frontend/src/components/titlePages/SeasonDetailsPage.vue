@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { resolveImagePath } from '@/utils/imagePath';
+import { getTitleImageUrl } from '@/utils/imagePath';
 import { numberFormatters, timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg';
 
@@ -95,7 +95,7 @@ onUnmounted(() => {
         <div v-if="activeSeason" :key="activeSeason.season_id" class="season layout-contained layout-spacing-bottom">
             <div class="season-details">
                 <img 
-                    :src="resolveImagePath(activeSeason, '800', 'poster')"
+                    :src="getTitleImageUrl(activeSeason, '800', 'poster')"
                     :alt="`Season poster: ${activeSeason?.season_name}`"
                     class="season-poster"
                 >
@@ -113,7 +113,7 @@ onUnmounted(() => {
             <div class="episodes-wrapper">
                 <div v-for="episode in activeSeason?.episodes" class="episode">
                     <img 
-                        :src="resolveImagePath(episode, '800', 'backdrop')"
+                        :src="getTitleImageUrl(episode, '800', 'backdrop')"
                         :alt="`Episode backdrop: ${episode?.episode_number}. ${episode?.episode_name}`"
                         class="episode-backdrop"
                     >

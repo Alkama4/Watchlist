@@ -1,5 +1,5 @@
 <script setup>
-import { resolveImagePath } from '@/utils/imagePath';
+import { getTitleImageUrl } from '@/utils/imagePath';
 import { timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg'
 
@@ -22,7 +22,7 @@ defineProps({
                 :to="`/title/${titleDetails?.title_id}?season=${season?.season_number}`"
             >
                 <img 
-                    :src="resolveImagePath(season, '800', 'poster')"
+                    :src="getTitleImageUrl(season, '800', 'poster')"
                     :alt="`Season poster: ${season?.season_name}`"
                     class="poster"
                 >

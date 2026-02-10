@@ -1,5 +1,5 @@
 <script setup>
-import { resolveImagePath } from '@/utils/imagePath';
+import { getTitleImageUrl } from '@/utils/imagePath';
 import { timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg'
 import { useSearchStore } from '@/stores/search';
@@ -76,7 +76,7 @@ const { titleInfo, storeImageFlag } = defineProps({
         draggable="false"
     >
         <img 
-            :src="resolveImagePath(titleInfo, '800', 'poster', storeImageFlag)"
+            :src="getTitleImageUrl(titleInfo, '800', 'poster', storeImageFlag)"
             :alt="`${titleInfo?.title_type === 'tv' ? 'TV show' : 'Movie'} poster: ${titleInfo?.name}`"
             draggable="false"
         >

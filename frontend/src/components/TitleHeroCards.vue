@@ -1,5 +1,5 @@
 <script setup>
-import { resolveImagePath } from '@/utils/imagePath';
+import { getTitleImageUrl } from '@/utils/imagePath';
 import { timeFormatters, numberFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg'
 import { ref, onMounted, onUnmounted } from 'vue';
@@ -106,14 +106,14 @@ onUnmounted(() => {
                 class="hero-card"
             >
                 <img
-                    :src="resolveImagePath(heroCards?.titles[currentIndex], 'original', 'backdrop')"
+                    :src="getTitleImageUrl(heroCards?.titles[currentIndex], 'original', 'backdrop')"
                     :alt="`${heroCards?.titles[currentIndex]?.title_type} backdrop: ${heroCards?.titles[currentIndex]?.name}`"
                     class="backdrop"
                 >
                 <div class="details-wrapper layout-contained">
                     <RouterLink :to="`/title/${heroCards?.titles[currentIndex]?.title_id}`" class="details no-deco">
                         <img
-                            :src="resolveImagePath(heroCards?.titles[currentIndex], 'original', 'logo')"
+                            :src="getTitleImageUrl(heroCards?.titles[currentIndex], 'original', 'logo')"
                             :alt="`Backdrop for the title ${heroCards?.titles[currentIndex]?.name}`"
                             class="logo"
                         >

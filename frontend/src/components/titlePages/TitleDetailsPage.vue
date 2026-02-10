@@ -3,7 +3,7 @@ import TitleCarousel from '@/components/TitleCarousel.vue';
 import LoadingButton from '@/components/LoadingButton.vue';
 import { fastApi } from '@/utils/fastApi';
 import { isoFormatters, numberFormatters, timeFormatters } from '@/utils/formatters';
-import { resolveImagePath } from '@/utils/imagePath';
+import { getTitleImageUrl } from '@/utils/imagePath';
 import { ref, computed } from 'vue';
 import Tmdb from '@/assets/icons/tmdb.svg'
 import Imdb from '@/assets/icons/imdb.svg'
@@ -121,14 +121,14 @@ const tmdbEditAgeRatingUrl = computed(() => {
     <div class="title-details-page">
         <div class="layout-contained layout-spacing-top">
             <img 
-                :src="resolveImagePath(titleDetails, 'original', 'backdrop')"
+                :src="getTitleImageUrl(titleDetails, 'original', 'backdrop')"
                 :alt="`${titleDetails?.type} backdrop: ${titleDetails?.name}`"
                 class="backdrop"
             >
     
             <div class="logo-wrapper">
                 <img 
-                    :src="resolveImagePath(titleDetails, 'original', 'logo')"
+                    :src="getTitleImageUrl(titleDetails, 'original', 'logo')"
                     :alt="`${titleDetails?.type} logo: ${titleDetails?.name}`"
                     class="logo"
                 >
@@ -143,7 +143,7 @@ const tmdbEditAgeRatingUrl = computed(() => {
     
             <div class="main-info">
                 <img 
-                    :src="resolveImagePath(titleDetails, 'original', 'poster')"
+                    :src="getTitleImageUrl(titleDetails, 'original', 'poster')"
                     :alt="`${titleDetails?.type} poster: ${titleDetails?.name}`"
                     class="poster"
                 >

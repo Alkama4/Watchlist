@@ -1,28 +1,24 @@
 import { API_BASE_URL } from "./conf"
 
 const BASE_IMAGE_URL = "/media/image"
+const IMAGE_TYPE_MAP = {
+    poster: { default: 'default_poster_image_path', user: 'chosen_poster_image_path' },
+    backdrop: { default: 'default_backdrop_image_path', user: 'chosen_backdrop_image_path' },
+    logo: { default: 'default_logo_image_path', user: 'chosen_logo_image_path' }
+};
 
-export function resolveImagePath(titleDetails, size, type, storeImageFlag = true) {
-    let defaultPath;
-    let userPath;
+export function getTitleImageUrl(titleDetails, size, type, storeImageFlag = true) {
+    const keys = IMAGE_TYPE_MAP[type];
+    if (!keys) return null;
 
-    switch (type) {
-        case 'poster':
-            defaultPath = titleDetails?.default_poster_image_path;
-            userPath = titleDetails?.user_details?.chosen_poster_image_path;
-            break;
-        case 'backdrop':
-            defaultPath = titleDetails?.default_backdrop_image_path;
-            userPath = titleDetails?.user_details?.chosen_backdrop_image_path;
-            break;
-        case 'logo':
-            defaultPath = titleDetails?.default_logo_image_path;
-            userPath = titleDetails?.user_details?.chosen_logo_image_path;
-            break;
-        default:
-            return null; // Or handle the unknown type in a different way
-    }
+    const defaultPath = titleDetails?.[keys.default];
+    const userPath = titleDetails?.user_details?.[keys.user];
 
-    if (!defaultPath && !userPath) return null;
-    return `${API_BASE_URL}${BASE_IMAGE_URL}/${size}${userPath ?? defaultPath}${storeImageFlag ? '' : '?store=false'}`;
+    return buildImageUrl(userPath ?? defaultPath, size, storeImageFlag);
+}
+
+export function buildImageUrl(filePath, size, storeImageFlag = true) {
+    if (!filePath) return null;
+    const query = storeImageFlag ? '' : '?store=false';
+    return `${API_BASE_URL}${BASE_IMAGE_URL}/${size}${filePath}${query}`;
 }
