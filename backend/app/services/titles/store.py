@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
 from datetime import datetime
 from app.integrations import tmdb
-from app.services.titles.images import select_best_image, store_image_details
+from app.services.images import select_best_image, store_image_details
 from app.services.genres import store_title_genres
 from app.models import (
     TitleType,
