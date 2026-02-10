@@ -18,9 +18,10 @@ const props = defineProps({
 
 defineExpose({ open })
 
-const imageData = ref({ posters: [], backdrops: [], logos: [] });
+const imageData = ref({ posters: {}, backdrops: {}, logos: {} });
 const activeType = ref('posters');
-const modalRef = ref(null)
+const modalRef = ref(null);
+const localeFilter = ref('all');
 
 // Configuration for our types
 const imageCategories = [
@@ -31,13 +32,17 @@ const imageCategories = [
 
 // Determine how many categories actually have images
 const availableCategories = computed(() => {
-    return imageCategories.filter(cat => imageData.value[cat.key]?.length > 0);
+    return imageCategories.filter(cat => imageData.value[cat.key]?.total_count > 0);
 });
 
-// Get the images for the currently selected tab
-const currentImages = computed(() => {
+const currentCategory = computed(() => {
     return imageData.value[activeType.value] || [];
 });
+
+const filteredImages = computed(() => {
+    const images = currentCategory.value?.images || []; 
+    return images.filter((img) => localeFilter.value === 'all' || img.locale == localeFilter.value);
+})
 
 async function open() {
     const data = await fastApi.titles.imagesById(props.titleId);
@@ -60,19 +65,31 @@ async function open() {
                     v-for="cat in imageCategories" 
                     :key="cat.key"
                     :class="{ 'btn-primary': activeType === cat.key }"
-                    :disabled="!imageData[cat.key]?.length"
+                    :disabled="!imageData[cat.key]?.total_count"
                     @click="activeType = cat.key"
                 >
-                    {{ cat.label }} ({{ imageData[cat.key]?.length || 0 }})
+                    {{ cat.label }} ({{ imageData[cat.key]?.total_count || 0 }})
                 </button>
+
+                <hr>
+
+                <select v-model="localeFilter" v-if="currentCategory?.available_locale?.length >= 2">
+                    <option value="all" selected>All</option>
+                    <option 
+                        v-for="locale in currentCategory?.available_locale"
+                        :value="locale"
+                    >
+                        {{ locale === null ? 'No language' : locale }}
+                    </option>
+                </select>
             </div>
 
             <div class="images-wrapper">
                 <div 
-                    v-for="image in currentImages"
+                    v-for="image in filteredImages"
                     :key="image.file_path"
                     class="image"
-                    :class="{'user-choise': image?.is_user_choise, 'default': image?.is_default}"
+                    :class="{'user-choice': image?.is_user_choice, 'default': image?.is_default}"
                 >
                     <a :href="buildImageUrl(image?.file_path, 'original', false)" target="_blank">
                         <img 
@@ -87,10 +104,10 @@ async function open() {
                         <div class="star-wrapper">
                             <button
                                 class="btn-square btn-text"
-                                :class="{'subtle': !image?.is_user_choise}"
-                                @click="image.is_user_choise = !image.is_user_choise"
+                                :class="{'subtle': !image?.is_user_choice}"
+                                @click="image.is_user_choice = !image.is_user_choice"
                             >
-                                <i class="bx" :class="image?.is_user_choise ? 'bxs-star' : 'bx-star'"></i>
+                                <i class="bx" :class="image?.is_user_choice ? 'bxs-star' : 'bx-star'"></i>
                             </button>
                         </div>
     
@@ -100,7 +117,7 @@ async function open() {
                                 ({{ image?.vote_count }} votes)
                             </div>
                             <div class="resolution">{{ image?.width }}px x {{ image?.height }}px</div>
-                            <div class="locale">{{ isoFormatters.iso_3166_1ToCountry(image?.iso_3166_1) ?? 'No language' }}</div>
+                            <div class="locale">{{ image?.locale ?? 'No language' }}</div>
                         </div>
                     </div>
                 </div>
@@ -134,6 +151,10 @@ async function open() {
 }
 .posters .images-wrapper {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+hr {
+    margin: var(--spacing-xs) var(--spacing-sm);
 }
 
 .image {
@@ -196,7 +217,7 @@ async function open() {
         }
     }
 
-    &.user-choise {
+    &.user-choice {
         background-color: var(--c-favourite);
     }
     &.default {
@@ -217,7 +238,7 @@ async function open() {
             background-color: var(--c-border);
         }
     }
-    &.user-choise.default {
+    &.user-choice.default {
         border-color: var(--c-favourite-border);
 
         &::after {

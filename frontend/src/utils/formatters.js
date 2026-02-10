@@ -32,5 +32,15 @@ export const isoFormatters = {
     iso_3166_1ToCountry: (iso_3166_1) => {
         if (!iso_3166_1) return null;
         return new Intl.DisplayNames(preferredLocale.tag, { type: 'region' }).of(iso_3166_1);
+    },
+    localeToText: (locale) => {
+        if (!locale) return 'No language';
+        
+        try {
+            const displayNames = new Intl.DisplayNames(['en'], { type: 'language' });
+            return displayNames.of(locale);
+        } catch (e) {
+            return locale;
+        }
     }
 }

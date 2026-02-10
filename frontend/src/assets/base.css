@@ -193,8 +193,8 @@ dl dd {
 
 /* Horizontal rule */
 hr {
-    min-height: 1px;
-    min-width: 1px;
+    min-height: 2px;
+    min-width: 2px;
     background-color: var(--c-border);
     margin: var(--spacing-md);
     border: none;
