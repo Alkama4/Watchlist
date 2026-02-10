@@ -36,6 +36,7 @@ async def fetch_title_images(db: AsyncSession, title_id: int, user_id: int) -> I
         select(Image)
         .join(ImageLink, Image.file_path == ImageLink.file_path)
         .where(ImageLink.title_id == title_id)
+        .order_by(Image.vote_average.desc())
     )
     img_res = await db.execute(img_stmt)
     images = img_res.scalars().all()
