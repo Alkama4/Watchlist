@@ -10,7 +10,7 @@ from app.services.titles.search_tmdb import run_and_process_tmdb_search
 from app.services.titles.store import store_movie, store_tv
 from app.services.titles.user_flags import set_user_title_value, set_title_watch_count
 from app.services.titles.preset_searches import fetch_similar_titles
-from app.services.images import fetch_title_images
+from app.services.titles.images import fetch_title_images
 from app.schemas import (
     ImageListsOut,
     TitleType,
