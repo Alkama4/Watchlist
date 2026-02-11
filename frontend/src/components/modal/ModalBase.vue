@@ -65,7 +65,7 @@ onUnmounted(() => {
                 >
                     <div class="header-row">
                         <h2 class="no-top">{{ header }}</h2>
-                        <i class="bx bx-x btn-text subtle" @click="close"></i>
+                        <i class="bx bx-x btn btn-text btn-square subtle" @click="close"></i>
                     </div>
                     <slot></slot>
                 </div>
@@ -133,8 +133,5 @@ onUnmounted(() => {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-}
-.header-row i {
-    font-size: var(--fs-3);
 }
 </style>
