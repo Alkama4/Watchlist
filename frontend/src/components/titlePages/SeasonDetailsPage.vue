@@ -180,7 +180,6 @@ onUnmounted(() => {
 .season-details {
     width: 400px;
     height: fit-content;
-    overflow: scroll;
     background-color: var(--c-bg-level-1);
     padding: var(--spacing-md);
     padding-bottom: var(--spacing-lg);
@@ -194,7 +193,6 @@ onUnmounted(() => {
 .episodes-wrapper {
     display: flex;
     flex-direction: column;
-    overflow-y: scroll;
     max-height: 100%;
 }
 
@@ -226,7 +224,7 @@ onUnmounted(() => {
     left: 50%;
     transform: translateX(-50%);
     max-width: 90vw;
-    overflow-x: scroll;
+    overflow-x: auto;
 
     background: var(--c-bg-opaque-base);
     backdrop-filter: blur(var(--blur-heavy));
