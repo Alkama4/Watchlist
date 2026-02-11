@@ -27,7 +27,7 @@ const { titleDetails } = defineProps({
 
 const waitingFor = ref({});
 const AgeRatingsModal = ref(null);
-const TitleImagesModal = ref(null);
+const ImagesModal = ref(null);
 
 async function updateTitleDetails() {
     waitingFor.value.titleUpdate = true;
@@ -67,10 +67,6 @@ async function toggleWatchlist() {
 
 function adjustCollections() {
     alert("Collections are under construction.")
-}
-
-function chooseImages() {
-    TitleImagesModal.value.open();
 }
 
 async function removeFromLibrary() {
@@ -268,7 +264,7 @@ const tmdbEditAgeRatingUrl = computed(() => {
 
                         <i
                             class="bx bxs-image btn btn-text btn-square"
-                            @click="chooseImages"
+                            @click="ImagesModal.open()"
                         ></i>
             
                         <i
@@ -395,7 +391,7 @@ const tmdbEditAgeRatingUrl = computed(() => {
         </ModalBase>
 
         <ModalImages
-            ref="TitleImagesModal"
+            ref="ImagesModal"
             :titleId="titleDetails?.title_id"
             :userDetails="titleDetails?.user_details"
         />

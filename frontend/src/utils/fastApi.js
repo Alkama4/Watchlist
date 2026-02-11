@@ -195,6 +195,12 @@ export const fastApi = {
             data: { notes }
         })
     },
+    seasons: {
+        imagesById: async (seasonId) => fetchData({
+            method: 'get',
+            url: `/seasons/${seasonId}/images`
+        }),
+    },
     media: {
         image: async (size, image_path) => fetchData({
             method: 'get',

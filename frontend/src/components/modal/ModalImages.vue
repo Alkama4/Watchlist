@@ -3,10 +3,13 @@ import { ref, computed } from 'vue'
 import ModalBase from '@/components/modal/ModalBase.vue'
 import { fastApi } from '@/utils/fastApi';
 import { buildImageUrl } from '@/utils/imagePath';
-import { isoFormatters } from '@/utils/formatters';
 
 const props = defineProps({
     titleId: {
+        type: Number,
+        required: true
+    },
+    seasonId: {
         type: Number,
         required: true
     },
@@ -45,8 +48,13 @@ const filteredImages = computed(() => {
 })
 
 async function open() {
-    const data = await fastApi.titles.imagesById(props.titleId);
-    imageData.value = data;
+    if (props.titleId) {
+        imageData.value = await fastApi.titles.imagesById(props.titleId);
+    } else if (props.seasonId) {
+        imageData.value = await fastApi.seasons.imagesById(props.seasonId);
+    } else {
+        throw '[ModalImages] Missing titleId or seasonId.'
+    }
 
     // Default to the first category that has images
     if (availableCategories.value.length > 0) {
@@ -60,7 +68,7 @@ async function open() {
 <template>
     <ModalBase header="Title Images" ref="modalRef">
         <div class="modal-images" :class="activeType">
-            <div v-if="availableCategories.length > 1" class="tab-buttons">
+            <div class="tab-buttons">
                 <button 
                     v-for="cat in imageCategories" 
                     :key="cat.key"
@@ -73,7 +81,7 @@ async function open() {
 
                 <hr>
 
-                <select v-model="localeFilter" v-if="currentCategory?.available_locale?.length >= 2">
+                <select v-model="localeFilter">
                     <option value="all" selected>All</option>
                     <option 
                         v-for="locale in currentCategory?.available_locale"

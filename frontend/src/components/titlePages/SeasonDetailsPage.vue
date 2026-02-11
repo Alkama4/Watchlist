@@ -1,9 +1,10 @@
 <script setup>
-import { computed, onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getTitleImageUrl } from '@/utils/imagePath';
 import { numberFormatters, timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg';
+import ModalImages from '../modal/ModalImages.vue';
 
 const props = defineProps({
     titleDetails: {
@@ -14,6 +15,7 @@ const props = defineProps({
 
 const route = useRoute();
 const router = useRouter();
+const ImagesModal = ref(null);
 
 const activeSeason = computed(() => {
     const seasonNumber = Number(route.query.season);
@@ -109,6 +111,12 @@ onUnmounted(() => {
                     {{ timeFormatters.minutesToHrAndMin(totalRuntime) }}
                 </div>
                 <p>{{ activeSeason?.overview }}</p>
+                <div class="actions">
+                    <i
+                        class="bx bxs-image btn btn-text btn-square"
+                        @click="ImagesModal.open()"
+                    ></i>
+                </div>
             </div>
             <div class="episodes-wrapper">
                 <div v-for="episode in activeSeason?.episodes" class="episode">
@@ -143,6 +151,13 @@ onUnmounted(() => {
                 {{ season.season_name }}
             </router-link>
         </div>
+        {{ activeSeason }}
+
+        <ModalImages
+            ref="ImagesModal"
+            :seasonId="activeSeason?.season_id"
+            :userDetails="activeSeason?.user_details"
+        />
     </div>
 </template>
 
