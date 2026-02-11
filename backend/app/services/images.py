@@ -21,7 +21,7 @@ from app.schemas import (
 
 def select_best_image(images: List[Dict], iso_639_1_list: List[Optional[str]]) -> Optional[str]:
     """
-    Selects the best image based on vote_average * vote_count, trying ISO codes in order,
+    Selects the best image based on vote_average, trying ISO codes in order,
     and returns the file path of that image.
     
     :param images: List of image dictionaries.

@@ -66,8 +66,19 @@ async function open() {
 </script>
 
 <template>
-    <ModalBase header="Title Images" ref="modalRef">
+    <ModalBase header="Choose displayed images" ref="modalRef">
         <div class="modal-images" :class="activeType">
+            <details>
+                <summary>How are images selected?</summary>
+                <div class="content">
+                    <p>The system automatically displays the highest-rated images available. For <strong>posters and logos</strong>, it prioritizes your language; for <strong>backdrops</strong>, it prefers textless versions for a cleaner look. If an image with an higher rating is found, the system will swap it out automatically.</p>
+    
+                    <p><strong>Favouriting an image locks your selection.</strong> This overrides the automated system and ensures the image will never change unless you update it again yourself.</p>
+    
+                    <p class="soft"><em>Note: Backdrops work best without text (No locale).</em></p>
+                </div>
+            </details>
+
             <div class="tab-buttons">
                 <button 
                     v-for="cat in imageCategories" 
@@ -87,7 +98,7 @@ async function open() {
                         v-for="locale in currentCategory?.available_locale"
                         :value="locale"
                     >
-                        {{ locale === null ? 'No language' : locale }}
+                        {{ locale === null ? 'No locale' : locale }}
                     </option>
                 </select>
             </div>
@@ -125,7 +136,7 @@ async function open() {
                                 ({{ image?.vote_count }} votes)
                             </div>
                             <div class="resolution">{{ image?.width }}px x {{ image?.height }}px</div>
-                            <div class="locale">{{ image?.locale ?? 'No language' }}</div>
+                            <div class="locale">{{ image?.locale ?? 'No locale' }}</div>
                         </div>
                     </div>
                 </div>

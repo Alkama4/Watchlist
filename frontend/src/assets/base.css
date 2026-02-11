@@ -228,3 +228,29 @@ table tr * {
 table tr *:last-child {
     border-right-width: 1px;
 }
+
+
+details {
+    summary {
+        cursor: pointer;
+        color: var(--c-text);
+        transition: color 0.1s ease-out;
+
+        &:hover {
+            color: var(--c-text-strong)
+        }
+    }
+    .content {
+        margin-top: var(--spacing-md);
+        padding: var(--spacing-md);
+        background-color: var(--c-bg-level-2);
+        border-radius: var(--border-radius-md);
+
+        & > :first-child {
+            margin-top: 0;
+        }
+        & > :last-child {
+            margin-bottom: 0;
+        }
+    }
+}

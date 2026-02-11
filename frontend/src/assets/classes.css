@@ -16,6 +16,17 @@ a.hover-line:hover {
 .subtle {
     color: var(--c-text-subtle) !important;
 }
-.subtle:hover {
+a.subtle:hover,
+.btn.subtle:hover,
+button.subtle:hover {
     color: var(--c-text-soft) !important;
+}
+
+.soft {
+    color: var(--c-text-soft) !important;
+}
+a.subtle:hover,
+.btn.subtle:hover,
+button.subtle:hover {
+    color: var(--c-text) !important;
 }
