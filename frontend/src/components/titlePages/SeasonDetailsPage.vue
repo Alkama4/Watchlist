@@ -151,7 +151,6 @@ onUnmounted(() => {
                 {{ season.season_name }}
             </router-link>
         </div>
-        {{ activeSeason }}
 
         <ModalImages
             ref="ImagesModal"
@@ -187,6 +186,9 @@ onUnmounted(() => {
 }
 .season-details img.season-poster {
     width: 100%;
+    aspect-ratio: 2/3;
+    background-color: var(--c-bg-level-2);
+    object-fit: cover;
     border-radius: var(--border-radius-lg);
 }
 
@@ -207,6 +209,9 @@ onUnmounted(() => {
 }
 .episode img.episode-backdrop {
     width: 400px;
+    aspect-ratio: 16/9;
+    background-color: var(--c-bg-level-1);
+    object-fit: cover;
     border-radius: var(--border-radius-md);
 }
 .episode h4 {
