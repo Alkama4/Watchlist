@@ -90,9 +90,9 @@ function updateDomData(imageType, imagePath) {
             <details>
                 <summary>How are images selected?</summary>
                 <div class="content">
-                    <p>The system automatically displays the highest-rated images available. For <strong>posters and logos</strong>, it prioritizes your language; for <strong>backdrops</strong>, it prefers textless versions for a cleaner look. If an image with an higher rating is found, the system will swap it out automatically.</p>
+                    <p>The system automatically displays the highest-rated images available (tagged "Default") with some caveats. For <strong>posters and logos</strong> it prioritizes your language preferences (set in setttings), and for <strong>backdrops</strong> it prefers the textless versions. If an image with a higher rating is found, the system will swap it out automatically.</p>
     
-                    <p><strong>Favouriting an image locks your selection.</strong> This overrides the automated system and ensures the image will never change unless you update it again yourself.</p>
+                    <p><strong>Favoriting an image</strong> locks your selection. This overrides the automated system and ensures the image will never change unless you update it again yourself.</p>
     
                     <p class="soft"><em>Note: Backdrops work best without text (No locale).</em></p>
                 </div>
