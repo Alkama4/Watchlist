@@ -164,6 +164,11 @@ export const fastApi = {
             method: 'get',
             url: `/titles/${titleId}/images`
         }),
+        imagesSetPreference: async (titleId, imageType, data) => fetchData({
+            method: 'put',
+            url: `/titles/${titleId}/images/${imageType}`,
+            data
+        }),
         library: {
             add: async (titleId) => fetchData({
                 method: 'put',
