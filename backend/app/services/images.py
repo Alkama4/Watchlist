@@ -1,4 +1,5 @@
 from typing import List, Optional, Dict
+from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
@@ -6,6 +7,7 @@ from app.models import (
     Episode,
     Season,
     Title,
+    UserEpisodeDetails,
     UserSeasonDetails,
     UserTitleDetails,
     ImageLink,
@@ -243,3 +245,112 @@ async def fetch_image_details(
         backdrops=build_list_out(ImageType.backdrop),
         logos=build_list_out(ImageType.logo)
     )
+
+
+async def set_user_image_choice(
+    db: AsyncSession, 
+    user_id: int, 
+    image_type: ImageType, 
+    image_path: Optional[str], 
+    title_id: Optional[int] = None, 
+    season_id: Optional[int] = None, 
+    episode_id: Optional[int] = None
+):
+    """
+    Set the chosen image paths in user title/season/episode details tables
+    after running validation checks on if the request is coherent.
+    """
+    
+    if image_path is not None:
+        # Build query to check if the image exists AND is linked to this specific entity
+        # AND matches the intended ImageType
+        validation_stmt = (
+            select(Image)
+            .join(ImageLink, Image.file_path == ImageLink.file_path)
+            .where(
+                Image.file_path == image_path,
+                Image.type == image_type  # Constraint: Must match the enum type
+            )
+        )
+
+        if title_id:
+            validation_stmt = validation_stmt.where(ImageLink.title_id == title_id)
+        elif season_id:
+            validation_stmt = validation_stmt.where(ImageLink.season_id == season_id)
+        elif episode_id:
+            validation_stmt = validation_stmt.where(ImageLink.episode_id == episode_id)
+
+        result = await db.execute(validation_stmt)
+        valid_image = result.scalar_one_or_none()
+
+        if not valid_image:
+            raise HTTPException(
+                status_code=400, 
+                detail="Invalid image choice. The image must exist, match the requested type, "
+                       "and be linked to this specific title/season/episode."
+            )
+
+    if title_id:
+        target_config = {
+            "model": UserTitleDetails,
+            "id_field": "title_id",
+            "id_val": title_id,
+            "col_map": {
+                ImageType.poster: "chosen_poster_image_path",
+                ImageType.backdrop: "chosen_backdrop_image_path",
+                ImageType.logo: "chosen_logo_image_path"
+            }
+        }
+    elif season_id:
+        target_config = {
+            "model": UserSeasonDetails,
+            "id_field": "season_id",
+            "id_val": season_id,
+            "col_map": {
+                ImageType.poster: "chosen_poster_image_path"
+            }
+        }
+    elif episode_id:
+        target_config = {
+            "model": UserEpisodeDetails,
+            "id_field": "episode_id",
+            "id_val": episode_id,
+            "col_map": {
+                ImageType.backdrop: "chosen_backdrop_image_path"
+            }
+        }
+    else:
+        raise HTTPException(status_code=400, detail="Must provide title_id, season_id, or episode_id")
+
+    # Determine target column
+    target_col = target_config["col_map"].get(image_type)
+    if not target_col:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Image type '{image_type}' is not valid for this media entity."
+        )
+
+    model = target_config["model"]
+    id_field = target_config["id_field"]
+    id_val = target_config["id_val"]
+
+    data_values = {
+        "user_id": user_id,
+        id_field: id_val,
+        **{target_col: image_path}
+    }
+
+    stmt = insert(model).values(data_values)
+    stmt = stmt.on_conflict_do_update(
+        index_elements=["user_id", id_field],
+        set_={target_col: image_path}
+    )
+
+    await db.execute(stmt)
+    await db.commit()
+    
+    return {
+        "status": "success",
+        "image_path": image_path,
+        "updated_field": target_col
+    }
