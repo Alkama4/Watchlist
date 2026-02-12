@@ -136,7 +136,7 @@ async def get_all_title_images(
 
 
 @router.put("/{title_id}/images/{image_type}")
-async def set_image_preference(
+async def set_title_image_preference(
     title_id: int,
     image_type: ImageType,
     data: ImagePreferenceIn,
