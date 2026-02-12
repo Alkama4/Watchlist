@@ -5,18 +5,9 @@ import { fastApi } from '@/utils/fastApi';
 import { buildImageUrl } from '@/utils/imagePath';
 
 const props = defineProps({
-    titleId: {
-        type: Number,
-        required: true
-    },
-    seasonId: {
-        type: Number,
-        required: true
-    },
-    userDetails: {
-        type: Object,
-        required: true
-    }
+    titleId: { type: Number, required: true },
+    seasonId: { type: Number, required: true },
+    userDetails: { type: Object, required: true }
 })
 
 defineExpose({ open })
@@ -24,16 +15,19 @@ defineExpose({ open })
 const imageData = ref({ posters: {}, backdrops: {}, logos: {} });
 const activeType = ref('posters');
 const modalRef = ref(null);
-const localeFilter = ref('all');
 
-// Configuration for our types
+const localeFilters = ref({
+    posters: 'all',
+    backdrops: 'all',
+    logos: 'all'
+});
+
 const imageCategories = [
     { key: 'posters', label: 'Posters' },
     { key: 'backdrops', label: 'Backdrops' },
     { key: 'logos', label: 'Logos' }
 ];
 
-// Determine how many categories actually have images
 const availableCategories = computed(() => {
     return imageCategories.filter(cat => imageData.value[cat.key]?.total_count > 0);
 });
@@ -44,7 +38,8 @@ const currentCategory = computed(() => {
 
 const filteredImages = computed(() => {
     const images = currentCategory.value?.images || []; 
-    return images.filter((img) => localeFilter.value === 'all' || img.locale == localeFilter.value);
+    const currentFilter = localeFilters.value[activeType.value];
+    return images.filter((img) => currentFilter === 'all' || img.locale == currentFilter);
 })
 
 async function open() {
@@ -56,7 +51,6 @@ async function open() {
         throw '[ModalImages] Missing titleId or seasonId.'
     }
 
-    // Default to the first category that has images
     if (availableCategories.value.length > 0) {
         activeType.value = availableCategories.value[0].key;
     }
@@ -74,14 +68,11 @@ async function setAsPreferred(imageType, imagePath) {
 }
 
 function updateDomData(imageType, imagePath) {
-    // Best practice would be to emit the change, but this will 
-    // suffice for now until it starts causing problems.
     const userDetailKey = `chosen_${imageType}_image_path`;
     if (props.userDetails.hasOwnProperty(userDetailKey)) {
         props.userDetails[userDetailKey] = imagePath;
     }
 
-    // Update the values in the modal as well.
     const categoryKey = `${imageType}s`; 
     const category = imageData.value[categoryKey];
 
@@ -120,10 +111,11 @@ function updateDomData(imageType, imagePath) {
 
                 <hr>
 
-                <select v-model="localeFilter">
-                    <option value="all" selected>All</option>
+                <select v-model="localeFilters[activeType]">
+                    <option value="all">All</option>
                     <option 
                         v-for="locale in currentCategory?.available_locale"
+                        :key="locale"
                         :value="locale"
                     >
                         {{ locale === null ? 'No locale' : locale }}
@@ -159,10 +151,7 @@ function updateDomData(imageType, imagePath) {
                         </div>
     
                         <div class="details">
-                            <div>
-                                {{ image?.vote_average }} / 10
-                                ({{ image?.vote_count }} votes)
-                            </div>
+                            <div>{{ image?.vote_average }} / 10</div>
                             <div class="resolution">{{ image?.width }}px x {{ image?.height }}px</div>
                             <div class="locale">{{ image?.locale ?? 'No locale' }}</div>
                         </div>
