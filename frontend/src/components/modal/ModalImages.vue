@@ -63,6 +63,34 @@ async function open() {
 
     modalRef.value.open();
 }
+
+async function setAsPreferred(imageType, imagePath) {
+    const isTitle = !!props.titleId;
+    const id = props.titleId || props.seasonId;
+    const apiTarget = isTitle ? fastApi.titles : fastApi.seasons;
+
+    await apiTarget.imagesSetPreference(id, imageType, { image_path: imagePath });
+    updateDomData(imageType, imagePath);
+}
+
+function updateDomData(imageType, imagePath) {
+    // Best practice would be to emit the change, but this will 
+    // suffice for now until it starts causing problems.
+    const userDetailKey = `chosen_${imageType}_image_path`;
+    if (props.userDetails.hasOwnProperty(userDetailKey)) {
+        props.userDetails[userDetailKey] = imagePath;
+    }
+
+    // Update the values in the modal as well.
+    const categoryKey = `${imageType}s`; 
+    const category = imageData.value[categoryKey];
+
+    if (category?.images) {
+        category.images.forEach(img => {
+            img.is_user_choice = (img.file_path === imagePath);
+        });
+    }
+}
 </script>
 
 <template>
@@ -124,7 +152,7 @@ async function open() {
                             <button
                                 class="btn-square btn-text"
                                 :class="{'subtle': !image?.is_user_choice}"
-                                @click="image.is_user_choice = !image.is_user_choice"
+                                @click="setAsPreferred(image.type, image.is_user_choice ? null: image.file_path)"
                             >
                                 <i class="bx" :class="image?.is_user_choice ? 'bxs-star' : 'bx-star'"></i>
                             </button>
