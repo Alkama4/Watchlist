@@ -87,6 +87,11 @@ class ImageListsOut(BaseModel):
     backdrops: ImageListOut
     logos: ImageListOut
 
+
+class ImagePreferenceIn(BaseModel):
+    image_path: Optional[str] = None
+    
+
 ####### Titles #######
 
 class GenreElement(BaseModel):
