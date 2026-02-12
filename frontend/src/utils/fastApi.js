@@ -205,6 +205,11 @@ export const fastApi = {
             method: 'get',
             url: `/seasons/${seasonId}/images`
         }),
+        imagesSetPreference: async (seasonId, imageType, data) => fetchData({
+            method: 'put',
+            url: `/seasons/${seasonId}/images/${imageType}`,
+            data
+        }),
     },
     media: {
         image: async (size, image_path) => fetchData({
