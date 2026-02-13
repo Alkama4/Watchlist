@@ -144,7 +144,7 @@ function updateDomData(imageType, imagePath) {
                         <i class="bx bx-link-external"></i>
                     </a>
 
-                    <div class="flex-row">
+                    <div class="details-section">
                         <div class="star-wrapper">
                             <button
                                 class="btn-square btn-text"
@@ -156,9 +156,8 @@ function updateDomData(imageType, imagePath) {
                         </div>
     
                         <div class="details">
-                            <div>{{ image?.vote_average }} / 10</div>
                             <div class="resolution">{{ image?.width }}px x {{ image?.height }}px</div>
-                            <div class="locale">{{ image?.locale ?? 'No locale' }}</div>
+                            <div class="rest">{{ image?.vote_average.toFixed(1) }} &bull; {{ image?.locale ?? 'No locale' }}</div>
                         </div>
                     </div>
                 </div>
@@ -210,6 +209,7 @@ hr {
 
     a {
         position: relative;
+        display: flex;
 
         img {
             width: 100%;
@@ -235,28 +235,35 @@ hr {
         }
     }
 
-    .star-wrapper {
+
+    .details-section {
         display: flex;
         align-items: center;
-        margin-right: var(--spacing-xs-sm);
+        padding-top: var(--spacing-sm);
 
-        i {
-            font-size: var(--fs-2);
+        .star-wrapper {
+            display: flex;
+            align-items: center;
+            margin-right: var(--spacing-xs-sm);
+
+            i {
+                font-size: var(--fs-2);
+            }
+        }
+
+        .details {
+            font-size: var(--fs-neg-1);
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+            color: var(--c-text);
+    
+            .rest {
+                color: var(--c-text-soft)
+            }
         }
     }
 
-    .details {
-        font-size: var(--fs-neg-1);
-        margin-top: var(--spacing-sm);
-        display: flex;
-        flex-direction: column;
-        gap: var(--spacing-xs);
-
-        .resolution,
-        .locale {
-            color: var(--c-text-soft);
-        }
-    }
 
     &.user-choice {
         background-color: var(--c-favourite);
