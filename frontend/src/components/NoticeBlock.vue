@@ -53,6 +53,7 @@ defineProps({
     padding: var(--spacing-sm);
     border-radius: var(--border-radius-md);
     backdrop-filter: blur(var(--blur-subtle));
+    min-width: 20rem;
 }
 .notice.info {
     background-color: var(--c-watchlist-transparent);
