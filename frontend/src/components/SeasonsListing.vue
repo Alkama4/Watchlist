@@ -12,7 +12,7 @@ defineProps({
 </script>
 
 <template>
-    <div class="carousel layout-contained">
+    <div class="season-listing">
         <h4>Seasons</h4>
         <div class="seasons-wrapper">
             <router-link
@@ -46,6 +46,10 @@ defineProps({
 </template>
 
 <style scoped>
+.season-listing {
+    margin-top: var(--spacing-lg);
+}
+
 .seasons-wrapper {
     display: flex;
     flex-direction: column;

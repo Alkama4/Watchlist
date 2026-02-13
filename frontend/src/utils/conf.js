@@ -4,10 +4,12 @@ export const API_BASE_URL = import.meta.env.DEV
     : '/api';
 
 export const preferredLocale = {
+    iso_639_1: "fi",
     iso_3166_1: "FI",
     tag: "fi-FI"
 }
 export const fallbackLocale = {
+    iso_639_1: "en",
     iso_3166_1: "US",
     tag: "en-US"
 }

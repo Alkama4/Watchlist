@@ -7,6 +7,7 @@ import { getTitleImageUrl } from '@/utils/imagePath';
 import { ref, computed } from 'vue';
 import Tmdb from '@/assets/icons/tmdb.svg'
 import Imdb from '@/assets/icons/imdb.svg'
+import JustWatch from '@/assets/icons/justWatch.svg'
 import NoticeBlock from '@/components/NoticeBlock.vue';
 import { preferredLocale, fallbackLocale } from '@/utils/conf';
 import ModalBase from '@/components/modal/ModalBase.vue';
@@ -144,11 +145,80 @@ const tmdbEditAgeRatingUrl = computed(() => {
             />
     
             <div class="main-info">
-                <img 
-                    :src="getTitleImageUrl(titleDetails, 'original', 'poster')"
-                    :alt="`${titleDetails?.type} poster: ${titleDetails?.name}`"
-                    class="poster"
-                >
+                <div class="left-side">
+                    <img 
+                        :src="getTitleImageUrl(titleDetails, 'original', 'poster')"
+                        :alt="`${titleDetails?.type} poster: ${titleDetails?.name}`"
+                        class="poster"
+                    >
+
+                    <div class="watch-count-buttons">
+                        <button
+                            @click="addToTitleWatchCount"
+                            :class="titleDetails?.user_details?.watch_count ? 'btn-positive' : 'btn-primary'"
+                        >
+                            <template v-if="!titleDetails?.user_details?.watch_count">
+                                Mark watched
+                            </template>
+                            <template v-else-if="titleDetails?.user_details?.watch_count == 1">
+                                <i class="bx bx-check"></i>
+                                Watched
+                            </template>
+                            <template v-else-if="titleDetails?.user_details?.watch_count > 1">
+                                {{ titleDetails?.user_details?.watch_count }}
+                                watches
+                            </template>
+                        </button>
+                        <button 
+                            v-if="titleDetails?.user_details?.watch_count"
+                            @click="removeFromTitleWatchCount"
+                        >
+                            <i class="bx bx-minus"></i>
+                        </button>
+                    </div>
+
+                    <div class="links">
+                        <h4>External Links</h4>
+                        <div class="links-wrapper">
+                            <a
+                                :href="`https://www.themoviedb.org/${titleDetails?.title_type}/${titleDetails?.tmdb_id}`"
+                                target="_blank"
+                                class="btn btn-square btn-text"
+                            >
+                                <Tmdb class="four-letter"/>
+                            </a>
+                            <a
+                                v-if="titleDetails?.imdb_id"
+                                :href="`https://www.imdb.com/title/${titleDetails?.imdb_id}`"
+                                target="_blank"
+                                class="btn btn-square btn-text"
+                            >
+                                <Imdb class="four-letter"/>
+                            </a>
+                            <a
+                                v-if="titleDetails?.homepage"
+                                :href="titleDetails?.homepage"
+                                target="_blank"
+                                class="btn btn-square btn-text"
+                            >
+                                <i class="bx bx-link"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="links">
+                        <h4>Where to Watch</h4>
+                        <div class="links-wrapper">
+                            <a
+                                :href="`https://www.justwatch.com/${preferredLocale.iso_639_1}/search?q=${titleDetails?.name_original}`"
+                                target="_blank"
+                                class="btn btn-square btn-text"
+                            >
+                                <JustWatch/>
+                            </a>
+                        </div>
+                    </div>
+                </div>
                 
                 <div class="right-side">
                     <div class="name-part">
@@ -220,30 +290,6 @@ const tmdbEditAgeRatingUrl = computed(() => {
                         <button >Remove</button>
                     </div> -->
     
-                    <div class="watch-count-buttons">
-                        <button
-                            @click="addToTitleWatchCount"
-                            :class="titleDetails?.user_details?.watch_count ? 'btn-positive' : 'btn-primary'"
-                        >
-                            <template v-if="!titleDetails?.user_details?.watch_count">
-                                Mark watched
-                            </template>
-                            <template v-else-if="titleDetails?.user_details?.watch_count == 1">
-                                <i class="bx bx-check"></i>
-                                Watched
-                            </template>
-                            <template v-else-if="titleDetails?.user_details?.watch_count > 1">
-                                {{ titleDetails?.user_details?.watch_count }}
-                                watches
-                            </template>
-                        </button>
-                        <button 
-                            v-if="titleDetails?.user_details?.watch_count"
-                            @click="removeFromTitleWatchCount"
-                        >
-                            <i class="bx bx-minus"></i>
-                        </button>
-                    </div>
                     <div class="actions">
                         <i
                             class="bx bxs-heart btn btn-text btn-square"
@@ -296,42 +342,16 @@ const tmdbEditAgeRatingUrl = computed(() => {
 
                         <!-- <button @click="$refs.EpisodeGraphModal.open()">Episode Rating Graphs</button> -->
                     </div>
+                    
+                    <SeasonsListing 
+                        v-if="titleDetails?.title_type === 'tv'" 
+                        :titleDetails="titleDetails"
+                        :class="{'layout-spacing-bottom': !similarTitles?.titles?.length > 0}"
+                    />
                 </div>
-            </div>
-    
-            <h4>Links</h4>
-            <div class="links">
-                <a
-                    :href="`https://www.themoviedb.org/${titleDetails?.title_type}/${titleDetails?.tmdb_id}`"
-                    target="_blank"
-                    class="btn btn-square btn-text"
-                >
-                    <Tmdb/>
-                </a>
-                <a
-                    v-if="titleDetails?.imdb_id"
-                    :href="`https://www.imdb.com/title/${titleDetails?.imdb_id}`"
-                    target="_blank"
-                    class="btn btn-square btn-text"
-                >
-                    <Imdb/>
-                </a>
-                <a
-                    v-if="titleDetails?.homepage"
-                    :href="titleDetails?.homepage"
-                    target="_blank"
-                    class="btn btn-square btn-text"
-                >
-                    <i class="bx bx-link"></i>
-                </a>
             </div>
         </div>
 
-        <SeasonsListing 
-            v-if="titleDetails?.title_type === 'tv'" 
-            :titleDetails="titleDetails"
-            :class="{'layout-spacing-bottom': !similarTitles?.titles?.length > 0}"
-        />
 
         <TitleCarousel 
             v-if="similarTitles?.titles?.length > 0"
@@ -411,6 +431,12 @@ const tmdbEditAgeRatingUrl = computed(() => {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-md);
+}
+
+.left-side {
+    display: flex;
+    flex-direction: column;
+    /* gap: var(--spacing-md); */
 }
 
 
@@ -514,13 +540,15 @@ img.poster {
 }
 
 .watch-count-buttons {
-    margin-bottom: var(--spacing-md);
+    margin-top: var(--spacing-md);
+    display: flex;
 
     i {
         /* transform: scale(1.5); */
         font-size: var(--fs-1);
     }
     button {
+        flex: 3;
         height: 35.2px;
     }
     button:first-child:not(:last-child) {
@@ -528,6 +556,7 @@ img.poster {
         border-bottom-right-radius: 0;
     }
     button:last-child:not(:first-child) {
+        flex: 1;
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;
     }
@@ -538,7 +567,11 @@ img.poster {
     display: flex;
     gap: var(--spacing-sm);
 }
-.links {
+
+/* .links h4 {
+    margin-top: 0;
+} */
+.links-wrapper {
     display: flex;
     
     .btn {
@@ -548,6 +581,10 @@ img.poster {
         text-decoration: none;
 
         svg {
+            width: 27.65px;
+            height: auto;
+        }
+        svg.four-letter {
             width: 42px;
             height: auto;
         }
