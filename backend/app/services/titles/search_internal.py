@@ -239,6 +239,7 @@ def _add_subqueries(stmt):
     season_count_subq = (
         select(func.count(Season.season_id))
         .where(Season.title_id == Title.title_id)
+        .where(Season.season_number != 0)
         .scalar_subquery()
     )
 
@@ -246,6 +247,7 @@ def _add_subqueries(stmt):
         select(func.count(Episode.episode_id))
         .join(Season, Season.season_id == Episode.season_id)
         .where(Season.title_id == Title.title_id)
+        .where(Season.season_number != 0)
         .scalar_subquery()
     )
 
