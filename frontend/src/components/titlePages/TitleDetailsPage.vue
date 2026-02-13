@@ -121,7 +121,7 @@ const tmdbEditAgeRatingUrl = computed(() => {
 
 <template>
     <div class="title-details-page">
-        <div class="layout-contained layout-spacing-top">
+        <div class="layout-contained layout-spacing-top" :class="{'layout-spacing-bottom': titleDetails?.title_type === 'movie'}">
             <img 
                 :src="getTitleImageUrl(titleDetails, 'original', 'backdrop')"
                 :alt="`${titleDetails?.type} backdrop: ${titleDetails?.name}`"
@@ -327,9 +327,17 @@ const tmdbEditAgeRatingUrl = computed(() => {
             </div>
         </div>
 
-        <SeasonsListing v-if="titleDetails?.title_type === 'tv'" :titleDetails="titleDetails"/>
+        <SeasonsListing 
+            v-if="titleDetails?.title_type === 'tv'" 
+            :titleDetails="titleDetails"
+            :class="{'layout-spacing-bottom': !similarTitles?.titles?.length > 0}"
+        />
 
-        <TitleCarousel :carouselData="similarTitles" class="layout-spacing-bottom"/>
+        <TitleCarousel 
+            v-if="similarTitles?.titles?.length > 0"
+            :carouselData="similarTitles"
+            class="layout-spacing-bottom"
+        />
 
 
         <!-- Modals -->
