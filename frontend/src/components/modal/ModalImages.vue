@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, inject } from 'vue'
 import ModalBase from '@/components/modal/ModalBase.vue'
 import { fastApi } from '@/utils/fastApi';
 import { buildImageUrl } from '@/utils/imagePath';
@@ -11,6 +11,8 @@ const props = defineProps({
 })
 
 defineExpose({ open })
+
+const updateChosenImage = inject('updateChosenImage')
 
 const imageData = ref({ posters: {}, backdrops: {}, logos: {} });
 const activeType = ref('posters');
@@ -68,11 +70,14 @@ async function setAsPreferred(imageType, imagePath) {
 }
 
 function updateDomData(imageType, imagePath) {
-    const userDetailKey = `chosen_${imageType}_image_path`;
-    if (props.userDetails.hasOwnProperty(userDetailKey)) {
-        props.userDetails[userDetailKey] = imagePath;
-    }
+    // Notify the parent component
+    updateChosenImage({ 
+        imageType,
+        imagePath,
+        seasonId: props.seasonId ?? null
+    });
 
+    // Update the internal data as well
     const categoryKey = `${imageType}s`; 
     const category = imageData.value[categoryKey];
 

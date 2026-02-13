@@ -1,7 +1,7 @@
 <script setup>
 import LoadingIndicator from '@/components/LoadingIndicator.vue';
 import NotFoundPage from './NotFoundPage.vue';
-import { nextTick, onMounted, ref, watch } from 'vue';
+import { nextTick, onMounted, provide, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import TitleDetailsPage from '@/components/titlePages/TitleDetailsPage.vue';
 import { fastApi } from '@/utils/fastApi';
@@ -35,6 +35,19 @@ async function loadTitleData() {
         pageLoading.value = false;
     }
 }
+
+const handleChosenImageUpdate = (data) => {
+    const userDetailKey = `chosen_${data.imageType}_image_path`;
+    if (!data.seasonId) {
+        titleDetails.value.user_details[userDetailKey] = data.imagePath;
+    } else {
+        const season = titleDetails.value.seasons.find((s) => s.season_id === data.seasonId)
+        if (!season.user_details) season.user_details = {}; 
+        season.user_details[userDetailKey] = data.imagePath;
+    }
+}
+
+provide('updateChosenImage', handleChosenImageUpdate)
 
 // Fetch data initially
 onMounted(async () => {
@@ -83,6 +96,7 @@ watch(pageLoading, (newLoading) => {
             v-else 
             :titleDetails="titleDetails"
             :similarTitles="similarTitles"
+            @chosenImageUpdate="handleChosenImageUpdate"
         />
     </div>
 </template>
