@@ -17,7 +17,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="home-page">
+    <div class="home-page layout-spacing-bottom">
         <TitleHeroCards
             :heroCards="homeData?.hero_cards"
         />
