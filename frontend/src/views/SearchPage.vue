@@ -105,7 +105,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="search-page layout-contained">
+    <div class="search-page layout-contained layout-spacing-bottom">
         <h1>Search</h1>
         <div class="filters">
             <SearchFilter label="Type" :disabled="searchStore.tmdbFallback">
@@ -185,7 +185,6 @@ onUnmounted(() => {
                 :store-image-flag="!searchStore.tmdbFallback"
             />
         </div>
-
     </div>
 </template>
 
