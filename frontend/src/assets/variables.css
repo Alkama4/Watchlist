@@ -11,6 +11,7 @@
     --c-watchlist:  oklch(32.8% 0.065 240);
     --c-favourite:  oklch(51.196% 0.175 14);
     --c-neutral:    oklch(40% 0 0 / 33%);
+    /* --c-neutral:    oklch(28% 0 0); */
     --c-positive:   oklch(58% 0.14 155);
     --c-warning:    oklch(75% 0.14 80);
     --c-negative:   oklch(52% 0.14 27);
