@@ -44,11 +44,7 @@ const maxEpisodeCount = computed(() => {
                 :key="episode?.episode_id" 
                 class="tile"
                 :style="{ 
-                    backgroundColor: `
-                        hsla(var(--c-positive-h),
-                        var(--c-positive-s),
-                        var(--c-positive-l),
-                        ${getRatingOpacity(episode?.tmdb_vote_average)})
+                    backgroundColor: `oklch(from var(--c-positive) calc(l + var(--l-step-1)) c h / ${getRatingOpacity(episode?.tmdb_vote_average)})
                     `,
                 }"
                 :title="`S${season?.season_number}E${episode?.episode_number}`"
