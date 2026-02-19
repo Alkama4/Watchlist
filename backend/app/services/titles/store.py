@@ -8,6 +8,8 @@ from app.services.images import select_best_image, store_image_details
 from app.services.genres import store_title_genres
 from app.services.languages import get_preferred_locale, get_user_languages
 from app.models import (
+    EpisodeTranslation,
+    SeasonTranslation,
     TitleTranslation,
     TitleType,
     ImageType,
@@ -19,29 +21,26 @@ from app.models import (
 
 
 async def coordinate_title_fetching(db: AsyncSession, title_type: str, tmdb_id: int, user_id: int):
-    try:
-        # Figure out the locale
-        locale = await get_preferred_locale(db=db, user_id=user_id, tmdb_id=tmdb_id, title_type=title_type)
-        user_image_languages = await get_user_languages(db=db, user_id=user_id)
+    # Figure out the locale
+    locale = await get_preferred_locale(db=db, user_id=user_id, tmdb_id=tmdb_id, title_type=title_type)
+    user_image_languages = await get_user_languages(db=db, user_id=user_id)
 
-        # Fetch the title
-        if title_type is TitleType.movie:
-            tmdb_data = await tmdb.fetch_movie(tmdb_id, locale, user_image_languages)
-        elif title_type is TitleType.tv:
-            tmdb_data = await tmdb.fetch_tv(tmdb_id, locale, user_image_languages)
-        else:
-            raise ValueError("Invalid title type")
+    # Fetch the title
+    if title_type is TitleType.movie:
+        tmdb_data = await tmdb.fetch_movie(tmdb_id, locale, user_image_languages)
+    elif title_type is TitleType.tv:
+        tmdb_data = await tmdb.fetch_tv(tmdb_id, locale, user_image_languages)
+    else:
+        raise ValueError("Invalid title type")
 
-        # Store
-        if title_type is TitleType.movie:
-            title_id = await _store_movie(db, tmdb_data, user_id, locale)
-        else:
-            title_id = await _store_tv(db, tmdb_data, user_id, locale, user_image_languages)
+    # Store
+    if title_type is TitleType.movie:
+        title_id = await _store_movie(db, tmdb_data, user_id, locale)
+    else:
+        title_id = await _store_tv(db, tmdb_data, user_id, locale, user_image_languages)
 
-        return title_id
+    return title_id
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 async def _store_movie(db: AsyncSession, tmdb_data: dict, user_id: int, locale: str) -> int:
@@ -116,7 +115,13 @@ async def _store_movie(db: AsyncSession, tmdb_data: dict, user_id: int, locale: 
     return title_id
 
 
-async def store_tv(db: AsyncSession, tmdb_data: dict) -> int:
+async def _store_tv(
+    db: AsyncSession,
+    tmdb_data: dict,
+    user_id: int,
+    locale: str,
+    user_image_languages: str
+) -> int:
     release_date_str = tmdb_data.get("first_air_date")
     release_date = datetime.strptime(release_date_str, "%Y-%m-%d").date() if release_date_str else None
 
@@ -125,12 +130,9 @@ async def store_tv(db: AsyncSession, tmdb_data: dict) -> int:
         tmdb_id=tmdb_data["id"],
         imdb_id=tmdb_data["external_ids"]["imdb_id"],
         title_type=TitleType.tv,
-        name=tmdb_data["name"],
         name_original=tmdb_data["original_name"],
-        tagline=tmdb_data["tagline"],
         tmdb_vote_average=tmdb_data["vote_average"],
         tmdb_vote_count=tmdb_data["vote_count"],
-        overview=tmdb_data["overview"],
         release_date=release_date,
         original_language=tmdb_data["original_language"],
         origin_country=",".join(tmdb_data["origin_country"]),
@@ -138,12 +140,9 @@ async def store_tv(db: AsyncSession, tmdb_data: dict) -> int:
     ).on_conflict_do_update(
         index_elements=["tmdb_id"],
         set_={
-            "name": tmdb_data["name"],
             "name_original": tmdb_data["original_name"],
-            "tagline": tmdb_data["tagline"],
             "tmdb_vote_average": tmdb_data["vote_average"],
             "tmdb_vote_count": tmdb_data["vote_count"],
-            "overview": tmdb_data["overview"],
             "release_date": release_date,
             "original_language": tmdb_data["original_language"],
             "origin_country": ",".join(tmdb_data["origin_country"]),
@@ -156,16 +155,18 @@ async def store_tv(db: AsyncSession, tmdb_data: dict) -> int:
     await db.flush()
 
     # Store less straight forward stuff using helpers
+    await _store_title_translation(db=db, title_id=title_id, tmdb_data=tmdb_data, locale=locale)
     await store_image_details(db=db, title_id=title_id, images=tmdb_data.get("images", {}))
     await store_title_genres(db=db, title_id=title_id, genres=tmdb_data.get("genres", []))
     await _store_tv_age_ratings(db=db, title_id=title_id, ratings=tmdb_data.get("content_ratings", {}).get("results", []))
 
     # Pick the best images for default paths
     title_images = tmdb_data.get("images", {})
+    languages = await get_user_languages(db=db, user_id=user_id, as_string=False)
     chosen_images = {
-        "poster": select_best_image(title_images.get("posters") or [], ["en", "fi", None]),
-        "backdrop": select_best_image(title_images.get("backdrops") or [], [None, "en", "fi"]),
-        "logo": select_best_image(title_images.get("logos") or [], ["en", "fi", None])
+        "poster": select_best_image(title_images.get("posters") or [], languages + [None]),
+        "backdrop": select_best_image(title_images.get("backdrops") or [], [None] + languages),
+        "logo": select_best_image(title_images.get("logos") or [], languages + [None])
     }
 
     # Update title with default image paths
@@ -180,29 +181,41 @@ async def store_tv(db: AsyncSession, tmdb_data: dict) -> int:
     )
 
     # Fetch seasons and episodes
-    await _fetch_and_store_tv_seasons_and_episodes(db, title_id, tmdb_data)
+    await _fetch_and_store_tv_seasons_and_episodes(
+        db=db,
+        title_id=title_id,
+        tmdb_data=tmdb_data,
+        locale=locale,
+        user_image_languages=user_image_languages
+    )
 
     await db.commit()
     return title_id
 
 
-async def _fetch_and_store_tv_seasons_and_episodes(db: AsyncSession, title_id: int, tmdb_data: dict):
+async def _fetch_and_store_tv_seasons_and_episodes(
+    db: AsyncSession,
+    title_id: int,
+    tmdb_data: dict,
+    locale: str,
+    user_image_languages: str
+):
     for season in tmdb_data.get("seasons", []):
-        season_data = await tmdb.fetch_tv_season(tmdb_data["id"], season["season_number"])
+        season_data = await tmdb.fetch_tv_season(
+            tmdb_data["id"],
+            season["season_number"],
+            locale,
+            user_image_languages
+        )
 
-        # Upsert season without default poster
         stmt = insert(Season).values(
             title_id=title_id,
             season_number=season["season_number"],
-            season_name=season.get("name"),
             tmdb_vote_average=season.get("vote_average"),
-            overview=season.get("overview")
         ).on_conflict_do_update(
             index_elements=["title_id", "season_number"],
             set_={
-                "season_name": season.get("name"),
                 "tmdb_vote_average": season.get("vote_average"),
-                "overview": season.get("overview")
             }
         ).returning(Season.season_id)
 
@@ -210,11 +223,25 @@ async def _fetch_and_store_tv_seasons_and_episodes(db: AsyncSession, title_id: i
         season_id = result.scalar_one()
         await db.flush()
 
-        # Store season images
-        await store_image_details(db=db, season_id=season_id, images=season_data.get("images", {}))
+        # Store season translation (current locale only)
+        await _store_season_translation(
+            db=db,
+            season_id=season_id,
+            season_data=season_data,
+            locale=locale
+        )
 
-        # Update season with default poster now that images exist
-        poster_image_path = select_best_image(season_data.get("images", {}).get("posters"), ["en", "fi", None])
+        await store_image_details(
+            db=db,
+            season_id=season_id,
+            images=season_data.get("images", {})
+        )
+
+        poster_image_path = select_best_image(
+            season_data.get("images", {}).get("posters"),
+            ["en", "fi", None]
+        )
+
         if poster_image_path:
             await db.execute(
                 update(Season)
@@ -222,29 +249,28 @@ async def _fetch_and_store_tv_seasons_and_episodes(db: AsyncSession, title_id: i
                 .values(default_poster_image_path=poster_image_path)
             )
 
-        # Upsert episodes
         episode_images = []
+
         for ep in season_data.get("episodes", []):
             air_date_str = ep.get("air_date")
-            air_date = datetime.strptime(air_date_str, "%Y-%m-%d").date() if air_date_str else None
+            air_date = (
+                datetime.strptime(air_date_str, "%Y-%m-%d").date()
+                if air_date_str else None
+            )
 
             stmt = insert(Episode).values(
                 season_id=season_id,
                 title_id=title_id,
                 episode_number=ep["episode_number"],
-                episode_name=ep.get("name"),
                 tmdb_vote_average=ep.get("vote_average"),
                 tmdb_vote_count=ep.get("vote_count"),
-                overview=ep.get("overview"),
                 air_date=air_date,
                 runtime=ep.get("runtime")
             ).on_conflict_do_update(
                 index_elements=["season_id", "episode_number"],
                 set_={
-                    "episode_name": ep.get("name"),
                     "tmdb_vote_average": ep.get("vote_average"),
                     "tmdb_vote_count": ep.get("vote_count"),
-                    "overview": ep.get("overview"),
                     "air_date": air_date,
                     "runtime": ep.get("runtime")
                 }
@@ -253,7 +279,14 @@ async def _fetch_and_store_tv_seasons_and_episodes(db: AsyncSession, title_id: i
             result = await db.execute(stmt)
             episode_id = result.scalar_one()
 
-            # Collect episode backdrop for later
+            # Store episode translation (current locale only)
+            await _store_episode_translation(
+                db=db,
+                episode_id=episode_id,
+                episode_data=ep,
+                locale=locale
+            )
+
             still_path = ep.get("still_path")
             if still_path:
                 episode_images.append({
@@ -262,17 +295,20 @@ async def _fetch_and_store_tv_seasons_and_episodes(db: AsyncSession, title_id: i
                     "type": ImageType.backdrop
                 })
 
-        # Store episode images
         if episode_images:
-            await store_image_details(db=db, images={"backdrops": episode_images})
+            await store_image_details(
+                db=db,
+                images={"backdrops": episode_images}
+            )
 
-        # Update episodes with default_backdrop_image_path if needed
         for ep in season_data.get("episodes", []):
             if ep.get("still_path"):
                 await db.execute(
                     update(Episode)
-                    .where(Episode.episode_number == ep["episode_number"], 
-                           Episode.season_id == season_id)
+                    .where(
+                        Episode.season_id == season_id,
+                        Episode.episode_number == ep["episode_number"]
+                    )
                     .values(default_backdrop_image_path=ep["still_path"])
                 )
 
@@ -288,17 +324,71 @@ async def _store_title_translation(db: AsyncSession, title_id: int, tmdb_data: d
         title_id=title_id,
         iso_3166_1=iso_3166,
         iso_639_1=iso_639,
-        name=tmdb_data["title"] or tmdb_data["name"], 
+        name=tmdb_data.get("title") or tmdb_data.get("name"), 
         tagline=tmdb_data["tagline"],
         overview=tmdb_data["overview"]
     ).on_conflict_do_update(
         index_elements=["title_id", "iso_3166_1", "iso_639_1"],
         set_={
-            "name": tmdb_data["title"] or tmdb_data["name"],
+            "name": tmdb_data.get("title") or tmdb_data.get("name"),
             "tagline": tmdb_data["tagline"],
             "overview": tmdb_data["overview"]
         }
     )
+    await db.execute(stmt)
+
+
+async def _store_season_translation(
+    db: AsyncSession,
+    season_id: int,
+    season_data: dict,
+    locale: str
+):
+    parts = locale.split("-")
+    iso_639 = parts[0]
+    iso_3166 = parts[1] if len(parts) > 1 else ""
+
+    stmt = insert(SeasonTranslation).values(
+        season_id=season_id,
+        iso_3166_1=iso_3166,
+        iso_639_1=iso_639,
+        name=season_data.get("name"),
+        overview=season_data.get("overview")
+    ).on_conflict_do_update(
+        index_elements=["season_id", "iso_3166_1", "iso_639_1"],
+        set_={
+            "name": season_data.get("name"),
+            "overview": season_data.get("overview")
+        }
+    )
+
+    await db.execute(stmt)
+
+
+async def _store_episode_translation(
+    db: AsyncSession,
+    episode_id: int,
+    episode_data: dict,
+    locale: str
+):
+    parts = locale.split("-")
+    iso_639 = parts[0]
+    iso_3166 = parts[1] if len(parts) > 1 else ""
+
+    stmt = insert(EpisodeTranslation).values(
+        episode_id=episode_id,
+        iso_3166_1=iso_3166,
+        iso_639_1=iso_639,
+        name=episode_data.get("name"),
+        overview=episode_data.get("overview")
+    ).on_conflict_do_update(
+        index_elements=["episode_id", "iso_3166_1", "iso_639_1"],
+        set_={
+            "name": episode_data.get("name"),
+            "overview": episode_data.get("overview")
+        }
+    )
+
     await db.execute(stmt)
 
 

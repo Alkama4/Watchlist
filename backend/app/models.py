@@ -114,6 +114,8 @@ class Title(Base):
         server_onupdate=func.now()
     )
 
+    translations = relationship("TitleTranslation", back_populates="title", lazy="noload")
+    user_details = relationship("UserTitleDetails", back_populates="title", lazy="noload")
     seasons = relationship("Season", back_populates="title", cascade="all, delete-orphan")
     genres = relationship("TitleGenre", back_populates="title", cascade="all, delete-orphan")
     age_ratings = relationship("TitleAgeRatings", cascade="all, delete-orphan")
@@ -142,6 +144,8 @@ class Season(Base):
         server_onupdate=func.now()
     )
 
+    translations = relationship("SeasonTranslation", back_populates="season", lazy="noload")
+    user_details = relationship("UserSeasonDetails", back_populates="season", lazy="noload")
     title = relationship("Title", back_populates="seasons")
     episodes = relationship("Episode", back_populates="season", cascade="all, delete-orphan")
 
@@ -171,6 +175,8 @@ class Episode(Base):
         server_onupdate=func.now()
     )
 
+    translations = relationship("EpisodeTranslation", back_populates="episode", lazy="noload")
+    user_details = relationship("UserEpisodeDetails", back_populates="episode", lazy="noload")
     season = relationship("Season", back_populates="episodes")
     title = relationship("Title")
 
@@ -200,6 +206,7 @@ class UserTitleDetails(Base):
     last_watched_at = Column(DateTime(timezone=True))
     last_viewed_at = Column(DateTime(timezone=True))
 
+    title = relationship("Title", back_populates="user_details")
     chosen_poster = relationship("Image", foreign_keys=[chosen_poster_image_path], viewonly=True)
     chosen_backdrop = relationship("Image", foreign_keys=[chosen_backdrop_image_path], viewonly=True)
     chosen_logo = relationship("Image", foreign_keys=[chosen_logo_image_path], viewonly=True)
@@ -213,6 +220,7 @@ class UserSeasonDetails(Base):
     chosen_poster_image_path = Column(String(255), ForeignKey("images.file_path"))
     notes = Column(Text)
 
+    season = relationship("Season", back_populates="user_details")
     chosen_poster = relationship("Image", foreign_keys=[chosen_poster_image_path], viewonly=True)
 
 
@@ -226,6 +234,7 @@ class UserEpisodeDetails(Base):
     chosen_backdrop_image_path = Column(String(255), ForeignKey("images.file_path"))
     last_watched_at = Column(DateTime(timezone=True))
 
+    episode = relationship("Episode", back_populates="user_details")
     chosen_backdrop = relationship("Image", foreign_keys=[chosen_backdrop_image_path], viewonly=True)
 
 
@@ -241,6 +250,8 @@ class TitleTranslation(Base):
     name = Column(String(255))
     overview = Column(Text)
     tagline = Column(String(255))
+
+    title = relationship("Title", back_populates="translations")
     
 
 class SeasonTranslation(Base):
@@ -252,6 +263,8 @@ class SeasonTranslation(Base):
     
     name = Column(String(255))
     overview = Column(Text)
+
+    season = relationship("Season", back_populates="translations")
     
 
 class EpisodeTranslation(Base):
@@ -263,6 +276,8 @@ class EpisodeTranslation(Base):
     
     name = Column(String(255))
     overview = Column(Text)
+
+    episode = relationship("Episode", back_populates="translations")
     
 
 ##### GENERES AND OTHER MANY TO ONE DETAILS #####
