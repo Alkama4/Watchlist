@@ -56,11 +56,15 @@ async def get_preferred_locale(
     return DEFAULT_SETTINGS.locales[0] if DEFAULT_SETTINGS.locales else "en-US"
 
 
-async def get_user_image_language_list(db: AsyncSession, user_id: int) -> str:
+async def get_user_languages(
+    db: AsyncSession, 
+    user_id: int, 
+    as_string: bool = True
+) -> list[str | None] | str:
     """
-    Return the list of languages defined settings formatted correctly, and with none added always as an option.
-
-    Example return: "en,fi,none"
+    Fetches unique language codes (iso_639_1) for user.
+    By default returns a comma seperated string list with the languages and "null".
+    If set to list returns just a list of the languages.
     """
     stmt = select(UserSetting.value).where(
         UserSetting.user_id == user_id, 
@@ -69,10 +73,7 @@ async def get_user_image_language_list(db: AsyncSession, user_id: int) -> str:
     result = await db.execute(stmt)
     raw_val = result.scalar_one_or_none()
 
-    if not raw_val:
-        locales_list = DEFAULT_SETTINGS.locales
-    else:
-        locales_list = [l.strip() for l in raw_val.split(",") if l.strip()]
+    locales_list = [l.strip() for l in raw_val.split(",") if l.strip()] if raw_val else DEFAULT_SETTINGS.locales
 
     languages = []
     for locale in locales_list:
@@ -80,6 +81,7 @@ async def get_user_image_language_list(db: AsyncSession, user_id: int) -> str:
         if lang not in languages:
             languages.append(lang)
 
-    languages.append("null")
-
-    return ",".join(languages)
+    if as_string:
+        return ",".join(languages + ["null"])
+    
+    return languages

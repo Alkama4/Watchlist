@@ -6,7 +6,7 @@ from datetime import datetime
 from app.integrations import tmdb
 from app.services.images import select_best_image, store_image_details
 from app.services.genres import store_title_genres
-from app.services.titles.settings import get_preferred_locale, get_user_image_language_list
+from app.services.languages import get_preferred_locale, get_user_languages
 from app.models import (
     TitleTranslation,
     TitleType,
@@ -22,7 +22,7 @@ async def coordinate_title_fetching(db: AsyncSession, title_type: str, tmdb_id: 
     try:
         # Figure out the locale
         locale = await get_preferred_locale(db=db, user_id=user_id, tmdb_id=tmdb_id, title_type=title_type)
-        user_image_languages = await get_user_image_language_list(db=db, user_id=user_id)
+        user_image_languages = await get_user_languages(db=db, user_id=user_id)
 
         # Fetch the title
         if title_type is TitleType.movie:
@@ -34,9 +34,9 @@ async def coordinate_title_fetching(db: AsyncSession, title_type: str, tmdb_id: 
 
         # Store
         if title_type is TitleType.movie:
-            title_id = await _store_movie(db, tmdb_data, locale)
+            title_id = await _store_movie(db, tmdb_data, user_id, locale)
         else:
-            title_id = await _store_tv(db, tmdb_data, locale, user_image_languages)
+            title_id = await _store_tv(db, tmdb_data, user_id, locale, user_image_languages)
 
         return title_id
 
@@ -44,7 +44,7 @@ async def coordinate_title_fetching(db: AsyncSession, title_type: str, tmdb_id: 
         raise HTTPException(status_code=500, detail=str(e))
 
 
-async def _store_movie(db: AsyncSession, tmdb_data: dict, locale: str) -> int:
+async def _store_movie(db: AsyncSession, tmdb_data: dict, user_id: int, locale: str) -> int:
     release_date_str = tmdb_data.get("release_date")
     release_date = datetime.strptime(release_date_str, "%Y-%m-%d").date() if release_date_str else None
 
@@ -94,10 +94,11 @@ async def _store_movie(db: AsyncSession, tmdb_data: dict, locale: str) -> int:
     await _store_movie_age_ratings(db=db, title_id=title_id, ratings=tmdb_data.get("releases", {}).get("countries", []))
 
     # Pick the best images for defaults
+    languages = await get_user_languages(db=db, user_id=user_id, as_string=False)
     chosen_images = {
-        "poster": select_best_image(tmdb_data.get("images", {}).get("posters") or [], ["en", "fi", None]),
-        "backdrop": select_best_image(tmdb_data.get("images", {}).get("backdrops") or [], [None, "en", "fi"]),
-        "logo": select_best_image(tmdb_data.get("images", {}).get("logos") or [], ["en", "fi", None])
+        "poster": select_best_image(tmdb_data.get("images", {}).get("posters") or [], languages + [None]),
+        "backdrop": select_best_image(tmdb_data.get("images", {}).get("backdrops") or [], [None] + languages),
+        "logo": select_best_image(tmdb_data.get("images", {}).get("logos") or [], languages + [None])
     }
 
     # Update title with default images
