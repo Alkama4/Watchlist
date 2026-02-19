@@ -105,9 +105,6 @@ class Title(Base):
     origin_country = Column(String(64))
     awards = Column(String(255))
     homepage = Column(Text)
-    default_poster_image_path = Column(String(64), ForeignKey("images.file_path"))
-    default_backdrop_image_path = Column(String(64), ForeignKey("images.file_path"))
-    default_logo_image_path = Column(String(64), ForeignKey("images.file_path"))
     last_updated = Column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -122,9 +119,6 @@ class Title(Base):
     
     image_links = relationship("ImageLink", back_populates="title", cascade="all, delete-orphan")
     images = association_proxy("image_links", "image")
-    default_poster = relationship("Image", foreign_keys=[default_poster_image_path], viewonly=True)
-    default_backdrop = relationship("Image", foreign_keys=[default_backdrop_image_path], viewonly=True)
-    default_logo = relationship("Image", foreign_keys=[default_logo_image_path], viewonly=True) 
 
 
 class Season(Base):
@@ -137,7 +131,6 @@ class Season(Base):
     title_id = Column(Integer, ForeignKey("titles.title_id", ondelete="CASCADE"), nullable=False)
     season_number = Column(Integer, nullable=False)
     tmdb_vote_average = Column(DECIMAL(3,1))
-    default_poster_image_path = Column(String(64), ForeignKey("images.file_path"))
     last_updated = Column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -151,7 +144,6 @@ class Season(Base):
 
     image_links = relationship("ImageLink", back_populates="season", cascade="all, delete-orphan")
     images = association_proxy("image_links", "image")
-    default_poster = relationship("Image", foreign_keys=[default_poster_image_path], viewonly=True)
 
 
 class Episode(Base):
@@ -251,8 +243,15 @@ class TitleTranslation(Base):
     overview = Column(Text)
     tagline = Column(String(255))
 
+    default_poster_image_path = Column(String(64), ForeignKey("images.file_path"), nullable=True)
+    default_backdrop_image_path = Column(String(64), ForeignKey("images.file_path"), nullable=True)
+    default_logo_image_path = Column(String(64), ForeignKey("images.file_path"), nullable=True)
+
     title = relationship("Title", back_populates="translations")
-    
+    default_poster = relationship("Image", foreign_keys=[default_poster_image_path], viewonly=True)
+    default_backdrop = relationship("Image", foreign_keys=[default_backdrop_image_path], viewonly=True)
+    default_logo = relationship("Image", foreign_keys=[default_logo_image_path], viewonly=True)
+
 
 class SeasonTranslation(Base):
     __tablename__ = "season_translations"
@@ -264,8 +263,11 @@ class SeasonTranslation(Base):
     name = Column(String(255))
     overview = Column(Text)
 
+    default_poster_image_path = Column(String(64), ForeignKey("images.file_path"), nullable=True)
+
     season = relationship("Season", back_populates="translations")
-    
+    default_poster = relationship("Image", foreign_keys=[default_poster_image_path], viewonly=True)
+
 
 class EpisodeTranslation(Base):
     __tablename__ = "episode_translations"
