@@ -14,7 +14,33 @@ from app.models import (
     TitleAgeRatings
 )
 
-async def store_movie(db: AsyncSession, tmdb_data: dict) -> int:
+
+async def coordinate_title_fetching(db: AsyncSession, title_type: str, tmdb_id: int, user_id: int):
+    try:
+        # Figure out the locale
+        locale = "en-US"
+
+        # Fetch the title
+        if title_type is TitleType.movie:
+            tmdb_data = await tmdb.fetch_movie(tmdb_id, locale)
+        elif title_type is TitleType.tv:
+            tmdb_data = await tmdb.fetch_tv(tmdb_id, locale)
+        else:
+            raise ValueError("Invalid title type")
+
+        # Store
+        if title_type is TitleType.movie:
+            title_id = await _store_movie(db, tmdb_data, locale)
+        else:
+            title_id = await _store_tv(db, tmdb_data, locale)
+
+        return title_id
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def _store_movie(db: AsyncSession, tmdb_data: dict, locale: str) -> int:
     release_date_str = tmdb_data.get("release_date")
     release_date = datetime.strptime(release_date_str, "%Y-%m-%d").date() if release_date_str else None
 
@@ -23,16 +49,13 @@ async def store_movie(db: AsyncSession, tmdb_data: dict) -> int:
         tmdb_id=tmdb_data["id"],
         imdb_id=tmdb_data["imdb_id"],
         title_type=TitleType.movie,
-        name=tmdb_data["title"],
         name_original=tmdb_data["original_title"],
-        tagline=tmdb_data["tagline"],
         tmdb_vote_average=tmdb_data["vote_average"],
         tmdb_vote_count=tmdb_data["vote_count"],
         ##### These aren't from TMDB #####
         # imdb_vote_average
         # imdb_vote_count
         # age_rating
-        overview=tmdb_data["overview"],
         movie_runtime=tmdb_data["runtime"],
         movie_revenue=tmdb_data["revenue"],
         movie_budget=tmdb_data["budget"],
@@ -43,12 +66,9 @@ async def store_movie(db: AsyncSession, tmdb_data: dict) -> int:
     ).on_conflict_do_update(
         index_elements=["tmdb_id"],
         set_={
-            "name": tmdb_data["title"],
             "name_original": tmdb_data["original_title"],
-            "tagline": tmdb_data["tagline"],
             "tmdb_vote_average": tmdb_data["vote_average"],
             "tmdb_vote_count": tmdb_data["vote_count"],
-            "overview": tmdb_data["overview"],
             "movie_runtime": tmdb_data["runtime"],
             "movie_revenue": tmdb_data["revenue"],
             "movie_budget": tmdb_data["budget"],
@@ -64,6 +84,7 @@ async def store_movie(db: AsyncSession, tmdb_data: dict) -> int:
     await db.flush()  # flush to get the ID
 
     # Store less straight forward stuff using helpers
+    await _store_title_translation(db=db, title_id=title_id, tmdb_data=tmdb_data, locale=locale)
     await store_image_details(db=db, title_id=title_id, images=tmdb_data.get("images", {}))
     await store_title_genres(db=db, title_id=title_id, genres=tmdb_data.get("genres", []))
     await _store_movie_age_ratings(db=db, title_id=title_id, ratings=tmdb_data.get("releases", {}).get("countries", []))
@@ -251,6 +272,29 @@ async def _fetch_and_store_tv_seasons_and_episodes(db: AsyncSession, title_id: i
                 )
 
     await db.commit()
+
+
+async def _store_title_translation(db: AsyncSession, title_id: int, tmdb_data: dict, locale: str):
+    parts = locale.split("-")
+    iso_639 = parts[0]
+    iso_3166 = parts[1] if len(parts) > 1 else ""
+
+    stmt = insert(TitleTranslation).values(
+        title_id=title_id,
+        iso_3166_1=iso_3166,
+        iso_639_1=iso_639,
+        name=tmdb_data["title"] or tmdb_data["name"], 
+        tagline=tmdb_data["tagline"],
+        overview=tmdb_data["overview"]
+    ).on_conflict_do_update(
+        index_elements=["title_id", "iso_3166_1", "iso_639_1"],
+        set_={
+            "name": tmdb_data["title"] or tmdb_data["name"],
+            "tagline": tmdb_data["tagline"],
+            "overview": tmdb_data["overview"]
+        }
+    )
+    await db.execute(stmt)
 
 
 async def _store_movie_age_ratings(db: AsyncSession, title_id: int, ratings: list):

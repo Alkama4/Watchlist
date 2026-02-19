@@ -7,14 +7,13 @@ from app.routers.auth import get_current_user
 from app.services.titles.read import fetch_title_with_user_details
 from app.services.titles.search_internal import run_title_search
 from app.services.titles.search_tmdb import run_and_process_tmdb_search
-from app.services.titles.store import store_movie, store_tv
+from app.services.titles.store import coordinate_title_fetching
 from app.services.titles.user_flags import set_user_title_value, set_title_watch_count
 from app.services.titles.preset_searches import fetch_similar_titles
 from app.services.images import fetch_image_details, set_user_image_choice
 from app.schemas import (
     ImageListsOut,
     ImagePreferenceIn,
-    TitleType,
     TitleIn,
     TitleWatchCountIn,
     TitleIsFavouriteIn,
@@ -72,23 +71,12 @@ async def add_new_title_to_library(
     if title:
         title_id = title.title_id
     else:
-        try:
-            # Fetch the title
-            if data.title_type is TitleType.movie:
-                tmdb_data = await tmdb.fetch_movie(data.tmdb_id)
-            elif data.title_type is TitleType.tv:
-                tmdb_data = await tmdb.fetch_tv(data.tmdb_id)
-            else:
-                raise ValueError("Invalid title type")
-
-            # Store
-            if data.title_type is TitleType.movie:
-                title_id = await store_movie(db, tmdb_data)
-            else:
-                title_id = await store_tv(db, tmdb_data)
-
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+        title_id = await coordinate_title_fetching(
+            db=db,
+            title_type=data.title_type,
+            tmdb_id=data.tmdb_id,
+            user_id=user.user_id
+        )
 
     await set_user_title_value(
         db,
@@ -155,6 +143,7 @@ async def set_title_image_preference(
 @router.put("/{title_id}")
 async def update_title_details(
     title_id: int,
+    user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     # Fetch the existing title by internal ID
@@ -163,20 +152,13 @@ async def update_title_details(
 
     if not title:
         raise HTTPException(status_code=404, detail="Title not found")
-
-    try:
-        # Fetch updated TMDB data based on the type
-        if title.title_type == TitleType.movie:
-            tmdb_data = await tmdb.fetch_movie(title.tmdb_id)
-            updated_title_id = await store_movie(db, tmdb_data)
-        elif title.title_type == TitleType.tv:
-            tmdb_data = await tmdb.fetch_tv(title.tmdb_id)
-            updated_title_id = await store_tv(db, tmdb_data)
-        else:
-            raise HTTPException(status_code=400, detail="Invalid title type")
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    
+    updated_title_id = await coordinate_title_fetching(
+        db=db,
+        title_type=title.title_type,
+        tmdb_id=title.tmdb_id,
+        user_id=user.user_id
+    )
 
     return {"title_id": updated_title_id, "updated": True}
 
