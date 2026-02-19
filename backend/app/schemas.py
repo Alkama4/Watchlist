@@ -172,7 +172,7 @@ class CardTitleOut(BaseModel):
     title_id: Optional[int] = None
     tmdb_id: Optional[int] = None
     title_type: TitleType
-    name: str
+    name: Optional[str] = None
     release_date: Optional[date] = None
     movie_runtime: Optional[int] = None
     show_season_count: Optional[int] = None
@@ -284,16 +284,16 @@ class TitleOut(BaseModel):
     tmdb_id: int
     imdb_id: str
     title_type: TitleType
-    name: str
+    name: Optional[str] = None
     name_original: str
-    tagline: str
+    tagline: Optional[str] = None
     genres: list[GenreElement] = None
     tmdb_vote_average: Optional[float]
     tmdb_vote_count: Optional[int]
     imdb_vote_average: Optional[float]
     imdb_vote_count: Optional[int]
     age_ratings: Optional[List[AgeRatingElement]] = None
-    overview: Optional[str]
+    overview: Optional[str] = None
     movie_runtime: Optional[int]
     movie_revenue: Optional[int]
     movie_budget: Optional[int]
@@ -302,9 +302,9 @@ class TitleOut(BaseModel):
     origin_country: Optional[str]
     awards: Optional[str]
     homepage: Optional[str]
-    default_poster_image_path: Optional[str]
-    default_backdrop_image_path: Optional[str]
-    default_logo_image_path: Optional[str]
+    default_poster_image_path: Optional[str] = None
+    default_backdrop_image_path: Optional[str] = None
+    default_logo_image_path: Optional[str] = None
     last_updated: datetime
 
     seasons: List[SeasonOut] = Field(default_factory=list)
