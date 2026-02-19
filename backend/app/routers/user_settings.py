@@ -43,7 +43,7 @@ async def update_user_setting(
         raise HTTPException(status_code=404, detail="Setting not found")
 
     # Determine the type from Pydantic defaults
-    expected_type = DEFAULT_SETTINGS.definitions()[key]["type"]
+    expected_type = DEFAULT_SETTINGS.get_definitions()[key]["type"]
     validate_setting_value(setting_update.value, expected_type)
 
     user_setting = await db.get(UserSetting, (current_user.user_id, key))
