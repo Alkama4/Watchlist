@@ -25,34 +25,34 @@ async def tmdb_get(path: str, params: dict | None = None) -> dict:
     return resp.json()
 
 
-async def fetch_movie(tmdb_id: int, locale: str) -> dict:
+async def fetch_movie(tmdb_id: int, locale: str, user_image_languages: str) -> dict:
     return await tmdb_get(
         f"/movie/{tmdb_id}",
         params={
             "append_to_response": "images,releases,videos",
-            "include_image_language": "en,fi,null",
+            "include_image_language": user_image_languages,
             "language": locale,
         },
     )
 
 
-async def fetch_tv(tmdb_id: int, locale: str) -> dict:
+async def fetch_tv(tmdb_id: int, locale: str, user_image_languages: str) -> dict:
     return await tmdb_get(
         f"/tv/{tmdb_id}",
         params={
             "append_to_response": "images,content_ratings,videos,external_ids",
-            "include_image_language": "en,fi,null",
+            "include_image_language": user_image_languages,
             "language": locale,
         },
     )
 
 
-async def fetch_tv_season(tmdb_id: int, season_number: int, locale: str) -> dict:
+async def fetch_tv_season(tmdb_id: int, season_number: int, locale: str, user_image_languages: str) -> dict:
     return await tmdb_get(
         f"/tv/{tmdb_id}/season/{season_number}",
         params={
             "append_to_response": "images",
-            "include_image_language": "en,fi,null",
+            "include_image_language": user_image_languages,
             "language": locale
         }
     )

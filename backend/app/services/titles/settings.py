@@ -55,3 +55,31 @@ async def get_preferred_locale(
     # 3. Fallback to System Default
     return DEFAULT_SETTINGS.locales[0] if DEFAULT_SETTINGS.locales else "en-US"
 
+
+async def get_user_image_language_list(db: AsyncSession, user_id: int) -> str:
+    """
+    Return the list of languages defined settings formatted correctly, and with none added always as an option.
+
+    Example return: "en,fi,none"
+    """
+    stmt = select(UserSetting.value).where(
+        UserSetting.user_id == user_id, 
+        UserSetting.key == "locales"
+    )
+    result = await db.execute(stmt)
+    raw_val = result.scalar_one_or_none()
+
+    if not raw_val:
+        locales_list = DEFAULT_SETTINGS.locales
+    else:
+        locales_list = [l.strip() for l in raw_val.split(",") if l.strip()]
+
+    languages = []
+    for locale in locales_list:
+        lang = locale.split("-")[0].lower()
+        if lang not in languages:
+            languages.append(lang)
+
+    languages.append("null")
+
+    return ",".join(languages)
