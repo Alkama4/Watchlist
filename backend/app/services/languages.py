@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import Title, TitleTranslation, UserTitleDetails, UserSetting
 from app.settings.config import DEFAULT_SETTINGS
 
-async def get_preferred_locale(
+async def get_user_title_locale(
     db: AsyncSession, 
     user_id: int, 
     title_id: int = None, 
@@ -18,7 +18,7 @@ async def get_preferred_locale(
     
     # 1. Check Specific Title Preference
     if title_id or (tmdb_id and title_type):
-        stmt = select(UserTitleDetails.chosen_language).join(
+        stmt = select(UserTitleDetails.chosen_locale).join(
             Title, UserTitleDetails.title_id == Title.title_id
         )
         
@@ -31,7 +31,7 @@ async def get_preferred_locale(
             filters.append(Title.tmdb_id == tmdb_id)
             filters.append(Title.title_type == title_type)
         
-        stmt = stmt.where(*filters, UserTitleDetails.chosen_language.is_not(None))
+        stmt = stmt.where(*filters, UserTitleDetails.chosen_locale.is_not(None))
         
         result = await db.execute(stmt)
 
@@ -90,15 +90,10 @@ async def get_user_languages(
 async def check_translation_availability(
     db: AsyncSession, 
     title_id: int,
-    locale: str
+    iso_639_1: str
 ):
-    parts = locale.split("-")
-    iso_639_1 = parts[0]
-    iso_3166_1 = parts[1] if len(parts) > 1 else ""
-    
     stmt = select(TitleTranslation).where(
         TitleTranslation.title_id == title_id,
-        TitleTranslation.iso_3166_1 == iso_3166_1,
         TitleTranslation.iso_639_1 == iso_639_1,
     )
     result = await db.execute(stmt)

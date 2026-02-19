@@ -295,14 +295,14 @@ async def set_title_language_for_user(
         db,
         user.user_id,
         title_id,
-        chosen_language=locale,
+        chosen_locale=locale,
         in_library=True
     )
 
     translation_exists = await check_translation_availability(
         db=db,
         title_id=title_id,
-        locale=locale
+        iso_639_1=locale.split("-")[0]
     )
 
     if (not translation_exists):

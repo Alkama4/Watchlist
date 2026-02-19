@@ -192,7 +192,7 @@ class UserTitleDetails(Base):
     chosen_poster_image_path = Column(String(255), ForeignKey("images.file_path"))
     chosen_backdrop_image_path = Column(String(255), ForeignKey("images.file_path"))
     chosen_logo_image_path = Column(String(255), ForeignKey("images.file_path"))
-    chosen_language = Column(String(16))
+    chosen_locale = Column(String(16))
 
     added_at = Column(DateTime(timezone=True), server_default=func.now())
     last_watched_at = Column(DateTime(timezone=True))
@@ -236,8 +236,7 @@ class TitleTranslation(Base):
     __tablename__ = "title_translations"
     
     title_id = Column(Integer, ForeignKey("titles.title_id", ondelete="CASCADE"), primary_key=True)
-    iso_3166_1 = Column(String(5), primary_key=True)
-    iso_639_1 = Column(String(5), primary_key=True)
+    iso_639_1 = Column(String(4), primary_key=True)
 
     name = Column(String(255))
     overview = Column(Text)
@@ -257,8 +256,7 @@ class SeasonTranslation(Base):
     __tablename__ = "season_translations"
     
     season_id = Column(Integer, ForeignKey("seasons.season_id", ondelete="CASCADE"), primary_key=True)
-    iso_3166_1 = Column(String(5), primary_key=True)
-    iso_639_1 = Column(String(5), primary_key=True)
+    iso_639_1 = Column(String(4), primary_key=True)
     
     name = Column(String(255))
     overview = Column(Text)
@@ -273,8 +271,7 @@ class EpisodeTranslation(Base):
     __tablename__ = "episode_translations"
     
     episode_id = Column(Integer, ForeignKey("episodes.episode_id", ondelete="CASCADE"), primary_key=True)
-    iso_3166_1 = Column(String(5), primary_key=True)
-    iso_639_1 = Column(String(5), primary_key=True)
+    iso_639_1 = Column(String(4), primary_key=True)
     
     name = Column(String(255))
     overview = Column(Text)
