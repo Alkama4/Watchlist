@@ -92,14 +92,11 @@ class Title(Base):
     tmdb_id = Column(Integer, unique=True)
     imdb_id = Column(String(10))
     title_type = Column(Enum(TitleType), nullable=False)
-    name = Column(String(255))
     name_original = Column(String(255))
-    tagline = Column(String(255))
     tmdb_vote_average = Column(DECIMAL(3,1))
     tmdb_vote_count = Column(Integer)
     imdb_vote_average = Column(DECIMAL(3,1))
     imdb_vote_count = Column(Integer)
-    overview = Column(Text)
     release_date = Column(Date)
     movie_runtime = Column(Integer)
     movie_revenue = Column(BigInteger)
@@ -137,9 +134,7 @@ class Season(Base):
     season_id = Column(Integer, primary_key=True, autoincrement=True)
     title_id = Column(Integer, ForeignKey("titles.title_id", ondelete="CASCADE"), nullable=False)
     season_number = Column(Integer, nullable=False)
-    season_name = Column(String(255))
     tmdb_vote_average = Column(DECIMAL(3,1))
-    overview = Column(Text)
     default_poster_image_path = Column(String(64), ForeignKey("images.file_path"))
     last_updated = Column(
         DateTime(timezone=True),
@@ -165,10 +160,8 @@ class Episode(Base):
     season_id = Column(Integer, ForeignKey("seasons.season_id", ondelete="CASCADE"), nullable=False)
     title_id = Column(Integer, ForeignKey("titles.title_id", ondelete="CASCADE"), nullable=False)
     episode_number = Column(Integer, nullable=False)
-    episode_name = Column(String(255))
     tmdb_vote_average = Column(DECIMAL(3,1))
     tmdb_vote_count = Column(Integer)
-    overview = Column(Text)
     air_date = Column(Date)
     runtime = Column(Integer)
     default_backdrop_image_path = Column(String(64), ForeignKey("images.file_path"))
@@ -201,6 +194,7 @@ class UserTitleDetails(Base):
     chosen_poster_image_path = Column(String(255), ForeignKey("images.file_path"))
     chosen_backdrop_image_path = Column(String(255), ForeignKey("images.file_path"))
     chosen_logo_image_path = Column(String(255), ForeignKey("images.file_path"))
+    chosen_language = Column(String(16))
 
     added_at = Column(DateTime(timezone=True), server_default=func.now())
     last_watched_at = Column(DateTime(timezone=True))
@@ -234,6 +228,42 @@ class UserEpisodeDetails(Base):
 
     chosen_backdrop = relationship("Image", foreign_keys=[chosen_backdrop_image_path], viewonly=True)
 
+
+##### TITLE TRANSLATIONS #####
+
+class TitleTranslation(Base):
+    __tablename__ = "title_translations"
+    
+    title_id = Column(Integer, ForeignKey("titles.title_id", ondelete="CASCADE"), primary_key=True)
+    iso_3166_1 = Column(String(5), primary_key=True)
+    iso_639_1 = Column(String(5), primary_key=True)
+
+    name = Column(String(255))
+    overview = Column(Text)
+    tagline = Column(String(255))
+    
+
+class SeasonTranslation(Base):
+    __tablename__ = "season_translations"
+    
+    season_id = Column(Integer, ForeignKey("seasons.season_id", ondelete="CASCADE"), primary_key=True)
+    iso_3166_1 = Column(String(5), primary_key=True)
+    iso_639_1 = Column(String(5), primary_key=True)
+    
+    name = Column(String(255))
+    overview = Column(Text)
+    
+
+class EpisodeTranslation(Base):
+    __tablename__ = "episode_translations"
+    
+    episode_id = Column(Integer, ForeignKey("episodes.episode_id", ondelete="CASCADE"), primary_key=True)
+    iso_3166_1 = Column(String(5), primary_key=True)
+    iso_639_1 = Column(String(5), primary_key=True)
+    
+    name = Column(String(255))
+    overview = Column(Text)
+    
 
 ##### GENERES AND OTHER MANY TO ONE DETAILS #####
 
