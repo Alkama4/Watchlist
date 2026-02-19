@@ -1,8 +1,35 @@
-from typing import List, Optional
-from pydantic import BaseModel, Field, computed_field
+from typing import List, Optional, Annotated
+from pydantic import BaseModel, Field, computed_field, AfterValidator
 from datetime import datetime, date
+from babel import Locale, UnknownLocaleError
 from app.models import ImageType, TitleType, SortBy, SortDirection
 from app.config import DEFAULT_MAX_QUERY_LIMIT, ABSOLUTE_MAX_QUERY_LIMIT
+
+
+####### Custom Types #######
+
+def validate_full_locale(v: str) -> str:
+    try:
+        # 1. Parse the string (Babel is lenient with '-', '_', and casing)
+        locale_obj = Locale.parse(v, sep="-")
+        
+        # 2. Check if the territory (country code) exists
+        if not locale_obj.territory:
+            raise ValueError(
+                "Country code is required. Please use the format 'lang-COUNTRY' (e.g., 'en-US' or 'fi-FI')."
+            )
+            
+        # 3. Force the standard BCP-47 format: 'language-TERRITORY'
+        # Babel handles the casing: 'fi' -> 'fi', 'FI' -> 'FI'
+        return f"{locale_obj.language}-{locale_obj.territory}"
+        
+    except (UnknownLocaleError, ValueError, IndexError):
+        # Provide a clear error message for the API response
+        raise ValueError(f"'{v}' is not a valid locale. Expected format: 'en-US'")
+    
+# Use this in your path parameters or schemas
+LocaleString = Annotated[str, AfterValidator(validate_full_locale)]
+
 
 ####### Users and authentication #######
 

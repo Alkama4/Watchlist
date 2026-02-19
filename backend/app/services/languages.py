@@ -1,6 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models import Title, UserTitleDetails, UserSetting
+from app.models import Title, TitleTranslation, UserTitleDetails, UserSetting
 from app.settings.config import DEFAULT_SETTINGS
 
 async def get_preferred_locale(
@@ -85,3 +85,22 @@ async def get_user_languages(
         return ",".join(languages + ["null"])
     
     return languages
+
+
+async def check_translation_availability(
+    db: AsyncSession, 
+    title_id: int,
+    locale: str
+):
+    parts = locale.split("-")
+    iso_639_1 = parts[0]
+    iso_3166_1 = parts[1] if len(parts) > 1 else ""
+    
+    stmt = select(TitleTranslation).where(
+        TitleTranslation.title_id == title_id,
+        TitleTranslation.iso_3166_1 == iso_3166_1,
+        TitleTranslation.iso_639_1 == iso_639_1,
+    )
+    result = await db.execute(stmt)
+    return result.scalar_one_or_none()
+    

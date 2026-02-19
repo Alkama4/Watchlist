@@ -11,7 +11,9 @@ from app.services.titles.store import coordinate_title_fetching
 from app.services.titles.user_flags import set_user_title_value, set_title_watch_count
 from app.services.titles.preset_searches import fetch_similar_titles
 from app.services.images import fetch_image_details, set_user_image_choice
+from app.services.languages import check_translation_availability
 from app.schemas import (
+    LocaleString,
     ImageListsOut,
     ImagePreferenceIn,
     TitleIn,
@@ -274,5 +276,51 @@ async def update_title_notes(
     return {
         "title_id": title_id,
         "notes": data.notes,
+        "in_library": True
+    }
+
+
+@router.put("{title_id}/language/{locale}")
+async def set_title_language_for_user(
+    title_id: int,
+    locale: LocaleString,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Sets the locale as the prefererred locale for the user and title.
+    If the translation doesn't yet exist it is fetched.
+    """
+    await set_user_title_value(
+        db,
+        user.user_id,
+        title_id,
+        chosen_language=locale,
+        in_library=True
+    )
+
+    translation_exists = await check_translation_availability(
+        db=db,
+        title_id=title_id,
+        locale=locale
+    )
+
+    if (not translation_exists):
+        result = await db.execute(select(Title).where(Title.title_id == title_id))
+        title = result.scalar_one_or_none()
+
+        if not title:
+            raise HTTPException(status_code=404, detail="Title not found")
+        
+        await coordinate_title_fetching(
+            db=db,
+            title_type=title.title_type,
+            tmdb_id=title.tmdb_id,
+            user_id=user.user_id
+        )
+
+    return {
+        "title_id": title_id,
+        "locale": locale,
         "in_library": True
     }
