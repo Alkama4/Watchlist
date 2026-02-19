@@ -62,8 +62,8 @@ class RefreshToken(Base):
 class Setting(Base):
     __tablename__ = "settings"
 
-    key = Column(String(100), primary_key=True)
-    value_type = Column(String(20), nullable=False)
+    key = Column(String(128), primary_key=True)
+    value_type = Column(String(128), nullable=False)
     default_value = Column(Text, nullable=False)
 
 

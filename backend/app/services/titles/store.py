@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
@@ -5,7 +6,9 @@ from datetime import datetime
 from app.integrations import tmdb
 from app.services.images import select_best_image, store_image_details
 from app.services.genres import store_title_genres
+from app.services.titles.settings import get_preferred_locale
 from app.models import (
+    TitleTranslation,
     TitleType,
     ImageType,
     Title,
@@ -18,7 +21,7 @@ from app.models import (
 async def coordinate_title_fetching(db: AsyncSession, title_type: str, tmdb_id: int, user_id: int):
     try:
         # Figure out the locale
-        locale = "en-US"
+        locale = await get_preferred_locale(db=db, user_id=user_id, tmdb_id=tmdb_id, title_type=title_type)
 
         # Fetch the title
         if title_type is TitleType.movie:
