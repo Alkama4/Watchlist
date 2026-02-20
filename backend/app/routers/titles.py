@@ -244,7 +244,7 @@ async def update_title_notes(
     }
 
 
-@router.put("{title_id}/locale")
+@router.put("/{title_id}/locale")
 async def set_title_language_for_user(
     title_id: int,
     data: TitleLocaleIn,
