@@ -3,7 +3,7 @@ from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
-from app.services.languages import get_user_title_locale
+from app.services.languages import get_user_language_context
 from app.services.ids import get_title_id_by_season_id
 from app.models import (
     SeasonTranslation,
@@ -131,8 +131,7 @@ async def fetch_image_details(
         locale_title_id = await get_title_id_by_season_id(db=db, season_id=season_id)
     else:
         locale_title_id = title_id
-    title_locale = await get_user_title_locale(db=db, user_id=user_id, title_id=locale_title_id)
-    chosen_iso_639_1 = title_locale.split("-")[0]
+    locale_ctx = await get_user_language_context(db=db, user_id=user_id, title_id=locale_title_id)
     
     # 1. Configuration Mapping
     CONFIG = {
@@ -167,7 +166,7 @@ async def fetch_image_details(
     stmt = select(cfg["model"]).where(cfg["pk"] == val)
 
     if hasattr(cfg["model"], "iso_639_1"):
-        stmt = stmt.where(cfg["model"].iso_639_1 == chosen_iso_639_1)
+        stmt = stmt.where(cfg["model"].iso_639_1 == locale_ctx.preferred_iso_639_1)
 
     if cfg["user_model"]:
         stmt = stmt.add_columns(cfg["user_model"]).outerjoin(
