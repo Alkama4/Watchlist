@@ -15,13 +15,17 @@ import SeasonsListing from '@/components/SeasonsListing.vue';
 import EpisodeMap from '@/components/EpisodeMap.vue';
 import ModalImages from '../modal/ModalImages.vue';
 
-const { titleDetails } = defineProps({
+const { titleDetails, fetchTitleDetails } = defineProps({
     titleDetails: {
         type: Object,
         required: true
     },
     similarTitles: {
         type: Object,
+        required: true
+    },
+    fetchTitleDetails: {
+        type: Function,
         required: true
     }
 })
