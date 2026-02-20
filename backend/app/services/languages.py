@@ -68,6 +68,7 @@ async def get_user_language_context(
         languages_str=",".join(languages + ["null"])
     )
 
+
 async def check_translation_availability(
     db: AsyncSession, 
     title_id: int,
@@ -80,3 +81,20 @@ async def check_translation_availability(
     result = await db.execute(stmt)
     return result.scalar_one_or_none()
     
+
+async def get_users_global_preferred_locale(db: AsyncSession, user_id: int) -> str:
+    stmt = select(UserSetting.value).where(
+        UserSetting.user_id == user_id, 
+        UserSetting.key == "locales"
+    )
+    result = await db.execute(stmt)
+    user_locales_raw = result.scalar_one_or_none()
+    
+    if user_locales_raw:
+        locales = [l.strip() for l in user_locales_raw.split(",") if l.strip()]
+        if locales:
+            # Return just the "en" from "en-US"
+            return locales[0]
+
+    # Fallback to system default
+    return DEFAULT_SETTINGS.locales[0]
