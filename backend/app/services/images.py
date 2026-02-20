@@ -195,6 +195,10 @@ async def fetch_image_details(
         select(Image)
         .join(ImageLink, Image.file_path == ImageLink.file_path)
         .where(getattr(ImageLink, active_key) == val)
+        .where(
+            (Image.iso_639_1.in_(locale_ctx.languages_list)) | 
+            (Image.iso_639_1.is_(None))
+        )
         .order_by(Image.vote_average.desc())
     )
     img_res = await db.execute(img_stmt)
