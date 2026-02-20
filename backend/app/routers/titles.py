@@ -17,6 +17,7 @@ from app.schemas import (
     ImageListsOut,
     ImagePreferenceIn,
     TitleIn,
+    TitleLocaleIn,
     TitleWatchCountIn,
     TitleIsFavouriteIn,
     TitleInWatchlistIn,
@@ -280,29 +281,29 @@ async def update_title_notes(
     }
 
 
-@router.put("{title_id}/language/{locale}")
+@router.put("{title_id}/locale")
 async def set_title_language_for_user(
     title_id: int,
-    locale: LocaleString,
+    data: TitleLocaleIn,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
     Sets the locale as the prefererred locale for the user and title.
-    If the translation doesn't yet exist it is fetched.
+    If the translation doesn't yet exist, it is fetched and stored.
     """
     await set_user_title_value(
         db,
         user.user_id,
         title_id,
-        chosen_locale=locale,
+        chosen_locale=data.locale,
         in_library=True
     )
 
     translation_exists = await check_translation_availability(
         db=db,
         title_id=title_id,
-        iso_639_1=locale.split("-")[0]
+        iso_639_1=data.locale.split("-")[0]
     )
 
     if (not translation_exists):
@@ -321,6 +322,6 @@ async def set_title_language_for_user(
 
     return {
         "title_id": title_id,
-        "locale": locale,
+        "locale": data.locale,
         "in_library": True
     }

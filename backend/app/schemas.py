@@ -152,6 +152,9 @@ class TitleInWatchlistIn(BaseModel):
 class TitleNotesIn(BaseModel):
     notes: str
 
+class TitleLocaleIn(BaseModel):
+    locale: LocaleString
+    
 
 class TMDBTitleQueryIn(BaseModel):
     query: str
