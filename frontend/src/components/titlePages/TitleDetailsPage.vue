@@ -44,6 +44,20 @@ async function updateTitleDetails() {
     }
 }
 
+async function updateTitleLocale() {
+    waitingFor.value.titleLocale = true;
+    try {
+        const response = await fastApi.titles.setLocale(
+            titleDetails.title_id,
+            titleDetails.display_locale
+        );
+        titleDetails.user_details.in_library = response.in_library;
+        await fetchTitleDetails();
+    } finally {
+        waitingFor.value.titleLocale = false;
+    }
+}
+
 async function toggleFavourite() {
     let response;
     if (titleDetails.user_details.is_favourite) {
@@ -85,7 +99,6 @@ async function addToLibrary() {
 
 async function setTitleWatchCount(count) {
     const response = await fastApi.titles.setWatchCount(titleDetails.title_id, count);
-    console.log(response);
     titleDetails.user_details.watch_count = response.watch_count;
     titleDetails.user_details.in_library = response.in_library;
 }
@@ -221,6 +234,19 @@ const tmdbEditAgeRatingUrl = computed(() => {
                                 <JustWatch/>
                             </a>
                         </div>
+                    </div>
+
+                    <div>
+                        <h4>Locale</h4>
+                        <form @submit.prevent="updateTitleLocale">
+                            <input type="text" v-model="titleDetails.display_locale">
+                            <LoadingButton
+                                type="submit"
+                                :loading="waitingFor?.titleLocale ?? false"
+                            >
+                                Update title locale
+                            </LoadingButton>
+                        </form>
                     </div>
                 </div>
                 
