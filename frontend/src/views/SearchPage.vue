@@ -183,6 +183,7 @@ onUnmounted(() => {
                 :key="title.id"
                 :title-info="title"
                 :store-image-flag="!searchStore.tmdbFallback"
+                :grid-mode="true"
             />
         </div>
     </div>
@@ -203,7 +204,7 @@ onUnmounted(() => {
 
 .title-card-grid {
     display: flex;
-    gap: var(--spacing-md);
+    gap: var(--spacing-lg) var(--spacing-md);
     flex-wrap: wrap;
 }
 

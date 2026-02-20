@@ -63,6 +63,10 @@ const { titleInfo, storeImageFlag } = defineProps({
     storeImageFlag: {
         type: Boolean,
         default: true
+    },
+    gridMode: {
+        type: Boolean,
+        default: false
     }
 })
 
@@ -73,6 +77,7 @@ const { titleInfo, storeImageFlag } = defineProps({
         :is="titleInfo.title_id ? 'router-link' : 'div'"
         :to="titleInfo.title_id ? `/title/${titleInfo.title_id}` : null"
         class="title-card"
+        :class="{'grid-mode': gridMode}"
         draggable="false"
     >
         <img 
@@ -157,7 +162,8 @@ const { titleInfo, storeImageFlag } = defineProps({
     position: relative;
     padding-right: var(--spacing-md);
 }
-.title-card:last-of-type {
+.title-card:last-of-type,
+.title-card.grid-mode {
     padding-right: 0;
 }
 
