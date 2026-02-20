@@ -114,7 +114,7 @@ onUnmounted(() => {
                     <RouterLink :to="`/title/${heroCards?.titles[currentIndex]?.title_id}`" class="details no-deco">
                         <img
                             :src="getTitleImageUrl(heroCards?.titles[currentIndex], 'original', 'logo')"
-                            :alt="`Backdrop for the title ${heroCards?.titles[currentIndex]?.name}`"
+                            :alt="`Logo for the title ${heroCards?.titles[currentIndex]?.name}`"
                             class="logo"
                         >
                         <h2>

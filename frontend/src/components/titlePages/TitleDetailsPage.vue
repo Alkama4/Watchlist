@@ -142,14 +142,14 @@ const tmdbEditAgeRatingUrl = computed(() => {
         <div class="layout-contained layout-spacing-top" :class="{'layout-spacing-bottom': titleDetails?.title_type === 'movie'}">
             <img 
                 :src="getTitleImageUrl(titleDetails, 'original', 'backdrop')"
-                :alt="`${titleDetails?.type} backdrop: ${titleDetails?.name}`"
+                :alt="`${titleDetails?.title_type} backdrop: ${titleDetails?.name}`"
                 class="backdrop"
             >
     
-            <div class="logo-wrapper">
+            <div class="logo-wrapper" v-if="getTitleImageUrl(titleDetails, 'original', 'logo')">
                 <img 
                     :src="getTitleImageUrl(titleDetails, 'original', 'logo')"
-                    :alt="`${titleDetails?.type} logo: ${titleDetails?.name}`"
+                    :alt="`${titleDetails?.title_type} logo: ${titleDetails?.name}`"
                     class="logo"
                 >
             </div>
@@ -165,7 +165,7 @@ const tmdbEditAgeRatingUrl = computed(() => {
                 <div class="left-side">
                     <img 
                         :src="getTitleImageUrl(titleDetails, 'original', 'poster')"
-                        :alt="`${titleDetails?.type} poster: ${titleDetails?.name}`"
+                        :alt="`${titleDetails?.title_type} poster: ${titleDetails?.name}`"
                         class="poster"
                     >
 
