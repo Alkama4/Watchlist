@@ -333,6 +333,7 @@ class TitleOut(BaseModel):
     default_backdrop_image_path: Optional[str] = None
     default_logo_image_path: Optional[str] = None
     last_updated: datetime
+    display_locale: Optional[LocaleString] = None
 
     seasons: List[SeasonOut] = Field(default_factory=list)
     user_details: Optional[UserTitleDetailsOut] = None
