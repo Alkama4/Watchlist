@@ -527,6 +527,9 @@ img.logo {
 
 img.poster {
     width: 300px;
+    aspect-ratio: 2/3;
+    object-fit: cover;
+    background-color: var(--c-bg-level-1);
     border-radius: var(--border-radius-lg);
 }
 
