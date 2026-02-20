@@ -96,7 +96,7 @@ watch(pageLoading, (newLoading) => {
             v-else 
             :titleDetails="titleDetails"
             :similarTitles="similarTitles"
-            @chosenImageUpdate="handleChosenImageUpdate"
+            :fetchTitleDetails="fetchTitleDetails"
         />
     </div>
 </template>

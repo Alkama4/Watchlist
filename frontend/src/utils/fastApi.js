@@ -198,6 +198,11 @@ export const fastApi = {
             method: 'put',
             url: `/titles/${titleId}/notes`,
             data: { notes }
+        }),
+        setLocale: async (titleId, locale) => fetchData({
+            method: 'put',
+            url: `/titles/${titleId}/locale`,
+            data: { locale }
         })
     },
     seasons: {

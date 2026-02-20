@@ -3,10 +3,11 @@ from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
+from app.services.languages import get_user_language_context
+from app.services.ids import get_title_id_by_season_id
 from app.models import (
-    Episode,
-    Season,
-    Title,
+    SeasonTranslation,
+    TitleTranslation,
     UserEpisodeDetails,
     UserSeasonDetails,
     UserTitleDetails,
@@ -123,43 +124,37 @@ async def fetch_image_details(
     db: AsyncSession, 
     user_id: int, 
     title_id: int = None, 
-    season_id: int = None, 
-    episode_id: int = None
+    season_id: int = None
 ) -> ImageListsOut:
     
+    if not title_id:
+        locale_title_id = await get_title_id_by_season_id(db=db, season_id=season_id)
+    else:
+        locale_title_id = title_id
+    locale_ctx = await get_user_language_context(db=db, user_id=user_id, title_id=locale_title_id)
+    
     # 1. Configuration Mapping
-    # Maps the provided ID type to its specific Models and known default/choice fields
     CONFIG = {
         "title_id": {
             "val": title_id,
-            "model": Title,
+            "model": TitleTranslation,
             "user_model": UserTitleDetails,
-            "pk": Title.title_id,
+            "pk": TitleTranslation.title_id,
             "user_pk": UserTitleDetails.title_id,
             "path_fields": ["default_poster_image_path", "default_backdrop_image_path", "default_logo_image_path"],
             "user_fields": ["chosen_poster_image_path", "chosen_backdrop_image_path", "chosen_logo_image_path"]
         },
         "season_id": {
             "val": season_id,
-            "model": Season,
+            "model": SeasonTranslation,
             "user_model": UserSeasonDetails,
-            "pk": Season.season_id,
+            "pk": SeasonTranslation.season_id,
             "user_pk": UserSeasonDetails.season_id,
             "path_fields": ["default_poster_image_path"],
             "user_fields": ["chosen_poster_image_path"]
-        },
-        "episode_id": {
-            "val": episode_id,
-            "model": Episode, # Assuming Episode model exists
-            "user_model": None, # Add UserEpisodeDetails if you have it
-            "pk": Episode.episode_id,
-            "user_pk": None,
-            "path_fields": ["default_poster_image_path"],
-            "user_fields": []
         }
     }
 
-    # Determine which context we are in
     active_key = next((k for k, v in CONFIG.items() if v["val"] is not None), None)
     if not active_key:
         raise ValueError("One of title_id, season_id, or episode_id must be provided.")
@@ -167,15 +162,18 @@ async def fetch_image_details(
     cfg = CONFIG[active_key]
     val = cfg["val"]
 
-    # 2. Fetch Main Object and User Details
-    stmt = select(cfg["model"])
+    # 2. Build the Query
+    stmt = select(cfg["model"]).where(cfg["pk"] == val)
+
+    if hasattr(cfg["model"], "iso_639_1"):
+        stmt = stmt.where(cfg["model"].iso_639_1 == locale_ctx.preferred_iso_639_1)
+
     if cfg["user_model"]:
         stmt = stmt.add_columns(cfg["user_model"]).outerjoin(
             cfg["user_model"], 
-            (cfg["user_pk"] == cfg["pk"]) & (cfg["user_model"].user_id == user_id)
+            (cfg["user_pk"] == val) & (cfg["user_model"].user_id == user_id)
         )
     
-    stmt = stmt.where(cfg["pk"] == val)
     res = await db.execute(stmt)
     row = res.first()
 
@@ -183,28 +181,30 @@ async def fetch_image_details(
         return ImageListsOut(**{active_key: val}, posters=ImageListOut(total_count=0), 
                              backdrops=ImageListOut(total_count=0), logos=ImageListOut(total_count=0))
 
-    # row might be (Object,) or (Object, UserDetails)
     main_obj = row[0]
     user_details = row[1] if len(row) > 1 else None
 
-    # 3. Collect Defaults and Choices using getattr
+    # 3. Collect Defaults and Choices
     defaults = {getattr(main_obj, field, None) for field in cfg["path_fields"]}
     user_choices = set()
     if user_details:
         user_choices = {getattr(user_details, field, None) for field in cfg["user_fields"]}
 
     # 4. Fetch Linked Images
-    # Dynamically filter ImageLink by the active ID (e.g., ImageLink.title_id == val)
     img_stmt = (
         select(Image)
         .join(ImageLink, Image.file_path == ImageLink.file_path)
         .where(getattr(ImageLink, active_key) == val)
+        .where(
+            (Image.iso_639_1.in_(locale_ctx.languages_list)) | 
+            (Image.iso_639_1.is_(None))
+        )
         .order_by(Image.vote_average.desc())
     )
     img_res = await db.execute(img_stmt)
     images = img_res.scalars().all()
 
-    # 5. Categorization Logic (Same as before)
+    # 5. Categorization Logic
     categories = {
         ImageType.poster: {"imgs": [], "locales": set()},
         ImageType.backdrop: {"imgs": [], "locales": set()},

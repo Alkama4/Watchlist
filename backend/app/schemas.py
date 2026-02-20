@@ -1,8 +1,35 @@
-from typing import List, Optional
-from pydantic import BaseModel, Field, computed_field
+from typing import List, Optional, Annotated
+from pydantic import BaseModel, Field, computed_field, AfterValidator
 from datetime import datetime, date
+from babel import Locale, UnknownLocaleError
 from app.models import ImageType, TitleType, SortBy, SortDirection
 from app.config import DEFAULT_MAX_QUERY_LIMIT, ABSOLUTE_MAX_QUERY_LIMIT
+
+
+####### Custom Types #######
+
+def validate_full_locale(v: str) -> str:
+    try:
+        # 1. Parse the string (Babel is lenient with '-', '_', and casing)
+        locale_obj = Locale.parse(v, sep="-")
+        
+        # 2. Check if the territory (country code) exists
+        if not locale_obj.territory:
+            raise ValueError(
+                "Country code is required. Please use the format 'lang-COUNTRY' (e.g., 'en-US' or 'fi-FI')."
+            )
+            
+        # 3. Force the standard BCP-47 format: 'language-TERRITORY'
+        # Babel handles the casing: 'fi' -> 'fi', 'FI' -> 'FI'
+        return f"{locale_obj.language}-{locale_obj.territory}"
+        
+    except (UnknownLocaleError, ValueError, IndexError):
+        # Provide a clear error message for the API response
+        raise ValueError(f"'{v}' is not a valid locale. Expected format: 'en-US'")
+    
+# Use this in your path parameters or schemas
+LocaleString = Annotated[str, AfterValidator(validate_full_locale)]
+
 
 ####### Users and authentication #######
 
@@ -125,6 +152,9 @@ class TitleInWatchlistIn(BaseModel):
 class TitleNotesIn(BaseModel):
     notes: str
 
+class TitleLocaleIn(BaseModel):
+    locale: LocaleString
+    
 
 class TMDBTitleQueryIn(BaseModel):
     query: str
@@ -172,7 +202,7 @@ class CardTitleOut(BaseModel):
     title_id: Optional[int] = None
     tmdb_id: Optional[int] = None
     title_type: TitleType
-    name: str
+    name: Optional[str] = None
     release_date: Optional[date] = None
     movie_runtime: Optional[int] = None
     show_season_count: Optional[int] = None
@@ -284,16 +314,16 @@ class TitleOut(BaseModel):
     tmdb_id: int
     imdb_id: str
     title_type: TitleType
-    name: str
+    name: Optional[str] = None
     name_original: str
-    tagline: str
+    tagline: Optional[str] = None
     genres: list[GenreElement] = None
     tmdb_vote_average: Optional[float]
     tmdb_vote_count: Optional[int]
     imdb_vote_average: Optional[float]
     imdb_vote_count: Optional[int]
     age_ratings: Optional[List[AgeRatingElement]] = None
-    overview: Optional[str]
+    overview: Optional[str] = None
     movie_runtime: Optional[int]
     movie_revenue: Optional[int]
     movie_budget: Optional[int]
@@ -302,10 +332,11 @@ class TitleOut(BaseModel):
     origin_country: Optional[str]
     awards: Optional[str]
     homepage: Optional[str]
-    default_poster_image_path: Optional[str]
-    default_backdrop_image_path: Optional[str]
-    default_logo_image_path: Optional[str]
+    default_poster_image_path: Optional[str] = None
+    default_backdrop_image_path: Optional[str] = None
+    default_logo_image_path: Optional[str] = None
     last_updated: datetime
+    display_locale: Optional[LocaleString] = None
 
     seasons: List[SeasonOut] = Field(default_factory=list)
     user_details: Optional[UserTitleDetailsOut] = None

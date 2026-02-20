@@ -15,13 +15,17 @@ import SeasonsListing from '@/components/SeasonsListing.vue';
 import EpisodeMap from '@/components/EpisodeMap.vue';
 import ModalImages from '../modal/ModalImages.vue';
 
-const { titleDetails } = defineProps({
+const { titleDetails, fetchTitleDetails } = defineProps({
     titleDetails: {
         type: Object,
         required: true
     },
     similarTitles: {
         type: Object,
+        required: true
+    },
+    fetchTitleDetails: {
+        type: Function,
         required: true
     }
 })
@@ -37,6 +41,20 @@ async function updateTitleDetails() {
         await fetchTitleDetails();
     } finally {
         waitingFor.value.titleUpdate = false;
+    }
+}
+
+async function updateTitleLocale() {
+    waitingFor.value.titleLocale = true;
+    try {
+        const response = await fastApi.titles.setLocale(
+            titleDetails.title_id,
+            titleDetails.display_locale
+        );
+        titleDetails.user_details.in_library = response.in_library;
+        await fetchTitleDetails();
+    } finally {
+        waitingFor.value.titleLocale = false;
     }
 }
 
@@ -81,7 +99,6 @@ async function addToLibrary() {
 
 async function setTitleWatchCount(count) {
     const response = await fastApi.titles.setWatchCount(titleDetails.title_id, count);
-    console.log(response);
     titleDetails.user_details.watch_count = response.watch_count;
     titleDetails.user_details.in_library = response.in_library;
 }
@@ -125,14 +142,14 @@ const tmdbEditAgeRatingUrl = computed(() => {
         <div class="layout-contained layout-spacing-top" :class="{'layout-spacing-bottom': titleDetails?.title_type === 'movie'}">
             <img 
                 :src="getTitleImageUrl(titleDetails, 'original', 'backdrop')"
-                :alt="`${titleDetails?.type} backdrop: ${titleDetails?.name}`"
+                :alt="`${titleDetails?.title_type} backdrop: ${titleDetails?.name}`"
                 class="backdrop"
             >
     
-            <div class="logo-wrapper">
+            <div class="logo-wrapper" v-if="getTitleImageUrl(titleDetails, 'original', 'logo')">
                 <img 
                     :src="getTitleImageUrl(titleDetails, 'original', 'logo')"
-                    :alt="`${titleDetails?.type} logo: ${titleDetails?.name}`"
+                    :alt="`${titleDetails?.title_type} logo: ${titleDetails?.name}`"
                     class="logo"
                 >
             </div>
@@ -148,7 +165,7 @@ const tmdbEditAgeRatingUrl = computed(() => {
                 <div class="left-side">
                     <img 
                         :src="getTitleImageUrl(titleDetails, 'original', 'poster')"
-                        :alt="`${titleDetails?.type} poster: ${titleDetails?.name}`"
+                        :alt="`${titleDetails?.title_type} poster: ${titleDetails?.name}`"
                         class="poster"
                     >
 
@@ -217,6 +234,19 @@ const tmdbEditAgeRatingUrl = computed(() => {
                                 <JustWatch/>
                             </a>
                         </div>
+                    </div>
+
+                    <div>
+                        <h4>Locale</h4>
+                        <form @submit.prevent="updateTitleLocale">
+                            <input type="text" v-model="titleDetails.display_locale">
+                            <LoadingButton
+                                type="submit"
+                                :loading="waitingFor?.titleLocale ?? false"
+                            >
+                                Update title locale
+                            </LoadingButton>
+                        </form>
                     </div>
                 </div>
                 
