@@ -8,7 +8,7 @@
     --c-neutral:    oklch(40% 0.01 230 / 33%);
     /* --c-neutral:    oklch(30% 0.01 230); */
 
-    --c-watchlist:  oklch(32.8% 0.065 230);
+    --c-accent:  oklch(32.8% 0.065 230);
     --c-favourite:  oklch(51.196% 0.175 14);
 
     --c-positive:   oklch(58% 0.14 155);

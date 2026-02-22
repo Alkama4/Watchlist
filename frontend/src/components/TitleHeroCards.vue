@@ -71,7 +71,6 @@ function adjustCollections() {
 
 function chooseAgeRating(titleDetails) {
     const ratings = titleDetails?.age_ratings ?? []
-    console.info(titleDetails)
 
     const pref = ratings.find(
         r => r.iso_3166_1 === preferredLocale.iso_3166_1

@@ -7,7 +7,6 @@ const homeData = ref({})
 
 async function fetchHome() {
     homeData.value = await fastApi.home();
-    console.log(homeData.value);
 }
 
 onMounted(async () => {
