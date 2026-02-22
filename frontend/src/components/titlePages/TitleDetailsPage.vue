@@ -178,12 +178,10 @@ const tmdbEditAgeRatingUrl = computed(() => {
                                 Mark watched
                             </template>
                             <template v-else-if="titleDetails?.user_details?.watch_count == 1">
-                                <i class="bx bx-check"></i>
-                                Watched
+                                <i class="bx bx-check"></i> Watched
                             </template>
                             <template v-else-if="titleDetails?.user_details?.watch_count > 1">
-                                {{ titleDetails?.user_details?.watch_count }}
-                                watches
+                                Watched {{ titleDetails?.user_details?.watch_count }} times
                             </template>
                         </button>
                         <button 
