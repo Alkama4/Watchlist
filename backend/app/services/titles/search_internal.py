@@ -247,9 +247,11 @@ async def _apply_sorting_with_user_settings(
     }
 
     col = sort_map.get(sort_by, Title.tmdb_vote_average)
-    stmt = stmt.order_by(
-        col.desc() if sort_dir is SortDirection.desc else col.asc()
-    )
+    if sort_dir is SortDirection.desc:
+        stmt = stmt.order_by(col.desc().nulls_last())
+    else:
+        stmt = stmt.order_by(col.asc().nulls_last())
+
     return stmt
 
 
