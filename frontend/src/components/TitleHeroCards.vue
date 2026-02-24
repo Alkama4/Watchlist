@@ -97,101 +97,104 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <section class="title-hero-cards">
-        <Transition name="hero" mode="default" :class="direction">
-            <div
-                v-if="heroCards"
-                :key="heroCards?.titles[currentIndex]?.title_id"
-                class="hero-card"
-            >
-                <img
-                    :src="getTitleImageUrl(heroCards?.titles[currentIndex], 'original', 'backdrop')"
-                    :alt="`${heroCards?.titles[currentIndex]?.title_type} backdrop: ${heroCards?.titles[currentIndex]?.name}`"
-                    class="backdrop"
+    <section class="title-hero-cards layout-contained layout-spacing-top">
+        <div class="hero-cards-wrapper">
+            <Transition name="hero" mode="default" :class="direction">
+                <RouterLink
+                    v-if="heroCards"
+                    :key="heroCards?.titles[currentIndex]?.title_id"
+                    class="hero-card no-deco"
+                    :to="`/title/${heroCards?.titles[currentIndex]?.title_id}`"
                 >
-                <div class="details-wrapper layout-contained">
-                    <RouterLink :to="`/title/${heroCards?.titles[currentIndex]?.title_id}`" class="details no-deco">
+                    <div class="details-wrapper">
                         <img
-                            :src="getTitleImageUrl(heroCards?.titles[currentIndex], 'original', 'logo')"
-                            :alt="`Logo for the title ${heroCards?.titles[currentIndex]?.name}`"
-                            class="logo"
+                            :src="getTitleImageUrl(heroCards?.titles[currentIndex], 'original', 'backdrop')"
+                            :alt="`${heroCards?.titles[currentIndex]?.title_type} backdrop: ${heroCards?.titles[currentIndex]?.name}`"
+                            class="backdrop"
                         >
-                        <h2>
-                            {{ heroCards?.titles[currentIndex]?.name }}
-                            ({{ timeFormatters.timestampToYear(heroCards?.titles[currentIndex]?.release_date) }})
-                        </h2>
-                        <div class="stats">
-                            <span class="tmdb">
-                                <span>
-                                    <Tmdb/>
-                                    {{ heroCards?.titles[currentIndex]?.tmdb_vote_average }}
-                                </span>
-                                <span class="tiny">
-                                    ({{ numberFormatters.formatCompactNumber(heroCards?.titles[currentIndex]?.tmdb_vote_count) }} votes)
-                                </span>
-                            </span>
-    
-                            <span>&vert;</span>
-                            <span v-if="heroCards?.titles[currentIndex]?.title_type == 'movie'">
-                                {{ timeFormatters.minutesToHrAndMin(heroCards?.titles[currentIndex]?.movie_runtime) }}
-                            </span>
-                            <span v-else>
-                                {{ heroCards?.titles[currentIndex]?.show_season_count }}
-                                Season{{ heroCards?.titles[currentIndex]?.show_season_count == 1 ? '': 's' }},
-                                {{ heroCards?.titles[currentIndex]?.show_episode_count }}
-                                Episode{{ heroCards?.titles[currentIndex]?.show_episode_count == 1 ? '': 's' }}
-                            </span>
-    
-                            <template v-if="chooseAgeRating(heroCards?.titles[currentIndex])?.rating">
-                                <span>&vert;</span>
-                                <span>{{ chooseAgeRating(heroCards?.titles[currentIndex])?.rating }}</span>
-                            </template>
-    
-                            <template v-if="heroCards?.titles[currentIndex]?.genres?.length > 0">
-                                <span>&vert;</span>
-                                <div class="genres">
-                                    <span v-for="genre in heroCards?.titles[currentIndex]?.genres">
-                                        {{ genre?.genre_name }}
+                        <div class="details no-deco">
+                            <img
+                                :src="getTitleImageUrl(heroCards?.titles[currentIndex], 'original', 'logo')"
+                                :alt="`Logo for the title ${heroCards?.titles[currentIndex]?.name}`"
+                                class="logo"
+                            >
+                            <h3>
+                                {{ heroCards?.titles[currentIndex]?.name }}
+                                ({{ timeFormatters.timestampToYear(heroCards?.titles[currentIndex]?.release_date) }})
+                            </h3>
+                            <div class="stats">
+                                <span class="tmdb">
+                                    <span>
+                                        <Tmdb/>
+                                        {{ heroCards?.titles[currentIndex]?.tmdb_vote_average }}
                                     </span>
-                                </div>
-                            </template>
+                                    <span class="tiny">
+                                        ({{ numberFormatters.formatCompactNumber(heroCards?.titles[currentIndex]?.tmdb_vote_count) }} votes)
+                                    </span>
+                                </span>
+        
+                                <span>&vert;</span>
+                                <span v-if="heroCards?.titles[currentIndex]?.title_type == 'movie'">
+                                    {{ timeFormatters.minutesToHrAndMin(heroCards?.titles[currentIndex]?.movie_runtime) }}
+                                </span>
+                                <span v-else>
+                                    {{ heroCards?.titles[currentIndex]?.show_season_count }}
+                                    Season{{ heroCards?.titles[currentIndex]?.show_season_count == 1 ? '': 's' }},
+                                    {{ heroCards?.titles[currentIndex]?.show_episode_count }}
+                                    Episode{{ heroCards?.titles[currentIndex]?.show_episode_count == 1 ? '': 's' }}
+                                </span>
+        
+                                <template v-if="chooseAgeRating(heroCards?.titles[currentIndex])?.rating">
+                                    <span>&vert;</span>
+                                    <span>{{ chooseAgeRating(heroCards?.titles[currentIndex])?.rating }}</span>
+                                </template>
+        
+                                <template v-if="heroCards?.titles[currentIndex]?.genres?.length > 0">
+                                    <span>&vert;</span>
+                                    <div class="genres">
+                                        <span v-for="genre in heroCards?.titles[currentIndex]?.genres">
+                                            {{ genre?.genre_name }}
+                                        </span>
+                                    </div>
+                                </template>
+                            </div>
+                            <p>{{ heroCards?.titles[currentIndex]?.overview }}</p>
                         </div>
-                        <p>{{ heroCards?.titles[currentIndex]?.overview }}</p>
-                    </RouterLink>
-                    <div class="actions">
-                        <i
-                            class="bx bxs-heart btn btn-text btn-square"
-                            :class="{'btn-favourite': heroCards?.titles[currentIndex]?.user_details?.is_favourite }"
-                            @click="toggleFavourite"
-                        ></i>
-                        <i
-                            class="bx bxs-time btn btn-text btn-square"
-                            :class="{'btn-accent': heroCards?.titles[currentIndex]?.user_details?.in_watchlist }"
-                            @click="toggleWatchlist"
-                        ></i>
-                        <i
-                            class="bx bxs-collection btn btn-text btn-square"
-                            @click="adjustCollections"
-                        ></i>
+                        <div class="actions">
+                            <i
+                                class="bx bxs-heart btn btn-text btn-square"
+                                :class="{'btn-favourite': heroCards?.titles[currentIndex]?.user_details?.is_favourite }"
+                                @click.prevent="toggleFavourite"
+                            ></i>
+                            <i
+                                class="bx bxs-time btn btn-text btn-square"
+                                :class="{'btn-accent': heroCards?.titles[currentIndex]?.user_details?.in_watchlist }"
+                                @click.prevent="toggleWatchlist"
+                            ></i>
+                            <i
+                                class="bx bxs-collection btn btn-text btn-square"
+                                @click.prevent="adjustCollections"
+                            ></i>
+                        </div>
                     </div>
-                </div>
+                </RouterLink>
+            </Transition>
+            <div class="controls">
+                <i
+                    class="bx bx-chevron-left btn btn-text"
+                    @click.stop.prevent="prev"
+                ></i>
+                <span>
+                    <PaginationDots
+                        v-model="currentIndex"
+                        :count="heroCards?.titles?.length"
+                    />
+                </span>
+                <i
+                    class="bx bx-chevron-right btn btn-text"
+                    @click.stop.prevent="next"
+                ></i>
             </div>
-        </Transition>
-        <div class="controls">
-            <i
-                class="bx bx-chevron-left btn btn-text"
-                @click.stop.prevent="prev"
-            ></i>
-            <span>
-                <PaginationDots
-                    v-model="currentIndex"
-                    :count="heroCards?.titles?.length"
-                />
-            </span>
-            <i
-                class="bx bx-chevron-right btn btn-text"
-                @click.stop.prevent="next"
-            ></i>
         </div>
     </section>
 </template>
@@ -199,17 +202,20 @@ onUnmounted(() => {
 
 <style scoped>
 .title-hero-cards {
-    height: 85vh;
-    max-height: 1200px;
-    min-height: 550px;
+    height: 800px;
     position: relative;
-    overflow: hidden;
+}
+
+.hero-cards-wrapper {
+    position: relative;
+    height: 100%;
 }
 
 .hero-card {
     --transition-amount: 40px;
     position: absolute;
     width: 100%;
+    height: calc(100% - 48px - var(--spacing-md));
     height: 100%;
 
     display: flex;
@@ -220,17 +226,17 @@ onUnmounted(() => {
 img.backdrop {
     position: absolute;
     inset: 0;
-    margin-left: calc(-1 * var(--transition-amount));
-    width: calc(100% + var(--transition-amount) * 2);
+    width: 100%;
     height: 100%;
     /* max-height: calc(1200px + 15vh); */
     object-fit: cover;
+    z-index: -10;
 
     filter: brightness(calc(var(--hero-backdrop-min-brightness) + var(--hero-backdrop-fade-intensity) * (1 - var(--hero-backdrop-min-brightness))));
     mask-image: linear-gradient(
-        to top,
-        rgba(0, 0, 0, 0) 0%,
-        rgba(0, 0, 0, calc(1 - var(--hero-backdrop-fade-intensity))) 30%
+        to right,
+        rgba(0, 0, 0, var(--hero-backdrop-fade-intensity)) 00%,
+        rgba(0, 0, 0, calc(1 - var(--hero-backdrop-fade-intensity))) 50%
     );
 }
 
@@ -245,9 +251,17 @@ img.logo {
 
 .details-wrapper {
     width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    /* justify-content: end; */
     z-index: 10;
+    position: relative;
+    padding: var(--spacing-xl);
+    box-sizing: border-box;
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
 }
 
 .details {
@@ -289,6 +303,8 @@ img.logo {
 .details p {
     max-width: 80ch;
     overflow: hidden;
+    font-size: 0.9rem;
+    line-height: 1.4;
     display: -webkit-box;
     -webkit-line-clamp: 4;
             line-clamp: 4; 
@@ -303,17 +319,23 @@ img.logo {
 
 .controls {
     position: absolute;
-    bottom: 0;
+    bottom: var(--spacing-md);
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: var(--spacing-sm);
+    gap: 2px;
     align-items: center;
     justify-content: center;
+    background-color: var(--c-bg-backdrop);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--c-border);
+    backdrop-filter: blur(var(--blur-subtle));
+    z-index: 10;
 }
 .controls i {
-    font-size: 2.5rem;
-    padding: var(--spacing-sm);
+    font-size: var(--fs-3);
+    padding: var(--spacing-xs);
+    margin: var(--spacing-xs-sm);
     border-radius: 100px;
 }
 

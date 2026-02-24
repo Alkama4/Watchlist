@@ -27,7 +27,7 @@
     
     --a-trans: 0.66;
 
-    --hero-backdrop-fade-intensity: 0;
+    --hero-backdrop-fade-intensity: 0.3;
     --hero-backdrop-min-brightness: 0.4;
     --details-backdrop-fade-intensity: 0;
     --details-backdrop-min-brightness: 0.25;
