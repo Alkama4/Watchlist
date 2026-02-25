@@ -9,10 +9,10 @@ import LoadingButton from '@/components/LoadingButton.vue';
 
 const searchStore = useSearchStore();
 
-const waiting = ref(null)
+const waiting = ref({})
 
 async function addTitle() {
-    waiting.value = true;
+    waiting.value.library = true;
     try {
         if (titleInfo.title_id) {
             await fastApi.titles.library.add(titleInfo.title_id)
@@ -41,17 +41,74 @@ async function addTitle() {
             titleInfo.user_details.in_library = true
         }
     } finally {
-        waiting.value = false;
+        waiting.value.library = false;
     }
 }
 
 async function removeTitle() {
-    waiting.value = true;
+    waiting.value.library = true;
     try {
         await fastApi.titles.library.remove(titleInfo.title_id)
         titleInfo.user_details.in_library = false;
     } finally {
-        waiting.value = false;
+        waiting.value.library = false;
+    }
+}
+
+
+async function toggleFavourite() {
+    waiting.value.favourite = true;
+    try {
+        let response;
+        if (titleInfo.user_details.is_favourite) {
+            response = await fastApi.titles.setFavourite(titleInfo.title_id, false);
+        } else {
+            response = await fastApi.titles.setFavourite(titleInfo.title_id, true);
+        }
+        if (!response) return;
+    
+        titleInfo.user_details.is_favourite = response.is_favourite;
+    } finally {
+        waiting.value.favourite = false;
+    }
+}
+
+async function toggleWatchlist() {
+    waiting.value.watchlist = true;
+    try {
+        let response;
+        if (titleInfo.user_details.in_watchlist) {
+            response = await fastApi.titles.setWatchlist(titleInfo.title_id, false);
+        } else {
+            response = await fastApi.titles.setWatchlist(titleInfo.title_id, true);
+        }
+        if (!response) return;
+        
+        titleInfo.user_details.in_watchlist = response.in_watchlist;
+    } finally {
+        waiting.value.watchlist = false;
+    }
+}
+
+async function addToWatchCount() {
+    waiting.value.watchCountAdd = true;
+    try {
+        const response = await fastApi.titles.setWatchCount(titleInfo.title_id, titleInfo.user_details.watch_count + 1);
+        titleInfo.user_details.watch_count = response.watch_count;
+    } finally {
+        waiting.value.watchCountAdd = false;
+    }
+}
+
+async function subtractFromWatchCount() {
+    waiting.value.watchCountSubtract = true;
+    try {
+        // Prevent going below 0
+        const newCount = Math.max(0, titleInfo.user_details.watch_count - 1);
+        const response = await fastApi.titles.setWatchCount(titleInfo.title_id, newCount);
+        titleInfo.user_details.watch_count = response.watch_count;
+    } finally {
+        waiting.value.watchCountSubtract = false;
     }
 }
 
@@ -90,14 +147,14 @@ const { titleInfo, storeImageFlag } = defineProps({
             <LoadingButton 
                 v-if="!titleInfo?.user_details?.in_library" 
                 class="btn-primary"
-                :loading="waiting"
+                :loading="waiting?.library"
                 @click="addTitle(titleInfo.title_id, titleInfo.tmdb_id, titleInfo.title_type)"
             >
                 <i class="bx bx-plus"></i>
                 Add
             </LoadingButton>
     
-            <LoadingButton v-else :loading="waiting" @click="removeTitle(titleInfo.title_id)">
+            <LoadingButton v-else :loading="waiting?.library" @click="removeTitle(titleInfo.title_id)">
                 <i class="bx bx-trash"></i>
                 Remove
             </LoadingButton>
@@ -134,20 +191,57 @@ const { titleInfo, storeImageFlag } = defineProps({
         </div>
 
         <div class="indicator-wrapper">
-            <div v-if="titleInfo?.user_details?.watch_count" class="indicator-circle watch-count">
-                <template v-if="titleInfo?.user_details?.watch_count >= 2">
-                    {{ titleInfo?.user_details?.watch_count }}
-                </template>
-                <i v-else class="bx bx-check"></i>
+            <div
+                :class="{
+                    'active': titleInfo?.user_details?.watch_count
+                }"
+                class="indicator-circle watch-count"
+            >
+                <LoadingButton
+                    class="inner-action"
+                    :class="{'btn-positive': titleInfo?.user_details?.watch_count}"
+                    :loading="waiting?.watchCountAdd"
+                    @click.prevent="addToWatchCount()"
+                >
+                    <template v-if="titleInfo?.user_details?.watch_count >= 2">
+                        {{ titleInfo?.user_details?.watch_count }}
+                    </template>
+                    <i v-else class="bx bx-check"></i>
+                </LoadingButton>
+
+                <LoadingButton
+                    class="inner-action"
+                    :class="{'btn-positive': titleInfo?.user_details?.watch_count}"
+                    :loading="waiting?.watchCountSubtract"
+                    @click.prevent="subtractFromWatchCount()"
+                >
+                    <i class="bx bx-minus"></i>
+                </LoadingButton>
             </div>
     
-            <div v-if="titleInfo?.user_details?.is_favourite" class="indicator-circle favourite">
+            <LoadingButton
+                :class="{
+                    'active': titleInfo?.user_details?.is_favourite,
+                    'btn-favourite': titleInfo?.user_details?.is_favourite
+                }"
+                class="indicator-circle favourite"
+                :loading="waiting?.favourite"
+                @click.prevent="toggleFavourite()" 
+            >
                 <i class="bx bxs-heart"></i>
-            </div>
+            </LoadingButton>
     
-            <div v-if="titleInfo?.user_details?.in_watchlist" class="indicator-circle watchlist">
+            <LoadingButton
+                :class="{
+                    'active': titleInfo?.user_details?.in_watchlist,
+                    'btn-accent': titleInfo?.user_details?.in_watchlist
+                }"
+                class="indicator-circle watchlist"
+                :loading="waiting?.watchlist"
+                @click.prevent="toggleWatchlist()" 
+            >
                 <i class="bx bxs-time"></i>
-            </div>
+            </LoadingButton>
         </div>
     </component>
 </template>
@@ -213,7 +307,7 @@ h5 {
     padding: var(--spacing-sm);
     top: 0;
     left: 0;
-    height: var(--spacing-lg);
+    height: calc(var(--spacing-lg) * 2);
     width: calc(var(--spacing-lg) * 3 + var(--spacing-xs) * 2);
     --spacing-amount: 8px;
 }
@@ -225,43 +319,90 @@ h5 {
     position: absolute;
     width: var(--spacing-lg);
     height: var(--spacing-lg);
+    padding: 0;
     border-radius: 100px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: 500;
-    color: var(--c-text-base);
-    transition: left 0.2s var(--transition-ease-out);
-}
-.indicator-circle.watch-count {
-    background-color: var(--c-positive);
-    z-index: 50;
-}
-.indicator-circle.favourite {
-    background-color: var(--c-favourite);
-    z-index: 40;
-}
-.indicator-circle.watchlist {
-    background-color: var(--c-watchlist);
-    z-index: 30;
+    left: 0;
+    opacity: 0;
+    overflow: hidden;
+    backdrop-filter: blur(var(--blur-subtle));
+    transition: 
+        height 0.2s var(--transition-ease-out),
+        left 0.2s var(--transition-ease-out), 
+        opacity 0.1s var(--transition-ease-out),
+        background-color 0.1s var(--transition-ease-out);
+
+    &.watch-count {
+        z-index: 50;
+        left: calc(var(--spacing-amount) * 0 + var(--spacing-sm));
+
+        &.active {
+            background-color: var(--c-positive);
+
+            &:hover {
+                height: calc(var(--spacing-lg) * 2);
+            }
+        }
+
+        .inner-action {
+            width: var(--spacing-lg);
+            height: var(--spacing-lg);
+            flex-shrink: 0;
+            padding: 0;
+            border-radius: 100px;
+        }
+        /* .inner-action:not(.btn-positive) {
+            background-color: transparent;
+        } */
+    }
+    &.favourite {
+        z-index: 40;
+        left: calc(var(--spacing-amount) * 1 + var(--spacing-sm));
+    }
+    &.watchlist {
+        z-index: 30;
+        left: calc(var(--spacing-amount) * 2 + var(--spacing-sm));
+    }
+
+    &.active {
+        opacity: 1;
+    }
+    &.active:nth-child(1 of .active) {
+        left: calc(var(--spacing-amount) * 0 + var(--spacing-sm)) !important;
+    }
+    &.active:nth-child(2 of .active) {
+        left: calc(var(--spacing-amount) * 1 + var(--spacing-sm)) !important;
+    }
+    &.active:nth-child(3 of .active) {
+        left: calc(var(--spacing-amount) * 2 + var(--spacing-sm)) !important;
+    }
 }
 
-.indicator-circle.watch-count i,
+
+
 .indicator-circle.watch-count i {
     font-size: var(--fs-3);
 }
-.indicator-circle.watchlist i {
+.indicator-circle.watchlist i,
+.indicator-circle.favourite i {
     font-size: var(--fs-1);
 }
 
-.indicator-wrapper .indicator-circle:nth-child(1) {
-    left: calc(var(--spacing-amount) * 0 + var(--spacing-sm));
-}
-.indicator-wrapper .indicator-circle:nth-child(2) {
-    left: calc(var(--spacing-amount) * 1 + var(--spacing-sm));
-}
-.indicator-wrapper .indicator-circle:nth-child(3) {
-    left: calc(var(--spacing-amount) * 2 + var(--spacing-sm));
+.title-card:hover .indicator-circle {
+    opacity: 1;
+
+    &.active:nth-child(1) {
+        left: calc(var(--spacing-amount) * 0 + var(--spacing-sm)) !important;
+    }
+
+    &.active:nth-child(2) {
+        left: calc(var(--spacing-amount) * 1 + var(--spacing-sm)) !important;
+    }
+
+    &.active:nth-child(3) {
+        left: calc(var(--spacing-amount) * 2 + var(--spacing-sm)) !important;
+    }
 }
 
+
+/* Optional: Add a subtle hover effect to the inner buttons so the user knows which one they are clicking */
 </style>
