@@ -302,17 +302,23 @@ h5 {
 }
 
 
+/* ----- Indicator circles ----- */
+
 .indicator-wrapper {
     position: absolute;
     padding: var(--spacing-sm);
     top: 0;
     left: 0;
-    height: calc(var(--spacing-lg) * 2);
-    width: calc(var(--spacing-lg) * 3 + var(--spacing-xs) * 2);
     --spacing-amount: 8px;
-}
-.indicator-wrapper:hover {
-    --spacing-amount: calc(var(--spacing-lg) + var(--spacing-xs));
+    --hover-margin: var(--spacing-md);
+    height: calc(var(--spacing-lg) + var(--hover-margin));
+    width: calc(var(--spacing-lg) * 3 + var(--spacing-xs) * 2 + var(--hover-margin));
+    border-bottom-right-radius: calc(var(--hover-margin) + var(--spacing-sm));
+    border-top-left-radius: var(--border-radius-md);
+
+    &:hover {
+        --spacing-amount: calc(var(--spacing-lg) + var(--spacing-xs));
+    }
 }
 
 .indicator-circle {
@@ -350,9 +356,6 @@ h5 {
             padding: 0;
             border-radius: 100px;
         }
-        /* .inner-action:not(.btn-positive) {
-            background-color: transparent;
-        } */
     }
     &.favourite {
         z-index: 40;
@@ -378,9 +381,8 @@ h5 {
 }
 
 
-
 .indicator-circle.watch-count i {
-    font-size: var(--fs-3);
+    font-size: var(--fs-2);
 }
 .indicator-circle.watchlist i,
 .indicator-circle.favourite i {
@@ -402,7 +404,4 @@ h5 {
         left: calc(var(--spacing-amount) * 2 + var(--spacing-sm)) !important;
     }
 }
-
-
-/* Optional: Add a subtle hover effect to the inner buttons so the user knows which one they are clicking */
 </style>
