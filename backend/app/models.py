@@ -91,6 +91,7 @@ class Title(Base):
     title_id = Column(Integer, primary_key=True, autoincrement=True)
     tmdb_id = Column(Integer, unique=True)
     imdb_id = Column(String(10))
+    jellyfin_id = Column(String(32))
     title_type = Column(Enum(TitleType), nullable=False)
     name_original = Column(String(255))
     tmdb_vote_average = Column(DECIMAL(3,1))
