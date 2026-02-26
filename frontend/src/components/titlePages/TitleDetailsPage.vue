@@ -8,6 +8,7 @@ import { ref, computed } from 'vue';
 import Tmdb from '@/assets/icons/tmdb.svg'
 import Imdb from '@/assets/icons/imdb.svg'
 import JustWatch from '@/assets/icons/justWatch.svg'
+import Jellyfin from '@/assets/icons/jellyfin.svg'
 import NoticeBlock from '@/components/NoticeBlock.vue';
 import { preferredLocale, fallbackLocale } from '@/utils/conf';
 import ModalBase from '@/components/modal/ModalBase.vue';
@@ -15,7 +16,7 @@ import SeasonsListing from '@/components/SeasonsListing.vue';
 import EpisodeMap from '@/components/EpisodeMap.vue';
 import ModalImages from '../modal/ModalImages.vue';
 
-const { titleDetails, fetchTitleDetails } = defineProps({
+const props = defineProps({
     titleDetails: {
         type: Object,
         required: true
@@ -27,6 +28,10 @@ const { titleDetails, fetchTitleDetails } = defineProps({
     fetchTitleDetails: {
         type: Function,
         required: true
+    },
+    jellyfinConfig: {
+        type: Object,
+        required: true
     }
 })
 
@@ -37,7 +42,7 @@ const ImagesModal = ref(null);
 async function updateTitleDetails() {
     waitingFor.value.titleUpdate = true;
     try {
-        await fastApi.titles.updateById(titleDetails.title_id);
+        await fastApi.titles.updateById(props.titleDetails.title_id);
         await fetchTitleDetails();
     } finally {
         waitingFor.value.titleUpdate = false;
@@ -48,10 +53,10 @@ async function updateTitleLocale() {
     waitingFor.value.titleLocale = true;
     try {
         const response = await fastApi.titles.setLocale(
-            titleDetails.title_id,
-            titleDetails.display_locale
+            props.titleDetails.title_id,
+            props.titleDetails.display_locale
         );
-        titleDetails.user_details.in_library = response.in_library;
+        props.titleDetails.user_details.in_library = response.in_library;
         await fetchTitleDetails();
     } finally {
         waitingFor.value.titleLocale = false;
@@ -60,28 +65,28 @@ async function updateTitleLocale() {
 
 async function toggleFavourite() {
     let response;
-    if (titleDetails.user_details.is_favourite) {
-        response = await fastApi.titles.setFavourite(titleDetails.title_id, false);
+    if (props.titleDetails.user_details.is_favourite) {
+        response = await fastApi.titles.setFavourite(props.titleDetails.title_id, false);
     } else {
-        response = await fastApi.titles.setFavourite(titleDetails.title_id, true);
+        response = await fastApi.titles.setFavourite(props.titleDetails.title_id, true);
     }
     if (!response) return;
 
-    titleDetails.user_details.is_favourite = response.is_favourite;
-    titleDetails.user_details.in_library = response.in_library;
+    props.titleDetails.user_details.is_favourite = response.is_favourite;
+    props.titleDetails.user_details.in_library = response.in_library;
 }
 
 async function toggleWatchlist() {
     let response;
     if (titleDetails.user_details.in_watchlist) {
-        response = await fastApi.titles.setWatchlist(titleDetails.title_id, false);
+        response = await fastApi.titles.setWatchlist(props.titleDetails.title_id, false);
     } else {
-        response = await fastApi.titles.setWatchlist(titleDetails.title_id, true);
+        response = await fastApi.titles.setWatchlist(props.titleDetails.title_id, true);
     }
     if (!response) return;
     
-    titleDetails.user_details.in_watchlist = response.in_watchlist;
-    titleDetails.user_details.in_library = response.in_library;
+    props.titleDetails.user_details.in_watchlist = response.in_watchlist;
+    props.titleDetails.user_details.in_library = response.in_library;
 }
 
 function adjustCollections() {
@@ -89,24 +94,24 @@ function adjustCollections() {
 }
 
 async function removeFromLibrary() {
-    const response = await fastApi.titles.library.remove(titleDetails.title_id);
-    titleDetails.user_details.in_library = response.in_library;
+    const response = await fastApi.titles.library.remove(props.titleDetails.title_id);
+    props.titleDetails.user_details.in_library = response.in_library;
 }
 async function addToLibrary() {
-    const response = await fastApi.titles.library.add(titleDetails.title_id);
-    titleDetails.user_details.in_library = response.in_library;
+    const response = await fastApi.titles.library.add(props.titleDetails.title_id);
+    props.titleDetails.user_details.in_library = response.in_library;
 }
 
 async function setTitleWatchCount(count) {
-    const response = await fastApi.titles.setWatchCount(titleDetails.title_id, count);
-    titleDetails.user_details.watch_count = response.watch_count;
-    titleDetails.user_details.in_library = response.in_library;
+    const response = await fastApi.titles.setWatchCount(props.titleDetails.title_id, count);
+    props.titleDetails.user_details.watch_count = response.watch_count;
+    props.titleDetails.user_details.in_library = response.in_library;
 }
 async function addToTitleWatchCount() {
-    await setTitleWatchCount(titleDetails.user_details.watch_count + 1);
+    await setTitleWatchCount(props.titleDetails.user_details.watch_count + 1);
 }
 async function removeFromTitleWatchCount() {
-    await setTitleWatchCount(titleDetails.user_details.watch_count - 1);
+    await setTitleWatchCount(props.titleDetails.user_details.watch_count - 1);
 }
 
 
@@ -115,7 +120,7 @@ function showAllAgeRatings() {
 }
 
 const chosenAgeRating = computed(() => {
-    const ratings = titleDetails?.age_ratings ?? []
+    const ratings = props?.titleDetails?.age_ratings ?? []
 
     // Try to find preferred locale
     const pref = ratings.find(
@@ -128,12 +133,22 @@ const chosenAgeRating = computed(() => {
 })
 
 const tmdbEditAgeRatingUrl = computed(() => {
-    const { title_type, tmdb_id } = titleDetails;
+    const { title_type, tmdb_id } = props?.titleDetails;
     const path =
         title_type === 'movie'
             ? 'edit?active_nav_item=release_information'
             : 'edit?active_nav_item=content_ratings';
     return `https://www.themoviedb.org/${title_type}/${tmdb_id}/${path}`;
+})
+
+const jellyfinLink = computed(() => {
+    const baseUrl = props?.jellyfinConfig?.base_url
+    const serverId = props?.jellyfinConfig?.server_id
+    const jellyfinId = props?.titleDetails?.jellyfin_id
+
+    const serverIdParam = serverId ? `&serverId=${serverId}` : ''
+
+    return `${baseUrl}/web/#/details?id=${jellyfinId}${serverIdParam}`
 })
 </script>
 
@@ -230,6 +245,14 @@ const tmdbEditAgeRatingUrl = computed(() => {
                                 class="btn btn-square btn-text"
                             >
                                 <JustWatch/>
+                            </a>
+                            <a  
+                                v-if="titleDetails?.jellyfin_id && jellyfinConfig?.base_url"
+                                :href="jellyfinLink"
+                                target="_blank"
+                                class="btn btn-square btn-text"
+                            >
+                                <Jellyfin/>
                             </a>
                         </div>
                     </div>

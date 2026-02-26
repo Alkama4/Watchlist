@@ -221,5 +221,11 @@ export const fastApi = {
             method: 'get',
             url: `/media/image/${size}/${image_path}`
         })
+    },
+    config: {
+        jellyfin: async () => fetchData({
+            method: 'get',
+            url: `/config/jellyfin`
+        })
     }
 };
