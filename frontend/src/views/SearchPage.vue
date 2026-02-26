@@ -130,7 +130,20 @@ onUnmounted(() => {
 
 <template>
     <div class="search-page layout-contained layout-spacing-bottom">
-        <h1>Search</h1>
+        <h1 class="mode-header">
+            <div
+                :class="{'active': !searchStore.tmdbFallback}"
+                @click="searchStore.tmdbFallback = false"
+            >
+                Search Library
+            </div>
+            <div
+                :class="{'active': searchStore.tmdbFallback}"
+                @click="searchStore.tmdbFallback = true"
+            >
+                Add titles
+            </div>
+        </h1>
         <div class="filters">
             <div>
                 <FilterDropDown label="Type" :disabled="searchStore.tmdbFallback">
@@ -151,15 +164,6 @@ onUnmounted(() => {
                         v-model="sp.jellyfin_link"
                     />
                 </FilterDropDown>
-
-                <div class="checkbox-row">
-                    <input
-                        type="checkbox"
-                        id="tmdbFallback"
-                        v-model="searchStore.tmdbFallback"
-                    />
-                    <label for="tmdbFallback">TMDB</label>
-                </div>
             </div>
 
             <div>
@@ -223,6 +227,35 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.mode-header {
+    display: flex;
+    gap: var(--spacing-md);
+
+    div {
+        color: var(--c-text-subtle);
+        cursor: pointer;
+        display: flex;
+        align-items: end;
+        transition: color 0.1s var(--transition-ease-out);
+        
+
+        &:hover,
+        &:active {
+            color: var(--c-text-soft)
+        }
+
+        &.active {
+            color: var(--c-text);
+
+            &:hover,
+            &:active {
+                color: var(--c-text-strong);
+            }
+        }
+        
+    }
+}
+
 .filters {
     display: flex;
     justify-content: space-between;
