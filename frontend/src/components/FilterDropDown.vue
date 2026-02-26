@@ -50,7 +50,7 @@ watch(
             <i class="bx bx-chevron-down"></i>
         </button>
         <Transition name="options">
-            <div v-if="isActive" class="options">
+            <div v-if="isActive" class="options" @mousedown.prevent>
                 <slot/>
             </div>
         </Transition>
@@ -74,9 +74,11 @@ button.active i.bx-chevron-down {
     position: absolute;
     top: 100%;
     z-index: 100;
-    background-color: var(--c-bg-level-1);
-    padding: var(--spacing-sm);
+    background-color: var(--c-bg-opaque-base);
+    backdrop-filter: blur(var(--blur-subtle));
+    padding: var(--spacing-xs);
     border-radius: var(--border-radius-md);
+    border: 1px solid var(--c-border);
 }
 
 .options-enter-active,

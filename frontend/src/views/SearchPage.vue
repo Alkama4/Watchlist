@@ -4,7 +4,8 @@ import { useSearchStore } from '@/stores/search';
 import { fastApi } from '@/utils/fastApi';
 import TitleCard from '@/components/TitleCard.vue';
 import LoadingIndicator from '@/components/LoadingIndicator.vue';
-import SearchFilter from '@/components/SearchFilter.vue';
+import FilterDropDown from '@/components/FilterDropDown.vue';
+import OptionPicker from '@/components/OptionPicker.vue';
 
 const searchStore = useSearchStore();
 
@@ -17,17 +18,27 @@ const sp = ref({
 const searchResults = ref({});
 const loadingTitles = ref(false)
 
-const sortOptions = [
-    { value: 'default', text: 'Default' },
-    { value: 'tmdb_score', text: 'TMDB' },
-    { value: 'imdb_score', text: 'IMDB' },
-    { value: 'popularity', text: 'Popularity' },
-    { value: 'title_name', text: 'Name' },
-    { value: 'runtime', text: 'Runtime' },
-    { value: 'release_date', text: 'Date' },
-    { value: 'last_viewed_at', text: 'Viewed' },
-    { value: 'random', text: 'Random' },
+
+const typeOptions = [
+    { label: 'Any', value: null, type: 'primary' },
+    { label: 'Movie', value: 'movie', type: 'primary' },
+    { label: 'TV-show', value: 'tv', type: 'primary' },
+]
+const sortByOptions = [
+    { label: 'Default', value: 'default', type: 'primary' },
+    { label: 'TMDB', value: 'tmdb_score', type: 'primary' },
+    { label: 'IMDB', value: 'imdb_score', type: 'primary' },
+    { label: 'Popularity', value: 'popularity', type: 'primary' },
+    { label: 'Name', value: 'title_name', type: 'primary' },
+    { label: 'Runtime', value: 'runtime', type: 'primary' },
+    { label: 'Date', value: 'release_date', type: 'primary' },
+    { label: 'Viewed', value: 'last_viewed_at', type: 'primary' },
+    { label: 'Random', value: 'random', type: 'primary' },
 ];
+const jellyfinOptions = [
+    { label: 'Yes', value: true,  type: 'positive' },
+    { label: 'No', value: false, type: 'negative' },
+]
 
 async function search() {
     loadingTitles.value = true;
@@ -43,6 +54,7 @@ async function search() {
                 title_type: sp.value.title_type,
                 sort_by: sp.value.sort_by,
                 sort_direction: sp.value.sort_direction,
+                jellyfin_link: sp.value.jellyfin_link,
             });
         }
     } finally {
@@ -59,6 +71,18 @@ function resetResults() {
             total_pages: 1
         };
 }
+
+
+const cycleSort = () => {
+    const mapping = {
+        'default': 'asc',
+        'asc': 'desc',
+        'desc': 'default'
+    };
+    
+    sp.value.sort_direction = mapping[sp.value.sort_direction] || 'default';
+};
+
 
 // On search parameter change auto search if not in tmdb mode
 watch(
@@ -108,49 +132,58 @@ onUnmounted(() => {
     <div class="search-page layout-contained layout-spacing-bottom">
         <h1>Search</h1>
         <div class="filters">
-            <SearchFilter label="Type" :disabled="searchStore.tmdbFallback">
-                <select id="typeFilter" v-model="sp.title_type" :disabled="searchStore.tmdbFallback">
-                    <option :value="null" selected>All</option>
-                    <option value="movie">Movie</option>
-                    <option value="tv">TV</option>
-                </select>
-            </SearchFilter>
-
-            <SearchFilter 
-                label="Sort by" 
-                :disabled="searchStore.tmdbFallback"
-            >
-                <div v-for="option in sortOptions" :key="option.value" class="input-label-row">
-                    <input 
-                        type="radio" 
-                        :id="option.value" 
-                        name="sortOrder"
-                        :value="option.value" 
-                        v-model="sp.sort_by"
-                        :disabled="searchStore.tmdbFallback"
+            <div>
+                <FilterDropDown label="Type" :disabled="searchStore.tmdbFallback">
+                    <OptionPicker
+                        class="listing"
+                        mode="single-required"
+                        :options="typeOptions"
+                        v-model="sp.title_type"
                     />
-                    <label :for="option.value">{{ option.text }}</label>
-                </div>
-            </SearchFilter>
+                </FilterDropDown>
+                
+                <FilterDropDown 
+                    label="Jellyfin" 
+                    :disabled="searchStore.tmdbFallback"
+                >
+                    <OptionPicker
+                        :options="jellyfinOptions"
+                        v-model="sp.jellyfin_link"
+                    />
+                </FilterDropDown>
 
-            <!-- <label for="sortDirection">Sort Direction</label> -->
-            <select
-                id="sortDirection"
-                v-model="sp.sort_direction"
-                :disabled="searchStore.tmdbFallback"
-            >
-                <option value="default" selected>Default</option>
-                <option value="desc">Descending</option>
-                <option value="asc">Ascending</option>
-            </select>
-            
-            <div class="checkbox-row">
-                <input
-                    type="checkbox"
-                    id="tmdbFallback"
-                    v-model="searchStore.tmdbFallback"
-                />
-                <label for="tmdbFallback">TMDB</label>
+                <div class="checkbox-row">
+                    <input
+                        type="checkbox"
+                        id="tmdbFallback"
+                        v-model="searchStore.tmdbFallback"
+                    />
+                    <label for="tmdbFallback">TMDB</label>
+                </div>
+            </div>
+
+            <div>
+                <FilterDropDown 
+                    label="Sort by" 
+                    :disabled="searchStore.tmdbFallback"
+                >
+                    <OptionPicker
+                        class="listing"
+                        mode="single-required"
+                        :options="sortByOptions"
+                        v-model="sp.sort_by"
+                    />
+                </FilterDropDown>
+
+                <button
+                    class="btn-text btn-square sort-direction-button"
+                    @click="cycleSort"
+                    :title="`Sort direction: ${sp.sort_direction}`"
+                >
+                    <i v-if="sp.sort_direction == 'default'" class="bx bx-sort"></i>
+                    <i v-else-if="sp.sort_direction == 'asc'" class="bx bx-sort-up"></i>
+                    <i v-else class="bx bx-sort-down"></i>
+                </button>
             </div>
         </div>
 
@@ -192,15 +225,18 @@ onUnmounted(() => {
 <style scoped>
 .filters {
     display: flex;
-    flex-direction: row;
-    gap: var(--spacing-sm);
+    justify-content: space-between;
+
+    > div {
+        display: flex;
+        /* gap: var(--spacing-sm); */
+    }
+
+    .sort-direction-button i {
+        font-size: var(--fs-1);
+    }
 }
 
-.input-label-row {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: var(--spacing-sm);
-}
 
 .title-card-grid {
     display: flex;
@@ -215,9 +251,9 @@ onUnmounted(() => {
     align-items: center;
 
     padding: var(--spacing-xl);
-}
 
-.results-not-found h2 {
-    margin: 0;
+    h2 {
+        margin: 0;
+    }
 }
 </style>
