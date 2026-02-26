@@ -3,6 +3,7 @@ import os
 
 JELLYFIN_API_KEY = os.getenv("JELLYFIN_API_KEY")
 JELLYFIN_URL = os.getenv("JELLYFIN_URL")
+JELLYFIN_SERVER_ID = os.getenv("JELLYFIN_SERVER_ID")
 
 
 async def jellyfin_get(path: str, params: dict | None = None) -> dict:

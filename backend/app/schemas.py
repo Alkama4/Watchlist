@@ -344,3 +344,11 @@ class TitleOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+####### Configs #######
+
+class ConfigJellyfinOut(BaseModel):
+    base_url: Optional[str] = None
+    server_id: Optional[str] = None
+    
