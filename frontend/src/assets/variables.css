@@ -148,5 +148,5 @@
 /* -----------Blur amounts ----------- */
 :root {
     --blur-heavy: 32px;
-    --blur-subtle: 8px;
+    --blur-subtle: 16px;
 }

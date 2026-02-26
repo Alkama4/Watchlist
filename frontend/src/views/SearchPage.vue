@@ -20,25 +20,29 @@ const loadingTitles = ref(false)
 
 
 const typeOptions = [
-    { label: 'Any', value: null, type: 'primary' },
     { label: 'Movie', value: 'movie', type: 'primary' },
     { label: 'TV-show', value: 'tv', type: 'primary' },
+]
+const watchStatusOptions = [
+    { label: 'Not watched', value: 'not_watched',  type: 'primary' },
+    { label: 'Partial', value: 'partial', type: 'primary' },
+    { label: 'Completed', value: 'completed', type: 'primary' },
+]
+const jellyfinOptions = [
+    { label: 'Available', value: true,  type: 'positive' },
+    { label: 'Not available', value: false, type: 'negative' },
 ]
 const sortByOptions = [
     { label: 'Default', value: 'default', type: 'primary' },
     { label: 'TMDB', value: 'tmdb_score', type: 'primary' },
     { label: 'IMDB', value: 'imdb_score', type: 'primary' },
     { label: 'Popularity', value: 'popularity', type: 'primary' },
-    { label: 'Name', value: 'title_name', type: 'primary' },
+    { label: 'Alphabetical', value: 'title_name', type: 'primary' },
     { label: 'Runtime', value: 'runtime', type: 'primary' },
-    { label: 'Date', value: 'release_date', type: 'primary' },
-    { label: 'Viewed', value: 'last_viewed_at', type: 'primary' },
+    { label: 'Release date', value: 'release_date', type: 'primary' },
+    { label: 'Last viewed', value: 'last_viewed_at', type: 'primary' },
     { label: 'Random', value: 'random', type: 'primary' },
 ];
-const jellyfinOptions = [
-    { label: 'Yes', value: true,  type: 'positive' },
-    { label: 'No', value: false, type: 'negative' },
-]
 
 async function search() {
     loadingTitles.value = true;
@@ -55,6 +59,7 @@ async function search() {
                 sort_by: sp.value.sort_by,
                 sort_direction: sp.value.sort_direction,
                 jellyfin_link: sp.value.jellyfin_link,
+                watch_status: sp.value.watch_status,
             });
         }
     } finally {
@@ -148,10 +153,18 @@ onUnmounted(() => {
             <div>
                 <FilterDropDown label="Type" :disabled="searchStore.tmdbFallback">
                     <OptionPicker
-                        class="listing"
-                        mode="single-required"
                         :options="typeOptions"
                         v-model="sp.title_type"
+                    />
+                </FilterDropDown>
+
+                <FilterDropDown 
+                    label="Watch status" 
+                    :disabled="searchStore.tmdbFallback"
+                >
+                    <OptionPicker
+                        :options="watchStatusOptions"
+                        v-model="sp.watch_status"
                     />
                 </FilterDropDown>
                 
