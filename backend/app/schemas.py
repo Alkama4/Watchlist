@@ -313,6 +313,7 @@ class TitleOut(BaseModel):
     title_id: int
     tmdb_id: int
     imdb_id: str
+    jellyfin_id: str
     title_type: TitleType
     name: Optional[str] = None
     name_original: str
