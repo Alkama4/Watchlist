@@ -222,6 +222,12 @@ export const fastApi = {
             url: `/media/image/${size}/${image_path}`
         })
     },
+    integrations: {
+        syncJellyfin: async () => fetchData({
+            method: 'post',
+            url: `/integrations/jellyfin/sync`
+        })
+    },
     config: {
         jellyfin: async () => fetchData({
             method: 'get',
