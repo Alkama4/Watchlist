@@ -211,7 +211,6 @@ const { titleInfo, storeImageFlag } = defineProps({
 
                 <LoadingButton
                     class="inner-action"
-                    :class="{'btn-positive': titleInfo?.user_details?.watch_count}"
                     :loading="waiting?.watchCountSubtract"
                     @click.prevent="subtractFromWatchCount()"
                 >
@@ -310,15 +309,6 @@ h5 {
     top: 0;
     left: 0;
     --spacing-amount: 8px;
-    --hover-margin: var(--spacing-md);
-    height: calc(var(--spacing-lg) + var(--hover-margin));
-    width: calc(var(--spacing-lg) * 3 + var(--spacing-xs) * 2 + var(--hover-margin));
-    border-bottom-right-radius: calc(var(--hover-margin) + var(--spacing-sm));
-    border-top-left-radius: var(--border-radius-md);
-
-    &:hover {
-        --spacing-amount: calc(var(--spacing-lg) + var(--spacing-xs));
-    }
 }
 
 .indicator-circle {
@@ -345,6 +335,7 @@ h5 {
             background-color: var(--c-positive);
 
             &:hover {
+                background-color: var(--c-neutral);
                 height: calc(var(--spacing-lg) * 2);
             }
         }
@@ -389,19 +380,23 @@ h5 {
     font-size: var(--fs-1);
 }
 
-.title-card:hover .indicator-circle {
-    opacity: 1;
+.title-card:hover .indicator-wrapper {
+    --spacing-amount: calc(var(--spacing-lg) + var(--spacing-xs));
 
-    &.active:nth-child(1) {
-        left: calc(var(--spacing-amount) * 0 + var(--spacing-sm)) !important;
-    }
-
-    &.active:nth-child(2) {
-        left: calc(var(--spacing-amount) * 1 + var(--spacing-sm)) !important;
-    }
-
-    &.active:nth-child(3) {
-        left: calc(var(--spacing-amount) * 2 + var(--spacing-sm)) !important;
+    .indicator-circle {
+        opacity: 1;
+    
+        &.active:nth-child(1) {
+            left: calc(var(--spacing-amount) * 0 + var(--spacing-sm)) !important;
+        }
+    
+        &.active:nth-child(2) {
+            left: calc(var(--spacing-amount) * 1 + var(--spacing-sm)) !important;
+        }
+    
+        &.active:nth-child(3) {
+            left: calc(var(--spacing-amount) * 2 + var(--spacing-sm)) !important;
+        }
     }
 }
 </style>
