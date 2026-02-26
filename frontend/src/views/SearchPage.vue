@@ -183,6 +183,7 @@ onUnmounted(() => {
                     class="btn-text btn-square sort-direction-button"
                     @click="cycleSort"
                     :title="`Sort direction: ${sp.sort_direction}`"
+                    :disabled="searchStore.tmdbFallback"
                 >
                     <i v-if="sp.sort_direction == 'default'" class="bx bx-sort"></i>
                     <i v-else-if="sp.sort_direction == 'asc'" class="bx bx-sort-up"></i>
