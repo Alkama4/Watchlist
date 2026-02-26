@@ -6,6 +6,7 @@ import ModalConfimation from '@/components/modal/ModalConfimation.vue';
 import ModalBase from '@/components/modal/ModalBase.vue';
 import NoticeBlock from '@/components/NoticeBlock.vue';
 import FormMessage from '@/components/FormMessage.vue';
+import LoadingButton from '@/components/LoadingButton.vue';
 
 const username = ref('')
 const user_id = ref('')
@@ -16,6 +17,8 @@ const deletePasswordElement = ref(null)
 const deleteError = ref('')
 
 const formMessageElement = ref(null)
+
+const waitingFor = ref({});
 
 // Modals
 const ModalLogOutConfirm = ref(null)
@@ -96,6 +99,17 @@ async function deleteAccountFinalize() {
     }
 }
 
+async function syncJellyfin() {
+    waitingFor.value.jellyfinSync = true;
+    try {
+        const response = await fastApi.integrations.syncJellyfin();
+        alert(`${response.message}. ${response.details.newly_linked} links added, ${response.details.total_matched_in_library} links in total, ${response.details.jellyfin_library_size} titles in Jellyfin`)
+        console.info(response)
+    } finally {
+        waitingFor.value.jellyfinSync = false;
+    }
+}
+
 function toggleCustomTheme() {
     const root = document.documentElement;
     const current = root.getAttribute('data-theme');
@@ -163,7 +177,16 @@ onMounted(async () => {
             <!-- Impelentation still VERY wip -->
             <label for="theme-toggle">Theme</label>
             <button @click="toggleCustomTheme" id="theme-toggle">Toggle the theme</button>
+
+            <h1 style="margin-top: var(--spacing-lg);">Actions</h1>
+            <LoadingButton
+                :loading="waitingFor?.jellyfinSync"
+                @click="syncJellyfin"
+            >
+                Manually sync jellyfin
+            </LoadingButton>
         </div>
+        
 
         <ModalConfimation
             ref="ModalLogOutConfirm"

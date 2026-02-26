@@ -168,6 +168,12 @@ def _apply_filters(stmt, q: TitleQueryIn):
         elif q.is_released is False:
             stmt = stmt.where(Title.release_date > datetime.now(timezone.utc).date())
 
+    if q.jellyfin_link is not None:
+        if q.jellyfin_link:
+            stmt = stmt.where(Title.jellyfin_id.is_not(None))
+        else:
+            stmt = stmt.where(Title.jellyfin_id.is_(None))
+
     if q.genres_include:
         stmt = stmt.where(
             exists().where(

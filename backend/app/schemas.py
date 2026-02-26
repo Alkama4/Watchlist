@@ -172,6 +172,7 @@ class TitleQueryIn(BaseModel):
     release_year_min: Optional[int] = None
     release_year_max: Optional[int] = None
     is_released: Optional[bool] = None
+    jellyfin_link: Optional[bool] = None
     genres_include: Optional[List[int]] = None
     genres_exclude: Optional[List[int]] = None
     min_tmdb_rating: Optional[int] = Field(None, ge=0, le=10)
@@ -313,6 +314,7 @@ class TitleOut(BaseModel):
     title_id: int
     tmdb_id: int
     imdb_id: str
+    jellyfin_id: Optional[str] = None
     title_type: TitleType
     name: Optional[str] = None
     name_original: str
@@ -343,3 +345,11 @@ class TitleOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+####### Configs #######
+
+class ConfigJellyfinOut(BaseModel):
+    base_url: Optional[str] = None
+    server_id: Optional[str] = None
+    

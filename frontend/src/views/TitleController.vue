@@ -9,6 +9,7 @@ import SeasonDetailsPage from '@/components/titlePages/SeasonDetailsPage.vue';
 
 const titleDetails = ref(null);
 const similarTitles = ref({});
+const jellyfinConfig = ref({})
 
 const pageLoading = ref(true);
 const route = useRoute();
@@ -36,6 +37,11 @@ async function loadTitleData() {
     }
 }
 
+async function fetchJellyfinConfig() {
+    const response = await fastApi.config.jellyfin();
+    jellyfinConfig.value = response;
+}
+
 const handleChosenImageUpdate = (data) => {
     const userDetailKey = `chosen_${data.imageType}_image_path`;
     if (!data.seasonId) {
@@ -52,6 +58,7 @@ provide('updateChosenImage', handleChosenImageUpdate)
 // Fetch data initially
 onMounted(async () => {
     await loadTitleData();
+    await fetchJellyfinConfig();
 });
 
 // Watch for route changes
@@ -97,6 +104,7 @@ watch(pageLoading, (newLoading) => {
             :titleDetails="titleDetails"
             :similarTitles="similarTitles"
             :fetchTitleDetails="fetchTitleDetails"
+            :jellyfinConfig="jellyfinConfig"
         />
     </div>
 </template>
