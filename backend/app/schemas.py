@@ -172,6 +172,7 @@ class TitleQueryIn(BaseModel):
     release_year_min: Optional[int] = None
     release_year_max: Optional[int] = None
     is_released: Optional[bool] = None
+    jellyfin_link: Optional[bool] = None
     genres_include: Optional[List[int]] = None
     genres_exclude: Optional[List[int]] = None
     min_tmdb_rating: Optional[int] = Field(None, ge=0, le=10)
