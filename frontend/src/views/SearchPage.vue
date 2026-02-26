@@ -180,6 +180,16 @@ onUnmounted(() => {
             </div>
 
             <div>
+                <button
+                    v-if="sp.sort_by == 'random'"
+                    class="btn-text btn-square filter-icon-button"
+                    @click="search"
+                    title="Reroll random results"
+                    :disabled="searchStore.tmdbFallback"
+                >
+                    <i class="bx bx-refresh"></i>
+                </button>
+
                 <FilterDropDown 
                     label="Sort by" 
                     :disabled="searchStore.tmdbFallback"
@@ -193,7 +203,7 @@ onUnmounted(() => {
                 </FilterDropDown>
 
                 <button
-                    class="btn-text btn-square sort-direction-button"
+                    class="btn-text btn-square filter-icon-button"
                     @click="cycleSort"
                     :title="`Sort direction: ${sp.sort_direction}`"
                     :disabled="searchStore.tmdbFallback"
@@ -279,7 +289,7 @@ onUnmounted(() => {
         /* gap: var(--spacing-sm); */
     }
 
-    .sort-direction-button i {
+    .filter-icon-button i {
         font-size: var(--fs-1);
     }
 }
