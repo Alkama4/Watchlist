@@ -13,10 +13,17 @@ const sp = ref({
     title_type: null,
     sort_by: 'default',
     sort_direction: 'default',
+    page_number: 1,
 });
 
-const searchResults = ref({});
-const loadingTitles = ref(false)
+const waitingFor = ref({})
+const searchResults = ref({
+    titles: [],
+    page_number: 1,
+    page_size: 0,
+    total_items: 0,
+    total_pages: 1
+});
 
 
 const typeOptions = [
@@ -44,30 +51,52 @@ const sortByOptions = [
     { label: 'Random', value: 'random', type: 'primary' },
 ];
 
-async function search() {
-    loadingTitles.value = true;
-    resetResults(); // Wipe values to prevent old images from sticking
+async function runSearch(append = false) {
+    if (append && searchResults.value.page_number >= searchResults.value.total_pages) return;
+
     try {
-        if (searchStore.tmdbFallback) {
-            searchResults.value = await fastApi.titles.searchTmdb({
-                query: searchStore.query,
-            });
+        if (!append) {
+            waitingFor.value.firstPage = true;
+            sp.value.page_number = 1;
         } else {
-            searchResults.value = await fastApi.titles.search({
-                query: searchStore.query,
+            waitingFor.value.additionalPage = true;
+            sp.value.page_number += 1;
+        }
+
+        const params = {
+            query: searchStore.query,
+            page_number: sp.value.page_number,
+            ...(searchStore.tmdbFallback ? {} : {
                 title_type: sp.value.title_type,
                 sort_by: sp.value.sort_by,
                 sort_direction: sp.value.sort_direction,
                 jellyfin_link: sp.value.jellyfin_link,
                 watch_status: sp.value.watch_status,
-            });
+            })
+        };
+
+        const response = await (searchStore.tmdbFallback 
+            ? fastApi.titles.searchTmdb(params) 
+            : fastApi.titles.search(params));
+
+        if (append) {
+            searchResults.value = {
+                ...response,
+                titles: [...searchResults.value.titles, ...response.titles]
+            };
+        } else {
+            searchResults.value = response;
         }
+    } catch (error) {
+        console.error("Search failed", error);
     } finally {
-        loadingTitles.value = false;
+        waitingFor.value.additionalPage = false;
+        waitingFor.value.firstPage = false;
     }
 }
 
 function resetResults() {
+    sp.value.page_number = 1;
     searchResults.value = {
             titles: [],
             page_number: 1,
@@ -93,14 +122,17 @@ const cycleSort = () => {
 watch(
     [
         () => searchStore.query,
-        () => sp.value,
+        () => sp.value.title_type,
+        () => sp.value.sort_by,
+        () => sp.value.sort_direction,
+        () => sp.value.jellyfin_link,
+        () => sp.value.watch_status,
     ],
     () => {
         if (!searchStore.tmdbFallback) {
-            search();
+            runSearch(false);
         }
-    },
-    { immediate: true, deep: true }
+    }
 );
 
 // On manual submit prevent empty TMDB searches, but keep results
@@ -108,7 +140,7 @@ watch(
     () => searchStore.submitTick,
     () => {
         if (searchStore.query || !searchStore.tmdbFallback) {
-            search();
+            runSearch();
         }
     }
 );
@@ -118,7 +150,7 @@ watch(
     () => searchStore.tmdbFallback,
     () => {
         if (searchStore.query || !searchStore.tmdbFallback) {
-            search();
+            runSearch();
         } else {
             resetResults();
         }
@@ -183,7 +215,7 @@ onUnmounted(() => {
                 <button
                     v-if="sp.sort_by == 'random'"
                     class="btn-text btn-square filter-icon-button"
-                    @click="search"
+                    @click="runSearch"
                     title="Reroll random results"
                     :disabled="searchStore.tmdbFallback"
                 >
@@ -215,9 +247,8 @@ onUnmounted(() => {
             </div>
         </div>
 
-        <h3>Results</h3>
-
-        <LoadingIndicator v-if="loadingTitles"/>
+        <h3>Results ({{ searchResults?.total_items }} found)</h3>
+        <LoadingIndicator v-if="waitingFor.firstPage"/>
 
         <div
             v-else-if="
@@ -237,7 +268,7 @@ onUnmounted(() => {
                 Search TMDB for new titles
             </button>
         </div>
-
+        
         <div v-else class="title-card-grid">
             <TitleCard
                 v-for="title in searchResults?.titles"
@@ -247,6 +278,11 @@ onUnmounted(() => {
                 :grid-mode="true"
             />
         </div>
+
+        <div v-if="searchResults?.page_number < searchResults?.total_pages" class="flex-col" style="margin-top: 16px;">
+            <button @click="runSearch(true)">MORE</button>
+        </div>
+        
     </div>
 </template>
 
