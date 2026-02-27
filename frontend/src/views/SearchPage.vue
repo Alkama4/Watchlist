@@ -378,11 +378,15 @@ onUnmounted(() => {
 
 
 .title-card-grid {
-    display: flex;
+    display: grid;
+    /* This creates as many 175px columns as will fit, then distributes leftover space */
+    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
     gap: var(--spacing-lg) var(--spacing-md);
-    flex-wrap: wrap;
-}
 
+    .title-card {
+        width: unset;
+    }
+}
 .results-not-found {
     display: flex;
     flex-direction: column;
