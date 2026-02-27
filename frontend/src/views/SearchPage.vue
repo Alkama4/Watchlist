@@ -1,5 +1,5 @@
 <script setup>
-import { onUnmounted, ref, watch } from 'vue';
+import { computed, onUnmounted, ref, watch } from 'vue';
 import { useSearchStore } from '@/stores/search';
 import { fastApi } from '@/utils/fastApi';
 import TitleCard from '@/components/TitleCard.vue';
@@ -9,7 +9,7 @@ import OptionPicker from '@/components/OptionPicker.vue';
 
 const searchStore = useSearchStore();
 
-const searchParams = ref({
+const initialSearchParams = {
     title_type: null,
     watch_status: null,
     is_favourite: null,
@@ -17,7 +17,8 @@ const searchParams = ref({
     jellyfin_link: null,
     sort_by: 'default',
     sort_direction: 'default',
-});
+}
+const searchParams = ref({...initialSearchParams});
 const pageNumber = ref(1);
 
 const waitingFor = ref({})
@@ -36,9 +37,9 @@ const typeOptions = [
     { label: 'TV-show', value: 'tv', type: 'primary' },
 ]
 const watchStatusOptions = [
-    { label: 'Not watched', value: 'not_watched',  type: 'primary' },
+    { label: 'Not watched', value: 'not_watched',  type: 'negative' },
     { label: 'Partial', value: 'partial', type: 'primary' },
-    { label: 'Completed', value: 'completed', type: 'primary' },
+    { label: 'Completed', value: 'completed', type: 'positive' },
 ]
 const favouriteOptions = [
     { label: 'Favourite', value: true,  type: 'positive' },
@@ -113,6 +114,16 @@ function resetResults() {
     };
 }
 
+function resetFilters() {
+    searchParams.value = {...initialSearchParams};
+}
+
+const searchParamsIsDirty = computed(() => {
+    return Object.keys(initialSearchParams).some(
+        key => searchParams.value[key] !== initialSearchParams[key]
+    );
+});
+
 
 const cycleSort = () => {
     const mapping = {
@@ -184,7 +195,11 @@ onUnmounted(() => {
         </h1>
         <div class="filters">
             <div>
-                <FilterDropDown label="Type" :disabled="searchStore.tmdbFallback">
+                <FilterDropDown
+                    label="Type"
+                    :disabled="searchStore.tmdbFallback"
+                    :modified="searchParams.title_type != initialSearchParams.title_type"
+                >
                     <OptionPicker
                         :options="typeOptions"
                         v-model="searchParams.title_type"
@@ -196,6 +211,7 @@ onUnmounted(() => {
                 <FilterDropDown 
                     label="Watch status" 
                     :disabled="searchStore.tmdbFallback"
+                    :modified="searchParams.watch_status != initialSearchParams.watch_status"
                 >
                     <OptionPicker
                         :options="watchStatusOptions"
@@ -206,6 +222,7 @@ onUnmounted(() => {
                 <FilterDropDown 
                     label="Favourite" 
                     :disabled="searchStore.tmdbFallback"
+                    :modified="searchParams.is_favourite != initialSearchParams.is_favourite"
                 >
                     <OptionPicker
                         :options="favouriteOptions"
@@ -216,6 +233,7 @@ onUnmounted(() => {
                 <FilterDropDown 
                     label="Watchlist" 
                     :disabled="searchStore.tmdbFallback"
+                    :modified="searchParams.in_watchlist != initialSearchParams.in_watchlist"
                 >
                     <OptionPicker
                         :options="watchlistOptions"
@@ -228,18 +246,33 @@ onUnmounted(() => {
                 <FilterDropDown 
                     label="Jellyfin" 
                     :disabled="searchStore.tmdbFallback"
+                    :modified="searchParams.jellyfin_link != initialSearchParams.jellyfin_link"
                 >
                     <OptionPicker
                         :options="jellyfinOptions"
                         v-model="searchParams.jellyfin_link"
                     />
                 </FilterDropDown>
+
+                <div v-if="searchParamsIsDirty" class="flex-row">
+                    <hr>
+
+                    <button
+                        class="btn-text btn-square"
+                        title="Reset filters"
+                        @click="resetFilters"
+                        :disabled="searchStore.tmdbFallback"
+                    >
+                        <i class="bx bx-reset"></i>
+                    </button>
+                </div>
             </div>
 
             <div>
                 <FilterDropDown 
                     label="Sort by" 
                     :disabled="searchStore.tmdbFallback"
+                    :modified="searchParams.sort_by != initialSearchParams.sort_by"
                 >
                     <OptionPicker
                         class="listing"
@@ -340,7 +373,7 @@ onUnmounted(() => {
         /* gap: var(--spacing-sm); */
     }
 
-    .filter-icon-button i {
+    i {
         font-size: var(--fs-1);
     }
 }

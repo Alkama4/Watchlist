@@ -122,6 +122,7 @@
 
     --fs-multiplier: 1.2;
 
+    --fs-neg-3: calc(var(--fs-neg-2) / var(--fs-multiplier));
     --fs-neg-2: calc(var(--fs-neg-1) / var(--fs-multiplier));
     --fs-neg-1: calc(var(--fs-0) / var(--fs-multiplier));
     --fs-0   : var(--font-size-base);

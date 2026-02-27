@@ -9,6 +9,10 @@ const props = defineProps({
     disabled: {
         type: Boolean,
         default: false
+    },
+    modified: {
+        type: Boolean,
+        default: false
     }
 });
 
@@ -46,7 +50,8 @@ watch(
             @click="toggle"
             :disabled="disabled"
         >
-            {{ label }}
+            <i class="bx bxs-circle" :class="{'active': modified}"></i>
+            <span>{{ label }}</span>
             <i class="bx bx-chevron-down"></i>
         </button>
         <Transition name="options">
@@ -68,6 +73,17 @@ button i.bx-chevron-down {
 }
 button.active i.bx-chevron-down {
     transform: rotate(180deg);
+}
+
+button i.bxs-circle {
+    color: transparent;
+    font-size: var(--fs-neg-3);
+    width: 0;
+
+    &.active {
+        width: fit-content;
+        color: var(--c-positive);
+    }
 }
 
 .options {
