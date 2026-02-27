@@ -3,7 +3,6 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useSearchStore } from '@/stores/search';
 import { fastApi } from '@/utils/fastApi';
 import TitleCard from '@/components/TitleCard.vue';
-import LoadingIndicator from '@/components/LoadingIndicator.vue';
 import FilterDropDown from '@/components/FilterDropDown.vue';
 import OptionPicker from '@/components/OptionPicker.vue';
 
@@ -70,7 +69,9 @@ const sortByOptions = [
 ];
 
 async function runSearch(append = false) {
-    if (append && searchResults.value.page_number >= searchResults.value.total_pages) return;
+    if (append && (waitingFor.value.additionalPage || searchResults.value.page_number >= searchResults.value.total_pages)) {
+        return;
+    }
 
     try {
         if (!append) {
@@ -107,7 +108,6 @@ async function runSearch(append = false) {
         waitingFor.value.firstPage = false;
     }
 }
-
 function resetResults() {
     pageNumber.value = 1;
     searchResults.value = {
@@ -367,7 +367,7 @@ onUnmounted(() => {
         </div>
 
         <div 
-            v-if="searchResults?.page_number < searchResults?.total_pages" 
+            v-if="searchResults?.page_number < searchResults?.total_pages && !waitingFor.additionalPage" 
             ref="loadMoreTrigger"
             class="flex-col" 
             style="margin-top: 16px; min-height: 50px;"
