@@ -1,10 +1,28 @@
 <!DOCTYPE html>
-<html lang="">
+<html lang="en">
   <head>
     <meta charset="UTF-8">
     <link rel="icon" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vite App</title>
+    <script>
+      (function() {
+        const theme = localStorage.getItem('theme') || 'midnight';
+        let bgColor;
+        switch (theme) {
+          case 'true_black':
+            bgColor = 'black';
+            break;
+          case 'midnight':
+            bgColor = 'oklch(19% 0.01 230)';
+            break;
+          default:
+            bgColor = 'oklch(19% 0.01 230)';
+        }
+        document.documentElement.style.backgroundColor = bgColor;
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script>
   </head>
   <body>
     <div id="app"></div>
