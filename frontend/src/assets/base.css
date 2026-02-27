@@ -30,7 +30,7 @@ body {
 .layout-contained {
     box-sizing: border-box;
     width: 100%;
-    max-width: 2000px;
+    max-width: calc(1600px + 10vw);
     padding: 0 var(--spacing-layout-inline);
     margin: 0 auto;
 }
@@ -41,7 +41,7 @@ body {
 .layout-full-contained {
     box-sizing: border-box;
     width: 100%;
-    max-width: 2000px;
+    max-width: calc(1600px + 10vw);
     margin-inline: auto;
 }
 .layout-spacing-top {
