@@ -2,20 +2,24 @@
 import { onMounted, ref } from 'vue'
 import { fastApi } from '@/utils/fastApi';
 import { useAuthStore } from '@/stores/auth';
+import { useSettingsStore } from '@/stores/settings';
 import ModalConfimation from '@/components/modal/ModalConfimation.vue';
 import ModalBase from '@/components/modal/ModalBase.vue';
 import NoticeBlock from '@/components/NoticeBlock.vue';
 import FormMessage from '@/components/FormMessage.vue';
 import LoadingButton from '@/components/LoadingButton.vue';
 
+// Stores
+const auth = useAuthStore();
+const settingsStore = useSettingsStore();
+
+// Local State
 const username = ref('')
 const user_id = ref('')
-const settings = ref([]);
 
 const deletePassword = ref('')
 const deletePasswordElement = ref(null)
 const deleteError = ref('')
-
 const formMessageElement = ref(null)
 
 const waitingFor = ref({});
@@ -38,32 +42,26 @@ async function checkMe() {
 
 async function logOut() {
     if (!await ModalLogOutConfirm.value.query()) return;
-    const auth = useAuthStore();
     await auth.logout();
 }
 
-async function fetchSettings() {
-    const baseSettings = await fastApi.settings.get();
-    const userSettings = await fastApi.user_settings.get();
-    const userMap = Object.fromEntries(userSettings.map(s => [s.key, s.value]));
-    settings.value = baseSettings.map(setting => ({
-        ...setting,
-        value: userMap[setting.key] ?? setting.default_value
-    }));
-}
-
-function inputType(setting) {
-    if (setting.value_type === 'int') return 'number';
+function inputType(value_type) {
+    if (value_type === 'int') return 'number';
     return 'text';
 }
 
-async function updateSetting(setting, event) {
-    if (event) {
-        const input = event.target;
-        if (!input.checkValidity()) return;
+async function handleUpdate(key, event) {
+    if (event && event.target) {
+        if (!event.target.checkValidity()) return;
     }
-    let value = String(setting.value);
-    await fastApi.user_settings.put(setting.key, { value });
+    const value = event.target.value;
+    await settingsStore.updateSetting(key, value);
+}
+
+function toggleCustomTheme() {
+    const current = settingsStore.preferences.theme;
+    const nextTheme = (current === 'true-black') ? 'midnight' : 'true-black';
+    settingsStore.updateSetting('theme', nextTheme);
 }
 
 async function deleteAccountInit() {
@@ -76,25 +74,13 @@ async function deleteAccountInit() {
 
 async function deleteAccountFinalize() {
     try {
-        await fastApi.auth.me.delete({
-            password: deletePassword.value
-        })
+        await fastApi.auth.me.delete({ password: deletePassword.value })
         ModalDeleteSecond.value.close();
-
-        const auth = useAuthStore();
         await auth.logout(true);
     } catch(e) {
         const status = e.response?.status
         const detail = e.response?.data?.detail
-
-        if (status === 400) {
-            deleteError.value = "Invalid password"
-        } else if (status) {
-            deleteError.value = `Error ${status}: ${detail || 'Something went wrong.'}`
-        } else {
-            deleteError.value = `Unexpected error: ${e.message || 'Please try again later.'}`
-        }
-
+        deleteError.value = status === 400 ? "Invalid password" : (detail || e.message);
         formMessageElement.value.show()
     }
 }
@@ -110,19 +96,12 @@ async function syncJellyfin() {
     }
 }
 
-function toggleCustomTheme() {
-    const root = document.documentElement;
-    const current = root.getAttribute('data-theme');
-    
-    const nextTheme = (current === 'true-black') ? 'midnight' : 'true-black';
-    
-    root.setAttribute('data-theme', nextTheme);
-    localStorage.setItem('user-theme', nextTheme);
-}
-
 onMounted(async () => {
-    await checkMe();
-    await fetchSettings();
+    // Parallelize for speed
+    await Promise.all([
+        checkMe(),
+        settingsStore.syncSettings()
+    ]);
 })
 </script>
 
@@ -130,15 +109,13 @@ onMounted(async () => {
     <div class="account-page layout-contained layout-spacing-top layout-spacing-bottom">
         <div class="profile-column">
             <div class="card profile-card">
-                <div class="avatar">
-                    <i class="bx bxs-user"></i>
-                </div>
+                <div class="avatar"><i class="bx bxs-user"></i></div>
                 <h2 class="name">{{ username }}</h2>
                 <p>User ID: {{ user_id }}</p>
 
                 <div class="button-column">
                     <button @click="logOut" class="btn-primary">Log out</button>
-                    <button >Change Password</button>
+                    <button>Change Password</button>
                     <hr>
                     <button @click="deleteAccountInit" class="btn-negative">Delete Account</button>
                 </div>
@@ -147,13 +124,14 @@ onMounted(async () => {
 
         <div class="settings-column settings-list">
             <h1>Settings</h1>
-            <template v-for="setting in settings" :key="setting.key">
+            
+            <template v-for="setting in settingsStore.schema" :key="setting.key">
                 <label>{{ setting.label }}</label>
 
                 <select
                     v-if="setting.enum_choices"
-                    v-model="setting.value"
-                    @change="updateSetting(setting)"
+                    :value="settingsStore.preferences[setting.key]"
+                    @change="e => settingsStore.updateSetting(setting.key, e.target.value)"
                 >
                     <option
                         v-for="choice in setting.enum_choices"
@@ -166,17 +144,17 @@ onMounted(async () => {
 
                 <input
                     v-else
-                    v-model="setting.value"
-                    :type="inputType(setting)"
+                    :value="settingsStore.preferences[setting.key]"
+                    :type="inputType(setting.value_type)"
                     :placeholder="setting.default_value"
-                    @blur="updateSetting(setting, $event)"
+                    @blur="e => handleUpdate(setting.key, e)"
                 />
             </template>
 
-            <!-- To be synced with the back end -->
-            <!-- Impelentation still VERY wip -->
-            <label for="theme-toggle">Theme</label>
-            <button @click="toggleCustomTheme" id="theme-toggle">Toggle the theme</button>
+            <label for="theme-toggle">Debug quick theme toggle</label>
+            <button @click="toggleCustomTheme" id="theme-toggle">
+                Switch to {{ settingsStore.preferences.theme === 'true-black' ? 'Midnight' : 'True Black' }}
+            </button>
 
             <h1 style="margin-top: var(--spacing-lg);">Actions</h1>
             <LoadingButton
@@ -186,7 +164,7 @@ onMounted(async () => {
                 Manually sync jellyfin
             </LoadingButton>
         </div>
-        
+
 
         <ModalConfimation
             ref="ModalLogOutConfirm"
@@ -280,4 +258,3 @@ hr {
 }
 
 </style>
->
