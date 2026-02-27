@@ -35,6 +35,14 @@ const watchStatusOptions = [
     { label: 'Partial', value: 'partial', type: 'primary' },
     { label: 'Completed', value: 'completed', type: 'primary' },
 ]
+const favouriteOptions = [
+    { label: 'Favourite', value: true,  type: 'positive' },
+    { label: 'Not favourite', value: false, type: 'negative' },
+]
+const watchlistOptions = [
+    { label: 'In your watchlist', value: true,  type: 'positive' },
+    { label: 'Not in your watchlist', value: false, type: 'negative' },
+]
 const jellyfinOptions = [
     { label: 'Available', value: true,  type: 'positive' },
     { label: 'Not available', value: false, type: 'negative' },
@@ -65,14 +73,8 @@ async function runSearch(append = false) {
 
         const params = {
             query: searchStore.query,
-            page_number: sp.value.page_number,
-            ...(searchStore.tmdbFallback ? {} : {
-                title_type: sp.value.title_type,
-                sort_by: sp.value.sort_by,
-                sort_direction: sp.value.sort_direction,
-                jellyfin_link: sp.value.jellyfin_link,
-                watch_status: sp.value.watch_status,
-            })
+            page_number: pageNumber.value,
+            ...(searchStore.tmdbFallback ? {} : sp.value)
         };
 
         const response = await (searchStore.tmdbFallback 
@@ -190,6 +192,8 @@ onUnmounted(() => {
                     />
                 </FilterDropDown>
 
+                <hr>
+
                 <FilterDropDown 
                     label="Watch status" 
                     :disabled="searchStore.tmdbFallback"
@@ -199,6 +203,28 @@ onUnmounted(() => {
                         v-model="sp.watch_status"
                     />
                 </FilterDropDown>
+                
+                <FilterDropDown 
+                    label="Favourite" 
+                    :disabled="searchStore.tmdbFallback"
+                >
+                    <OptionPicker
+                        :options="favouriteOptions"
+                        v-model="sp.is_favourite"
+                    />
+                </FilterDropDown>
+                
+                <FilterDropDown 
+                    label="Watchlist" 
+                    :disabled="searchStore.tmdbFallback"
+                >
+                    <OptionPicker
+                        :options="watchlistOptions"
+                        v-model="sp.in_watchlist"
+                    />
+                </FilterDropDown>
+                
+                <hr>
                 
                 <FilterDropDown 
                     label="Jellyfin" 
