@@ -34,7 +34,7 @@ class SortBy(enum.Enum):
     random = "random"
 
 class Themes(enum.Enum):
-    true_black = "true_black"
+    true_black = "true-black"
     midnight = "midnight"
 
 

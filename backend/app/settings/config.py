@@ -41,6 +41,7 @@ TYPE_MAP: Dict[Any, Callable] = {
     bool: lambda v: str(v).lower() in ("true", "1", "yes"),
     SortBy: SortBy,
     SortDirection: SortDirection,
+    Themes: Themes,
     List[str]: parse_list,
 }
 
