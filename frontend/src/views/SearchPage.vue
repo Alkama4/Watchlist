@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onUnmounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useSearchStore } from '@/stores/search';
 import { fastApi } from '@/utils/fastApi';
 import TitleCard from '@/components/TitleCard.vue';
@@ -7,8 +7,8 @@ import LoadingIndicator from '@/components/LoadingIndicator.vue';
 import FilterDropDown from '@/components/FilterDropDown.vue';
 import OptionPicker from '@/components/OptionPicker.vue';
 
+// Search parameters/filters
 const searchStore = useSearchStore();
-
 const initialSearchParams = {
     title_type: null,
     watch_status: null,
@@ -21,6 +21,7 @@ const initialSearchParams = {
 const searchParams = ref({...initialSearchParams});
 const pageNumber = ref(1);
 
+// Search results and statuses
 const waitingFor = ref({})
 const initialSearchResults = {
     titles: [],
@@ -30,6 +31,10 @@ const initialSearchResults = {
     total_pages: 1
 }
 const searchResults = ref({...initialSearchResults});
+
+// Infinite scroll
+const loadMoreTrigger = ref(null);
+let observer = null;
 
 
 const typeOptions = [
@@ -169,9 +174,33 @@ watch(
     { immediate: true }
 )
 
-// Disable TMDB mode when leaving, so that we are always using the
-// internal system by default.
+
+onMounted(() => {
+    observer = new IntersectionObserver((entries) => {
+        const trigger = entries[0];
+        // If the trigger is visible, we aren't currently loading, and there are more pages
+        if (
+            trigger.isIntersecting
+            && !waitingFor.value.additionalPage
+            && searchResults.value.page_number < searchResults.value.total_pages
+            && !searchStore.tmdbFallback
+        ) {
+            runSearch(true);
+        }
+    }, {
+        rootMargin: '800px' 
+    });
+});
+
+// Since the trigger element uses v-if, it will mount and unmount itself. 
+// We just watch for when the element appears/disappears in the DOM to attach to it.
+watch(loadMoreTrigger, (newTrigger, oldTrigger) => {
+    if (oldTrigger) observer.unobserve(oldTrigger);
+    if (newTrigger) observer.observe(newTrigger);
+});
+
 onUnmounted(() => {
+    if (observer) observer.disconnect();
     searchStore.tmdbFallback = false;
 });
 </script>
@@ -325,10 +354,14 @@ onUnmounted(() => {
             />
         </div>
 
-        <div v-if="searchResults?.page_number < searchResults?.total_pages" class="flex-col" style="margin-top: 16px;">
-            <button @click="runSearch(true)">MORE</button>
+        <div 
+            v-if="searchResults?.page_number < searchResults?.total_pages" 
+            ref="loadMoreTrigger"
+            class="flex-col" 
+            style="margin-top: 16px; min-height: 50px;"
+        >
+            <LoadingIndicator v-if="waitingFor.additionalPage" />
         </div>
-        
     </div>
 </template>
 
