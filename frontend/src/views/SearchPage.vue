@@ -54,7 +54,6 @@ const jellyfinOptions = [
     { label: 'Not available', value: false, type: 'negative' },
 ]
 const sortByOptions = [
-    { label: 'Default', value: 'default', type: 'primary' },
     { label: 'TMDB', value: 'tmdb_score', type: 'primary' },
     { label: 'IMDB', value: 'imdb_score', type: 'primary' },
     { label: 'Popularity', value: 'popularity', type: 'primary' },
@@ -201,8 +200,8 @@ onUnmounted(() => {
                     :modified="searchParams.title_type != initialSearchParams.title_type"
                 >
                     <OptionPicker
-                        :options="typeOptions"
                         v-model="searchParams.title_type"
+                        :options="typeOptions"
                     />
                 </FilterDropDown>
 
@@ -214,8 +213,8 @@ onUnmounted(() => {
                     :modified="searchParams.watch_status != initialSearchParams.watch_status"
                 >
                     <OptionPicker
-                        :options="watchStatusOptions"
                         v-model="searchParams.watch_status"
+                        :options="watchStatusOptions"
                     />
                 </FilterDropDown>
                 
@@ -225,8 +224,8 @@ onUnmounted(() => {
                     :modified="searchParams.is_favourite != initialSearchParams.is_favourite"
                 >
                     <OptionPicker
-                        :options="favouriteOptions"
                         v-model="searchParams.is_favourite"
+                        :options="favouriteOptions"
                     />
                 </FilterDropDown>
                 
@@ -236,8 +235,8 @@ onUnmounted(() => {
                     :modified="searchParams.in_watchlist != initialSearchParams.in_watchlist"
                 >
                     <OptionPicker
-                        :options="watchlistOptions"
                         v-model="searchParams.in_watchlist"
+                        :options="watchlistOptions"
                     />
                 </FilterDropDown>
                 
@@ -249,8 +248,8 @@ onUnmounted(() => {
                     :modified="searchParams.jellyfin_link != initialSearchParams.jellyfin_link"
                 >
                     <OptionPicker
-                        :options="jellyfinOptions"
                         v-model="searchParams.jellyfin_link"
+                        :options="jellyfinOptions"
                     />
                 </FilterDropDown>
 
@@ -275,10 +274,9 @@ onUnmounted(() => {
                     :modified="searchParams.sort_by != initialSearchParams.sort_by"
                 >
                     <OptionPicker
-                        class="listing"
-                        mode="single-required"
-                        :options="sortByOptions"
                         v-model="searchParams.sort_by"
+                        :options="sortByOptions"
+                        :defaultValue="'default'"
                     />
                 </FilterDropDown>
 

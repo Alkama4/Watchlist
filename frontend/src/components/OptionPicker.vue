@@ -14,6 +14,10 @@ const props = defineProps({
         type: String,
         default: 'single-optional',
         validator: (value) => ['single-optional', 'single-required', 'multiple'].includes(value)
+    },
+    defaultValue: {
+        type: [Boolean, String, Number, Array, null],
+        default: null
     }
 })
 
@@ -52,7 +56,7 @@ const updateValue = (clickedValue) => {
     }
 
     // MODE 1: Zero or one active (toggles off to null) - Default
-    const newValue = props.modelValue === clickedValue ? null : clickedValue
+    const newValue = props.modelValue === clickedValue ? props.defaultValue : clickedValue
     emit('update:modelValue', newValue)
 }
 </script>
