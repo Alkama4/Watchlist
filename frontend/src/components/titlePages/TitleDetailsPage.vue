@@ -499,7 +499,6 @@ img.backdrop {
     left: 0;
     position: absolute;
     object-fit: cover;
-    z-index: -10;
 
     filter: brightness(calc(var(--details-backdrop-min-brightness) + var(--details-backdrop-fade-intensity) * (1 - var(--details-backdrop-min-brightness))));
     mask-image: linear-gradient(
@@ -525,6 +524,8 @@ img.logo {
     max-width: 600px;
     max-height: 300px;
     box-sizing: border-box;
+
+    z-index: 5;
 }
 
 .notice {
@@ -535,6 +536,10 @@ img.logo {
     display: grid;
     grid-template-columns: auto 1fr;
     gap: var(--spacing-md-lg);
+
+    > * {
+        z-index: 5;
+    }
 }
 
 /* .right-side {
