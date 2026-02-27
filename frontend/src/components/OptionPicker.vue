@@ -66,7 +66,7 @@ const updateValue = (clickedValue) => {
         <button 
             v-for="opt in options" 
             :key="String(opt.value)"
-            class="btn-square btn-text"
+            class="btn-even-padding btn-text"
             :class="{ [`btn-${opt.type}`]: isActive(opt.value) }"
             @click="updateValue(opt.value)"
         >

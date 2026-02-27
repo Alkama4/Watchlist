@@ -33,7 +33,7 @@ defineExpose({ show })
         <button
             v-if="dismissable"
             @click="close"
-            class="btn-text btn-square"
+            class="btn-text btn-even-padding"
             aria-label="Dismiss message"
         >
             <i class="bx bx-x"></i>

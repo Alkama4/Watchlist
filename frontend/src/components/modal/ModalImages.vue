@@ -147,7 +147,7 @@ function updateDomData(imageType, imagePath) {
                     <div class="details-section">
                         <div class="star-wrapper">
                             <button
-                                class="btn-square btn-text"
+                                class="btn-even-padding btn-text"
                                 :class="{'subtle': !image?.is_user_choice}"
                                 @click="setAsPreferred(image.type, image.is_user_choice ? null: image.file_path)"
                             >

@@ -45,7 +45,7 @@ watch(
         @focusout="close"
     >
         <button 
-            class="btn-text btn-square" 
+            class="btn-text btn-even-padding" 
             :class="{'active': isActive}"
             @click="toggle"
             :disabled="disabled"

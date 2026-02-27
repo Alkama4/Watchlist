@@ -65,7 +65,7 @@ onUnmounted(() => {
                 >
                     <div class="header-row">
                         <h2 class="no-top">{{ header }}</h2>
-                        <i class="bx bx-x btn btn-text btn-square subtle" @click="close"></i>
+                        <i class="bx bx-x btn btn-text btn-even-padding subtle" @click="close"></i>
                     </div>
                     <slot></slot>
                 </div>

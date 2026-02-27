@@ -73,10 +73,10 @@ function toggleCustomTheme() {
 
         <h2>Text buttons and links</h2>
         <div class="flex-col">
-            <button class="btn-text btn-square">sldkfjsdlkf</button>
-            <i class="bx bxs-time btn-text btn-square"></i>
+            <button class="btn-text btn-even-padding">sldkfjsdlkf</button>
+            <i class="bx bxs-time btn-text btn-even-padding"></i>
             
-            <router-link class="btn-text btn-square"><i class="bx bxs-time"></i></router-link>
+            <router-link class="btn-text btn-even-padding"><i class="bx bxs-time"></i></router-link>
             <router-link class="no-deco"><i class="bx bxs-time"></i> Time</router-link>
 
             <span>not a link, <router-link class="no-deco">hidden link</router-link>, <router-link class="no-deco">hidden link nro 2</router-link></span>

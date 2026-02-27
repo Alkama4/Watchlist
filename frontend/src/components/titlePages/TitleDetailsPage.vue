@@ -213,7 +213,7 @@ const jellyfinLink = computed(() => {
                             <a
                                 :href="`https://www.themoviedb.org/${titleDetails?.title_type}/${titleDetails?.tmdb_id}`"
                                 target="_blank"
-                                class="btn btn-square btn-text"
+                                class="btn btn-even-padding btn-text"
                             >
                                 <Tmdb class="four-letter"/>
                             </a>
@@ -221,7 +221,7 @@ const jellyfinLink = computed(() => {
                                 v-if="titleDetails?.imdb_id"
                                 :href="`https://www.imdb.com/title/${titleDetails?.imdb_id}`"
                                 target="_blank"
-                                class="btn btn-square btn-text"
+                                class="btn btn-even-padding btn-text"
                             >
                                 <Imdb class="four-letter"/>
                             </a>
@@ -229,7 +229,7 @@ const jellyfinLink = computed(() => {
                                 v-if="titleDetails?.homepage"
                                 :href="titleDetails?.homepage"
                                 target="_blank"
-                                class="btn btn-square btn-text"
+                                class="btn btn-even-padding btn-text"
                             >
                                 <i class="bx bx-link"></i>
                             </a>
@@ -242,7 +242,7 @@ const jellyfinLink = computed(() => {
                             <a
                                 :href="`https://www.justwatch.com/${preferredLocale.iso_639_1}/search?q=${titleDetails?.name_original}`"
                                 target="_blank"
-                                class="btn btn-square btn-text"
+                                class="btn btn-even-padding btn-text"
                             >
                                 <JustWatch/>
                             </a>
@@ -250,7 +250,7 @@ const jellyfinLink = computed(() => {
                                 v-if="titleDetails?.jellyfin_id && jellyfinConfig?.base_url"
                                 :href="jellyfinLink"
                                 target="_blank"
-                                class="btn btn-square btn-text"
+                                class="btn btn-even-padding btn-text"
                             >
                                 <Jellyfin/>
                             </a>
@@ -343,35 +343,35 @@ const jellyfinLink = computed(() => {
     
                     <div class="actions">
                         <i
-                            class="bx bxs-heart btn btn-text btn-square"
+                            class="bx bxs-heart btn btn-text btn-even-padding"
                             :class="{'btn-favourite': titleDetails?.user_details?.is_favourite }"
                             @click="toggleFavourite"
                         ></i>
                         <i
-                            class="bx bxs-time btn btn-text btn-square"
+                            class="bx bxs-time btn btn-text btn-even-padding"
                             :class="{'btn-accent': titleDetails?.user_details?.in_watchlist }"
                             @click="toggleWatchlist"
                         ></i>
                         <i
-                            class="bx bxs-collection btn btn-text btn-square"
+                            class="bx bxs-collection btn btn-text btn-even-padding"
                             @click="adjustCollections"
                         ></i>
             
                         <!-- Move actions below to a drop down -->
 
                         <i
-                            class="bx bxs-image btn btn-text btn-square"
+                            class="bx bxs-image btn btn-text btn-even-padding"
                             @click="ImagesModal.open()"
                         ></i>
             
                         <i
                             v-if="titleDetails?.user_details?.in_library"
-                            class="bx bx-list-minus btn btn-text btn-square"
+                            class="bx bx-list-minus btn btn-text btn-even-padding"
                             @click="removeFromLibrary"
                         ></i>
                         <i
                             v-else
-                            class="bx bx-list-plus btn btn-text btn-square"
+                            class="bx bx-list-plus btn btn-text btn-even-padding"
                             @click="addToLibrary"
                         ></i>
 

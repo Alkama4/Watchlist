@@ -89,7 +89,7 @@ onUnmounted(() => {
 <template>
     <div class="season-details-page">
         <div class="back-button-row layout-contained layout-spacing-top">
-            <button class="btn-text btn-square" @click="handleBack">
+            <button class="btn-text btn-even-padding" @click="handleBack">
                 <i class="bx bx-chevron-left"></i>
                 <span>Back to Overview</span>
             </button>
@@ -113,7 +113,7 @@ onUnmounted(() => {
                 <p>{{ activeSeason?.overview }}</p>
                 <div class="actions">
                     <i
-                        class="bx bxs-image btn btn-text btn-square"
+                        class="bx bxs-image btn btn-text btn-even-padding"
                         @click="ImagesModal.open()"
                     ></i>
                 </div>

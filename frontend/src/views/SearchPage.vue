@@ -257,7 +257,7 @@ onUnmounted(() => {
                     <hr>
 
                     <button
-                        class="btn-text btn-square"
+                        class="btn-text btn-even-padding"
                         title="Reset filters"
                         @click="resetFilters"
                         :disabled="searchStore.tmdbFallback"
@@ -281,7 +281,7 @@ onUnmounted(() => {
                 </FilterDropDown>
 
                 <button
-                    class="btn-text btn-square filter-icon-button"
+                    class="btn-text btn-even-padding filter-icon-button"
                     @click="cycleSort"
                     :title="`Sort direction: ${searchParams.sort_direction}`"
                     :disabled="searchStore.tmdbFallback"

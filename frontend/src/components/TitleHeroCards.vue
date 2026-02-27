@@ -162,17 +162,17 @@ onUnmounted(() => {
                         </div>
                         <div class="actions">
                             <i
-                                class="bx bxs-heart btn btn-text btn-square"
+                                class="bx bxs-heart btn btn-text btn-even-padding"
                                 :class="{'btn-favourite': heroCards?.titles[currentIndex]?.user_details?.is_favourite }"
                                 @click.prevent="toggleFavourite"
                             ></i>
                             <i
-                                class="bx bxs-time btn btn-text btn-square"
+                                class="bx bxs-time btn btn-text btn-even-padding"
                                 :class="{'btn-accent': heroCards?.titles[currentIndex]?.user_details?.in_watchlist }"
                                 @click.prevent="toggleWatchlist"
                             ></i>
                             <i
-                                class="bx bxs-collection btn btn-text btn-square"
+                                class="bx bxs-collection btn btn-text btn-even-padding"
                                 @click.prevent="adjustCollections"
                             ></i>
                         </div>

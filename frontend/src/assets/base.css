@@ -11,6 +11,7 @@ body {
     color: var(--c-text-base);
     font-size: var(--fs-0);
     color-scheme: dark;
+    overflow-y: scroll;
 
     margin: 0;
     padding: 0;

@@ -18,7 +18,7 @@ defineProps({
             <router-link
                 v-for="season in titleDetails?.seasons"
                 :key="season?.season_id"
-                class="season-card btn btn-square no-deco"
+                class="season-card btn btn-even-padding no-deco"
                 :to="`/title/${titleDetails?.title_id}?season=${season?.season_number}`"
             >
                 <img 

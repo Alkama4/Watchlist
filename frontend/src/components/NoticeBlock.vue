@@ -36,7 +36,7 @@ defineProps({
             <button
                 v-if="dismissible"
                 @click="$emit('dismiss')"
-                class="btn-text btn-square"
+                class="btn-text btn-even-padding"
                 aria-label="Dismiss notice"
             >
                 <i class="bx bx-x"></i>

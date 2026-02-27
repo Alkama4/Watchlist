@@ -35,7 +35,7 @@ button:disabled, .btn:disabled {
     filter: opacity(0.75);
 }
 
-.btn-square {
+.btn-even-padding {
     padding: var(--spacing-sm)
 }
 
