@@ -54,7 +54,8 @@ async def get_home_overview(
                 "watch_status": "partial",
                 "title_type": "tv",
                 "sort_by": "last_viewed_at",
-                "sort_direction": "desc"
+                "sort_direction": "desc",
+                "page_size": 25
             }
         },
         {
@@ -62,7 +63,8 @@ async def get_home_overview(
             "filters": {
                 "watch_status": "not_watched",
                 "sort_by": "random",
-                "sort_direction": "desc"
+                "sort_direction": "desc",
+                "page_size": 25
             }
         },
         {
@@ -70,7 +72,8 @@ async def get_home_overview(
             "filters": {
                 "watch_status": "not_watched",
                 "sort_by": "tmdb_score",
-                "sort_direction": "desc"
+                "sort_direction": "desc",
+                "page_size": 25
             }
         },
         {
@@ -78,7 +81,8 @@ async def get_home_overview(
             "filters": {
                 "watch_status": "not_watched",
                 "sort_by": "popularity",
-                "sort_direction": "desc"
+                "sort_direction": "desc",
+                "page_size": 25
             }
         },
         {
@@ -86,7 +90,8 @@ async def get_home_overview(
             "filters": {
                 "is_favourite": True,
                 "sort_by": "last_viewed_at",
-                "sort_direction": "desc"
+                "sort_direction": "desc",
+                "page_size": 25
             }
         },
         {
@@ -94,7 +99,8 @@ async def get_home_overview(
             "filters": {
                 "in_watchlist": True,
                 "sort_by": "last_viewed_at",
-                "sort_direction": "desc"
+                "sort_direction": "desc",
+                "page_size": 25
             }
         },
         {
@@ -102,7 +108,8 @@ async def get_home_overview(
             "filters": {
                 "title_type": "movie",
                 "sort_by": "runtime",
-                "sort_direction": "asc"
+                "sort_direction": "asc",
+                "page_size": 25
             }
         },
         {
@@ -110,7 +117,8 @@ async def get_home_overview(
             "filters": {
                 "is_released": True,
                 "sort_by": "release_date",
-                "sort_direction": "desc"
+                "sort_direction": "desc",
+                "page_size": 25
             }
         },
         {
@@ -118,7 +126,8 @@ async def get_home_overview(
             "filters": {
                 "is_released": False,
                 "sort_by": "release_date",
-                "sort_direction": "asc"
+                "sort_direction": "asc",
+                "page_size": 25
             }
         },
         {
@@ -126,7 +135,8 @@ async def get_home_overview(
             "filters": {
                 "watch_status": "not_watched",
                 "sort_by": "last_viewed_at",
-                "sort_direction": "asc"
+                "sort_direction": "asc",
+                "page_size": 25
             }
         },
         {
@@ -134,7 +144,8 @@ async def get_home_overview(
             "filters": {
                 "watch_status": "completed",
                 "sort_by": "last_viewed_at",
-                "sort_direction": "asc"
+                "sort_direction": "asc",
+                "page_size": 25
             }
         },
     ]

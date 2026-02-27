@@ -12,7 +12,6 @@ def parse_list(v: Any) -> List[str]:
 class DefaultSettings(BaseModel):
     sort_by: SortBy = SortBy.last_viewed_at
     sort_direction: SortDirection = SortDirection.desc
-    items_per_page: int = 25
     locales: List[str] = Field(default_factory=lambda: ["en-US"])
 
     class Config:
