@@ -9,21 +9,26 @@ import OptionPicker from '@/components/OptionPicker.vue';
 
 const searchStore = useSearchStore();
 
-const sp = ref({
+const searchParams = ref({
     title_type: null,
+    watch_status: null,
+    is_favourite: null,
+    in_watchlist: null,
+    jellyfin_link: null,
     sort_by: 'default',
     sort_direction: 'default',
-    page_number: 1,
 });
+const pageNumber = ref(1);
 
 const waitingFor = ref({})
-const searchResults = ref({
+const initialSearchResults = {
     titles: [],
     page_number: 1,
     page_size: 0,
     total_items: 0,
     total_pages: 1
-});
+}
+const searchResults = ref({...initialSearchResults});
 
 
 const typeOptions = [
@@ -65,16 +70,16 @@ async function runSearch(append = false) {
     try {
         if (!append) {
             waitingFor.value.firstPage = true;
-            sp.value.page_number = 1;
+            pageNumber.value = 1;
         } else {
             waitingFor.value.additionalPage = true;
-            sp.value.page_number += 1;
+            pageNumber.value += 1;
         }
 
         const params = {
             query: searchStore.query,
             page_number: pageNumber.value,
-            ...(searchStore.tmdbFallback ? {} : sp.value)
+            ...(searchStore.tmdbFallback ? {} : searchParams.value)
         };
 
         const response = await (searchStore.tmdbFallback 
@@ -98,14 +103,14 @@ async function runSearch(append = false) {
 }
 
 function resetResults() {
-    sp.value.page_number = 1;
+    pageNumber.value = 1;
     searchResults.value = {
-            titles: [],
-            page_number: 1,
-            page_size: 0,
-            total_items: 0,
-            total_pages: 1
-        };
+        titles: [],
+        page_number: 1,
+        page_size: 0,
+        total_items: 0,
+        total_pages: 1
+    };
 }
 
 
@@ -116,25 +121,19 @@ const cycleSort = () => {
         'desc': 'default'
     };
     
-    sp.value.sort_direction = mapping[sp.value.sort_direction] || 'default';
+    searchParams.value.sort_direction = mapping[searchParams.value.sort_direction] || 'default';
 };
 
 
 // On search parameter change auto search if not in tmdb mode
 watch(
-    [
-        () => searchStore.query,
-        () => sp.value.title_type,
-        () => sp.value.sort_by,
-        () => sp.value.sort_direction,
-        () => sp.value.jellyfin_link,
-        () => sp.value.watch_status,
-    ],
+    [() => searchStore.query, searchParams],
     () => {
         if (!searchStore.tmdbFallback) {
             runSearch(false);
         }
-    }
+    },
+    { deep: true }
 );
 
 // On manual submit prevent empty TMDB searches, but keep results
@@ -188,7 +187,7 @@ onUnmounted(() => {
                 <FilterDropDown label="Type" :disabled="searchStore.tmdbFallback">
                     <OptionPicker
                         :options="typeOptions"
-                        v-model="sp.title_type"
+                        v-model="searchParams.title_type"
                     />
                 </FilterDropDown>
 
@@ -200,7 +199,7 @@ onUnmounted(() => {
                 >
                     <OptionPicker
                         :options="watchStatusOptions"
-                        v-model="sp.watch_status"
+                        v-model="searchParams.watch_status"
                     />
                 </FilterDropDown>
                 
@@ -210,7 +209,7 @@ onUnmounted(() => {
                 >
                     <OptionPicker
                         :options="favouriteOptions"
-                        v-model="sp.is_favourite"
+                        v-model="searchParams.is_favourite"
                     />
                 </FilterDropDown>
                 
@@ -220,7 +219,7 @@ onUnmounted(() => {
                 >
                     <OptionPicker
                         :options="watchlistOptions"
-                        v-model="sp.in_watchlist"
+                        v-model="searchParams.in_watchlist"
                     />
                 </FilterDropDown>
                 
@@ -232,22 +231,12 @@ onUnmounted(() => {
                 >
                     <OptionPicker
                         :options="jellyfinOptions"
-                        v-model="sp.jellyfin_link"
+                        v-model="searchParams.jellyfin_link"
                     />
                 </FilterDropDown>
             </div>
 
             <div>
-                <button
-                    v-if="sp.sort_by == 'random'"
-                    class="btn-text btn-square filter-icon-button"
-                    @click="runSearch"
-                    title="Reroll random results"
-                    :disabled="searchStore.tmdbFallback"
-                >
-                    <i class="bx bx-refresh"></i>
-                </button>
-
                 <FilterDropDown 
                     label="Sort by" 
                     :disabled="searchStore.tmdbFallback"
@@ -256,18 +245,18 @@ onUnmounted(() => {
                         class="listing"
                         mode="single-required"
                         :options="sortByOptions"
-                        v-model="sp.sort_by"
+                        v-model="searchParams.sort_by"
                     />
                 </FilterDropDown>
 
                 <button
                     class="btn-text btn-square filter-icon-button"
                     @click="cycleSort"
-                    :title="`Sort direction: ${sp.sort_direction}`"
+                    :title="`Sort direction: ${searchParams.sort_direction}`"
                     :disabled="searchStore.tmdbFallback"
                 >
-                    <i v-if="sp.sort_direction == 'default'" class="bx bx-sort"></i>
-                    <i v-else-if="sp.sort_direction == 'asc'" class="bx bx-sort-up"></i>
+                    <i v-if="searchParams.sort_direction == 'default'" class="bx bx-sort"></i>
+                    <i v-else-if="searchParams.sort_direction == 'asc'" class="bx bx-sort-up"></i>
                     <i v-else class="bx bx-sort-down"></i>
                 </button>
             </div>
