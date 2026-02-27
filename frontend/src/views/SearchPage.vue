@@ -76,6 +76,7 @@ async function runSearch(append = false) {
         if (!append) {
             waitingFor.value.firstPage = true;
             pageNumber.value = 1;
+            resetResults();
         } else {
             waitingFor.value.additionalPage = true;
             pageNumber.value += 1;
@@ -322,13 +323,15 @@ onUnmounted(() => {
             </div>
         </div>
 
-        <h3>Results ({{ searchResults?.total_items }} found)</h3>
-        <LoadingIndicator v-if="waitingFor.firstPage"/>
+        <h3>
+            Results 
+            <template v-if="!waitingFor.firstPage">
+                ({{ searchResults?.total_items }} found)
+            </template>
+        </h3>
 
         <div
-            v-else-if="
-                searchResults?.titles?.length == 0 
-            "
+            v-if="searchResults?.titles?.length == 0 && !waitingFor.firstPage"
             class="card results-not-found" 
         >
             <h2>No results found</h2>
@@ -352,6 +355,15 @@ onUnmounted(() => {
                 :store-image-flag="!searchStore.tmdbFallback"
                 :grid-mode="true"
             />
+            
+            <template v-if="waitingFor.firstPage || waitingFor.additionalPage">
+                <div v-for="_ in (waitingFor.firstPage ? 25 : 5)" class="title-card-skeleton">
+                    <div class="img"/>
+                    <div class="header"/>
+                    <div class="detail"/>
+                    <div class="detail"/>
+                </div>
+            </template>
         </div>
 
         <div 
@@ -359,9 +371,7 @@ onUnmounted(() => {
             ref="loadMoreTrigger"
             class="flex-col" 
             style="margin-top: 16px; min-height: 50px;"
-        >
-            <LoadingIndicator v-if="waitingFor.additionalPage" />
-        </div>
+        ></div>
     </div>
 </template>
 
@@ -412,7 +422,6 @@ onUnmounted(() => {
 
 .title-card-grid {
     display: grid;
-    /* This creates as many 175px columns as will fit, then distributes leftover space */
     grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
     gap: var(--spacing-lg) var(--spacing-md);
 
@@ -420,6 +429,50 @@ onUnmounted(() => {
         width: unset;
     }
 }
+
+.title-card-skeleton {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+
+    * {
+        border-radius: var(--border-radius-md);
+        background: linear-gradient(
+            90deg,
+            var(--c-bg-level-1) 40%,
+            var(--c-bg-level-2) 70%,
+            var(--c-bg-level-1) 100%
+        );
+        background-size: 200% 100%;
+        animation: highlight-wave 1.25s infinite linear;
+    }
+    .img {
+        aspect-ratio: 2/3;
+    }
+    .header {
+        width: 90%;
+        height: 20px;
+        margin-top: var(--spacing-xs);
+    }
+    .detail {
+        width: 50%;
+        height: 16px;
+        &:last-child {
+            width: 40%;
+        }
+    }
+}
+
+@keyframes highlight-wave {
+    0% {
+        background-position: 0% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
 .results-not-found {
     display: flex;
     flex-direction: column;
