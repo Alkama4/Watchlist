@@ -1,21 +1,8 @@
 <script setup>
 import { useRoute } from 'vue-router';
-import router from './router';
-import { useSearchStore } from './stores/search';
+import SearchBar from './components/SearchBar.vue';
 
 const route = useRoute();
-const searchStore = useSearchStore();
-
-function onSearchFocus() {
-    if (router.currentRoute.value.name !== 'search') {
-        router.push({ name: 'Search' });
-    }
-}
-
-function onSearchSubmit() {
-    searchStore.submit();
-}
-
 </script>
 
 <template>
@@ -24,14 +11,9 @@ function onSearchSubmit() {
             <router-link to="/" class="no-deco">
                 <h2 class="name">Watchlist</h2>
             </router-link>
-            <form role="search" @submit.prevent="onSearchSubmit">
-                <input 
-                    type="search" 
-                    placeholder="Search for titles"
-                    @focus="onSearchFocus"
-                    v-model="searchStore.query"
-                >
-            </form>
+            <SearchBar 
+                placeholder="Search for titles" 
+            />
             <div class="flex-row align-center">
                 <ul>
                     <li>
@@ -94,10 +76,6 @@ nav {
 .name {
     margin: 0;
     color: var(--c-text-base);
-}
-
-input[type="search"] {
-    margin: 0;
 }
 
 
