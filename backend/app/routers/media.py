@@ -5,6 +5,7 @@ import aiofiles
 import httpx
 from fastapi import APIRouter, HTTPException, Query, Request, Response
 from fastapi.responses import FileResponse, StreamingResponse
+import shutil
 
 router = APIRouter()
 
@@ -28,7 +29,6 @@ async def _resize_image(original_path: str, target_path: str, long_side: int):
         with Image.open(original_path) as img:
             if img.format == 'SVG':
                 os.makedirs(os.path.dirname(target_path), exist_ok=True)
-                import shutil
                 shutil.copy2(original_path, target_path)
                 return
 
@@ -143,8 +143,13 @@ async def get_image(
     if size == "original":
         temp_original = local_file_path + ".tmp"
         await _download_original(image_path, temp_original)
-        await _make_progressive(temp_original, local_file_path)
-        os.remove(temp_original)
+        
+        if image_path.lower().endswith('.svg'):
+            os.replace(temp_original, local_file_path)
+        else:
+            await _make_progressive(temp_original, local_file_path)
+            os.remove(temp_original)
+            
         return FileResponse(local_file_path)
 
     # Store resized
