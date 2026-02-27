@@ -67,22 +67,31 @@ watch(
     position: relative;
 }
 
-button i.bx-chevron-down {
-    font-size: var(--fs-2);
-    transition: transform 0.1s ease-out;
-}
-button.active i.bx-chevron-down {
-    transform: rotate(180deg);
-}
+button {
+    position: relative;
 
-button i.bxs-circle {
-    color: transparent;
-    font-size: var(--fs-neg-3);
-    width: 0;
+    span {
+        padding-left: var(--spacing-xs);
+    }
 
-    &.active {
-        width: fit-content;
-        color: var(--c-positive);
+    i.bx-chevron-down {
+        font-size: var(--fs-2);
+        transition: transform 0.1s ease-out;
+    }
+    &.active i.bx-chevron-down {
+        transform: rotate(180deg);
+    }
+
+    i.bxs-circle {
+        color: transparent;
+        font-size: var(--fs-neg-3);
+        position: absolute;
+        right: 26px;
+        top: 6px;
+
+        &.active {
+            color: var(--c-positive);
+        }
     }
 }
 
