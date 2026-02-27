@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useSettingsStore } from '@/stores/settings';
 
 const routes = [
     {
@@ -68,16 +69,21 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
     const auth = useAuthStore();
 
-    // Wait for auth.init() if it hasn't finished
+    // Call auth.init() if it hasn't yet been initialized.
+    // Handles expiry and auth setup.
     if (!auth.initialized) {
         await auth.init();
+
+        // Sync user settings like themes etc.
+        const settings = useSettingsStore();
+        await settings.syncSettings();
     }
 
+    // Check special case redirects
     if (to.meta.requiresAuth && !auth.accessToken) {
         console.log(auth.accessToken)
         return next({ name: 'Login' });
     }
-
     if (to.meta.redirectAuthToAccount && auth.accessToken) {
         return next({ name: 'Account' });
     }

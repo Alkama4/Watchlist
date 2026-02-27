@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { fastApi } from '../utils/fastApi';
 import router from '@/router';
+import { useSettingsStore } from './settings';
 
 export const useAuthStore = defineStore('auth', {
     state: () => ({
@@ -24,6 +25,8 @@ export const useAuthStore = defineStore('auth', {
             try {
                 const data = await fastApi.auth.login(credentials);
                 this.accessToken = data.access_token;
+                const settings = useSettingsStore();
+                await settings.syncSettings();
                 router.push('/');
             } catch (e) {
                 this.accessToken = null;
