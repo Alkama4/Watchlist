@@ -1,5 +1,5 @@
 import enum
-from sqlalchemy import CheckConstraint, Column, Integer, String, DECIMAL, BigInteger, Date, Text, Boolean, Enum, ForeignKey, UniqueConstraint, DateTime
+from sqlalchemy import Column, Integer, String, DECIMAL, BigInteger, Date, Text, Boolean, Enum, ForeignKey, UniqueConstraint, DateTime
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -32,6 +32,10 @@ class SortBy(enum.Enum):
     release_date = "release_date"
     last_viewed_at = "last_viewed_at"
     random = "random"
+
+class Themes(enum.Enum):
+    true_black = "true_black"
+    midnight = "midnight"
 
 
 ##### USER AND AUTH #####

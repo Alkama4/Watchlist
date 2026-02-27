@@ -1,7 +1,7 @@
 import enum
-from typing import List, Any, Dict, Type, Callable, Union
+from typing import List, Any, Dict, Callable
 from pydantic import BaseModel, Field, field_validator
-from app.models import SortBy, SortDirection
+from app.models import SortBy, SortDirection, Themes
 
 def parse_list(v: Any) -> List[str]:
     if isinstance(v, list): return v
@@ -13,6 +13,7 @@ class DefaultSettings(BaseModel):
     sort_by: SortBy = SortBy.last_viewed_at
     sort_direction: SortDirection = SortDirection.desc
     locales: List[str] = Field(default_factory=lambda: ["en-US"])
+    theme: Themes = Themes.midnight
 
     class Config:
         extra = "forbid"
