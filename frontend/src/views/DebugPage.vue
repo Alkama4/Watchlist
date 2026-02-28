@@ -36,13 +36,15 @@ function toggleCustomTheme() {
 
         <h3>Basic buttons</h3>
         <div class="buttons">
-            <button @click="toggleCustomTheme">Default button</button>
-            <button @click="toggleCustomTheme" class="btn-primary">Primary button</button>
-            <button @click="toggleCustomTheme" class="btn-text">Text button</button>
+            <button class="btn-primary">Primary button</button>
+            <button>Default button</button>
+            <button class="btn-text">Text button</button>
         </div>
-
+        
         <h3>Color buttons</h3>
         <div class="buttons">
+            <button class="btn-accent">Accent button</button>
+            <button class="btn-favourite">Favourite button</button>
             <button class="btn-negative">Negative button</button>
             <button class="btn-warning">Warning button</button>
             <button class="btn-positive">Positive button</button>
