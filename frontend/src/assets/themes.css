@@ -65,7 +65,7 @@
 
     --c-text-base: hsl(210, 4%, 23%);
     --c-text-inv-base: hsl(210, 4%, 97%);
-    --o-text: -0.125;
+    --o-text: -0.075;
 
     --c-primary: hsl(210, 4%, 27%);
     --c-neutral: hsl(210, 4%, 66%);
@@ -80,8 +80,9 @@
     --bg-step-1: 0.06; 
     --bg-step-2: 0.12;
 
-    --c-input: hsla(210, 4%, 15%, 0.9);
     --c-border: hsla(210, 4%, 50%, 0.8);
+    --c-input: hsla(210, 4%, 15%, 0.9);
+    --c-input-text: var(--c-text-inv);
 
     --hero-backdrop-fade-intensity: 0.25;
     --hero-backdrop-min-brightness: 0.35;

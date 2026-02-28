@@ -64,7 +64,7 @@ body {
 /* Input */
 input, select {
     background-color: var(--c-input);
-    color: var(--c-text-base);
+    color: var(--c-input-text);
     font-family: 'Inter';
     font-size: var(--fs-0);
 

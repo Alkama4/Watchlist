@@ -37,10 +37,12 @@
     --details-backdrop-fade-intensity: 0;
     --details-backdrop-min-brightness: 0.25;
 
-    /* Borders and inputs (TODO) */
-    --c-input: oklch(12.5% 0 0 / 50%);
+    /* Borders and inputs */
     --c-border: oklch(45% 0 0 / 50%);
     --c-border-strong: oklch(from var(--c-border) calc(l + var(--l-border-strong)) c h);
+
+    --c-input: oklch(12.5% 0 0 / 50%);
+    --c-input-text: var(--c-text);
     
     /* Background levels */
     --c-bg: var(--c-bg-base);
