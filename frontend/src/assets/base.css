@@ -10,7 +10,7 @@ body {
     background: var(--c-bg-base);
     color: var(--c-text-base);
     font-size: var(--fs-0);
-    color-scheme: dark;
+    color-scheme: var(--color-scheme);
     overflow-y: scroll;
 
     margin: 0;

@@ -36,6 +36,9 @@ class SortBy(enum.Enum):
 class Themes(enum.Enum):
     true_black = "true-black"
     midnight = "midnight"
+    amethyst = "amethyst"
+    retro = "retro"
+    modern_white = "modern-white"
 
 
 ##### USER AND AUTH #####

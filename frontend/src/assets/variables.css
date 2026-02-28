@@ -1,6 +1,8 @@
 
 /* ----------- Colors ----------- */
 :root {
+    --color-scheme: dark;
+
     /* Base Colors */
     --c-bg-base: oklch(0% 0 0);
 
