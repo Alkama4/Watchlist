@@ -30,6 +30,8 @@
     
     --a-trans: 0.66;
 
+    --o-text: 0.125;
+
     --hero-backdrop-fade-intensity: 0.3;
     --hero-backdrop-min-brightness: 0.4;
     --details-backdrop-fade-intensity: 0;
@@ -51,15 +53,15 @@
     --c-bg-backdrop: oklch(from var(--c-bg-base) l c h / 50%);
 
     /* Text levels */
-    --c-text:         var(--c-text-base);
-    --c-text-strong:  oklch(from var(--c-text-base) 100% c h);
-    --c-text-soft:    oklch(from var(--c-text-base) 75% c h);
-    --c-text-subtle:  oklch(from var(--c-text-base) 50% c h);
+    --c-text:        var(--c-text-base);
+    --c-text-strong: oklch(from var(--c-text-base) calc(l + var(--o-text) * 1) c h);
+    --c-text-soft:   oklch(from var(--c-text-base) calc(l - var(--o-text) * 1) c h);
+    --c-text-subtle: oklch(from var(--c-text-base) calc(l - var(--o-text) * 2) c h);
 
-    --c-text-inv:         var(--c-text-inv-base);
-    --c-text-inv-strong:  oklch(from var(--c-text-inv-base) 0% c h);
-    --c-text-inv-soft:    oklch(from var(--c-text-inv-base) 25% c h);
-    --c-text-inv-subtle:  oklch(from var(--c-text-inv-base) 50% c h);
+    --c-text-inv:        var(--c-text-inv-base);
+    --c-text-inv-strong: oklch(from var(--c-text-inv-base) calc(l - var(--o-text) * 1) c h);
+    --c-text-inv-soft:   oklch(from var(--c-text-inv-base) calc(l + var(--o-text) * 1) c h);
+    --c-text-inv-subtle: oklch(from var(--c-text-inv-base) calc(l + var(--o-text) * 2) c h);
     
     /* Unique color variations */
     --c-primary-soft:        oklch(from var(--c-primary) calc(l + var(--l-c-step-1)) c h);

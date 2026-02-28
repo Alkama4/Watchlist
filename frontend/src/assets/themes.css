@@ -65,6 +65,7 @@
 
     --c-text-base: hsl(210, 4%, 23%);
     --c-text-inv-base: hsl(210, 4%, 97%);
+    --o-text: -0.125;
 
     --c-primary: hsl(210, 4%, 27%);
     --c-neutral: hsl(210, 4%, 66%);
@@ -95,6 +96,7 @@
 
     --c-text-base: hsl(0, 0%, 10%);
     --c-text-inv-base: hsl(0, 0%, 90%);
+    --o-text: -0.125;
 
     --c-primary:    oklch(20.019% 0.00002 271.152);
     --c-neutral:    oklch(32.897% 0.00004 271.152 / 0.5);
