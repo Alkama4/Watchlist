@@ -1,3 +1,8 @@
+/* [data-theme='true-black'] {
+    The default values in `variables.css`.
+} */
+
+
 [data-theme='midnight'] {
     --c-bg-base: oklch(19% 0.01 230);
 
@@ -15,9 +20,11 @@
     --c-warning:    oklch(75% 0.14 80);
     --c-negative:   oklch(52% 0.14 27);
 
-
     --bg-step-1: 0.025; 
     --bg-step-2: 0.06;
+
+    --c-input: oklch(17.5% 0 230 / 66%);
+    --c-border: oklch(40% 0.01 230 / 66%);
 
     --hero-backdrop-fade-intensity: 0.25;
     --hero-backdrop-min-brightness: 0.35;

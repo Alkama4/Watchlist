@@ -71,7 +71,7 @@ input, select {
 }
 input:hover,
 select:hover {
-    border-color: var(--c-border-1);
+    border-color: var(--c-border-strong);
 }
 input:user-invalid,
 select:user-invalid {
