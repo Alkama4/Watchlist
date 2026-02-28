@@ -61,9 +61,12 @@
 }
 
 [data-theme='retro'] {
-    --c-bg-base: hsl(210, 4%, 83%);
+    --color-scheme: light;
 
-    --c-text-base: hsl(210, 4%, 23%);
+    --c-bg-base: hsl(210, 4%, 83%);
+    --c-bg-opaque-base: hsl(210, 4%, 83%);
+
+    --c-text-base: hsl(210, 4%, 18%);
     --c-text-inv-base: hsl(210, 4%, 97%);
     --o-text: -0.075;
 
@@ -77,17 +80,41 @@
     --c-warning:  hsl(51, 80%, 50%);
     --c-negative: hsl(0, 80%, 50%);
 
-    --bg-step-1: 0.06; 
-    --bg-step-2: 0.12;
+    --bg-step-1: -0.06; 
+    --bg-step-2: -0.12;
 
     --c-border: hsla(210, 4%, 50%, 0.8);
     --c-input: hsla(210, 4%, 15%, 0.9);
     --c-input-text: var(--c-text-inv);
 
-    --hero-backdrop-fade-intensity: 0.25;
-    --hero-backdrop-min-brightness: 0.35;
-    --details-backdrop-fade-intensity: 0.4;
+    --hero-backdrop-fade-intensity: 0.5;
+    --hero-backdrop-min-brightness: 0.5;
+    --details-backdrop-fade-intensity: 0.5;
     --details-backdrop-min-brightness: 0.2;
+
+    .btn-text {
+        border-radius: 100px;
+    }
+
+    .btn-negative {
+        color: var(--c-text-inv);
+        &:not(:disabled):hover,
+        &:not(:disabled):active {
+            color: var(--c-text-inv-strong);
+        }
+    }
+
+    /* Patch work for special cases */
+    .search-bar {
+        i {
+            color: var(--c-text-inv-soft) !important;
+        }
+        .btn-text:not(:disabled):hover {
+            /* inv version of var(--c-neutral-soft) */
+            background-color: hsl(0, 0%, 30%) !important;
+        }
+    }
+    
 }
 
 [data-theme='modern-white'] {
@@ -95,18 +122,18 @@
 
     --c-bg-base: hsl(0, 0%, 100%);
 
-    --c-text-base: hsl(0, 0%, 10%);
-    --c-text-inv-base: hsl(0, 0%, 90%);
+    --c-text-base: hsl(0, 0%, 15%);
+    --c-text-inv-base: hsl(0, 0%, 95%);
     --o-text: -0.125;
 
-    --c-primary:    oklch(20.019% 0.00002 271.152);
-    --c-neutral:    oklch(32.897% 0.00004 271.152 / 0.5);
+    --c-primary:    oklch(37.53% 0.00004 271.152);
+    --c-neutral:    oklch(76.039% 0.00009 271.152);
 
     --c-accent:     oklch(31.937% 0.05307 252.63);
     --c-favourite:  oklch(47.208% 0.17851 15.682);
 
-    --c-positive:   oklch(62.346% 0.187 146.29);
-    --c-warning:    oklch(81.154% 0.13801 96.719);
+    --c-positive:   oklch(64.321% 0.17114 148.302);
+    --c-warning:    oklch(87.172% 0.17772 104.974);
     --c-negative:   oklch(57.84% 0.20897 29.443);
 
     --bg-step-1: -0.04; 
@@ -115,9 +142,20 @@
     --c-input: oklch(88.224% 0.0001 271.152 / 0.66);
     --c-border: oklch(81.406% 0.00009 271.152 / 0.66);
 
-    --hero-backdrop-fade-intensity: 0.25;
-    --hero-backdrop-min-brightness: 0.35;
+    --hero-backdrop-fade-intensity: 0.2;
+    --hero-backdrop-min-brightness: 1;
     --details-backdrop-fade-intensity: 0.6;
     --details-backdrop-min-brightness: 1;
+
+    .btn-negative,
+    .btn-positive,
+    .btn-favourite,
+    .btn-accent {
+        color: var(--c-text-inv);
+        &:not(:disabled):hover,
+        &:not(:disabled):active {
+            color: var(--c-text-inv-strong);
+        }
+    }
 }
 

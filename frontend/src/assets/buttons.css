@@ -16,7 +16,7 @@ button, .btn {
     cursor: pointer;
 
     background-color: var(--c-neutral);
-    color: var(--c-text-strong);
+    color: var(--c-text);
 
     transition: background-color 0.1s var(--transition-ease-out);
 }
@@ -44,7 +44,7 @@ button:disabled, .btn:disabled {
 /* Button text */
 .btn-text {
     background-color: transparent;
-    color: var(--c-text-base);
+    color: var(--c-text);
     cursor: pointer;
 
     transition: color 0.1s var(--transition-ease-out),
@@ -75,7 +75,7 @@ i.btn-text {
 
 /* Normal colored buttons */
 .btn-primary {
-    color: var(--c-text-inv-base);
+    color: var(--c-text-inv);
     background-color: var(--c-primary);
     transition: background-color 0.1s var(--transition-ease-out);
 }
