@@ -23,7 +23,7 @@ function select(index) {
         <button
             v-for="index in count"
             :key="index"
-            class="dot-wrapper btn-text"
+            class="dot-wrapper"
             @click="select(index - 1)"
             aria-label="Go to slide"
         >
@@ -44,6 +44,7 @@ function select(index) {
 .dot-wrapper {
     padding: 2px 4px;
     border-radius: 0;
+    background-color: transparent !important;
 }
 
 .dot {
