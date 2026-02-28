@@ -333,7 +333,6 @@ h5 {
     left: 0;
     opacity: 0;
     overflow: hidden;
-    backdrop-filter: blur(var(--blur-subtle));
     transition: 
         height 0.2s var(--transition-ease-out),
         left 0.2s var(--transition-ease-out), 
