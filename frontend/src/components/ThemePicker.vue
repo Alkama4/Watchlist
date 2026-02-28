@@ -9,8 +9,8 @@ const themes = ref([
     { id: 'void', name: 'Void (Default)', description: 'True black for OLED displays' },
     { id: 'midnight', name: 'Midnight', description: 'Cool blue dark mode' },
     { id: 'amethyst', name: 'Amethyst', description: 'Rich purple darkness' },
+    { id: 'flashbang', name: 'Flashbang', description: 'Cover your eyes' },
     { id: '16-bit', name: '16-Bit', description: 'Greyscale retro vibes' },
-    { id: 'flashbang', name: 'Flashbang', description: 'Cover your eyes' }
 ]);
 </script>
 
@@ -87,10 +87,44 @@ h4 {
     flex: 1;
     height: var(--spacing-md-lg);
     border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    transition: background-color 0.1s ease-out;
 }
 
-.swatch.primary { background-color: var(--c-primary); }
-.swatch.positive { background-color: var(--c-positive); }
-.swatch.favourite { background-color: var(--c-negative); }
-.swatch.accent { background-color: var(--c-accent); }
+.swatch.primary {
+    background-color: var(--c-primary);
+    &:hover {
+        background-color: var(--c-primary-subtle);
+    }
+    &:active {
+        background-color: var(--c-primary-soft);
+    }
+}
+.swatch.positive {
+    background-color: var(--c-positive);
+    &:hover {
+        background-color: var(--c-positive-subtle);
+    }
+    &:active {
+        background-color: var(--c-positive-soft);
+    }
+}
+.swatch.favourite {
+    background-color: var(--c-negative);
+    &:hover {
+        background-color: var(--c-negative-subtle);
+    }
+    &:active {
+        background-color: var(--c-negative-soft);
+    }
+}
+.swatch.accent {
+    background-color: var(--c-accent);
+    &:hover {
+        background-color: var(--c-accent-subtle);
+    }
+    &:active {
+        background-color: var(--c-accent-soft);
+    }
+}
 </style>

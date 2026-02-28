@@ -37,8 +37,8 @@ class Themes(enum.Enum):
     void = "void"
     midnight = "midnight"
     amethyst = "amethyst"
-    sixteen_bit = "16-bit"
     flashbang = "flashbang"
+    sixteen_bit = "16-bit"
 
 
 ##### USER AND AUTH #####
