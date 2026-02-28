@@ -113,13 +113,7 @@ form h2,
 form h3,
 form h4,
 form h5,
-form h6,
-.settings-list h1,
-.settings-list h2,
-.settings-list h3,
-.settings-list h4,
-.settings-list h5,
-.settings-list h6 {
+form h6 {
     margin-top: 0;
     /* margin-bottom: 0; */
 }

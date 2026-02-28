@@ -8,6 +8,7 @@ import ModalBase from '@/components/modal/ModalBase.vue';
 import NoticeBlock from '@/components/NoticeBlock.vue';
 import FormMessage from '@/components/FormMessage.vue';
 import LoadingButton from '@/components/LoadingButton.vue';
+import ThemePicker from '@/components/ThemePicker.vue';
 
 // Stores
 const auth = useAuthStore();
@@ -125,7 +126,7 @@ onMounted(async () => {
         <div class="settings-column settings-list">
             <h1>Settings</h1>
             
-            <template v-for="setting in settingsStore.schema" :key="setting.key">
+            <template v-for="setting in settingsStore.schema.filter(s => s.key !== 'theme')" :key="setting.key">
                 <label>{{ setting.label }}</label>
 
                 <select
@@ -151,10 +152,8 @@ onMounted(async () => {
                 />
             </template>
 
-            <label for="theme-toggle">Debug quick theme toggle</label>
-            <button @click="toggleCustomTheme" id="theme-toggle">
-                Switch to {{ settingsStore.preferences.theme === 'true-black' ? 'Midnight' : 'True Black' }}
-            </button>
+            <h3>Themes</h3>
+            <ThemePicker/>
 
             <h1 style="margin-top: var(--spacing-lg);">Actions</h1>
             <LoadingButton
