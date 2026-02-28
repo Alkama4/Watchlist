@@ -41,23 +41,65 @@
     --c-primary: oklch(88% 0.03 300);
     --c-neutral: oklch(45% 0.04 300 / 30%);
 
-    --c-accent: oklch(55% 0.18 300);
-    --c-favourite: oklch(65% 0.22 350);
+    --c-accent: oklch(47.116% 0.19291 298.28);
+    --c-favourite: oklch(52.307% 0.18841 2.12);
 
-    --c-positive: oklch(75% 0.16 160);
-    --c-warning: oklch(82% 0.15 85);
-    --c-negative: oklch(62% 0.22 25);
+    --c-positive: oklch(58.686% 0.11456 161.993);
+    --c-warning: oklch(81.076% 0.16138 102.294);
+    --c-negative: oklch(55.725% 0.18414 25.476);
 
-    --bg-step-1: 0.03; 
-    --bg-step-2: 0.08;
+    --bg-step-1: 0.05; 
+    --bg-step-2: 0.10;
 
-    --c-input: oklch(20% 0.04 300 / 70%);
+    --c-input: oklch(14% 0.02 300 / 70%);
     --c-border: oklch(45% 0.06 300 / 50%);
 
     --hero-backdrop-fade-intensity: 0.25;
     --hero-backdrop-min-brightness: 0.35;
     --details-backdrop-fade-intensity: 0.66;
     --details-backdrop-min-brightness: 0;
+}
+
+[data-theme='flashbang'] {
+    --color-scheme: light;
+
+    --c-bg-base: hsl(0, 0%, 100%);
+
+    --c-text-base: hsl(0, 0%, 15%);
+    --c-text-inv-base: hsl(0, 0%, 95%);
+    --o-text: -0.125;
+
+    --c-primary:    oklch(37.53% 0.00004 271.152);
+    --c-neutral:    oklch(76.039% 0.00009 271.152);
+
+    --c-accent:     oklch(31.937% 0.05307 252.63);
+    --c-favourite:  oklch(47.208% 0.17851 15.682);
+
+    --c-positive:   oklch(64.321% 0.17114 148.302);
+    --c-warning:    oklch(87.172% 0.17772 104.974);
+    --c-negative:   oklch(57.84% 0.20897 29.443);
+
+    --bg-step-1: -0.04; 
+    --bg-step-2: -0.08;
+
+    --c-input: oklch(88.224% 0.0001 271.152 / 0.66);
+    --c-border: oklch(81.406% 0.00009 271.152 / 0.66);
+
+    --hero-backdrop-fade-intensity: 0.2;
+    --hero-backdrop-min-brightness: 1;
+    --details-backdrop-fade-intensity: 0.6;
+    --details-backdrop-min-brightness: 1;
+
+    .btn-negative,
+    .btn-positive,
+    .btn-favourite,
+    .btn-accent {
+        color: var(--c-text-inv);
+        &:not(:disabled):hover,
+        &:not(:disabled):active {
+            color: var(--c-text-inv-strong);
+        }
+    }
 }
 
 [data-theme='16-bit'] {
@@ -116,46 +158,3 @@
     }
     
 }
-
-[data-theme='flashbang'] {
-    --color-scheme: light;
-
-    --c-bg-base: hsl(0, 0%, 100%);
-
-    --c-text-base: hsl(0, 0%, 15%);
-    --c-text-inv-base: hsl(0, 0%, 95%);
-    --o-text: -0.125;
-
-    --c-primary:    oklch(37.53% 0.00004 271.152);
-    --c-neutral:    oklch(76.039% 0.00009 271.152);
-
-    --c-accent:     oklch(31.937% 0.05307 252.63);
-    --c-favourite:  oklch(47.208% 0.17851 15.682);
-
-    --c-positive:   oklch(64.321% 0.17114 148.302);
-    --c-warning:    oklch(87.172% 0.17772 104.974);
-    --c-negative:   oklch(57.84% 0.20897 29.443);
-
-    --bg-step-1: -0.04; 
-    --bg-step-2: -0.08;
-
-    --c-input: oklch(88.224% 0.0001 271.152 / 0.66);
-    --c-border: oklch(81.406% 0.00009 271.152 / 0.66);
-
-    --hero-backdrop-fade-intensity: 0.2;
-    --hero-backdrop-min-brightness: 1;
-    --details-backdrop-fade-intensity: 0.6;
-    --details-backdrop-min-brightness: 1;
-
-    .btn-negative,
-    .btn-positive,
-    .btn-favourite,
-    .btn-accent {
-        color: var(--c-text-inv);
-        &:not(:disabled):hover,
-        &:not(:disabled):active {
-            color: var(--c-text-inv-strong);
-        }
-    }
-}
-
