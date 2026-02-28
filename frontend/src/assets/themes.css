@@ -92,7 +92,7 @@
     --details-backdrop-fade-intensity: 0.5;
     --details-backdrop-min-brightness: 0.2;
 
-    .btn-text {
+    .btn-text:not(.theme-picker-fix) {
         border-radius: 100px;
     }
 
