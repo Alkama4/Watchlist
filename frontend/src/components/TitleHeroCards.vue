@@ -215,8 +215,8 @@ onUnmounted(() => {
     --transition-amount: 40px;
     position: absolute;
     width: 100%;
-    height: calc(100% - 48px - var(--spacing-md));
-    height: 100%;
+    height: calc(100% - 35.65px - var(--spacing-sm-md));
+    /* height: 100%; */
 
     display: flex;
     flex-direction: column;
@@ -319,23 +319,19 @@ img.logo {
 
 .controls {
     position: absolute;
-    bottom: var(--spacing-md);
+    bottom: 0;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
     gap: 2px;
     align-items: center;
     justify-content: center;
-    background-color: var(--c-bg-backdrop);
-    border-radius: var(--border-radius-lg);
-    border: 1px solid var(--c-border);
-    backdrop-filter: blur(var(--blur-subtle));
     z-index: 10;
 }
 .controls i {
     font-size: var(--fs-3);
     padding: var(--spacing-xs);
-    margin: var(--spacing-xs-sm);
+    margin-inline: var(--spacing-xs-sm);
     border-radius: 100px;
 }
 
