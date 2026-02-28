@@ -124,6 +124,9 @@ const { titleInfo, storeImageFlag } = defineProps({
     gridMode: {
         type: Boolean,
         default: false
+    },
+    index: {
+        type: Number,
     }
 })
 
@@ -133,6 +136,7 @@ const { titleInfo, storeImageFlag } = defineProps({
     <component 
         :is="titleInfo.title_id ? 'router-link' : 'div'"
         :to="titleInfo.title_id ? `/title/${titleInfo.title_id}` : null"
+        :style="`animation-delay: ${(index ?? titleInfo?.batchIndex ?? 0) * 0.01}s`"
         class="title-card"
         :class="{'grid-mode': gridMode}"
         draggable="false"
@@ -254,10 +258,19 @@ const { titleInfo, storeImageFlag } = defineProps({
     text-decoration: none;
     position: relative;
     padding-right: var(--spacing-md);
+
+    animation: fadeIn 0.5s var(--transition-ease-out) forwards;
+    opacity: 0;
 }
 .title-card:last-of-type,
 .title-card.grid-mode {
     padding-right: 0;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
 }
 
 img {

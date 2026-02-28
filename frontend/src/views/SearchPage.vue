@@ -93,6 +93,8 @@ async function runSearch(append = false) {
             ? fastApi.titles.searchTmdb(params) 
             : fastApi.titles.search(params));
 
+        response.titles.forEach((item, i) => item.batchIndex = i);
+
         if (append) {
             searchResults.value = {
                 ...response,
@@ -108,6 +110,7 @@ async function runSearch(append = false) {
         waitingFor.value.firstPage = false;
     }
 }
+
 function resetResults() {
     pageNumber.value = 1;
     searchResults.value = {

@@ -24,8 +24,9 @@ defineProps({
             }"
         >
             <TitleCard 
-                v-for="title in carouselData?.titles"
+                v-for="(title, index) in carouselData?.titles"
                 :titleInfo="title"
+                :index="index"
                 :key="title.title_id"
             />
             <router-link 
