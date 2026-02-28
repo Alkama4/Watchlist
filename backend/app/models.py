@@ -34,11 +34,11 @@ class SortBy(enum.Enum):
     random = "random"
 
 class Themes(enum.Enum):
-    true_black = "true-black"
+    void = "void"
     midnight = "midnight"
     amethyst = "amethyst"
-    retro = "retro"
-    modern_white = "modern-white"
+    sixteen_bit = "16-bit"
+    flashbang = "flashbang"
 
 
 ##### USER AND AUTH #####

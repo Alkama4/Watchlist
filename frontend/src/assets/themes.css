@@ -1,4 +1,4 @@
-/* [data-theme='true-black'] {
+/* [data-theme='void'] {
     The default values in `variables.css`.
 } */
 
@@ -60,7 +60,7 @@
     --details-backdrop-min-brightness: 0;
 }
 
-[data-theme='retro'] {
+[data-theme='16-bit'] {
     --color-scheme: light;
 
     --c-bg-base: hsl(210, 4%, 83%);
@@ -117,7 +117,7 @@
     
 }
 
-[data-theme='modern-white'] {
+[data-theme='flashbang'] {
     --color-scheme: light;
 
     --c-bg-base: hsl(0, 0%, 100%);
