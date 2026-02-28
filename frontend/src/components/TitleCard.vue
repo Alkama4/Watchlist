@@ -139,12 +139,12 @@ const { titleInfo, storeImageFlag } = defineProps({
         :style="`animation-delay: ${(index ?? titleInfo?.batchIndex ?? 0) * 0.01}s`"
         class="title-card"
         :class="{'grid-mode': gridMode}"
-        draggable="false"
+        :draggable="gridMode"
     >
         <img 
             :src="getTitleImageUrl(titleInfo, '800', 'poster', storeImageFlag)"
             :alt="`${titleInfo?.title_type === 'tv' ? 'TV show' : 'Movie'} poster: ${titleInfo?.name}`"
-            draggable="false"
+            :draggable="gridMode"
         >
     
         <div class="button-row" v-if="searchStore.tmdbFallback" @click.prevent>
