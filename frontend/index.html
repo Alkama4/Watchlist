@@ -8,18 +8,14 @@
     <script>
       (function() {
         const theme = localStorage.getItem('theme') || 'midnight';
-        let bgColor;
-        switch (theme) {
-          case 'true-black':
-            bgColor = 'black';
-            break;
-          case 'midnight':
-            bgColor = 'oklch(19% 0.01 230)';
-            break;
-          default:
-            bgColor = 'oklch(19% 0.01 230)';
-        }
-        document.documentElement.style.backgroundColor = bgColor;
+        let c;
+        if      (theme == 'void')      c = 'black';
+        else if (theme == 'midnight')  c = 'oklch(19% 0.01 230)';
+        else if (theme == 'amethyst')  c = 'oklch(16% 0.04 300';
+        else if (theme == '16-bit')    c = 'hsl(210, 4%, 83%)';
+        else if (theme == 'flashbang') c = 'white';
+        else c = 'black';
+        document.documentElement.style.backgroundColor = c;
         document.documentElement.setAttribute('data-theme', theme);
       })();
     </script>
