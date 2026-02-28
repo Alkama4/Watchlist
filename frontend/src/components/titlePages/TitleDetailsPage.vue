@@ -78,7 +78,7 @@ async function toggleFavourite() {
 
 async function toggleWatchlist() {
     let response;
-    if (titleDetails.user_details.in_watchlist) {
+    if (props.titleDetails.user_details.in_watchlist) {
         response = await fastApi.titles.setWatchlist(props.titleDetails.title_id, false);
     } else {
         response = await fastApi.titles.setWatchlist(props.titleDetails.title_id, true);
