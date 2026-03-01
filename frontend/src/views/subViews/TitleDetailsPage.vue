@@ -184,88 +184,74 @@ const jellyfinLink = computed(() => {
                         class="poster"
                     >
 
-                    <div class="watch-count-buttons">
-                        <button
-                            @click="addToTitleWatchCount"
-                            :class="titleDetails?.user_details?.watch_count ? 'btn-positive' : 'btn-primary'"
+                    <h4>External Resources</h4>
+                    <div class="links-wrapper">
+                        <a
+                            :href="`https://www.themoviedb.org/${titleDetails?.title_type}/${titleDetails?.tmdb_id}`"
+                            target="_blank"
+                            class="btn btn-even-padding btn-text"
+                            title="View on TMDB"
                         >
-                            <template v-if="!titleDetails?.user_details?.watch_count">
-                                Mark watched
-                            </template>
-                            <template v-else-if="titleDetails?.user_details?.watch_count == 1">
-                                <i class="bx bx-check"></i> Watched
-                            </template>
-                            <template v-else-if="titleDetails?.user_details?.watch_count > 1">
-                                Watched {{ titleDetails?.user_details?.watch_count }} times
-                            </template>
-                        </button>
-                        <button 
-                            v-if="titleDetails?.user_details?.watch_count"
-                            @click="removeFromTitleWatchCount"
+                            <Tmdb class="four-letter"/>
+                        </a>
+                        <a
+                            v-if="titleDetails?.imdb_id"
+                            :href="`https://www.imdb.com/title/${titleDetails?.imdb_id}`"
+                            target="_blank"
+                            class="btn btn-even-padding btn-text"
+                            title="View on IMDB"
                         >
-                            <i class="bx bx-minus"></i>
+                            <Imdb class="four-letter"/>
+                        </a>
+                        <a
+                            v-if="titleDetails?.homepage"
+                            :href="titleDetails?.homepage"
+                            target="_blank"
+                            class="btn btn-even-padding btn-text"
+                            title="Visit Official Website"
+                        >
+                            <i class="bx bx-link"></i>
+                        </a>
+                        <hr>
+                        <a
+                            :href="`https://www.justwatch.com/${preferredLocale.iso_639_1}/search?q=${titleDetails?.name_original}`"
+                            target="_blank"
+                            class="btn btn-even-padding btn-text"
+                            title="Check Availability on JustWatch"
+                        >
+                            <JustWatch/>
+                        </a>
+                        <a  
+                            v-if="titleDetails?.jellyfin_id && jellyfinConfig?.base_url"
+                            :href="jellyfinLink"
+                            target="_blank"
+                            class="btn btn-even-padding btn-text"
+                            title="Open in Jellyfin"
+                        >
+                            <Jellyfin/>
+                        </a>
+                    </div>
+
+                    <h4>Metadata and Resources</h4>
+                    <div class="data-actions">
+                        <LoadingButton
+                            @click="updateTitleDetails"
+                            :loading="waitingFor?.titleUpdate ?? false"
+                        >
+                            Update title details
+                        </LoadingButton>
+
+                        <button @click="ImagesModal.open()">
+                            Change images
                         </button>
-                    </div>
 
-                    <div class="links">
-                        <h4>External Links</h4>
-                        <div class="links-wrapper">
-                            <a
-                                :href="`https://www.themoviedb.org/${titleDetails?.title_type}/${titleDetails?.tmdb_id}`"
-                                target="_blank"
-                                class="btn btn-even-padding btn-text"
-                            >
-                                <Tmdb class="four-letter"/>
-                            </a>
-                            <a
-                                v-if="titleDetails?.imdb_id"
-                                :href="`https://www.imdb.com/title/${titleDetails?.imdb_id}`"
-                                target="_blank"
-                                class="btn btn-even-padding btn-text"
-                            >
-                                <Imdb class="four-letter"/>
-                            </a>
-                            <a
-                                v-if="titleDetails?.homepage"
-                                :href="titleDetails?.homepage"
-                                target="_blank"
-                                class="btn btn-even-padding btn-text"
-                            >
-                                <i class="bx bx-link"></i>
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="links">
-                        <h4>Where to Watch</h4>
-                        <div class="links-wrapper">
-                            <a
-                                :href="`https://www.justwatch.com/${preferredLocale.iso_639_1}/search?q=${titleDetails?.name_original}`"
-                                target="_blank"
-                                class="btn btn-even-padding btn-text"
-                            >
-                                <JustWatch/>
-                            </a>
-                            <a  
-                                v-if="titleDetails?.jellyfin_id && jellyfinConfig?.base_url"
-                                :href="jellyfinLink"
-                                target="_blank"
-                                class="btn btn-even-padding btn-text"
-                            >
-                                <Jellyfin/>
-                            </a>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h4>Locale</h4>
                         <form @submit.prevent="updateTitleLocale">
-                            <input type="text" v-model="titleDetails.display_locale">
+                            <input type="text" v-model="titleDetails.display_locale" placeholder="en-US">
                             <LoadingButton
                                 type="submit"
                                 :loading="waitingFor?.titleLocale ?? false"
                             >
-                                Update title locale
+                                Set Title Locale
                             </LoadingButton>
                         </form>
                     </div>
@@ -334,14 +320,31 @@ const jellyfinLink = computed(() => {
                     </div>
             
                     <p>{{ titleDetails?.overview }}</p>
-                    
-                    <!-- <div class="flex-row align-center gap-sm" style="margin-top: var(--spacing-md);">
-                        <button @click="addToTitleWatchCount">Add</button>
-                        <div>Watched {{ titleDetails?.user_details?.watch_count }} times</div>
-                        <button >Remove</button>
-                    </div> -->
-    
+
                     <div class="actions">
+                        <div class="watch-count-buttons">
+                            <button
+                                @click="addToTitleWatchCount"
+                                :class="titleDetails?.user_details?.watch_count ? 'btn-positive' : 'btn-primary'"
+                            >
+                                <template v-if="!titleDetails?.user_details?.watch_count">
+                                    Mark watched
+                                </template>
+                                <template v-else-if="titleDetails?.user_details?.watch_count == 1">
+                                    <i class="bx bx-check"></i> Watched
+                                </template>
+                                <template v-else-if="titleDetails?.user_details?.watch_count > 1">
+                                    Watched {{ titleDetails?.user_details?.watch_count }} times
+                                </template>
+                            </button>
+                            <button 
+                                v-if="titleDetails?.user_details?.watch_count"
+                                @click="removeFromTitleWatchCount"
+                            >
+                                <i class="bx bx-minus"></i>
+                            </button>
+                        </div>
+                        
                         <i
                             class="bx bxs-heart btn btn-text btn-even-padding"
                             :class="{'btn-favourite': titleDetails?.user_details?.is_favourite }"
@@ -356,14 +359,11 @@ const jellyfinLink = computed(() => {
                             class="bx bxs-collection btn btn-text btn-even-padding"
                             @click="adjustCollections"
                         ></i>
-            
-                        <!-- Move actions below to a drop down -->
-
                         <i
-                            class="bx bxs-image btn btn-text btn-even-padding"
-                            @click="ImagesModal.open()"
+                            class="bx bxs-map-alt btn btn-text btn-even-padding"
+                            @click="$refs.EpisodeMapModal.open()"
                         ></i>
-            
+
                         <i
                             v-if="titleDetails?.user_details?.in_library"
                             class="bx bx-list-minus btn btn-text btn-even-padding"
@@ -374,24 +374,6 @@ const jellyfinLink = computed(() => {
                             class="bx bx-list-plus btn btn-text btn-even-padding"
                             @click="addToLibrary"
                         ></i>
-
-                        <LoadingButton
-                            @click="updateTitleDetails"
-                            :loading="waitingFor?.titleUpdate ?? false"
-                        >
-                            Update title details
-                        </LoadingButton>
-                        
-                        <!-- <a href="">Choose different images</a> -->
-                         
-                        <button 
-                            v-if="titleDetails?.title_type === 'tv'"
-                            @click="$refs.EpisodeMapModal.open()"
-                        >
-                            Episode Map
-                        </button>
-
-                        <!-- <button @click="$refs.EpisodeGraphModal.open()">Episode Rating Graphs</button> -->
                     </div>
                     
                     <SeasonsListing 
@@ -552,7 +534,7 @@ img.logo {
 
 
 img.poster {
-    width: 300px;
+    width: 325px;
     aspect-ratio: 2/3;
     object-fit: cover;
     background-color: var(--c-bg-level-1);
@@ -599,23 +581,20 @@ img.poster {
 }
 
 .watch-count-buttons {
-    margin-top: var(--spacing-md);
     display: flex;
 
     i {
-        /* transform: scale(1.5); */
         font-size: var(--fs-1);
     }
-    button {
-        flex: 3;
-        height: 35.2px;
+    button:first-child {
+        flex: 1;
     }
     button:first-child:not(:last-child) {
         border-top-right-radius: 0;
         border-bottom-right-radius: 0;
     }
     button:last-child:not(:first-child) {
-        flex: 1;
+        padding-inline: var(--spacing-md);
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;
     }
@@ -646,6 +625,22 @@ img.poster {
         svg.four-letter {
             width: 42px;
             height: auto;
+        }
+    }
+}
+
+.data-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+
+    form {
+        display: grid;
+        grid-template-columns: 100px auto;
+        gap: var(--spacing-sm);
+
+        input {
+            margin: 0;
         }
     }
 }
