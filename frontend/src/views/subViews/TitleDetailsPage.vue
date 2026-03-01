@@ -14,7 +14,7 @@ import { preferredLocale, fallbackLocale } from '@/utils/conf';
 import ModalBase from '@/components/modal/ModalBase.vue';
 import SeasonsListing from '@/components/SeasonsListing.vue';
 import EpisodeMap from '@/components/EpisodeMap.vue';
-import ModalImages from '../modal/ModalImages.vue';
+import ModalImages from '@/components/modal/ModalImages.vue';
 
 const props = defineProps({
     titleDetails: {

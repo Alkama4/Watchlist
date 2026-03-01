@@ -3,9 +3,9 @@ import LoadingIndicator from '@/components/LoadingIndicator.vue';
 import NotFoundPage from './NotFoundPage.vue';
 import { nextTick, onMounted, provide, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import TitleDetailsPage from '@/components/titlePages/TitleDetailsPage.vue';
 import { fastApi } from '@/utils/fastApi';
-import SeasonDetailsPage from '@/components/titlePages/SeasonDetailsPage.vue';
+import TitleDetailsPage from '@/views/subViews/TitleDetailsPage.vue';
+import SeasonDetailsPage from '@/views/subViews/SeasonDetailsPage.vue';
 
 const titleDetails = ref(null);
 const similarTitles = ref({});

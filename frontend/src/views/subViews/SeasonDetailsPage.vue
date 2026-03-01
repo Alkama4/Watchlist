@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { getTitleImageUrl } from '@/utils/imagePath';
 import { numberFormatters, timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg';
-import ModalImages from '../modal/ModalImages.vue';
+import ModalImages from '@/components/modal/ModalImages.vue';
 
 const props = defineProps({
     titleDetails: {
