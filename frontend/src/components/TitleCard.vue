@@ -194,7 +194,7 @@ const { titleInfo, storeImageFlag } = defineProps({
             </div>
         </div>
 
-        <div class="indicator-wrapper">
+        <div v-if="!searchStore.tmdbFallback" class="indicator-wrapper">
             <div
                 :class="{
                     'active': titleInfo?.user_details?.watch_count
