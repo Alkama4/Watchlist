@@ -364,6 +364,7 @@ const jellyfinLink = computed(() => {
                             @click="adjustCollections"
                         ></i>
                         <i
+                            v-if="titleDetails?.title_type == 'tv'"
                             class="bx bxs-map-alt btn btn-text btn-even-padding"
                             @click="$refs.EpisodeMapModal.open()"
                         ></i>
