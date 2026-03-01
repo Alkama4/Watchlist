@@ -212,27 +212,31 @@ const jellyfinLink = computed(() => {
                         >
                             <i class="bx bx-link"></i>
                         </a>
+                        
                         <hr>
-                        <a
-                            :href="`https://www.justwatch.com/${preferredLocale.iso_639_1}/search?q=${titleDetails?.name_original}`"
-                            target="_blank"
-                            class="btn btn-even-padding btn-text"
-                            title="Check Availability on JustWatch"
-                        >
-                            <JustWatch/>
-                        </a>
-                        <a  
-                            v-if="titleDetails?.jellyfin_id && jellyfinConfig?.base_url"
-                            :href="jellyfinLink"
-                            target="_blank"
-                            class="btn btn-even-padding btn-text"
-                            title="Open in Jellyfin"
-                        >
-                            <Jellyfin/>
-                        </a>
+                        
+                        <div class="flex-row">
+                            <a
+                                :href="`https://www.justwatch.com/${preferredLocale.iso_639_1}/search?q=${titleDetails?.name_original}`"
+                                target="_blank"
+                                class="btn btn-even-padding btn-text"
+                                title="Check Availability on JustWatch"
+                            >
+                                <JustWatch/>
+                            </a>
+                            <a  
+                                v-if="titleDetails?.jellyfin_id && jellyfinConfig?.base_url"
+                                :href="jellyfinLink"
+                                target="_blank"
+                                class="btn btn-even-padding btn-text"
+                                title="Open in Jellyfin"
+                            >
+                                <Jellyfin/>
+                            </a>
+                        </div>
                     </div>
 
-                    <h4>Metadata and Resources</h4>
+                    <h4>Metadata tools</h4>
                     <div class="data-actions">
                         <LoadingButton
                             @click="updateTitleDetails"
@@ -251,7 +255,7 @@ const jellyfinLink = computed(() => {
                                 type="submit"
                                 :loading="waitingFor?.titleLocale ?? false"
                             >
-                                Set Title Locale
+                                Set Locale
                             </LoadingButton>
                         </form>
                     </div>
@@ -469,7 +473,9 @@ const jellyfinLink = computed(() => {
 .left-side {
     display: flex;
     flex-direction: column;
-    /* gap: var(--spacing-md); */
+    min-width: 225px;
+    width: 30vw;
+    max-width: 325px;
 }
 
 
@@ -534,7 +540,7 @@ img.logo {
 
 
 img.poster {
-    width: 325px;
+    width: 100%;
     aspect-ratio: 2/3;
     object-fit: cover;
     background-color: var(--c-bg-level-1);
@@ -611,6 +617,7 @@ img.poster {
 } */
 .links-wrapper {
     display: flex;
+    flex-wrap: wrap;
     
     .btn {
         font-size: var(--fs-3);
