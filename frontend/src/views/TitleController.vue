@@ -38,6 +38,9 @@ async function loadTitleData() {
 }
 
 async function fetchJellyfinConfig() {
+    if (!titleDetails.value?.jellyfin_id) return;
+    if (Object.keys(jellyfinConfig.value).length > 0) return; 
+    
     const response = await fastApi.config.jellyfin();
     jellyfinConfig.value = response;
 }
@@ -70,6 +73,7 @@ watch(
         similarTitles.value = null;
 
         await loadTitleData();
+        await fetchJellyfinConfig();
     }
 );
 
