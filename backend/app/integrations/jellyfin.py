@@ -34,3 +34,13 @@ async def fetch_jellyfin_titles() -> dict:
             "Fields": "ProviderIds",
         },
     )
+
+async def fetch_jellyfin_id_by_imdb(imdb_id: str) -> str | None:
+    """Returns the Jellyfin internal ID for a given IMDB ID, or None if not found."""
+    data = await fetch_jellyfin_titles()
+    items = data.get("Items", [])
+    for item in items:
+        provider_ids = item.get("ProviderIds", {})
+        if provider_ids.get("Imdb") == imdb_id:
+            return item.get("Id")
+    return None
