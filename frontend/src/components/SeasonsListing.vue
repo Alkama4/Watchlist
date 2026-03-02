@@ -57,7 +57,11 @@ const computedHeight = computed(() => {
                 </router-link>
             </div>
 
-            <div class="fade-overlay" :class="{'expanded': expanded}" @click="expanded = !expanded">
+            <div
+                v-if="limitOverflow"
+                class="fade-overlay"
+                :class="{'expanded': expanded}" @click="expanded = !expanded"
+            >
                 <div class="show-more-text">
                     <template v-if="expanded">
                         <i class="bx bx-chevron-up"></i>
