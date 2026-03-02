@@ -5,6 +5,10 @@
     overflow: hidden;
 }
 
+html {
+    /* Overrides the initially set bg color (script in index.html) */
+    background-color: var(--c-bg-base) !important;
+}
 body {
     font-family: 'Inter';
     background: var(--c-bg-base);
