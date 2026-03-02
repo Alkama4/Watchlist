@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
 from datetime import datetime
 from app.integrations import tmdb
-from app.integrations.jellyfin import fetch_jellyfin_id_by_imdb
+from app.integrations.jellyfin import JELLYFIN_API_KEY, JELLYFIN_URL, fetch_jellyfin_id_by_imdb
 from app.services.images import select_best_image, store_image_details
 from app.services.genres import store_title_genres
 from app.services.languages import LanguageContext, get_user_language_context
@@ -38,7 +38,7 @@ async def _store_movie(db: AsyncSession, tmdb_data: dict, locale_ctx: LanguageCo
     release_date_str = tmdb_data.get("release_date")
     release_date = datetime.strptime(release_date_str, "%Y-%m-%d").date() if release_date_str else None
 
-    jellyfin_id = await fetch_jellyfin_id_by_imdb(tmdb_data["imdb_id"]) 
+    jellyfin_id = await fetch_jellyfin_id_by_imdb(tmdb_data["imdb_id"]) if JELLYFIN_URL and JELLYFIN_API_KEY else None
 
     # Insert or upsert the title without default images
     stmt = insert(Title).values(
@@ -99,7 +99,7 @@ async def _store_tv(
     release_date_str = tmdb_data.get("first_air_date")
     release_date = datetime.strptime(release_date_str, "%Y-%m-%d").date() if release_date_str else None
 
-    jellyfin_id = await fetch_jellyfin_id_by_imdb(tmdb_data["external_ids"]["imdb_id"])
+    jellyfin_id = await fetch_jellyfin_id_by_imdb(tmdb_data["external_ids"]["imdb_id"]) if JELLYFIN_URL and JELLYFIN_API_KEY else None
 
     # Insert or upsert the title without default images
     stmt = insert(Title).values(
