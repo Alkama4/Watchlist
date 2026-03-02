@@ -43,7 +43,7 @@ async function updateTitleDetails() {
     waitingFor.value.titleUpdate = true;
     try {
         await fastApi.titles.updateById(props.titleDetails.title_id);
-        await fetchTitleDetails();
+        await props.fetchTitleDetails();
     } finally {
         waitingFor.value.titleUpdate = false;
     }
@@ -57,7 +57,7 @@ async function updateTitleLocale() {
             props.titleDetails.display_locale
         );
         props.titleDetails.user_details.in_library = response.in_library;
-        await fetchTitleDetails();
+        await props.fetchTitleDetails();
     } finally {
         waitingFor.value.titleLocale = false;
     }

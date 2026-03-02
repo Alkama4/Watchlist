@@ -17,6 +17,9 @@ const route = useRoute();
 async function fetchTitleDetails() {
     const title_id = route.params.title_id;
     titleDetails.value = await fastApi.titles.getById(title_id)
+
+    // Check if we need to fetch the config
+    await fetchJellyfinConfig();
 }
 
 async function fetchSimilarTitles() {
@@ -61,7 +64,6 @@ provide('updateChosenImage', handleChosenImageUpdate)
 // Fetch data initially
 onMounted(async () => {
     await loadTitleData();
-    await fetchJellyfinConfig();
 });
 
 // Watch for route changes
@@ -73,7 +75,6 @@ watch(
         similarTitles.value = null;
 
         await loadTitleData();
-        await fetchJellyfinConfig();
     }
 );
 
