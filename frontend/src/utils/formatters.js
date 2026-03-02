@@ -24,9 +24,11 @@ export const numberFormatters = {
             notation: 'compact',
             maximumFractionDigits: 1
         }).format(number);
+    },
+    formatNumberToLocale: (number) => {
+        return number.toLocaleString(preferredLocale.tag);
     }
 }
-
 
 export const isoFormatters = {
     iso_3166_1ToCountry: (iso_3166_1) => {

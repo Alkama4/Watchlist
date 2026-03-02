@@ -273,53 +273,58 @@ const jellyfinLink = computed(() => {
                     </div>
     
                     <div class="general-stats">
-                        <div class="stat">
-                            <Tmdb/>
-                            <span :title="`${titleDetails?.tmdb_vote_count} votes`">
+                        <div class="stat tmdb">
+                            <div>
+                                <Tmdb/>
                                 {{ titleDetails?.tmdb_vote_average || '-' }}
+                            </div>
+                            <div class="votes" :title="`${numberFormatters.formatNumberToLocale(titleDetails?.tmdb_vote_count)} votes`">
                                 ({{ numberFormatters.formatCompactNumber(titleDetails?.tmdb_vote_count) }} votes)
-                            </span>
-                        </div>
-    
-                        <div v-if="titleDetails?.title_type == 'movie'" class="stat">
-                            <i class="bx bxs-stopwatch"></i>
-                            {{ timeFormatters.minutesToHrAndMin(titleDetails?.movie_runtime) }}
-                        </div>
-                        <div v-else class="stat">
-                            <i class="bx bxs-stopwatch"></i>
-                            {{ titleDetails?.seasons?.length }}
-                            Season{{ titleDetails?.seasons?.length == 1 ? '': 's' }},
-                            {{ titleDetails?.seasons?.reduce((sum, s) => sum + s.episodes.length, 0) }}
-                            Episode{{ titleDetails?.seasons?.reduce((sum, s) => sum + s.episodes.length, 0) == 1 ? '': 's' }}
-                        </div>
-    
-                        <div class="stat" @click="showAllAgeRatings">
-                            <i class="bx bxs-star"></i>
-                            <span class="btn-underline">
-                                {{ chosenAgeRating?.rating || '-'  }}
-                                <template v-if="chosenAgeRating?.descriptors">
-                                    ({{ chosenAgeRating?.descriptors }})
-                                </template>
-                            </span>
-                        </div>
-    
-                        <div class="stat">
-                            <i class="bx bxs-label"></i>
-                            <div class="genres">
-                                <router-link
-                                    v-for="(genre, index) in titleDetails?.genres"
-                                    :to="`/search?genres_include=${genre.tmdb_genre_id}`"
-                                    class="hover-line"
-                                >
-                                    {{ genre?.genre_name }}{{ index == titleDetails?.genres?.length - 1 ? '' : ',' }}
-                                </router-link>
-                                <span v-if="!titleDetails?.genres?.length >= 1">-</span>
                             </div>
                         </div>
     
+                        <template v-if="titleDetails?.title_type == 'movie'">
+                            |
+                            <div class="stat">
+                                {{ timeFormatters.minutesToHrAndMin(titleDetails?.movie_runtime) }}
+                            </div>
+                        </template>
+                        <template v-else>
+                            |
+                            <div class="stat">
+                                {{ titleDetails?.seasons?.length }}
+                                Season{{ titleDetails?.seasons?.length == 1 ? '': 's' }},
+                                {{ titleDetails?.seasons?.reduce((sum, s) => sum + s.episodes.length, 0) }}
+                                Episode{{ titleDetails?.seasons?.reduce((sum, s) => sum + s.episodes.length, 0) == 1 ? '': 's' }}
+                            </div>
+                        </template>
+    
+                        |
+                        <div class="stat btn-underline" @click="showAllAgeRatings">
+                            {{ chosenAgeRating?.rating || '-'  }}
+                            <template v-if="chosenAgeRating?.descriptors">
+                                ({{ chosenAgeRating?.descriptors }})
+                            </template>
+                        </div>
+    
+                        |
                         <div class="stat">
-                            <i class="bx bxs-calendar"></i>
                             {{ timeFormatters.timestampToFullDate(titleDetails?.release_date) }}
+                            <template v-if="titleDetails?.title_type == 'tv'">
+                                - {{ timeFormatters.timestampToFullDate(titleDetails.seasons?.at(-1)?.episodes?.at(-1)?.air_date) }}
+                            </template>
+                        </div>
+
+                        |
+                        <div class="stat genres">
+                            <router-link
+                                v-for="(genre, index) in titleDetails?.genres"
+                                :to="`/search?genres_include=${genre.tmdb_genre_id}`"
+                                class="hover-line"
+                            >
+                                {{ genre?.genre_name }}{{ index == titleDetails?.genres?.length - 1 ? '' : ',' }}
+                            </router-link>
+                            <span v-if="!titleDetails?.genres?.length >= 1">-</span>
                         </div>
                     </div>
             
@@ -565,30 +570,47 @@ img.poster {
     font-style: italic;
 }
 
-
 .general-stats {
     display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-    margin-bottom: var(--spacing-sm);
-}
-.general-stats .stat {
-    display: flex;
+    flex-direction: row;
     align-items: center;
-    gap: var(--spacing-sm);
-}
-.general-stats i {
-    font-size: var(--fs-1);
-    padding-inline: 2px;
+    column-gap: var(--spacing-sm-md);
+    row-gap: var(--spacing-xs);
+    font-weight: 600;
+    flex-wrap: wrap;
+
+    .stat {
+        display: flex;
+        white-space: nowrap;
+    }
+
+    .tmdb {
+        flex-direction: column;
+        align-items: center;
+        gap: var(--spacing-xs);
+        
+        .votes {
+            font-size: var(--fs-neg-2);
+            font-weight: 500;
+            color: var(--c-text-subtle);
+            margin-bottom: 0px;
+            margin-top: -4px;
+        }
+    }
+
+    i {
+        font-size: var(--fs-1);
+        padding-inline: 2px;
+    }
+    .genres {
+        gap: var(--spacing-xs);
+    }
 }
 
-.genres {
-    display: flex;
-    gap: var(--spacing-xs);
-}
 
 .watch-count-buttons {
     display: flex;
+    width: 220px;
 
     i {
         font-size: var(--fs-1);
