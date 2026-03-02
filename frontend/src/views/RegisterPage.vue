@@ -27,7 +27,6 @@ async function register() {
             username: username.value,
             password: password.value
         })
-        console.debug(response)
         router.push({
             path: '/login',
             query: { redirect_reason: 'account_created' }

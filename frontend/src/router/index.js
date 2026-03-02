@@ -83,7 +83,6 @@ router.beforeEach(async (to, from, next) => {
 
     // Check special case redirects
     if (to.meta.requiresAuth && !auth.accessToken) {
-        console.log(auth.accessToken)
         return next({ name: 'Login' });
     }
     if (to.meta.redirectAuthToAccount && auth.accessToken) {
