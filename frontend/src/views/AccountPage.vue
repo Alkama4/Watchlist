@@ -92,6 +92,8 @@ async function syncJellyfin() {
         const response = await fastApi.integrations.syncJellyfin();
         alert(`${response.message}. ${response.details.newly_linked} links added, ${response.details.total_matched_in_library} links in total, ${response.details.jellyfin_library_size} titles in Jellyfin`)
         console.info(response)
+    } catch(e) {
+        alert(JSON.parse(e.request.response).detail);
     } finally {
         waitingFor.value.jellyfinSync = false;
     }

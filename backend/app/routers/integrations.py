@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.dependencies import get_db
@@ -8,11 +8,11 @@ from app.models import Title
 router = APIRouter()
 
 @router.post("/jellyfin/sync")
-async def sync_jellyfin_links(
-    db: AsyncSession = Depends(get_db),
-):
-    # Fetch jellyfin data
-    jellyfin_data = await fetch_jellyfin_titles()
+async def sync_jellyfin_links(db: AsyncSession = Depends(get_db)):
+    try:
+        jellyfin_data = await fetch_jellyfin_titles()
+    except RuntimeError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     items = jellyfin_data.get("Items", [])
     
     # Map Jellyfin TMDB IDs to their Internal IDs

@@ -7,9 +7,14 @@ JELLYFIN_SERVER_ID = os.getenv("JELLYFIN_SERVER_ID")
 
 
 async def jellyfin_get(path: str, params: dict | None = None) -> dict:
-    if not JELLYFIN_API_KEY:
-        raise RuntimeError("JELLYFIN_API_KEY not set")
+    missing_vars = [name for name, val in {
+        "JELLYFIN_API_KEY": JELLYFIN_API_KEY, 
+        "JELLYFIN_URL": JELLYFIN_URL
+    }.items() if not val]
 
+    if missing_vars:
+        raise RuntimeError(f"Missing required configuration: {', '.join(missing_vars)}")
+    
     url = f"{JELLYFIN_URL}{path}"
     headers = {
         "Authorization": f'MediaBrowser Token="{JELLYFIN_API_KEY}"',
