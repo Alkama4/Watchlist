@@ -75,8 +75,10 @@ router.beforeEach(async (to, from, next) => {
         await auth.init();
 
         // Sync user settings like themes etc.
-        const settings = useSettingsStore();
-        await settings.syncSettings();
+        if (auth.accessToken) {
+            const settings = useSettingsStore();
+            await settings.syncSettings();
+        }
     }
 
     // Check special case redirects
