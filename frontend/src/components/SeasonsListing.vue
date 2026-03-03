@@ -13,14 +13,15 @@ defineProps({
 
 const wrapper = ref(null)
 const expanded = ref(false)
-const limitHeight = 450
+const visibleSeasons = 3
 
-const scrollHeight = computed(() => wrapper.value?.scrollHeight + 45 + 16)
+const limitHeight = (116 + 12) * visibleSeasons + 68
+const scrollHeight = computed(() => wrapper.value?.scrollHeight)
 const limitOverflow = computed(() => scrollHeight.value > limitHeight)
 
 const computedHeight = computed(() => {
     if (!limitOverflow.value) return scrollHeight.value  // content fits, use natural height
-    return expanded.value ? scrollHeight.value : limitHeight
+    return expanded.value ? scrollHeight.value + 38 + 12 : limitHeight
 })
 </script>
 
@@ -99,21 +100,20 @@ const computedHeight = computed(() => {
     bottom: 0;
     left: 0;
     right: 0;
-    height: 128px;
+    height: 68px;
     background: linear-gradient(to bottom, transparent, var(--c-bg));
     display: flex;
     align-items: flex-end;
-    padding-bottom: var(--spacing-sm);
     cursor: pointer;
     transition: height 0.25s var(--transition-ease-out);
 
     &.expanded {
-        height: 45px;
+        height: 38px;
     }
 
     .show-more-text {
         width: 100%;
-        height: 45px;
+        height: 100%;
         display: flex;
         justify-content: center;
         align-items: center;
