@@ -32,8 +32,8 @@
     --a-trans: 0.66;
 
     --hero-backdrop-opacity: 0.4;
-    --details-backdrop-fade-intensity: 0;
-    --details-backdrop-min-brightness: 0.25;
+    --details-backdrop-fade-intensity: 0.5;
+    --details-backdrop-min-brightness: 1;
 
     /* Borders and inputs */
     --c-border: oklch(45% 0 0 / 50%);
