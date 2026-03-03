@@ -26,8 +26,7 @@
     --c-input: oklch(17.5% 0 230 / 66%);
     --c-border: oklch(40% 0.01 230 / 66%);
 
-    --hero-backdrop-fade-intensity: 0.25;
-    --hero-backdrop-min-brightness: 0.35;
+    --hero-backdrop-opacity: 0.3;
     --details-backdrop-fade-intensity: 0.66;
     --details-backdrop-min-brightness: 0;
 }
@@ -54,8 +53,7 @@
     --c-input: oklch(14% 0.02 300 / 70%);
     --c-border: oklch(45% 0.06 300 / 50%);
 
-    --hero-backdrop-fade-intensity: 0.25;
-    --hero-backdrop-min-brightness: 0.35;
+    --hero-backdrop-opacity: 0.25;
     --details-backdrop-fade-intensity: 0.66;
     --details-backdrop-min-brightness: 0;
 }
@@ -85,8 +83,7 @@
     --c-input: oklch(88.224% 0.0001 271.152 / 0.66);
     --c-border: oklch(81.406% 0.00009 271.152 / 0.66);
 
-    --hero-backdrop-fade-intensity: 0.2;
-    --hero-backdrop-min-brightness: 1;
+    --hero-backdrop-opacity: 0.25;
     --details-backdrop-fade-intensity: 0.6;
     --details-backdrop-min-brightness: 1;
 
@@ -129,8 +126,7 @@
     --c-input: hsla(210, 4%, 15%, 0.9);
     --c-input-text: var(--c-text-inv);
 
-    --hero-backdrop-fade-intensity: 0.5;
-    --hero-backdrop-min-brightness: 0.5;
+    --hero-backdrop-opacity: 0.175;
     --details-backdrop-fade-intensity: 0.5;
     --details-backdrop-min-brightness: 0.2;
 

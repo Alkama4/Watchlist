@@ -231,7 +231,7 @@ img.backdrop {
 
     mask-image: linear-gradient(
         to top,
-        rgba(0, 0, 0, 0.2) 80px,
+        rgba(0, 0, 0, var(--hero-backdrop-opacity)) 80px,
         rgba(0, 0, 0, 1) 100%
     );
 }
