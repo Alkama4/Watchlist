@@ -150,6 +150,18 @@ const jellyfinLink = computed(() => {
 
     return `${baseUrl}/web/#/details?id=${jellyfinId}${serverIdParam}`
 })
+
+const lastAirDate = computed(() => {
+    const seasons = props?.titleDetails?.seasons;
+    if (!seasons || seasons.length === 0) return undefined;
+
+    const lastSeason = seasons.at(-1);
+    if (!lastSeason || !lastSeason.episodes) return undefined;
+
+    const episodes = lastSeason.episodes;
+    const validEpisodes = episodes.filter(ep => Boolean(ep.air_date));
+    return validEpisodes.at(-1)?.air_date;
+});
 </script>
 
 <template>
@@ -308,13 +320,24 @@ const jellyfinLink = computed(() => {
                         </div>
     
                         |
-                        <div class="stat">
-                            {{ timeFormatters.timestampToFullDate(titleDetails?.release_date) }}
-                            <template v-if="titleDetails?.title_type == 'tv'">
-                                - {{ timeFormatters.timestampToFullDate(titleDetails.seasons?.at(-1)?.episodes?.at(-1)?.air_date) }}
+                        <div
+                            class="stat"
+                            :title="
+                                titleDetails?.title_type == 'tv'
+                                ? `${timeFormatters.timestampToFullDate(titleDetails?.release_date)} - ${timeFormatters.timestampToFullDate(lastAirDate)}`
+                                : `${timeFormatters.timestampToFullDate(titleDetails?.release_date)}`
+                            "
+                        >
+                            {{ timeFormatters.timestampToYear(titleDetails?.release_date) }}
+                            <template v-if="
+                                titleDetails?.title_type == 'tv' &&
+                                timeFormatters.timestampToYear(lastAirDate) !=
+                                timeFormatters.timestampToYear(titleDetails?.release_date)
+                            ">
+                                - {{ timeFormatters.timestampToYear(lastAirDate) }}
                             </template>
                         </div>
-
+                        
                         |
                         <div class="stat genres">
                             <router-link
