@@ -155,12 +155,20 @@ const lastAirDate = computed(() => {
     const seasons = props?.titleDetails?.seasons;
     if (!seasons || seasons.length === 0) return undefined;
 
-    const lastSeason = seasons.at(-1);
-    if (!lastSeason || !lastSeason.episodes) return undefined;
+    for (let i = seasons.length - 1; i >= 0; i--) {
+        const season = seasons[i];
+        if (!season || !season.episodes) continue;
 
-    const episodes = lastSeason.episodes;
-    const validEpisodes = episodes.filter(ep => Boolean(ep.air_date));
-    return validEpisodes.at(-1)?.air_date;
+        const validEpisodes = season.episodes.filter(ep => Boolean(ep.air_date));
+        if (validEpisodes.length > 0) {
+            return validEpisodes
+                .sort((a, b) => new Date(a.air_date) - new Date(b.air_date))
+                .at(-1)
+                .air_date;
+        }
+    }
+
+    return undefined;
 });
 </script>
 
