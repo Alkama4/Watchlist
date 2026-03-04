@@ -309,13 +309,13 @@ img.backdrop {
 
 img.logo {
     object-fit: contain;
-    object-position: center;
+    object-position: bottom center;
     position: absolute;
-    bottom: 106px;
+    bottom: calc(115px + var(--spacing-sm-md));
     left: 50%;
     transform: translateX(-50%);
-    height: 20%;
-    width: 550px;
+    height: 30%;
+    width: 500px;
     max-width: 100%;
     padding-inline: var(--spacing-lg);
     z-index: 10;
@@ -333,7 +333,7 @@ img.logo {
     justify-content: center;
     align-items: center;
     z-index: 10;
-    padding: var(--spacing-sm-md) var(--spacing-lg);
+    padding: var(--spacing-md) var(--spacing-lg);
     box-sizing: border-box;
     overflow: hidden;
 
