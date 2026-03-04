@@ -86,7 +86,8 @@
     --c-input: oklch(88.224% 0.0001 271.152 / 0.66);
     --c-border: oklch(81.406% 0.00009 271.152 / 0.66);
 
-    --hero-backdrop-opacity: 0.25;
+    --hero-backdrop-opacity: 0.3;
+    --hero-backdrop-color: hsl(0, 0%, 5%);
     --details-backdrop-fade-intensity: 0.6;
     --details-backdrop-min-brightness: 1;
 
@@ -133,6 +134,7 @@
     --c-input-text: var(--c-text-inv);
 
     --hero-backdrop-opacity: 0.175;
+    --hero-backdrop-color: hsl(0, 0%, 20%);
     --details-backdrop-fade-intensity: 0.5;
     --details-backdrop-min-brightness: 0.2;
 
