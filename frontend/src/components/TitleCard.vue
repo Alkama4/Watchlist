@@ -6,6 +6,7 @@ import { useSearchStore } from '@/stores/search';
 import { fastApi } from '@/utils/fastApi';
 import { ref } from 'vue';
 import LoadingButton from '@/components/LoadingButton.vue';
+import { addToWatchCount, subtractFromWatchCount, toggleFavourite, toggleWatchlist } from '@/utils/titleActions';
 
 const searchStore = useSearchStore();
 
@@ -52,63 +53,6 @@ async function removeTitle() {
         titleInfo.user_details.in_library = false;
     } finally {
         waiting.value.library = false;
-    }
-}
-
-
-async function toggleFavourite() {
-    waiting.value.favourite = true;
-    try {
-        let response;
-        if (titleInfo.user_details.is_favourite) {
-            response = await fastApi.titles.setFavourite(titleInfo.title_id, false);
-        } else {
-            response = await fastApi.titles.setFavourite(titleInfo.title_id, true);
-        }
-        if (!response) return;
-    
-        titleInfo.user_details.is_favourite = response.is_favourite;
-    } finally {
-        waiting.value.favourite = false;
-    }
-}
-
-async function toggleWatchlist() {
-    waiting.value.watchlist = true;
-    try {
-        let response;
-        if (titleInfo.user_details.in_watchlist) {
-            response = await fastApi.titles.setWatchlist(titleInfo.title_id, false);
-        } else {
-            response = await fastApi.titles.setWatchlist(titleInfo.title_id, true);
-        }
-        if (!response) return;
-        
-        titleInfo.user_details.in_watchlist = response.in_watchlist;
-    } finally {
-        waiting.value.watchlist = false;
-    }
-}
-
-async function addToWatchCount() {
-    waiting.value.watchCountAdd = true;
-    try {
-        const response = await fastApi.titles.setWatchCount(titleInfo.title_id, titleInfo.user_details.watch_count + 1);
-        titleInfo.user_details.watch_count = response.watch_count;
-    } finally {
-        waiting.value.watchCountAdd = false;
-    }
-}
-
-async function subtractFromWatchCount() {
-    waiting.value.watchCountSubtract = true;
-    try {
-        // Prevent going below 0
-        const newCount = Math.max(0, titleInfo.user_details.watch_count - 1);
-        const response = await fastApi.titles.setWatchCount(titleInfo.title_id, newCount);
-        titleInfo.user_details.watch_count = response.watch_count;
-    } finally {
-        waiting.value.watchCountSubtract = false;
     }
 }
 
@@ -204,8 +148,8 @@ const { titleInfo, storeImageFlag } = defineProps({
                 <LoadingButton
                     class="inner-action"
                     :class="{'btn-positive': titleInfo?.user_details?.watch_count}"
-                    :loading="waiting?.watchCountAdd"
-                    @click.prevent="addToWatchCount()"
+                    :loading="waiting?.addToWatchCount"
+                    @click.prevent="addToWatchCount(titleInfo, waiting)"
                 >
                     <template v-if="titleInfo?.user_details?.watch_count >= 2">
                         {{ titleInfo?.user_details?.watch_count }}
@@ -215,8 +159,8 @@ const { titleInfo, storeImageFlag } = defineProps({
 
                 <LoadingButton
                     class="inner-action"
-                    :loading="waiting?.watchCountSubtract"
-                    @click.prevent="subtractFromWatchCount()"
+                    :loading="waiting?.subtractFromWatchCount"
+                    @click.prevent="subtractFromWatchCount(titleInfo, waiting)"
                 >
                     <i class="bx bx-minus"></i>
                 </LoadingButton>
@@ -228,8 +172,8 @@ const { titleInfo, storeImageFlag } = defineProps({
                     'btn-favourite': titleInfo?.user_details?.is_favourite
                 }"
                 class="indicator-circle favourite"
-                :loading="waiting?.favourite"
-                @click.prevent="toggleFavourite()" 
+                :loading="waiting?.toggleFavourite"
+                @click.prevent="toggleFavourite(titleInfo, waiting)" 
             >
                 <i class="bx bxs-heart"></i>
             </LoadingButton>
@@ -240,8 +184,8 @@ const { titleInfo, storeImageFlag } = defineProps({
                     'btn-accent': titleInfo?.user_details?.in_watchlist
                 }"
                 class="indicator-circle watchlist"
-                :loading="waiting?.watchlist"
-                @click.prevent="toggleWatchlist()" 
+                :loading="waiting?.toggleWatchlist"
+                @click.prevent="toggleWatchlist(titleInfo, waiting)" 
             >
                 <i class="bx bxs-time"></i>
             </LoadingButton>
