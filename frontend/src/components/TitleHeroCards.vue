@@ -8,23 +8,16 @@ import { fastApi } from '@/utils/fastApi';
 import { fallbackLocale, preferredLocale } from '@/utils/conf';
 
 const currentIndex = ref(0);
-const direction = ref('');
 
+// We no longer need the setTimeout or direction ref since CSS handles the directional flow
 function next() {
-    direction.value = 'next';
-    setTimeout(() => {
-        currentIndex.value =
-            (currentIndex.value + 1) % heroCards.titles.length;
-    }, 1)
+    if (!heroCards?.titles?.length) return;
+    currentIndex.value = (currentIndex.value + 1) % heroCards.titles.length;
 }
 
 function prev() {
-    direction.value = 'prev';
-    setTimeout(() => {
-        currentIndex.value =
-            (currentIndex.value - 1 + heroCards.titles.length) %
-            heroCards.titles.length;
-    }, 1)
+    if (!heroCards?.titles?.length) return;
+    currentIndex.value = (currentIndex.value - 1 + heroCards.titles.length) % heroCards.titles.length;
 }
 
 function handleKeydown(e) {
@@ -34,6 +27,23 @@ function handleKeydown(e) {
     if (e.key === 'ArrowLeft') {
         prev();
     }
+}
+
+// Maps each card's index to a physical position on the screen
+function getCardPosition(index) {
+    const length = heroCards?.titles?.length || 0;
+    if (length === 0) return 'hidden-right';
+    if (length === 1) return 'center';
+
+    const diff = (index - currentIndex.value + length) % length;
+
+    if (diff === 0) return 'center';
+    if (diff === 1) return 'right';
+    if (diff === length - 1) return 'left';
+    
+    // Split remaining cards into hidden states so they enter/exit from the correct sides
+    if (diff === length - 2) return 'hidden-left';
+    return 'hidden-right';
 }
 
 async function toggleFavourite() {
@@ -68,7 +78,6 @@ function adjustCollections() {
     alert("Collections are under construction.")
 }
 
-
 function chooseAgeRating(titleDetails) {
     const ratings = titleDetails?.age_ratings ?? []
 
@@ -99,77 +108,60 @@ onUnmounted(() => {
 <template>
     <section class="title-hero-cards layout-contained layout-spacing-top">
         <div class="hero-cards-wrapper">
-            <Transition name="hero" mode="default" :class="direction">
+            <div v-if="heroCards?.titles" class="hero-cards-stack">
                 <RouterLink
-                    v-if="heroCards"
-                    :key="heroCards?.titles[currentIndex]?.title_id"
+                    v-for="(title, index) in heroCards.titles"
+                    :key="title.title_id"
                     class="hero-card no-deco"
-                    :to="`/title/${heroCards?.titles[currentIndex]?.title_id}`"
+                    :class="getCardPosition(index)"
+                    :to="`/title/${title.title_id}`"
                 >
+                    <div class="backdrop-wrapper">
+                        <img
+                            :src="getTitleImageUrl(title, 'original', 'backdrop')"
+                            :alt="`${title.title_type} backdrop: ${title.name}`"
+                            class="backdrop"
+                        >
+                    </div>
                     <img
-                        :src="getTitleImageUrl(heroCards?.titles[currentIndex], 'original', 'backdrop')"
-                        :alt="`${heroCards?.titles[currentIndex]?.title_type} backdrop: ${heroCards?.titles[currentIndex]?.name}`"
-                        class="backdrop"
+                        :src="getTitleImageUrl(title, 'original', 'logo')"
+                        :alt="`Logo for the title ${title.name}`"
+                        class="logo"
                     >
                     <div class="details-wrapper">
-                        <img
-                            :src="getTitleImageUrl(heroCards?.titles[currentIndex], 'original', 'logo')"
-                            :alt="`Logo for the title ${heroCards?.titles[currentIndex]?.name}`"
-                            class="logo"
-                        >
                         <div class="details no-deco">
                             <div class="stats">
-                                <span>{{ timeFormatters.timestampToYear(heroCards?.titles[currentIndex]?.release_date) }}</span>
+                                <span>{{ timeFormatters.timestampToYear(title.release_date) }}</span>
         
-                                <!-- <span>&bull;</span> -->
-                                <span v-if="heroCards?.titles[currentIndex]?.title_type == 'movie'">
-                                    {{ timeFormatters.minutesToHrAndMin(heroCards?.titles[currentIndex]?.movie_runtime) }}
+                                <span v-if="title.title_type == 'movie'">
+                                    {{ timeFormatters.minutesToHrAndMin(title.movie_runtime) }}
                                 </span>
                                 <span v-else>
-                                    {{ heroCards?.titles[currentIndex]?.show_season_count }}
-                                    Season{{ heroCards?.titles[currentIndex]?.show_season_count == 1 ? '': 's' }},
-                                    {{ heroCards?.titles[currentIndex]?.show_episode_count }}
-                                    Episode{{ heroCards?.titles[currentIndex]?.show_episode_count == 1 ? '': 's' }}
+                                    {{ title.show_season_count }}
+                                    Season{{ title.show_season_count == 1 ? '': 's' }},
+                                    {{ title.show_episode_count }}
+                                    Episode{{ title.show_episode_count == 1 ? '': 's' }}
                                 </span>
-
-                                <!-- <span>&bull;</span> -->
+        
                                 <span>
                                     <Tmdb/>
-                                    {{ heroCards?.titles[currentIndex]?.tmdb_vote_average }}
+                                    {{ title.tmdb_vote_average }}
                                 </span>
         
-                                <template v-if="chooseAgeRating(heroCards?.titles[currentIndex])?.rating">
-                                    <!-- <span>&bull;</span> -->
-                                    <span>{{ chooseAgeRating(heroCards?.titles[currentIndex])?.rating }}</span>
+                                <template v-if="chooseAgeRating(title)?.rating">
+                                    <span>{{ chooseAgeRating(title)?.rating }}</span>
                                 </template>
-        
                             </div>
-                            <div v-if="heroCards?.titles[currentIndex]?.genres?.length > 0" class="genres">
-                                <span v-for="genre in heroCards?.titles[currentIndex]?.genres">
+                            <div v-if="title.genres?.length > 0" class="genres">
+                                <span v-for="genre in title.genres" :key="genre.genre_name">
                                     {{ genre?.genre_name }}
                                 </span>
                             </div>
                         </div>
-                        <!-- <div class="actions">
-                            <i
-                                class="bx bx-check btn btn-text btn-even-padding"
-                                :class="{'btn-positive': heroCards?.titles[currentIndex]?.user_details?.is_favourite }"
-                                @click.prevent="toggleFavourite"
-                            ></i>
-                            <i
-                                class="bx bxs-heart btn btn-text btn-even-padding"
-                                :class="{'btn-favourite': heroCards?.titles[currentIndex]?.user_details?.is_favourite }"
-                                @click.prevent="toggleFavourite"
-                            ></i>
-                            <i
-                                class="bx bxs-time btn btn-text btn-even-padding"
-                                :class="{'btn-accent': heroCards?.titles[currentIndex]?.user_details?.in_watchlist }"
-                                @click.prevent="toggleWatchlist"
-                            ></i>
-                        </div> -->
                     </div>
                 </RouterLink>
-            </Transition>
+            </div>
+            
             <div class="controls">
                 <i
                     class="bx bx-chevron-left btn btn-text"
@@ -190,7 +182,6 @@ onUnmounted(() => {
     </section>
 </template>
 
-
 <style scoped>
 .title-hero-cards {
     position: relative;
@@ -202,32 +193,83 @@ onUnmounted(() => {
     min-height: 500px;
     max-width: 100%;
     aspect-ratio: 2/1;
+    overflow: hidden; /* Prevent horizontal scrollbars during animations */
+}
 
-    /* transition: aspect-ratio 0.2s ease;
-    
-    &:hover {
-        aspect-ratio: 16/9;
-    } */
+.hero-cards-stack {
+    position: relative;
+    width: 100%;
+    height: 100%;
 }
 
 .hero-card {
-    --transition-amount: 40px;
     position: absolute;
-    width: 100%;
+    left: 0; 
+    right: 0; 
+    margin: 0 auto; 
+    
+    /* width: 85%;  */
     height: calc(100% - 35.65px - var(--spacing-sm-md));
+    max-width: 85%;
+    aspect-ratio: 16/9;
     border-radius: var(--border-radius-lg);
     overflow: hidden;
-    z-index: 1;
+    user-select: none;
+    
+    transition: all 0.6s var(--transition-ease);
 }
 
+/* === Carousel Positions === */
 
-img.backdrop {
+.hero-card.center {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+    z-index: 3;
+    pointer-events: auto; /* Only allow interaction with the center card */
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+
+.hero-card.left {
+    transform: translateX(-13%) scale(0.85);
+    opacity: 0.5;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.hero-card.right {
+    transform: translateX(13%) scale(0.85);
+    opacity: 0.5;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.hero-card.hidden-left {
+    transform: translateX(-23%) scale(0.7);
+    opacity: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.hero-card.hidden-right {
+    transform: translateX(23%) scale(0.7);
+    opacity: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* ========================== */
+
+.backdrop-wrapper {
+    background-color: var(--c-bg);
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
+}
+img.backdrop {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    z-index: -10;
 
     mask-image: linear-gradient(
         to top,
@@ -239,11 +281,17 @@ img.backdrop {
 img.logo {
     object-fit: contain;
     object-position: center;
-    width: 100%;
-    max-width: 550px;
-    max-height: 200px;
+    position: absolute;
+    bottom: 96px;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 20%;
+    width: 550px;
+    max-width: 100%;
+    padding-inline: var(--spacing-lg);
+    z-index: 1000;
     box-sizing: border-box;
-    margin-bottom: var(--spacing-md);
+    /* margin-bottom: var(--spacing-md); */
 }
 
 .details-wrapper {
@@ -255,8 +303,6 @@ img.logo {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-
-    /* justify-content: end; */
     z-index: 10;
     padding: var(--spacing-lg);
     box-sizing: border-box;
@@ -275,6 +321,7 @@ img.logo {
             display: flex;
             gap: var(--spacing-md-lg);
             align-items: center;
+            white-space: nowrap;
         }
 
         .genres {
@@ -291,12 +338,7 @@ img.logo {
             }
         }
     }
-    .actions {
-        display: flex;
-        gap: var(--spacing-xs-sm);
-    }
 }
-
 
 .controls {
     position: absolute;
@@ -314,36 +356,6 @@ img.logo {
     padding: var(--spacing-xs);
     margin-inline: var(--spacing-xs-sm);
     border-radius: 100px;
+    cursor: pointer;
 }
-
-
-
-/* Transition */
-.hero-enter-active,
-.hero-leave-active {
-    transition: opacity 300ms ease, transform 300ms ease;
-}
-
-.hero-enter-from,
-.hero-leave-to {
-    opacity: 0;
-}
-
-/* NEXT */
-.next.hero-enter-from {
-    transform: translateX(var(--transition-amount));
-}
-.next.hero-leave-to {
-    transform: translateX(calc(-1 * var(--transition-amount)));
-}
-
-/* PREV */
-.prev.hero-enter-from {
-    transform: translateX(calc(-1 * var(--transition-amount)));
-}
-.prev.hero-leave-to {
-    transform: translateX(var(--transition-amount));
-}
-
-
 </style>
