@@ -49,7 +49,7 @@ div {
     --thickness: 4px;
     width: var(--size);
     height: var(--size);
-    border: var(--thickness) solid var(--c-text-base);
+    border: var(--thickness) solid var(--c-text);
     border-top-color: transparent;
     border-radius: 100px;
 }

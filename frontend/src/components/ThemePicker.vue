@@ -61,7 +61,7 @@ const themes = ref([
 .theme-card {
     background-color: var(--c-bg-base);
     border: 1px solid var(--c-border);
-    color: var(--c-text-base);
+    color: var(--c-text);
     border-radius: var(--border-radius-lg);
     padding: var(--spacing-md-lg);
     position: relative;

@@ -75,7 +75,7 @@ nav {
 
 .name {
     margin: 0;
-    color: var(--c-text-base);
+    color: var(--c-text);
 }
 
 

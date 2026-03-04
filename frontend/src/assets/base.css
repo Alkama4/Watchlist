@@ -12,7 +12,7 @@ html {
 body {
     font-family: 'Inter';
     background: var(--c-bg-base);
-    color: var(--c-text-base);
+    color: var(--c-text);
     font-size: var(--fs-0);
     color-scheme: var(--color-scheme);
     overflow-y: scroll;
@@ -110,7 +110,7 @@ form select,
 form label,
 .settings-list label {
     font-size: var(--fs-neg-1);
-    color: var(--c-text-base);
+    color: var(--c-text);
 }
 form h1,
 form h2,

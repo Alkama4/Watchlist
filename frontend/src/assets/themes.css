@@ -6,8 +6,8 @@
 [data-theme='midnight'] {
     --c-bg-base: oklch(19% 0.01 230);
 
-    --c-text-base: oklch(92.5% 0.01 230);
-    --c-text-inv-base: oklch(7.5% 0.01 230);
+    --c-text-white-base: oklch(92.5% 0.01 230);
+    --c-text-black-base: oklch(7.5% 0.01 230);
 
     --c-primary:    oklch(92% 0 230);
     --c-neutral:    oklch(40% 0.01 230 / 33%);
@@ -34,8 +34,8 @@
 [data-theme='amethyst'] {
     --c-bg-base: oklch(16% 0.04 300);
 
-    --c-text-base: oklch(94% 0.015 300);
-    --c-text-inv-base: oklch(10% 0.04 300);
+    --c-text-white-base: oklch(94% 0.015 300);
+    --c-text-black-base: oklch(10% 0.04 300);
 
     --c-primary: oklch(88% 0.03 300);
     --c-neutral: oklch(45% 0.04 300 / 30%);
@@ -63,9 +63,12 @@
 
     --c-bg-base: hsl(0, 0%, 100%);
 
-    --c-text-base: hsl(0, 0%, 15%);
-    --c-text-inv-base: hsl(0, 0%, 95%);
-    --o-text: -0.125;
+    --c-text-white-base: hsl(0, 0%, 95%);
+    --c-text-black-base: hsl(0, 0%, 15%);
+    --c-text: var(--c-text-black-base);
+    --c-text-inv: var(--c-text-white-base);
+    --o-text-w-n-b: 0.125;
+    --o-text-norm-n-inv: -0.125;
 
     --c-primary:    oklch(37.53% 0.00004 271.152);
     --c-neutral:    oklch(76.039% 0.00009 271.152);
@@ -105,9 +108,12 @@
     --c-bg-base: hsl(210, 4%, 83%);
     --c-bg-opaque-base: hsl(210, 4%, 83%);
 
-    --c-text-base: hsl(210, 4%, 18%);
-    --c-text-inv-base: hsl(210, 4%, 97%);
-    --o-text: -0.075;
+    --c-text-white-base: hsl(210, 4%, 97%);
+    --c-text-black-base: hsl(210, 4%, 18%);
+    --c-text: var(--c-text-black-base);
+    --c-text-inv: var(--c-text-white-base);
+    --o-text-w-n-b: 0.075;
+    --o-text-norm-n-inv: -0.075;
 
     --c-primary: hsl(210, 4%, 27%);
     --c-neutral: hsl(210, 4%, 66%);

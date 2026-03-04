@@ -58,7 +58,7 @@ function select(index) {
 }
 
 .dot.active {
-    background-color: var(--c-text-base);
+    background-color: var(--c-text);
     width: var(--spacing-md-lg);
 }
 

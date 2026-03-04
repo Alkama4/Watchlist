@@ -260,7 +260,7 @@ onUnmounted(() => {
 /* ========================== */
 
 .backdrop-wrapper {
-    background-color: var(--c-bg);
+    background-color: var(--hero-backdrop-color);
     position: absolute;
     inset: 0;
     width: 100%;
@@ -322,12 +322,13 @@ img.logo {
             gap: var(--spacing-md-lg);
             align-items: center;
             white-space: nowrap;
+            color: var(--c-text-white);
         }
 
         .genres {
             font-weight: 500;
             margin-top: var(--spacing-sm);
-            color: var(--c-text-soft);
+            color: var(--c-text-white-soft);
             font-size: var(--fs-neg-1);
         
             span::after {
