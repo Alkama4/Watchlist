@@ -133,9 +133,9 @@ onUnmounted(() => {
                             <div class="actions">
                                 <div
                                     :class="{
-                                        'watched btn': title?.user_details?.watch_count
+                                        'watched': title?.user_details?.watch_count
                                     }"
-                                    class="watch-count-buttons"
+                                    class="watch-count-buttons btn"
                                 >
                                     <LoadingButton
                                         class="btn-even-padding inner-action"
@@ -379,7 +379,12 @@ img.logo {
                 font-size: var(--fs-1);
             }
 
+            button {
+                border-radius: 100px;
+            }
+
             .watch-count-buttons {
+                border-radius: 100px;
                 display: flex;
                 flex-direction: row;
                 justify-content: start;
@@ -388,6 +393,7 @@ img.logo {
                 height: 35.2px;
                 overflow: hidden;
                 transition: width 0.2s var(--transition-ease-out);
+                background-color: var(--c-neutral);
 
                 &.watched:hover {
                     width: calc(35.2px * 2 + var(--spacing-xs));
@@ -416,7 +422,6 @@ img.logo {
     gap: 2px;
     align-items: center;
     justify-content: center;
-    z-index: 10;
 }
 .controls i {
     font-size: var(--fs-3);

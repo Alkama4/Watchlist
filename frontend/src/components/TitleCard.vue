@@ -286,13 +286,16 @@ h5 {
     &.watch-count {
         z-index: 50;
         left: calc(var(--spacing-amount) * 0 + var(--spacing-sm));
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
 
         &.active {
             background-color: var(--c-positive);
 
             &:hover {
                 background-color: var(--c-neutral);
-                height: calc(var(--spacing-lg) * 2);
+                height: calc(var(--spacing-lg) * 2 + var(--spacing-xs));
             }
         }
 
