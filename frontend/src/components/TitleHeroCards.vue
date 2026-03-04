@@ -4,9 +4,11 @@ import { timeFormatters, numberFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg'
 import { ref, onMounted, onUnmounted } from 'vue';
 import PaginationDots from './PaginationDots.vue';
-import { fastApi } from '@/utils/fastApi';
 import { fallbackLocale, preferredLocale } from '@/utils/conf';
+import { addToWatchCount, subtractFromWatchCount, toggleFavourite, toggleWatchlist } from '@/utils/titleActions';
+import LoadingButton from './LoadingButton.vue';
 
+const waitingfor = ref({});
 const currentIndex = ref(0);
 
 // We no longer need the setTimeout or direction ref since CSS handles the directional flow
@@ -44,38 +46,6 @@ function getCardPosition(index) {
     // Split remaining cards into hidden states so they enter/exit from the correct sides
     if (diff === length - 2) return 'hidden-left';
     return 'hidden-right';
-}
-
-async function toggleFavourite() {
-    const title = heroCards.titles[currentIndex.value];
-
-    let response;
-    if (title.user_details.is_favourite) {
-        response = await fastApi.titles.setFavourite(title.title_id, false);
-    } else {
-        response = await fastApi.titles.setFavourite(title.title_id, true);
-    }
-    if (!response) return;
-
-    title.user_details.is_favourite = response.is_favourite;
-}
-
-async function toggleWatchlist() {
-    const title = heroCards.titles[currentIndex.value];
-
-    let response;
-    if (title.user_details.in_watchlist) {
-        response = await fastApi.titles.setWatchlist(title.title_id, false);
-    } else {
-        response = await fastApi.titles.setWatchlist(title.title_id, true);
-    }
-    if (!response) return;
-    
-    title.user_details.in_watchlist = response.in_watchlist;
-}
-
-function adjustCollections() {
-    alert("Collections are under construction.")
 }
 
 function chooseAgeRating(titleDetails) {
@@ -123,11 +93,13 @@ onUnmounted(() => {
                             class="backdrop"
                         >
                     </div>
+
                     <img
                         :src="getTitleImageUrl(title, 'original', 'logo')"
                         :alt="`Logo for the title ${title.name}`"
                         class="logo"
                     >
+
                     <div class="details-wrapper">
                         <div class="details no-deco">
                             <div class="stats">
@@ -156,6 +128,63 @@ onUnmounted(() => {
                                 <span v-for="genre in title.genres" :key="genre.genre_name">
                                     {{ genre?.genre_name }}
                                 </span>
+                            </div>
+
+                            <div class="actions">
+                                <div
+                                    :class="{
+                                        'watched btn': title?.user_details?.watch_count
+                                    }"
+                                    class="watch-count-buttons"
+                                >
+                                    <LoadingButton
+                                        class="btn-even-padding inner-action"
+                                        :class="{'btn-positive': title?.user_details?.watch_count}"
+                                        :loading="waitingfor?.watchCountAdd"
+                                        @click.prevent="addToWatchCount(title, waitingfor)"
+                                    >
+                                        <template v-if="title?.user_details?.watch_count >= 2">
+                                            {{ title?.user_details?.watch_count }}
+                                        </template>
+                                        <i v-else class="bx bx-check"></i>
+                                    </LoadingButton>
+
+                                    <LoadingButton
+                                        class="btn-even-padding inner-action"
+                                        :loading="waitingfor?.watchCountSubtract"
+                                        @click.prevent="subtractFromWatchCount(title, waitingfor)"
+                                    >
+                                        <i class="bx bx-minus"></i>
+                                    </LoadingButton>
+                                </div>
+                                
+                                <div>
+                                    <LoadingButton
+                                        :class="{
+                                            'active': title?.user_details?.is_favourite,
+                                            'btn-favourite': title?.user_details?.is_favourite
+                                        }"
+                                        class="btn-even-padding favourite"
+                                        :loading="waitingfor?.favourite"
+                                        @click.prevent="toggleFavourite(title, waitingfor)" 
+                                    >
+                                        <i class="bx bxs-heart"></i>
+                                    </LoadingButton>
+                                </div>
+                                
+                                <div>
+                                    <LoadingButton
+                                        :class="{
+                                            'active': title?.user_details?.in_watchlist,
+                                            'btn-accent': title?.user_details?.in_watchlist
+                                        }"
+                                        class="btn-even-padding watchlist"
+                                        :loading="waitingfor?.watchlist"
+                                        @click.prevent="toggleWatchlist(title, waitingfor)" 
+                                    >
+                                        <i class="bx bxs-time"></i>
+                                    </LoadingButton>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -282,14 +311,14 @@ img.logo {
     object-fit: contain;
     object-position: center;
     position: absolute;
-    bottom: 96px;
+    bottom: 106px;
     left: 50%;
     transform: translateX(-50%);
     height: 20%;
     width: 550px;
     max-width: 100%;
     padding-inline: var(--spacing-lg);
-    z-index: 1000;
+    z-index: 10;
     box-sizing: border-box;
     /* margin-bottom: var(--spacing-md); */
 }
@@ -304,10 +333,9 @@ img.logo {
     justify-content: center;
     align-items: center;
     z-index: 10;
-    padding: var(--spacing-lg);
+    padding: var(--spacing-sm-md) var(--spacing-lg);
     box-sizing: border-box;
     overflow: hidden;
-    gap: var(--spacing-md);
 
     .details {
         width: 100%;
@@ -336,6 +364,44 @@ img.logo {
             }
             span:nth-last-child(1)::after {
                 content: "";
+            }
+        }
+
+        .actions {
+            z-index: 11;
+            margin-top: var(--spacing-sm-md);
+
+            display: flex;
+            justify-content: start;
+            column-gap: var(--spacing-xs-sm);
+
+            i {
+                font-size: var(--fs-1);
+            }
+
+            .watch-count-buttons {
+                display: flex;
+                flex-direction: row;
+                justify-content: start;
+                padding: 0;
+                width: 35.2px;
+                height: 35.2px;
+                overflow: hidden;
+                transition: width 0.2s var(--transition-ease-out);
+
+                &.watched:hover {
+                    width: calc(35.2px * 2 + var(--spacing-xs));
+                }
+
+                .inner-action {
+                    aspect-ratio: 1;
+                    height: 100%;
+                }
+                
+                i {
+                    font-size: var(--fs-2);
+                }
+
             }
         }
     }
