@@ -272,6 +272,7 @@ class UserTitleDetailsOut(BaseModel):
     chosen_poster_image_path: Optional[str]
     chosen_backdrop_image_path: Optional[str]
     chosen_logo_image_path: Optional[str]
+    chosen_locale: Optional[str]
 
     added_at: Optional[datetime]
     last_watched_at: Optional[datetime]
