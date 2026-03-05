@@ -5,7 +5,9 @@ import { fastApi } from '@/utils/fastApi';
 import TitleCard from '@/components/TitleCard.vue';
 import FilterDropDown from '@/components/FilterDropDown.vue';
 import OptionPicker from '@/components/OptionPicker.vue';
-import { ArrowDownNarrowWide, ArrowDownUp, ArrowDownWideNarrow, RefreshCcwAltDot } from '@boxicons/vue';
+import Imdb from '@/assets/icons/imdb.svg'
+import Tmdb from '@/assets/icons/tmdb.svg'
+import { ArrowDownNarrowWide, ArrowDownUp, ArrowDownWideNarrow, Calendar, Capitalize, ChartTrend, Check, Circle, CircleHalf, Clock, Film, Heart, History, RefreshCcwAltDot, Shuffle, Timer, Tv, X } from '@boxicons/vue';
 
 // Search parameters/filters
 const searchStore = useSearchStore();
@@ -38,35 +40,35 @@ let observer = null;
 
 
 const typeOptions = [
-    { label: 'Movie', value: 'movie', type: 'primary' },
-    { label: 'TV-show', value: 'tv', type: 'primary' },
+    { icon: Film, label: 'Movie', value: 'movie', type: 'primary' },
+    { icon: Tv, label: 'TV-show', value: 'tv', type: 'primary' },
 ]
 const watchStatusOptions = [
-    { label: 'Not watched', value: 'not_watched',  type: 'negative' },
-    { label: 'Partial', value: 'partial', type: 'primary' },
-    { label: 'Completed', value: 'completed', type: 'positive' },
+    { icon: Circle, label: 'Completed', value: 'completed', type: 'positive' },
+    { icon: CircleHalf, label: 'Partial', value: 'partial', type: 'primary' },
+    { icon: Circle, iconNotFilled: true, label: 'Not watched', value: 'not_watched',  type: 'negative' },
 ]
 const favouriteOptions = [
-    { label: 'Favourite', value: true,  type: 'positive' },
-    { label: 'Not favourite', value: false, type: 'negative' },
+    { icon: Heart, label: 'Favourite', value: true,  type: 'positive' },
+    { icon: Heart, iconNotFilled: true, label: 'Not favourite', value: false, type: 'negative' },
 ]
 const watchlistOptions = [
-    { label: 'In your watchlist', value: true,  type: 'positive' },
-    { label: 'Not in your watchlist', value: false, type: 'negative' },
+    { icon: Clock, label: 'In your watchlist', value: true,  type: 'positive' },
+    { icon: Clock, iconNotFilled: true, label: 'Not in your watchlist', value: false, type: 'negative' },
 ]
 const jellyfinOptions = [
-    { label: 'Available', value: true,  type: 'positive' },
-    { label: 'Not available', value: false, type: 'negative' },
+    { icon: Check, label: 'Available', value: true,  type: 'positive' },
+    { icon: X, label: 'Not available', value: false, type: 'negative' },
 ]
 const sortByOptions = [
-    { label: 'TMDB', value: 'tmdb_score', type: 'primary' },
-    { label: 'IMDB', value: 'imdb_score', type: 'primary' },
-    { label: 'Popularity', value: 'popularity', type: 'primary' },
-    { label: 'Alphabetical', value: 'title_name', type: 'primary' },
-    { label: 'Runtime', value: 'runtime', type: 'primary' },
-    { label: 'Release date', value: 'release_date', type: 'primary' },
-    { label: 'Last viewed', value: 'last_viewed_at', type: 'primary' },
-    { label: 'Random', value: 'random', type: 'primary' },
+    { icon: Tmdb, label: 'TMDB', value: 'tmdb_score', type: 'primary' },
+    { icon: Imdb, label: 'IMDB', value: 'imdb_score', type: 'primary' },
+    { icon: ChartTrend, label: 'Popularity', value: 'popularity', type: 'primary' },
+    { icon: Capitalize, label: 'Alphabetical', value: 'title_name', type: 'primary' },
+    { icon: Timer, label: 'Runtime', value: 'runtime', type: 'primary' },
+    { icon: Calendar, label: 'Release date', value: 'release_date', type: 'primary' },
+    { icon: History, label: 'Last viewed', value: 'last_viewed_at', type: 'primary' },
+    { icon: Shuffle, label: 'Random', value: 'random', type: 'primary' },
 ];
 
 async function runSearch(append = false) {

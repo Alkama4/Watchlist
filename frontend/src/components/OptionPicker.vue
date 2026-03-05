@@ -1,4 +1,6 @@
 <script setup>
+import { Dislike, Like } from '@boxicons/vue'
+
 const props = defineProps({
     modelValue: {
         type: [Boolean, String, Number, Array, null]
@@ -6,8 +8,8 @@ const props = defineProps({
     options: {
         type: Array,
         default: () => [
-            { label: 'Yes', value: true,  type: 'positive' },
-            { label: 'No', value: false, type: 'negative' }
+            { icon: Like, label: 'Yes', value: true,  type: 'positive' },
+            { icon: Dislike, label: 'No', value: false, type: 'negative' }
         ]
     },
     mode: {
@@ -70,7 +72,13 @@ const updateValue = (clickedValue) => {
             :class="{ [`btn-${opt.type}`]: isActive(opt.value) }"
             @click="updateValue(opt.value)"
         >
-            {{ opt.label }}
+            <component
+                :is="opt?.icon"
+                :pack="opt?.iconNotFilled ? 'basic' : 'filled'"
+                width="16px"
+                height="16px"
+            />
+            <span>{{ opt.label }}</span>
         </button>
     </div>
 </template>
@@ -86,5 +94,6 @@ button {
     padding-right: var(--spacing-lg);
     justify-content: start;
     font-weight: 500;
+    gap: var(--spacing-sm);
 }
 </style>
