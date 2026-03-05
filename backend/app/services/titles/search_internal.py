@@ -46,7 +46,10 @@ def _base_title_query(user_id: int, title_schema, fallback_iso_639_1: str):
                 TitleTranslation.title_id == Title.title_id,
                 # Coalesce handles the fallback, split_part splits by '-' and takes the 1st piece
                 TitleTranslation.iso_639_1 == func.split_part(
-                    func.coalesce(UserTitleDetails.chosen_locale, fallback_iso_639_1), 
+                    func.coalesce(
+                        func.nullif(UserTitleDetails.chosen_locale, ''),
+                        fallback_iso_639_1
+                    ), 
                     '-', 
                     1
                 )
