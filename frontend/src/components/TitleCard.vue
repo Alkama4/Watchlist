@@ -7,6 +7,7 @@ import { fastApi } from '@/utils/fastApi';
 import { ref } from 'vue';
 import LoadingButton from '@/components/LoadingButton.vue';
 import { addToWatchCount, subtractFromWatchCount, toggleFavourite, toggleWatchlist } from '@/utils/titleActions';
+import { ArrowOutUpRightSquare, Check, Clock, Heart, ListMinus, ListPlus, Minus, Plus } from '@boxicons/vue';
 
 const searchStore = useSearchStore();
 
@@ -98,12 +99,12 @@ const { titleInfo, storeImageFlag } = defineProps({
                 :loading="waiting?.library"
                 @click="addTitle(titleInfo.title_id, titleInfo.tmdb_id, titleInfo.title_type)"
             >
-                <i class="bx bx-plus"></i>
+                <ListPlus size="xs"/>
                 Add
             </LoadingButton>
     
             <LoadingButton v-else :loading="waiting?.library" @click="removeTitle(titleInfo.title_id)">
-                <i class="bx bx-trash"></i>
+                <ListMinus size="xs"/>
                 Remove
             </LoadingButton>
 
@@ -113,7 +114,7 @@ const { titleInfo, storeImageFlag } = defineProps({
                 target="_blank"
                 @click.stop
             >
-                <i class="bx bx-link-external"></i>
+                <ArrowOutUpRightSquare size="xs"/>
             </a>
         </div>
 
@@ -154,7 +155,7 @@ const { titleInfo, storeImageFlag } = defineProps({
                     <template v-if="titleInfo?.user_details?.watch_count >= 2">
                         {{ titleInfo?.user_details?.watch_count }}
                     </template>
-                    <i v-else class="bx bx-check"></i>
+                    <Check v-else size="sm"/>
                 </LoadingButton>
 
                 <LoadingButton
@@ -162,7 +163,7 @@ const { titleInfo, storeImageFlag } = defineProps({
                     :loading="waiting?.subtractFromWatchCount"
                     @click.prevent="subtractFromWatchCount(titleInfo, waiting)"
                 >
-                    <i class="bx bx-minus"></i>
+                    <Minus size="sm"/>
                 </LoadingButton>
             </div>
     
@@ -175,7 +176,7 @@ const { titleInfo, storeImageFlag } = defineProps({
                 :loading="waiting?.toggleFavourite"
                 @click.prevent="toggleFavourite(titleInfo, waiting)" 
             >
-                <i class="bx bxs-heart"></i>
+                <Heart size="sm" pack="filled"/>
             </LoadingButton>
     
             <LoadingButton
@@ -187,7 +188,7 @@ const { titleInfo, storeImageFlag } = defineProps({
                 :loading="waiting?.toggleWatchlist"
                 @click.prevent="toggleWatchlist(titleInfo, waiting)" 
             >
-                <i class="bx bxs-time"></i>
+                <Clock size="sm" pack="filled"/>
             </LoadingButton>
         </div>
     </component>
@@ -330,14 +331,6 @@ h5 {
     }
 }
 
-
-.indicator-circle.watch-count i {
-    font-size: var(--fs-2);
-}
-.indicator-circle.watchlist i,
-.indicator-circle.favourite i {
-    font-size: var(--fs-1);
-}
 
 .title-card:hover .indicator-wrapper {
     --spacing-amount: calc(var(--spacing-lg) + var(--spacing-xs));

@@ -7,6 +7,7 @@ import PaginationDots from './PaginationDots.vue';
 import { fallbackLocale, preferredLocale } from '@/utils/conf';
 import { addToWatchCount, subtractFromWatchCount, toggleFavourite, toggleWatchlist } from '@/utils/titleActions';
 import LoadingButton from './LoadingButton.vue';
+import { Check, ChevronLeft, ChevronRight, Clock, Heart, Minus } from '@boxicons/vue';
 
 const waitingfor = ref({});
 const currentIndex = ref(0);
@@ -133,12 +134,13 @@ onUnmounted(() => {
                             <div class="actions">
                                 <div
                                     :class="{
-                                        'watched': title?.user_details?.watch_count
+                                        'watched btn': title?.user_details?.watch_count
                                     }"
-                                    class="watch-count-buttons btn"
+                                    class="watch-count-buttons"
+                                    @click.prevent
                                 >
                                     <LoadingButton
-                                        class="btn-even-padding inner-action"
+                                        class="btn-even-padding inner-action add-button"
                                         :class="{'btn-positive': title?.user_details?.watch_count}"
                                         :loading="waitingfor?.watchCountAdd"
                                         @click.prevent="addToWatchCount(title, waitingfor)"
@@ -146,7 +148,7 @@ onUnmounted(() => {
                                         <template v-if="title?.user_details?.watch_count >= 2">
                                             {{ title?.user_details?.watch_count }}
                                         </template>
-                                        <i v-else class="bx bx-check"></i>
+                                        <Check v-else/>
                                     </LoadingButton>
 
                                     <LoadingButton
@@ -154,7 +156,7 @@ onUnmounted(() => {
                                         :loading="waitingfor?.watchCountSubtract"
                                         @click.prevent="subtractFromWatchCount(title, waitingfor)"
                                     >
-                                        <i class="bx bx-minus"></i>
+                                        <Minus/>
                                     </LoadingButton>
                                 </div>
                                 
@@ -168,7 +170,7 @@ onUnmounted(() => {
                                         :loading="waitingfor?.favourite"
                                         @click.prevent="toggleFavourite(title, waitingfor)" 
                                     >
-                                        <i class="bx bxs-heart"></i>
+                                        <Heart pack="filled"/>
                                     </LoadingButton>
                                 </div>
                                 
@@ -182,7 +184,7 @@ onUnmounted(() => {
                                         :loading="waitingfor?.watchlist"
                                         @click.prevent="toggleWatchlist(title, waitingfor)" 
                                     >
-                                        <i class="bx bxs-time"></i>
+                                        <Clock pack="filled"/>
                                     </LoadingButton>
                                 </div>
                             </div>
@@ -192,20 +194,22 @@ onUnmounted(() => {
             </div>
             
             <div class="controls">
-                <i
-                    class="bx bx-chevron-left btn btn-text"
+                <ChevronLeft
+                    remove-padding
+                    class="btn btn-text btn-even-padding"
                     @click.stop.prevent="prev"
-                ></i>
+                />
                 <span>
                     <PaginationDots
                         v-model="currentIndex"
                         :count="heroCards?.titles?.length"
                     />
                 </span>
-                <i
-                    class="bx bx-chevron-right btn btn-text"
+                <ChevronRight
+                    remove-padding
+                    class="btn btn-text btn-even-padding"
                     @click.stop.prevent="next"
-                ></i>
+                />
             </div>
         </div>
     </section>
@@ -238,7 +242,7 @@ onUnmounted(() => {
     margin: 0 auto; 
     
     /* width: 85%;  */
-    height: calc(100% - 35.65px - var(--spacing-sm-md));
+    height: calc(100% - 40px - var(--spacing-sm-md));
     max-width: 85%;
     aspect-ratio: 16/9;
     border-radius: var(--border-radius-lg);
@@ -375,10 +379,6 @@ img.logo {
             justify-content: start;
             column-gap: var(--spacing-xs-sm);
 
-            i {
-                font-size: var(--fs-1);
-            }
-
             button {
                 border-radius: 100px;
             }
@@ -389,25 +389,23 @@ img.logo {
                 flex-direction: row;
                 justify-content: start;
                 padding: 0;
-                width: 35.2px;
-                height: 35.2px;
+                width: 40px;
+                height: 40px;
                 overflow: hidden;
                 transition: width 0.2s var(--transition-ease-out);
-                background-color: var(--c-neutral);
 
-                &.watched:hover {
-                    width: calc(35.2px * 2 + var(--spacing-xs));
+                &.watched {
+                    background-color: var(--c-neutral);
+
+                    &:hover {
+                        width: calc(40px * 2 + var(--spacing-xs));
+                    }
                 }
 
                 .inner-action {
                     aspect-ratio: 1;
                     height: 100%;
                 }
-                
-                i {
-                    font-size: var(--fs-2);
-                }
-
             }
         }
     }
@@ -423,11 +421,8 @@ img.logo {
     align-items: center;
     justify-content: center;
 }
-.controls i {
-    font-size: var(--fs-3);
-    padding: var(--spacing-xs);
+.controls svg {
     margin-inline: var(--spacing-xs-sm);
     border-radius: 100px;
-    cursor: pointer;
 }
 </style>

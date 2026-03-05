@@ -2,6 +2,7 @@
 import { ref, useAttrs } from 'vue'
 import { useSearchStore } from '@/stores/search';
 import router from '@/router';
+import { Search, X } from '@boxicons/vue';
 
 const attrs = useAttrs()
 const searchStore = useSearchStore();
@@ -24,7 +25,7 @@ function handleClearButton() {
 
 <template>
     <form role="search" @submit.prevent="onSearchSubmit" class="search-bar">
-        <i class="bx bx-search"></i>
+        <Search class="search" size="sm"/>
         <input
             v-model="searchStore.query"
             v-bind="attrs"
@@ -32,11 +33,12 @@ function handleClearButton() {
             type="search"
             @focus="onSearchFocus"
         >
-        <i
+        <X
             v-if="searchStore.query"
-            class="bx bx-x btn btn-text soft"
+            size="sm"
+            class="btn btn-text soft wipe"
             @click="handleClearButton"
-        ></i>
+        />
     </form>
 </template>
 
@@ -53,21 +55,21 @@ input {
     border-radius: 100px;
 }
 
-i {
+.search,
+.wipe {
     top: 50%;
     transform: translateY(-50%);
 }
-i.bx-search {
+.search {
     position: absolute;
     left: var(--spacing-md);
     pointer-events: none;
     color: var(--c-text-soft);
-    font-size: var(--fs-1);
 }
 
-i.bx-x {
+.wipe {
     position: absolute;
-    right: var(--spacing-xs);
+    right: var(--spacing-xs-sm);
     padding: var(--spacing-xs);
     border-radius: 100px;
 }

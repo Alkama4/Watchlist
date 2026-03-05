@@ -1,4 +1,5 @@
 <script setup>
+import { ChevronDown, Circle } from '@boxicons/vue';
 import { ref, watch } from 'vue';
 
 const props = defineProps({
@@ -50,9 +51,15 @@ watch(
             @click="toggle"
             :disabled="disabled"
         >
-            <i class="bx bxs-circle" :class="{'active': modified}"></i>
+            <Circle
+                pack="filled"
+                :class="{'active': modified}"
+                class="dot"
+                height="8px"
+                width="8px"
+            />
             <span>{{ label }}</span>
-            <i class="bx bx-chevron-down"></i>
+            <ChevronDown class="chevron"/>
         </button>
         <Transition name="options">
             <div v-if="isActive" class="options" @mousedown.prevent>
@@ -74,20 +81,18 @@ button {
         padding-left: var(--spacing-xs);
     }
 
-    i.bx-chevron-down {
-        font-size: var(--fs-2);
+    .chevron {
         transition: transform 0.1s ease-out;
     }
-    &.active i.bx-chevron-down {
+    &.active .chevron {
         transform: rotate(180deg);
     }
 
-    i.bxs-circle {
+    .dot {
         color: transparent;
-        font-size: var(--fs-neg-3);
         position: absolute;
-        right: 26px;
-        top: 6px;
+        right: 30px;
+        top: 8px;
 
         &.active {
             color: var(--c-positive);

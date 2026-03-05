@@ -1,4 +1,6 @@
 <script setup>
+import { X } from '@boxicons/vue';
+
 defineProps({
     header: {
         type: String,
@@ -39,7 +41,7 @@ defineProps({
                 class="btn-text btn-even-padding"
                 aria-label="Dismiss notice"
             >
-                <i class="bx bx-x"></i>
+                <X size="sm"/>
             </button>
         </h5>
 
@@ -100,8 +102,5 @@ p {
 }
 button {
     padding: 0;
-}
-button i {
-    font-size: var(--fs-2);
 }
 </style>

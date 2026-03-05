@@ -9,6 +9,7 @@ import NoticeBlock from '@/components/NoticeBlock.vue';
 import FormMessage from '@/components/FormMessage.vue';
 import LoadingButton from '@/components/LoadingButton.vue';
 import ThemePicker from '@/components/ThemePicker.vue';
+import { User } from '@boxicons/vue';
 
 // Stores
 const auth = useAuthStore();
@@ -111,7 +112,7 @@ onMounted(async () => {
     <div class="account-page layout-contained layout-spacing-top layout-spacing-bottom">
         <div class="profile-column">
             <div class="card profile-card">
-                <div class="avatar"><i class="bx bxs-user"></i></div>
+                <div class="avatar"><User pack="filled" size="lg"/></div>
                 <h2 class="name">{{ username }}</h2>
                 <p>User ID: {{ user_id }}</p>
 
@@ -232,9 +233,6 @@ onMounted(async () => {
     flex-direction: column;
     align-items: center;
     gap: var(--spacing-sm);
-}
-.profile-card .avatar {
-    font-size: 3rem;
 }
 .profile-card .name {
     margin: 0;

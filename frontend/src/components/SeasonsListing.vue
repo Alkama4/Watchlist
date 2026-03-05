@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { getTitleImageUrl } from '@/utils/imagePath';
 import { timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg'
+import { ChevronDown, ChevronUp } from '@boxicons/vue';
 
 defineProps({
     titleDetails: {
@@ -65,14 +66,14 @@ const computedHeight = computed(() => {
             >
                 <div class="show-more-text">
                     <template v-if="expanded">
-                        <i class="bx bx-chevron-up"></i>
+                        <ChevronUp/>
                         Show less
-                        <i class="bx bx-chevron-up"></i>
+                        <ChevronUp/>
                     </template>
                     <template v-else>
-                        <i class="bx bx-chevron-down"></i>
+                        <ChevronDown/>
                         Show more
-                        <i class="bx bx-chevron-down"></i>
+                        <ChevronDown/>
                     </template>
                 </div>
             </div>
@@ -122,10 +123,6 @@ const computedHeight = computed(() => {
         gap: var(--spacing-md);
         background-color: transparent !important;
         transition: 0.3s transform var(--transition-bounce);
-    
-        i {
-            font-size: var(--fs-3);
-        }
     }
 
     &:hover .show-more-text {

@@ -15,6 +15,7 @@ import ModalBase from '@/components/modal/ModalBase.vue';
 import SeasonsListing from '@/components/SeasonsListing.vue';
 import EpisodeMap from '@/components/EpisodeMap.vue';
 import ModalImages from '@/components/modal/ModalImages.vue';
+import { AlbumCovers, Check, Clock, Heart, Link, ListMinus, ListPlus, MapIcon, Minus, Star } from '@boxicons/vue';
 
 const props = defineProps({
     titleDetails: {
@@ -230,7 +231,7 @@ const lastAirDate = computed(() => {
                             class="btn btn-even-padding btn-text"
                             title="Visit Official Website"
                         >
-                            <i class="bx bx-link"></i>
+                            <Link/>
                         </a>
                         
                         <hr>
@@ -371,7 +372,7 @@ const lastAirDate = computed(() => {
                                     Mark watched
                                 </template>
                                 <template v-else-if="titleDetails?.user_details?.watch_count == 1">
-                                    <i class="bx bx-check"></i> Watched
+                                        <Check size="sm"/> Watched
                                 </template>
                                 <template v-else-if="titleDetails?.user_details?.watch_count > 1">
                                     Watched {{ titleDetails?.user_details?.watch_count }} times
@@ -381,40 +382,47 @@ const lastAirDate = computed(() => {
                                 v-if="titleDetails?.user_details?.watch_count"
                                 @click="removeFromTitleWatchCount"
                             >
-                                <i class="bx bx-minus"></i>
+                                    <Minus size="sm"/>
                             </button>
                         </div>
                         
-                        <i
-                            class="bx bxs-heart btn btn-text btn-even-padding"
+                            <Heart
+                                pack="filled"
+                                class="btn btn-text btn-even-padding"
                             :class="{'btn-favourite': titleDetails?.user_details?.is_favourite }"
                             @click="toggleFavourite"
-                        ></i>
-                        <i
-                            class="bx bxs-time btn btn-text btn-even-padding"
+                            />
+                            <Clock
+                                pack="filled"
+                                class="btn btn-text btn-even-padding"
                             :class="{'btn-accent': titleDetails?.user_details?.in_watchlist }"
                             @click="toggleWatchlist"
-                        ></i>
-                        <i
-                            class="bx bxs-collection btn btn-text btn-even-padding"
+                            />
+                            <AlbumCovers
+                                pack="filled"
+                                class="btn btn-text btn-even-padding"
                             @click="adjustCollections"
-                        ></i>
-                        <i
-                            v-if="titleDetails?.title_type == 'tv'"
-                            class="bx bxs-map-alt btn btn-text btn-even-padding"
-                            @click="$refs.EpisodeMapModal.open()"
-                        ></i>
+                            />
 
-                        <i
+                            <MapIcon
+                            v-if="titleDetails?.title_type == 'tv'"
+                                pack="filled"
+                                class="btn btn-text btn-even-padding"
+                            @click="$refs.EpisodeMapModal.open()"
+                            />
+
+                            <ListMinus
                             v-if="titleDetails?.user_details?.in_library"
-                            class="bx bx-list-minus btn btn-text btn-even-padding"
+                                pack="filled"
+                                class="btn btn-text btn-even-padding"
                             @click="removeFromLibrary"
-                        ></i>
-                        <i
+                            />
+                            <ListPlus
                             v-else
-                            class="bx bx-list-plus btn btn-text btn-even-padding"
+                                pack="filled"
+                                class="btn btn-text btn-even-padding"
                             @click="addToLibrary"
-                        ></i>
+                            />
                     </div>
                     
                     <SeasonsListing 
@@ -437,7 +445,7 @@ const lastAirDate = computed(() => {
         <!-- Modals -->
 
         <ModalBase header="Age ratings" ref="AgeRatingsModal" :minimumCard="true">
-            <p>The following list shows age ratings by country for the current title. The star icon indicates your <i class="bx bxs-star"></i> preferred language (or <i class="bx bx-star"></i> fallback). You can adjust your preffered languages in the <router-link to="/account">application settings</router-link>.</p>
+            <p>The following list shows age ratings by country for the current title. The star icon indicates your <Star pack="filled" size="xs"/> preferred language (or <Star size="xs"/> fallback). You can adjust your preffered languages in the <router-link to="/account">application settings</router-link>.</p>
             <div class="age-ratings-table">
                 <table>
                     <thead>
@@ -453,17 +461,17 @@ const lastAirDate = computed(() => {
                         <tr v-for="ageRating in titleDetails?.age_ratings">
                             <td>
                                 <span>
-                                    <i
+                                    <Star
                                         v-if="ageRating.iso_3166_1 === preferredLocale.iso_3166_1"
-                                        class="bx bxs-star"
+                                        pack="filled"
                                         title="Your preferred language"
-                                    ></i>
-                                    <i
+                                        size="sm"
+                                    />
+                                    <Star
                                         v-else-if="ageRating.iso_3166_1 === fallbackLocale.iso_3166_1"
-                                        class="bx bx-star"
                                         title="Default backup"
-                                    ></i>
-
+                                        size="sm"
+                                    />
                                 </span>
                             </td>
                             <td>{{ ageRating.iso_3166_1 }}</td>
@@ -629,10 +637,6 @@ img.poster {
         }
     }
 
-    i {
-        font-size: var(--fs-1);
-        padding-inline: 2px;
-    }
     .genres {
         gap: var(--spacing-xs);
     }
@@ -643,9 +647,6 @@ img.poster {
     display: flex;
     width: 220px;
 
-    i {
-        font-size: var(--fs-1);
-    }
     button:first-child {
         flex: 1;
     }

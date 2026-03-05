@@ -5,6 +5,7 @@ import { fastApi } from '@/utils/fastApi';
 import TitleCard from '@/components/TitleCard.vue';
 import FilterDropDown from '@/components/FilterDropDown.vue';
 import OptionPicker from '@/components/OptionPicker.vue';
+import { ArrowDownNarrowWide, ArrowDownUp, ArrowDownWideNarrow, RefreshCcwAltDot } from '@boxicons/vue';
 
 // Search parameters/filters
 const searchStore = useSearchStore();
@@ -295,7 +296,7 @@ onUnmounted(() => {
                         @click="resetFilters"
                         :disabled="searchStore.tmdbFallback"
                     >
-                        <i class="bx bx-reset"></i>
+                        <RefreshCcwAltDot size="sm"/>
                     </button>
                 </div>
             </div>
@@ -319,9 +320,9 @@ onUnmounted(() => {
                     :title="`Sort direction: ${searchParams.sort_direction}`"
                     :disabled="searchStore.tmdbFallback"
                 >
-                    <i v-if="searchParams.sort_direction == 'default'" class="bx bx-sort"></i>
-                    <i v-else-if="searchParams.sort_direction == 'asc'" class="bx bx-sort-up"></i>
-                    <i v-else class="bx bx-sort-down"></i>
+                    <ArrowDownUp v-if="searchParams.sort_direction == 'default'" size="sm"/>
+                    <ArrowDownNarrowWide v-else-if="searchParams.sort_direction == 'asc'" size="sm"/>
+                    <ArrowDownWideNarrow v-else size="sm"/>
                 </button>
             </div>
         </div>
@@ -415,10 +416,6 @@ onUnmounted(() => {
     > div {
         display: flex;
         /* gap: var(--spacing-sm); */
-    }
-
-    i {
-        font-size: var(--fs-1);
     }
 }
 

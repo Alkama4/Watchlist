@@ -1,4 +1,5 @@
 <script setup>
+import { X } from '@boxicons/vue'
 import { ref, onUnmounted, onMounted } from 'vue'
 
 const visible = ref(false)
@@ -65,7 +66,7 @@ onUnmounted(() => {
                 >
                     <div class="header-row">
                         <h2 class="no-top">{{ header }}</h2>
-                        <i class="bx bx-x btn btn-text btn-even-padding subtle" @click="close"></i>
+                        <X class="btn btn-text btn-even-padding subtle" @click="close"/>
                     </div>
                     <slot></slot>
                 </div>

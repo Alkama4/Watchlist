@@ -3,6 +3,7 @@ import { ref, computed, inject } from 'vue'
 import ModalBase from '@/components/modal/ModalBase.vue'
 import { fastApi } from '@/utils/fastApi';
 import { buildImageUrl } from '@/utils/imagePath';
+import { ArrowOutUpRightSquare, Star } from '@boxicons/vue';
 
 const props = defineProps({
     titleId: { type: Number, required: true },
@@ -141,7 +142,7 @@ function updateDomData(imageType, imagePath) {
                             :style="{'aspect-ratio': `${image?.width} / ${image?.height}`}"
                             loading="lazy"
                         >
-                        <i class="bx bx-link-external"></i>
+                        <ArrowOutUpRightSquare width="32" height="32"/>
                     </a>
 
                     <div class="details-section">
@@ -151,7 +152,7 @@ function updateDomData(imageType, imagePath) {
                                 :class="{'subtle': !image?.is_user_choice}"
                                 @click="setAsPreferred(image.type, image.is_user_choice ? null: image.file_path)"
                             >
-                                <i class="bx" :class="image?.is_user_choice ? 'bxs-star' : 'bx-star'"></i>
+                                <Star :pack="image?.is_user_choice ? 'filled' : ''"/>
                             </button>
                         </div>
     
@@ -219,19 +220,18 @@ hr {
             background: var(--c-bg-level-1);
             transition: filter 0.1s ease-out;
         }
-        i {
+        svg {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: var(--fs-3);
             opacity: 0;
             transition: opacity 0.1s ease-out;
         }
 
         &:hover {
             img { filter: brightness(0.5); }
-            i { opacity: 1; }
+            svg { opacity: 1; }
         }
     }
 
@@ -245,10 +245,6 @@ hr {
             display: flex;
             align-items: center;
             margin-right: var(--spacing-xs-sm);
-
-            i {
-                font-size: var(--fs-2);
-            }
         }
 
         .details {

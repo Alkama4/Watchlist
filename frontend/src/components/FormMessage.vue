@@ -1,4 +1,5 @@
 <script setup>
+import { X } from '@boxicons/vue'
 import { ref } from 'vue'
 
 defineProps({
@@ -36,7 +37,7 @@ defineExpose({ show })
             class="btn-text btn-even-padding"
             aria-label="Dismiss message"
         >
-            <i class="bx bx-x"></i>
+            <X size="sm"/>
         </button>
     </div>
 </template>
@@ -52,10 +53,6 @@ defineExpose({ show })
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-i {
-    font-size: var(--fs-2);
 }
 
 span {

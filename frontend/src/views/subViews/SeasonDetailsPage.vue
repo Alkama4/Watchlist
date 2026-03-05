@@ -5,6 +5,7 @@ import { getTitleImageUrl } from '@/utils/imagePath';
 import { numberFormatters, timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg';
 import ModalImages from '@/components/modal/ModalImages.vue';
+import { ChevronLeft, Image, Images } from '@boxicons/vue';
 
 const props = defineProps({
     titleDetails: {
@@ -90,7 +91,7 @@ onUnmounted(() => {
     <div class="season-details-page">
         <div class="back-button-row layout-contained layout-spacing-top">
             <button class="btn-text btn-even-padding" @click="handleBack">
-                <i class="bx bx-chevron-left"></i>
+                <ChevronLeft/>
                 <span>Back to Overview</span>
             </button>
         </div>
@@ -112,10 +113,11 @@ onUnmounted(() => {
                 </div>
                 <p>{{ activeSeason?.overview }}</p>
                 <div class="actions">
-                    <i
-                        class="bx bxs-image btn btn-text btn-even-padding"
+                    <Images
+                        pack="filled"
+                        class="btn btn-text btn-even-padding"
                         @click="ImagesModal.open()"
-                    ></i>
+                    />
                 </div>
             </div>
             <div class="episodes-wrapper">

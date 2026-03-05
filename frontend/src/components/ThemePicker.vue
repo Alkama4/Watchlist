@@ -1,5 +1,6 @@
 <script setup>
 import { useSettingsStore } from '@/stores/settings';
+import { CheckCircle, Circle } from '@boxicons/vue';
 import { ref } from 'vue';
 
 const settings = useSettingsStore();
@@ -39,14 +40,12 @@ const themes = ref([
                 <button>Click me</button>
             </form>
 
-            <i
+            <component
+                :is="theme.id === settings.preferences.theme ? CheckCircle : Circle"
                 @click="settings.updateSetting('theme', theme.id)"
                 class="choose-button bx btn btn-text btn-even-padding"
-                :class="[
-                    theme.id === settings.preferences.theme ? 'bx-check-circle' : 'bx-circle',
-                    { 'theme-picker-fix': theme.id !== '16-bit' }
-                ]"
-            ></i>
+                :class="{ 'theme-picker-fix': theme.id !== '16-bit' }"
+            />
         </div>
     </div>
 </template>

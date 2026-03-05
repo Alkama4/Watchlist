@@ -1,6 +1,7 @@
 <script setup>
 import { useRoute } from 'vue-router';
 import SearchBar from './components/SearchBar.vue';
+import { AlbumCovers, Compass, User } from '@boxicons/vue';
 
 const route = useRoute();
 </script>
@@ -21,7 +22,7 @@ const route = useRoute();
                             class="btn btn-text no-deco" 
                             to="/"
                         >
-                            <i class="bx bxs-compass"></i>
+                            <Compass pack="filled" size="sm"/>
                             Discover
                         </router-link>
                     </li>
@@ -30,16 +31,16 @@ const route = useRoute();
                             class="btn btn-text no-deco" 
                             to="/collections"
                         >
-                            <i class="bx bxs-collection"></i>
+                            <AlbumCovers pack="filled" size="sm"/>
                             Collections
                         </router-link>
                     </li>
                 </ul>
                 <router-link 
-                    class="btn no-deco btn-user"
+                    class="btn btn-user btn-even-padding no-deco"
                     to="/account"
                 >
-                    <i class="bx bxs-user"></i>
+                    <User pack="filled" size="sm"/>
                 </router-link>
             </div>
         </nav>
@@ -94,11 +95,11 @@ header .btn {
     align-items: center;
 }
 
-.btn-user {
+.btn.btn-user {
     margin-left: var(--spacing-sm);
     border-radius: 100px;
-    padding: 10px !important;
-    font-size: var(--fs-1) !important;
+    aspect-ratio: 1;
+    padding: var(--spacing-sm);
 }
 
 main.header-visible {

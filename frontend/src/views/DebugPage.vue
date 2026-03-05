@@ -73,56 +73,48 @@ function toggleCustomTheme() {
             <button type="submit">Submit</button>
         </form>
 
-        <h2>Text buttons and links</h2>
-        <div class="flex-col">
-            <button class="btn-text btn-even-padding">sldkfjsdlkf</button>
-            <i class="bx bxs-time btn-text btn-even-padding"></i>
-            
-            <router-link class="btn-text btn-even-padding"><i class="bx bxs-time"></i></router-link>
-            <router-link class="no-deco"><i class="bx bxs-time"></i> Time</router-link>
-
-            <span>not a link, <router-link class="no-deco">hidden link</router-link>, <router-link class="no-deco">hidden link nro 2</router-link></span>
-            <span>within text a <router-link>obivous link</router-link> there is</span>
-            <!-- 
-            Seperate:
-                - buttons with bg
-                - actions with no bg
-                - actions with no bg and underline.
-
-            Action = button/a with the fitting .action class
-            -->
-        </div>
-
-        <br>
+        <h1>Buttons and levels</h1>
+        <h2>Base level stuff</h2>
+        <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras ultricies efficitur nisl, id egestas risus. Etiam quis leo finibus, sollicitudin ante non, vulputate magna. Curabitur non ante nisi. Aenean pellentesque at quam eget aliquet. Sed ultrices dictum odio, in tincidunt ipsum commodo in. Duis ultrices massa ac sapien varius ultricies. <a href="">https://google.com</a> Cras tempus, leo pharetra iaculis tempus, ipsum risus accumsan quam, quis placerat est augue eu velit. Etiam varius turpis non eros porttitor tempor vel a quam. In consequat lectus in diam dapibus, vel viverra mi sodales. Ut nec tincidunt velit. Vestibulum ac posuere nisl.
+        </p>
         <button>Button on level 0</button>
-        <br>
-        <br>
-
+        <br><br>
         <div class="level-1">
-            <h2>Listing</h2>
-            <dl>
-                <dt>Progress</dt>
-                <dd>18 / 19 episodes (94.7%)</dd>
-    
-                <dt>Season count</dt>
-                <dd>4 seasons</dd>
-    
-                <dt>Episode count</dt>
-                <dd>19 episodes</dd>
-    
-                <dt>First air date</dt>
-                <dd>21. elokuuta 2022</dd>
-    
-                <dt>Last air date</dt>
-                <dd>1. tammikuuta 1970</dd>
-    
-                <dt>Original language</dt>
-                <dd>en</dd>
-            </dl>
+            <h2 style="margin-top: 0;">Listing</h2>
+
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras ultricies efficitur nisl, id egestas risus. Etiam quis leo finibus, sollicitudin ante non, vulputate magna. Curabitur non ante nisi. Aenean pellentesque at quam eget aliquet. Sed ultrices dictum odio, in tincidunt ipsum commodo in. Duis ultrices massa ac sapien varius ultricies.</p>
+
+            <div style="display: grid; grid-template-columns: auto 1fr; gap: 64px;">
+                <div>
+                    <dl>
+                        <dt>Progress</dt>
+                        <dd>18 / 19 episodes (94.7%)</dd>
+            
+                        <dt>Season count</dt>
+                        <dd>4 seasons</dd>
+            
+                        <dt>Episode count</dt>
+                        <dd>19 episodes</dd>
+            
+                        <dt>First air date</dt>
+                        <dd>21. elokuuta 2022</dd>
+            
+                        <dt>Last air date</dt>
+                        <dd>1. tammikuuta 1970</dd>
+            
+                        <dt>Original language</dt>
+                        <dd>en</dd>
+                    </dl>
+                </div>
+                <p>
+                    Cras tempus, leo pharetra iaculis tempus, ipsum risus accumsan quam, quis placerat <a href="">https://google.com</a> est augue eu velit. Etiam varius turpis non eros porttitor tempor vel a quam. In consequat lectus in diam dapibus, vel viverra mi sodales. Ut nec tincidunt velit. Vestibulum ac posuere nisl.
+                </p>
+            </div>
             <button>Button on level 1</button>
             <br><br>
             <div class="level-2">
-                <h2>Normal text elements</h2>
+                <h2 style="margin-top: 0;">Normal text elements</h2>
                 <p>
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras ultricies efficitur nisl, id egestas risus. Etiam quis leo finibus, sollicitudin ante non, vulputate magna. Curabitur non ante nisi. Aenean pellentesque at quam eget aliquet. Sed ultrices dictum odio, in tincidunt ipsum commodo in. Duis ultrices massa ac sapien varius ultricies. <a href="">https://google.com</a> Cras tempus, leo pharetra iaculis tempus, ipsum risus accumsan quam, quis placerat est augue eu velit. Etiam varius turpis non eros porttitor tempor vel a quam. In consequat lectus in diam dapibus, vel viverra mi sodales. Ut nec tincidunt velit. Vestibulum ac posuere nisl.
                 </p>

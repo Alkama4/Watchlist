@@ -155,7 +155,8 @@
 
     /* Patch work for special cases */
     .search-bar {
-        i {
+        .search,
+        .wipe {
             color: var(--c-text-inv-soft) !important;
         }
         .btn-text:not(:disabled):hover {

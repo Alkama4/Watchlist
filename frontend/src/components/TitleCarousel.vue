@@ -1,6 +1,7 @@
 <script setup>
 import Flicking from "@egjs/vue3-flicking";
 import TitleCard from "@/components/TitleCard.vue";
+import { ArrowRightStroke } from "@boxicons/vue";
 
 defineProps({
     carouselData: {
@@ -35,7 +36,7 @@ defineProps({
                 :to="'/search'"
             >
                 <div>Search for more</div>
-                <i class="bx bx-right-arrow-alt"></i>
+                <ArrowRightStroke size="md"/>
             </router-link>
         </Flicking>
     </div>
@@ -68,13 +69,12 @@ defineProps({
     align-items: center;
     gap: var(--spacing-sm);
 }
-.fake-card i {
-    font-size: var(--fs-4);
+.fake-card svg {
     transition: 0.3s transform var(--transition-bounce),
                 0.1s scale var(--transition-ease-out),
                 0.1s color  var(--transition-ease-out);
 }
-.fake-card:hover i {
+.fake-card:hover svg {
     transform: translateX(8px);
     scale: 1.05;
 }
