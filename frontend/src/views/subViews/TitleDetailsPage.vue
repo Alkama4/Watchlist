@@ -15,7 +15,7 @@ import SeasonsListing from '@/components/SeasonsListing.vue';
 import EpisodeMap from '@/components/EpisodeMap.vue';
 import ModalImages from '@/components/modal/ModalImages.vue';
 import KebabMenu from '@/components/KebabMenu.vue';
-import { AlbumCovers, Check, Clock, Heart, Images, Link, ListMinus, ListPlus, MapIcon, Minus, RefreshCw, Star, Translate } from '@boxicons/vue';
+import { AlbumCovers, AlertCircle, AlertTriangle, Check, CheckCircle, Clock, Heart, Images, Link, ListMinus, ListPlus, MapIcon, Minus, RefreshCw, Star, Translate } from '@boxicons/vue';
 import ModalLocale from '@/components/modal/ModalLocale.vue';
 
 const props = defineProps({
@@ -38,6 +38,7 @@ const props = defineProps({
 })
 
 const waitingFor = ref({});
+const updateResponse = ref({});
 const AgeRatingsModal = ref(null);
 const ImagesModal = ref(null);
 const LocaleModal = ref(null);
@@ -47,6 +48,19 @@ async function updateTitleDetails() {
     try {
         await fastApi.titles.updateById(props.titleDetails.title_id);
         await props.fetchTitleDetails();
+        updateResponse.value = {
+            icon: CheckCircle,
+            type: 'positive',
+            header: 'Update successful!',
+            message: 'The title is now up to date.'
+        }
+    } catch (e) {
+        updateResponse.value = {
+            icon: AlertCircle,
+            type: 'negative',
+            header: e?.message,
+            message: e?.response?.data?.detail || e
+        }
     } finally {
         waitingFor.value.titleUpdate = false;
     }
@@ -178,13 +192,6 @@ const lastAirDate = computed(() => {
                 >
             </div>
     
-            <NoticeBlock
-                v-if="titleDetails?.user_details?.in_library === false"
-                type="warning"
-                header="Title not in Library"
-                message="Please note that the title is currently not in your library. It will not appear in search, listings or recommendations. You can add the title to your library by using either the button below, or by searching for it from TMDB."
-            />
-    
             <div class="main-info">
                 <div class="left-side">
                     <img 
@@ -247,6 +254,33 @@ const lastAirDate = computed(() => {
                 </div>
                 
                 <div class="right-side">
+                    <NoticeBlock
+                        v-if="titleDetails?.user_details?.in_library === false"
+                        type="warning"
+                        :iconComponent="AlertTriangle"
+                        header="Title not in Library"
+                        message="Please note that the title is currently not in your library. It <strong>will not appear</strong> in search, listings or recommendations."
+                    >
+                        <button @click="addToLibrary">Add to library</button>
+                    </NoticeBlock>
+
+                    <NoticeBlock
+                        v-if="waitingFor?.titleUpdate == false"
+                        :iconComponent="updateResponse.icon"
+                        :type="updateResponse.type"
+                        :header="updateResponse.header"
+                        :message="updateResponse.message"
+                        :dismissible="true"
+                        @dismiss="waitingFor.titleUpdate = null"
+                    />
+                    <NoticeBlock
+                        v-if="waitingFor?.titleUpdate == true"
+                        type="info"
+                        header="Updating title..."
+                        message="This shouldn't take long."
+                        :loadingEffect="true"
+                    />
+
                     <div class="name-part">
                         <h1 class="name">
                             {{ titleDetails?.name }}
