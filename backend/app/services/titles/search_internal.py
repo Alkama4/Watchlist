@@ -30,7 +30,7 @@ from app.schemas import (
 )
 
 
-def _base_title_query(user_id: int, title_schema, fallback_iso_639_1: str):
+def _base_title_query(user_id: int, title_schema, fallback_locale: str):
     stmt = (
         select(Title, UserTitleDetails)
         .outerjoin(
@@ -48,7 +48,7 @@ def _base_title_query(user_id: int, title_schema, fallback_iso_639_1: str):
                 TitleTranslation.iso_639_1 == func.split_part(
                     func.coalesce(
                         func.nullif(UserTitleDetails.chosen_locale, ''),
-                        fallback_iso_639_1
+                        fallback_locale
                     ), 
                     '-', 
                     1
@@ -346,11 +346,15 @@ async def run_title_search(
     user_id: int,
     q: TitleQueryIn,
     title_schema: Type[CardTitleOut | HeroTitleOut],
-    user_title_details_schema: Type[CardUserTitleDetailsOut | HeroUserTitleDetailsOut]
+    user_title_details_schema: Type[CardUserTitleDetailsOut | HeroUserTitleDetailsOut],
+    fallback_locale: str = None
 ) -> TitleListOut:
-    fallback_iso_639_1 = await get_users_global_preferred_locale(db, user_id)
+    
+    # Allow providing fallback when running multiple searches in a row to avoid unnescary work
+    if not fallback_locale:
+        fallback_locale = await get_users_global_preferred_locale(db, user_id)
 
-    base_stmt = _base_title_query(user_id, title_schema, fallback_iso_639_1)
+    base_stmt = _base_title_query(user_id, title_schema, fallback_locale)
     base_stmt = _apply_filters(base_stmt, q)
 
     count_stmt = select(func.count()).select_from(base_stmt.subquery())

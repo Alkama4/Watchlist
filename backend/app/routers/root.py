@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.dependencies import get_db
 from app.routers.auth import get_current_user
 from app.services.titles.search_internal import run_title_search
+from app.services.languages import get_users_global_preferred_locale
 from app.services.genres import update_genres
 from app.schemas import (
     TitleQueryIn,
@@ -28,6 +29,9 @@ async def get_home_overview(
     Return a curated overview of titles for the authenticated user.
     """
 
+    # Fetch the fallback iso here so we don't have to do it for each query
+    fallback_locale = await get_users_global_preferred_locale(db, user.user_id)
+
     # ------ Hero cards ------
     hero_cards_options = {
         "header": "Latest titles",
@@ -42,7 +46,8 @@ async def get_home_overview(
         user.user_id,
         TitleQueryIn(**hero_cards_options["filters"]),
         HeroTitleOut,
-        HeroUserTitleDetailsOut
+        HeroUserTitleDetailsOut,
+        fallback_locale
     )
     hero_cards.header = hero_cards_options["header"]
 
@@ -156,7 +161,8 @@ async def get_home_overview(
             user.user_id,
             TitleQueryIn(**normal_card_list["filters"]),
             CardTitleOut,
-            CardUserTitleDetailsOut
+            CardUserTitleDetailsOut,
+            fallback_locale
         )
         title_list.header = normal_card_list["header"]
 
