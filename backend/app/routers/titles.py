@@ -11,9 +11,8 @@ from app.services.titles.store import coordinate_title_fetching
 from app.services.titles.user_flags import set_user_title_value, set_title_watch_count
 from app.services.titles.preset_searches import fetch_similar_titles
 from app.services.images import fetch_image_details, set_user_image_choice
-from app.services.languages import check_translation_availability
+from app.services.languages import check_translation_availability, get_users_global_preferred_locale
 from app.schemas import (
-    LocaleString,
     ImageListsOut,
     ImagePreferenceIn,
     TitleIn,
@@ -263,10 +262,13 @@ async def set_title_language_for_user(
         in_library=True
     )
 
+    valid_locale = data.locale or await get_users_global_preferred_locale(db, user.user_id)
+    iso_639_1_to_check = valid_locale.split("-")[0]
+
     translation_exists = await check_translation_availability(
         db=db,
         title_id=title_id,
-        iso_639_1=data.locale.split("-")[0]
+        iso_639_1=iso_639_1_to_check
     )
 
     if (not translation_exists):
@@ -285,7 +287,7 @@ async def set_title_language_for_user(
 
     return {
         "title_id": title_id,
-        "locale": data.locale,
+        "display_locale": valid_locale,
         "in_library": True
     }
 

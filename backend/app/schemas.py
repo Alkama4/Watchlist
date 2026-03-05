@@ -9,8 +9,12 @@ from app.config import DEFAULT_MAX_QUERY_LIMIT, ABSOLUTE_MAX_QUERY_LIMIT
 ####### Custom Types #######
 
 def validate_full_locale(v: str) -> str:
+    # 0. Allow empty string to pass through
+    if v == "":
+        return v
+
     try:
-        # 1. Parse the string (Babel is lenient with '-', '_', and casing)
+        # 1. Parse the string
         locale_obj = Locale.parse(v, sep="-")
         
         # 2. Check if the territory (country code) exists
@@ -19,12 +23,10 @@ def validate_full_locale(v: str) -> str:
                 "Country code is required. Please use the format 'lang-COUNTRY' (e.g., 'en-US' or 'fi-FI')."
             )
             
-        # 3. Force the standard BCP-47 format: 'language-TERRITORY'
-        # Babel handles the casing: 'fi' -> 'fi', 'FI' -> 'FI'
+        # 3. Force the standard BCP-47 format
         return f"{locale_obj.language}-{locale_obj.territory}"
         
     except (UnknownLocaleError, ValueError, IndexError):
-        # Provide a clear error message for the API response
         raise ValueError(f"'{v}' is not a valid locale. Expected format: 'en-US'")
     
 # Use this in your path parameters or schemas
