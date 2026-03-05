@@ -1,14 +1,14 @@
 <script setup>
-import { X } from '@boxicons/vue';
+import { InfoCircle, X } from '@boxicons/vue';
 
 defineProps({
     header: {
         type: String,
         default: 'Notice'
     },
-    icon: {
-        type: String,
-        default: 'bxs-info-circle'
+    iconComponent: {
+        type: Object,
+        default: InfoCircle
     },
     type: {
         type: String,
@@ -31,7 +31,11 @@ defineProps({
     <div class="notice" :class="type">
         <h5>
             <div>
-                <i class="bx" :class="icon"></i>
+                <component
+                    :is="iconComponent"
+                    pack="filled"
+                    size="sm"
+                />
                 <span>{{ header }}</span>
             </div>
 
@@ -94,7 +98,7 @@ h5 {
 h5 div {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
+    gap: var(--spacing-xs-sm);
 }
 p {
     font-size: var(--fs-neg-1);

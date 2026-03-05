@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/auth'
 import FormMessage from '@/components/FormMessage.vue'
 import { useRoute, useRouter } from 'vue-router'
 import NoticeBlock from '@/components/NoticeBlock.vue'
+import { AlertTriangle, CheckCircle } from '@boxicons/vue'
 
 const username = ref('')
 const password = ref('')
@@ -25,21 +26,20 @@ function getRedirectNotice() {
                 type: 'warning',
                 header: 'Session expired',
                 message: 'Your session expired. Please log in again.',
-                icon: 'bxs-error'
+                iconComponent: AlertTriangle
             }
         case 'account_created':
             return {
                 type: 'positive',
                 header: 'Account created',
                 message: 'Your account was created successfully. You can now log in.',
-                icon: 'bxs-check-circle'
+                iconComponent: CheckCircle
             }
         case 'logged_out':
             return {
                 type: 'info',
                 header: 'Logged out',
-                message: 'You have been logged out.',
-                icon: 'bxs-info-circle'
+                message: 'You have been logged out.'
             }
         default:
             return null
@@ -83,7 +83,7 @@ async function logIn() {
             :type="redirectNotice.type"
             :header="redirectNotice.header"
             :message="redirectNotice.message"
-            :icon="redirectNotice.icon"
+            :iconComponent="redirectNotice.iconComponent"
             dismissible
             @dismiss="handleNoticeDismiss"
         />
