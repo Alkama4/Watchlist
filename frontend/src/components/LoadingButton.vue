@@ -6,7 +6,7 @@ const attrs = useAttrs()
 const { loading } = defineProps({
     loading: {
         type: Boolean,
-        required: true
+        default: false
     }
 })
 </script>
