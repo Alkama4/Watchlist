@@ -1,6 +1,5 @@
 <script setup>
 import TitleCarousel from '@/components/TitleCarousel.vue';
-import LoadingButton from '@/components/LoadingButton.vue';
 import { fastApi } from '@/utils/fastApi';
 import { isoFormatters, numberFormatters, timeFormatters } from '@/utils/formatters';
 import { getTitleImageUrl } from '@/utils/imagePath';
@@ -15,7 +14,9 @@ import ModalBase from '@/components/modal/ModalBase.vue';
 import SeasonsListing from '@/components/SeasonsListing.vue';
 import EpisodeMap from '@/components/EpisodeMap.vue';
 import ModalImages from '@/components/modal/ModalImages.vue';
-import { AlbumCovers, Check, Clock, Heart, Link, ListMinus, ListPlus, MapIcon, Minus, Star } from '@boxicons/vue';
+import KebabMenu from '@/components/KebabMenu.vue';
+import { AlbumCovers, Check, Clock, Heart, Images, Link, ListMinus, ListPlus, MapIcon, Minus, RefreshCw, Star, Translate } from '@boxicons/vue';
+import ModalLocale from '@/components/modal/ModalLocale.vue';
 
 const props = defineProps({
     titleDetails: {
@@ -39,6 +40,7 @@ const props = defineProps({
 const waitingFor = ref({});
 const AgeRatingsModal = ref(null);
 const ImagesModal = ref(null);
+const LocaleModal = ref(null);
 
 async function updateTitleDetails() {
     waitingFor.value.titleUpdate = true;
@@ -47,20 +49,6 @@ async function updateTitleDetails() {
         await props.fetchTitleDetails();
     } finally {
         waitingFor.value.titleUpdate = false;
-    }
-}
-
-async function updateTitleLocale() {
-    waitingFor.value.titleLocale = true;
-    try {
-        const response = await fastApi.titles.setLocale(
-            props.titleDetails.title_id,
-            props.titleDetails.display_locale
-        );
-        props.titleDetails.user_details.in_library = response.in_library;
-        await props.fetchTitleDetails();
-    } finally {
-        waitingFor.value.titleLocale = false;
     }
 }
 
@@ -256,30 +244,6 @@ const lastAirDate = computed(() => {
                             </a>
                         </div>
                     </div>
-
-                    <h4>Metadata tools</h4>
-                    <div class="data-actions">
-                        <LoadingButton
-                            @click="updateTitleDetails"
-                            :loading="waitingFor?.titleUpdate ?? false"
-                        >
-                            Update title details
-                        </LoadingButton>
-
-                        <button @click="ImagesModal.open()">
-                            Change images
-                        </button>
-
-                        <form @submit.prevent="updateTitleLocale">
-                            <input type="text" v-model="titleDetails.display_locale" placeholder="en-US">
-                            <LoadingButton
-                                type="submit"
-                                :loading="waitingFor?.titleLocale ?? false"
-                            >
-                                Set Locale
-                            </LoadingButton>
-                        </form>
-                    </div>
                 </div>
                 
                 <div class="right-side">
@@ -363,66 +327,76 @@ const lastAirDate = computed(() => {
                     <p>{{ titleDetails?.overview }}</p>
 
                     <div class="actions">
-                        <div class="watch-count-buttons">
-                            <button
-                                @click="addToTitleWatchCount"
-                                :class="titleDetails?.user_details?.watch_count ? 'btn-positive' : 'btn-primary'"
-                            >
-                                <template v-if="!titleDetails?.user_details?.watch_count">
-                                    Mark watched
-                                </template>
-                                <template v-else-if="titleDetails?.user_details?.watch_count == 1">
+                        <div class="primary-actions">
+                            <div class="watch-count-buttons">
+                                <button
+                                    @click="addToTitleWatchCount"
+                                    :class="titleDetails?.user_details?.watch_count ? 'btn-positive' : 'btn-primary'"
+                                >
+                                    <template v-if="!titleDetails?.user_details?.watch_count">
+                                        Mark watched
+                                    </template>
+                                    <template v-else-if="titleDetails?.user_details?.watch_count == 1">
                                         <Check size="sm"/> Watched
-                                </template>
-                                <template v-else-if="titleDetails?.user_details?.watch_count > 1">
-                                    Watched {{ titleDetails?.user_details?.watch_count }} times
-                                </template>
-                            </button>
-                            <button 
-                                v-if="titleDetails?.user_details?.watch_count"
-                                @click="removeFromTitleWatchCount"
-                            >
+                                    </template>
+                                    <template v-else-if="titleDetails?.user_details?.watch_count > 1">
+                                        Watched {{ titleDetails?.user_details?.watch_count }} times
+                                    </template>
+                                </button>
+                                <button 
+                                    v-if="titleDetails?.user_details?.watch_count"
+                                    @click="removeFromTitleWatchCount"
+                                >
                                     <Minus size="sm"/>
-                            </button>
-                        </div>
-                        
+                                </button>
+                            </div>
+                            
                             <Heart
                                 pack="filled"
                                 class="btn btn-text btn-even-padding"
-                            :class="{'btn-favourite': titleDetails?.user_details?.is_favourite }"
-                            @click="toggleFavourite"
+                                :class="{'btn-favourite': titleDetails?.user_details?.is_favourite }"
+                                @click="toggleFavourite"
                             />
                             <Clock
                                 pack="filled"
                                 class="btn btn-text btn-even-padding"
-                            :class="{'btn-accent': titleDetails?.user_details?.in_watchlist }"
-                            @click="toggleWatchlist"
+                                :class="{'btn-accent': titleDetails?.user_details?.in_watchlist }"
+                                @click="toggleWatchlist"
                             />
                             <AlbumCovers
                                 pack="filled"
                                 class="btn btn-text btn-even-padding"
-                            @click="adjustCollections"
+                                @click="adjustCollections"
                             />
 
                             <MapIcon
-                            v-if="titleDetails?.title_type == 'tv'"
+                                v-if="titleDetails?.title_type == 'tv'"
                                 pack="filled"
                                 class="btn btn-text btn-even-padding"
-                            @click="$refs.EpisodeMapModal.open()"
+                                @click="$refs.EpisodeMapModal.open()"
                             />
-
+    
                             <ListMinus
-                            v-if="titleDetails?.user_details?.in_library"
+                                v-if="titleDetails?.user_details?.in_library"
                                 pack="filled"
                                 class="btn btn-text btn-even-padding"
-                            @click="removeFromLibrary"
+                                @click="removeFromLibrary"
                             />
                             <ListPlus
-                            v-else
+                                v-else
                                 pack="filled"
                                 class="btn btn-text btn-even-padding"
-                            @click="addToLibrary"
+                                @click="addToLibrary"
                             />
+                        </div>
+
+                        <KebabMenu
+                            :menuItems="[
+                                { iconComponent: RefreshCw, label: 'Update Details', action: updateTitleDetails },
+                                { iconComponent: Images, label: 'Manage Images', action: ImagesModal?.open },
+                                { iconComponent: Translate, label: 'Change Language', action: LocaleModal?.open },
+                            ]"
+                        />
                     </div>
                     
                     <SeasonsListing 
@@ -433,7 +407,6 @@ const lastAirDate = computed(() => {
                 </div>
             </div>
         </div>
-
 
         <TitleCarousel 
             v-if="similarTitles?.titles?.length > 0"
@@ -504,6 +477,13 @@ const lastAirDate = computed(() => {
             ref="ImagesModal"
             :titleId="titleDetails?.title_id"
             :userDetails="titleDetails?.user_details"
+        />
+
+        <ModalLocale
+            ref="LocaleModal"
+            :titleDetails="titleDetails"
+            :fetchTitleDetails="fetchTitleDetails"
+            :waitingFor="waitingFor"
         />
     </div>
 </template>
@@ -665,6 +645,12 @@ img.poster {
 .actions {
     display: flex;
     gap: var(--spacing-sm);
+    justify-content: space-between;
+
+    .primary-actions {
+        display: flex;
+        gap: var(--spacing-sm);
+    }
 }
 
 /* .links h4 {

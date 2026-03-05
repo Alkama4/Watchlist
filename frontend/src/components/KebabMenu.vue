@@ -84,7 +84,7 @@ watch(
 
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
+    /* gap: var(--spacing-xs); */
 
     button {
         padding-right: var(--spacing-lg);
