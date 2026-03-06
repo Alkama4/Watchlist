@@ -1,91 +1,115 @@
 <script setup>
 import { ref, computed, inject } from 'vue'
 import ModalBase from '@/components/modal/ModalBase.vue'
-import { fastApi } from '@/utils/fastApi';
-import { buildImageUrl } from '@/utils/imagePath';
-import { ArrowOutUpRightSquare, Star } from '@boxicons/vue';
+import { fastApi } from '@/utils/fastApi'
+import { buildImageUrl } from '@/utils/imagePath'
+import FilterDropDown from '../FilterDropDown.vue'
+import OptionPicker from '../OptionPicker.vue'
+import { ArrowOutUpRightSquare, RefreshCcwAltDot, Star } from '@boxicons/vue';
+
 
 const props = defineProps({
     titleId: { type: Number, required: true },
     seasonId: { type: Number, required: true },
-    userDetails: { type: Object, required: true }
+    userDetails: { type: Object, required: true },
+    displayLocale: { type: String, required: true }
 })
 
 defineExpose({ open })
 
+
 const updateChosenImage = inject('updateChosenImage')
-
-const imageData = ref({ posters: {}, backdrops: {}, logos: {} });
-const activeType = ref('posters');
-const modalRef = ref(null);
-
-const localeFilters = ref({
-    posters: 'all',
-    backdrops: 'all',
-    logos: 'all'
-});
-
 const imageCategories = [
     { key: 'posters', label: 'Posters' },
     { key: 'backdrops', label: 'Backdrops' },
     { key: 'logos', label: 'Logos' }
-];
+]
+const modalRef = ref(null)
+const imageData = ref({ posters: {}, backdrops: {}, logos: {} })
+const activeType = ref('posters')
+const localeFilters = ref({})
+
 
 const availableCategories = computed(() => {
-    return imageCategories.filter(cat => imageData.value[cat.key]?.total_count > 0);
-});
-
-const currentCategory = computed(() => {
-    return imageData.value[activeType.value] || [];
-});
-
-const filteredImages = computed(() => {
-    const images = currentCategory.value?.images || []; 
-    const currentFilter = localeFilters.value[activeType.value];
-    return images.filter((img) => currentFilter === 'all' || img.locale == currentFilter);
+    return imageCategories.filter(cat => imageData.value[cat.key]?.total_count > 0)
 })
 
+const currentCategory = computed(() => {
+    return imageData.value[activeType.value] || { images: [], available_locale: [] }
+})
+
+const localeFilterDefaults = computed(() => {
+    return {
+        posters: imageData.value?.posters?.images?.find(x => x.is_default)?.locale,
+        backdrops: imageData.value?.backdrops?.images?.find(x => x.is_default)?.locale,
+        logos: imageData.value?.logos?.images?.find(x => x.is_default)?.locale
+    }
+})
+
+const localeFilterOptions = computed(() => {
+    const available = currentCategory.value.available_locale || []
+    return available.map(locale => ({
+        label: locale === null ? 'No locale' : locale,
+        value: locale,
+        type: 'primary'
+    }))
+})
+
+const filteredImages = computed(() => {
+    const images = currentCategory.value?.images || []
+    const currentFilter = localeFilters.value[activeType.value]
+    return images.filter(img => currentFilter === 'all' || img.locale === currentFilter)
+})
+
+
 async function open() {
-    if (props.titleId) {
-        imageData.value = await fastApi.titles.imagesById(props.titleId);
-    } else if (props.seasonId) {
-        imageData.value = await fastApi.seasons.imagesById(props.seasonId);
-    } else {
-        throw '[ModalImages] Missing titleId or seasonId.'
-    }
+    try {
+        if (props.titleId) {
+            imageData.value = await fastApi.titles.imagesById(props.titleId)
+        } else if (props.seasonId) {
+            imageData.value = await fastApi.seasons.imagesById(props.seasonId)
+        } else {
+            throw new Error('[ModalImages] Missing titleId or seasonId.')
+        }
 
-    if (availableCategories.value.length > 0) {
-        activeType.value = availableCategories.value[0].key;
-    }
+        // Sync filters with defaults and set initial tab
+        localeFilters.value = { ...localeFilterDefaults.value }
+        
+        if (availableCategories.value.length > 0) {
+            activeType.value = availableCategories.value[0].key
+        }
 
-    modalRef.value.open();
+        modalRef.value.open()
+    } catch (error) {
+        console.error(error)
+    }
 }
 
 async function setAsPreferred(imageType, imagePath) {
-    const isTitle = !!props.titleId;
-    const id = props.titleId || props.seasonId;
-    const apiTarget = isTitle ? fastApi.titles : fastApi.seasons;
+    const isTitle = !!props.titleId
+    const id = props.titleId || props.seasonId
+    const apiTarget = isTitle ? fastApi.titles : fastApi.seasons
 
-    await apiTarget.imagesSetPreference(id, imageType, { image_path: imagePath });
-    updateDomData(imageType, imagePath);
+    await apiTarget.imagesSetPreference(id, imageType, { image_path: imagePath })
+    updateDomData(imageType, imagePath)
 }
 
 function updateDomData(imageType, imagePath) {
-    // Notify the parent component
-    updateChosenImage({ 
+    // Notify parent
+    updateChosenImage({
         imageType,
         imagePath,
         seasonId: props.seasonId ?? null
-    });
+    })
 
-    // Update the internal data as well
-    const categoryKey = `${imageType}s`; 
-    const category = imageData.value[categoryKey];
+    // Update internal state to reflect the new selection
+    const categoryKey = `${imageType}s`
+    const category = imageData.value[categoryKey]
 
     if (category?.images) {
         category.images.forEach(img => {
-            img.is_user_choice = (img.file_path === imagePath);
-        });
+            img.is_user_choice = (img.file_path === imagePath)
+        })
     }
 }
 </script>
@@ -105,28 +129,37 @@ function updateDomData(imageType, imagePath) {
             </details>
 
             <div class="tab-buttons">
-                <button 
-                    v-for="cat in imageCategories" 
-                    :key="cat.key"
-                    :class="{ 'btn-primary': activeType === cat.key }"
-                    :disabled="!imageData[cat.key]?.total_count"
-                    @click="activeType = cat.key"
-                >
-                    {{ cat.label }} ({{ imageData[cat.key]?.total_count || 0 }})
-                </button>
+                <div class="cat-buttons">
+                    <button 
+                        v-for="cat in imageCategories" 
+                        :key="cat.key"
+                        :class="{ 'btn-primary': activeType === cat.key }"
+                        :disabled="!imageData[cat.key]?.total_count"
+                        @click="activeType = cat.key"
+                    >
+                        {{ cat.label }} ({{ imageData[cat.key]?.total_count || 0 }})
+                    </button>
+                </div>
 
                 <hr>
 
-                <select v-model="localeFilters[activeType]">
-                    <option value="all">All</option>
-                    <option 
-                        v-for="locale in currentCategory?.available_locale"
-                        :key="locale"
-                        :value="locale"
-                    >
-                        {{ locale === null ? 'No locale' : locale }}
-                    </option>
-                </select>
+                <FilterDropDown
+                    label="Image Locale"
+                    :modified="localeFilters[activeType] != localeFilterDefaults[activeType]"
+                >
+                    <OptionPicker
+                        v-model="localeFilters[activeType]"
+                        defaultValue="all"
+                        :options="localeFilterOptions"
+                    />
+                </FilterDropDown>
+
+                <RefreshCcwAltDot
+                    v-if="localeFilters[activeType] != localeFilterDefaults[activeType]"
+                    class="btn btn-text btn-even-padding"
+                    size="sm"
+                    @click="localeFilters[activeType] = localeFilterDefaults[activeType]"
+                />
             </div>
 
             <div class="images-wrapper">
@@ -179,7 +212,11 @@ function updateDomData(imageType, imagePath) {
 
 .tab-buttons {
     display: flex;
-    gap: var(--spacing-sm);
+
+    .cat-buttons {
+        display: flex;
+        gap: var(--spacing-sm);
+    }
 }
 
 .images-wrapper {

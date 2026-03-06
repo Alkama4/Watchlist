@@ -511,6 +511,7 @@ const lastAirDate = computed(() => {
             ref="ImagesModal"
             :titleId="titleDetails?.title_id"
             :userDetails="titleDetails?.user_details"
+            :displayLocale="titleDetails?.display_locale"
         />
 
         <ModalLocale
