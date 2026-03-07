@@ -15,6 +15,38 @@ export const useSettingsStore = defineStore('settings', {
         isLoaded: false,
     }),
 
+    getters: {
+        defaultLocale() {
+            return this.schema.find((s) => s.key == 'locales').default_value || 'en-US';
+        },
+        defaultLanguage() {
+            return this.defaultLocale.split('-')[0]?.toLowerCase() || 'en';
+        },
+        defaultCountry() {
+            return this.defaultLocale.split('-')[1]?.toUpperCase() || 'US';
+        },
+
+        preferredLocales() {
+            return this.preferences.locales?.split(',').filter(Boolean) || [this.defaultLocale];
+        },
+        preferredLanguages() {
+            return this.preferredLocales.map(locale => locale.split("-")[0]?.toLowerCase()) || [this.defaultLanguage]
+        },
+        preferredCountries() {
+            return this.preferredLocales.map(locale => locale.split("-")[1]?.toUpperCase()) || [this.defaultLanguage]
+        },
+
+        primaryLocale() {
+            return this.preferredLocales[0] || this.defaultLocale;
+        },
+        primaryLanguage() {
+            return this.primaryLocale.split('-')[0]?.toLowerCase() || this.defaultLanguage;
+        },
+        primaryCountry() {
+            return this.primaryLocale.split('-')[1]?.toUpperCase() || this.defaultCountry;
+        },
+    },
+
     actions: {
         _handle_special_cases(key, value) {
             if (key === 'theme') {
