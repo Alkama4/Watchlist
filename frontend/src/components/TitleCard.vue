@@ -122,7 +122,7 @@ const { titleInfo, storeImageFlag } = defineProps({
             <h5>{{ titleInfo?.name }}</h5>
             <div class="detail-row">
                 <Tmdb/>
-                {{ numberFormatters.formatNumberToLocale(titleInfo?.tmdb_vote_average) || "-" }}
+                {{ numberFormatters.formatNumberToLocale(titleInfo?.tmdb_vote_average, {maximumFractionDigits: 1}) || "-" }}
                 &bull;
                 {{ timeFormatters.timestampToYear(titleInfo?.release_date) }}
             </div>
