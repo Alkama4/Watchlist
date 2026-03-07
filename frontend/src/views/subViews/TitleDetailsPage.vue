@@ -285,7 +285,7 @@ const lastAirDate = computed(() => {
                         <div class="stat tmdb">
                             <div>
                                 <Tmdb/>
-                                {{ titleDetails?.tmdb_vote_average || '-' }}
+                                {{ numberFormatters.formatNumberToLocale(titleDetails?.tmdb_vote_average) || '-' }}
                             </div>
                             <div class="votes" :title="`${numberFormatters.formatNumberToLocale(titleDetails?.tmdb_vote_count)} votes`">
                                 ({{ numberFormatters.formatCompactNumber(titleDetails?.tmdb_vote_count) }} votes)

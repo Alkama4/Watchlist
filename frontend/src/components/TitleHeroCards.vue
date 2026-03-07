@@ -1,6 +1,6 @@
 <script setup>
 import { getTitleImageUrl } from '@/utils/imagePath';
-import { timeFormatters } from '@/utils/formatters';
+import { numberFormatters, timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg'
 import { ref, onMounted, onUnmounted } from 'vue';
 import PaginationDots from './PaginationDots.vue';
@@ -107,7 +107,7 @@ onUnmounted(() => {
         
                                 <span>
                                     <Tmdb/>
-                                    {{ title.tmdb_vote_average }}
+                                    {{ numberFormatters.formatNumberToLocale(title.tmdb_vote_average) }}
                                 </span>
         
                                 <template v-if="resolveAgeRating(title?.age_ratings)?.rating">

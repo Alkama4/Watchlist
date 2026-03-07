@@ -10,7 +10,7 @@ export const timeFormatters = {
         const mins = minutes % 60;
 
         if (hrs === 0) return `${mins} min`;
-        return `${hrs} hr ${mins} min`;
+        return `${hrs} h ${mins} min`;
     },
     timestampToYear: (timestamp) => {
         return timestamp ? new Date(timestamp).getFullYear() : '-';
@@ -27,8 +27,9 @@ export const numberFormatters = {
             maximumFractionDigits: 1
         }).format(number);
     },
-    formatNumberToLocale: (number) => {
-        return number.toLocaleString(settings.primaryLocale);
+    formatNumberToLocale: (number, options) => {
+        if (!number) return null;
+        return number.toLocaleString(settings.primaryLocale, options);
     }
 }
 

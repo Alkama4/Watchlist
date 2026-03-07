@@ -1,6 +1,6 @@
 <script setup>
 import { getTitleImageUrl } from '@/utils/imagePath';
-import { timeFormatters } from '@/utils/formatters';
+import { numberFormatters, timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg'
 import { useSearchStore } from '@/stores/search';
 import { fastApi } from '@/utils/fastApi';
@@ -122,7 +122,7 @@ const { titleInfo, storeImageFlag } = defineProps({
             <h5>{{ titleInfo?.name }}</h5>
             <div class="detail-row">
                 <Tmdb/>
-                {{ titleInfo?.tmdb_vote_average ? titleInfo?.tmdb_vote_average?.toFixed(1) : "-" }}
+                {{ numberFormatters.formatNumberToLocale(titleInfo?.tmdb_vote_average) || "-" }}
                 &bull;
                 {{ timeFormatters.timestampToYear(titleInfo?.release_date) }}
             </div>

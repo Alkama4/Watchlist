@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { getTitleImageUrl } from '@/utils/imagePath';
-import { timeFormatters } from '@/utils/formatters';
+import { numberFormatters, timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg'
 import { ChevronDown, ChevronUp } from '@boxicons/vue';
 
@@ -47,7 +47,7 @@ const computedHeight = computed(() => {
                         <h4>{{ season?.season_name }}</h4>
                         <div class="detail-row">
                             <Tmdb/>
-                            {{ season?.tmdb_vote_average }}
+                            {{ numberFormatters.formatNumberToLocale(season?.tmdb_vote_average) }}
                             &bull;
                             {{ timeFormatters.timestampToYear(season?.episodes[0]?.air_date) }}
                         </div>

@@ -1,4 +1,5 @@
 <script setup>
+import { numberFormatters } from '@/utils/formatters';
 import { computed } from 'vue';
 
 const { seasons } = defineProps({
@@ -49,7 +50,14 @@ const maxEpisodeCount = computed(() => {
                 }"
                 :title="`S${season?.season_number}E${episode?.episode_number}`"
             >
-                {{ episode?.tmdb_vote_average.toFixed(1) }}
+                {{
+                    numberFormatters.formatNumberToLocale(
+                        episode?.tmdb_vote_average,
+                        {
+                            minimumFractionDigits: 1,
+                            maximumFractionDigits: 1
+                        })
+                }}
             </div>
         </div>
     </div>

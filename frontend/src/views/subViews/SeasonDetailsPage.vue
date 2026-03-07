@@ -105,7 +105,7 @@ onUnmounted(() => {
                 <h3>{{ activeSeason?.season_name }}</h3>
                 <div>
                     <Tmdb/>
-                    {{ activeSeason?.tmdb_vote_average }}
+                    {{ numberFormatters.formatNumberToLocale(activeSeason?.tmdb_vote_average) }}
                     &bull;
                     {{ activeSeason?.episodes?.length }} episodes
                     &bull;
@@ -133,7 +133,7 @@ onUnmounted(() => {
                             {{ timeFormatters.minutesToHrAndMin(episode.runtime) }}
                             &bull;
                             <Tmdb/>
-                            {{ episode.tmdb_vote_average }}
+                            {{ numberFormatters.formatNumberToLocale(episode.tmdb_vote_average) }}
                             ({{ numberFormatters.formatCompactNumber(episode.tmdb_vote_count) }} votes)
                             &bull;
                             {{ timeFormatters.timestampToFullDate(episode.air_date) }}
