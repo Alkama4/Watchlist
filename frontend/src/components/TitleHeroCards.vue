@@ -394,6 +394,8 @@ img.logo {
                 .inner-action {
                     aspect-ratio: 1;
                     height: 100%;
+                    font-size: var(--fs-0);
+                    font-weight: 500;
                 }
             }
         }
