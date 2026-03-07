@@ -1,4 +1,3 @@
-from typing import Dict, Optional
 from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -69,8 +68,7 @@ async def fetch_title_with_user_details(db: AsyncSession, title_id: int, user_id
     if not title:
         raise HTTPException(status_code=404, detail="Title not found")
 
-    # Handle User Title Logic (Init if missing)
-    # Since we loaded it via relationship, check title.user_details list
+    # Handle User Title Logic
     user_title = title.user_details[0] if title.user_details else None
     if not user_title:
         user_title = UserTitleDetails(user_id=user_id, title_id=title_id)
@@ -83,7 +81,7 @@ async def fetch_title_with_user_details(db: AsyncSession, title_id: int, user_id
 
 
 def _build_title_out(title: Title, locale_ctx) -> TitleOut:
-    # Map Title Base Fields like tmdb_id, imdb_id, vote_average, etc.
+    # Map Title Base Fields
     title_dict = {
         field: getattr(title, field)
         for field in TitleOut.model_fields
@@ -107,6 +105,9 @@ def _build_title_out(title: Title, locale_ctx) -> TitleOut:
 
     title_dict["display_locale"] = locale_ctx.preferred_locale
 
+    # Sort the seasons
+    title.seasons.sort(key=lambda s: s.season_number)
+
     # Map Seasons
     seasons_out = []
     for s in title.seasons:
@@ -127,7 +128,10 @@ def _build_title_out(title: Title, locale_ctx) -> TitleOut:
         s_user = s.user_details[0] if s.user_details else None
         s_dict["user_details"] = UserSeasonDetailsOut.model_validate(s_user) if s_user else None
         
-        # Map Episodes
+        # Sort the episodes
+        s.episodes.sort(key=lambda e: (e.episode_number or 0))
+        
+        # Map episodes
         episodes_out = []
         for e in s.episodes:
             e_dict = {
@@ -150,5 +154,4 @@ def _build_title_out(title: Title, locale_ctx) -> TitleOut:
     
     title_dict["seasons"] = seasons_out
 
-    # Validate the whole dictionary against TitleOut
     return TitleOut(**title_dict)
