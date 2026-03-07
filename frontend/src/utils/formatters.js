@@ -1,4 +1,6 @@
-import { preferredLocale } from "./conf";
+import { useSettingsStore } from "@/stores/settings";
+
+const settings = useSettingsStore();
 
 export const timeFormatters = {
     minutesToHrAndMin: (minutes) => {
@@ -14,26 +16,26 @@ export const timeFormatters = {
         return timestamp ? new Date(timestamp).getFullYear() : '-';
     },
     timestampToFullDate: (timestamp) => {
-        return timestamp ? new Date(timestamp).toLocaleDateString(preferredLocale.tag, ) : '-'
+        return timestamp ? new Date(timestamp).toLocaleDateString(settings.primaryLocale, ) : '-'
     }
 };
 
 export const numberFormatters = {
     formatCompactNumber: (number) => {
-        return new Intl.NumberFormat(preferredLocale.tag, {
+        return new Intl.NumberFormat(settings.primaryLocale, {
             notation: 'compact',
             maximumFractionDigits: 1
         }).format(number);
     },
     formatNumberToLocale: (number) => {
-        return number.toLocaleString(preferredLocale.tag);
+        return number.toLocaleString(settings.primaryLocale);
     }
 }
 
 export const isoFormatters = {
     iso_3166_1ToCountry: (iso_3166_1) => {
         if (!iso_3166_1) return null;
-        return new Intl.DisplayNames(preferredLocale.tag, { type: 'region' }).of(iso_3166_1);
+        return new Intl.DisplayNames(settings.primaryLocale, { type: 'region' }).of(iso_3166_1);
     },
     localeToText: (locale) => {
         if (!locale) return 'No language';

@@ -9,7 +9,6 @@ import Imdb from '@/assets/icons/imdb.svg'
 import JustWatch from '@/assets/icons/justWatch.svg'
 import Jellyfin from '@/assets/icons/jellyfin.svg'
 import NoticeBlock from '@/components/NoticeBlock.vue';
-import { preferredLocale, fallbackLocale } from '@/utils/conf';
 import ModalBase from '@/components/modal/ModalBase.vue';
 import SeasonsListing from '@/components/SeasonsListing.vue';
 import EpisodeMap from '@/components/EpisodeMap.vue';
@@ -17,6 +16,8 @@ import ModalImages from '@/components/modal/ModalImages.vue';
 import KebabMenu from '@/components/KebabMenu.vue';
 import { AlbumCovers, AlertCircle, AlertTriangle, Check, CheckCircle, Clock, Heart, Images, Link, ListMinus, ListPlus, MapIcon, Minus, RefreshCw, Star, Translate } from '@boxicons/vue';
 import ModalLocale from '@/components/modal/ModalLocale.vue';
+import { resolveAgeRating } from '@/utils/titleUtils';
+import { useSettingsStore } from '@/stores/settings';
 
 const props = defineProps({
     titleDetails: {
@@ -36,6 +37,8 @@ const props = defineProps({
         required: true
     }
 })
+
+const settings = useSettingsStore();
 
 const waitingFor = ref({});
 const updateResponse = ref({});
@@ -118,21 +121,8 @@ async function removeFromTitleWatchCount() {
 }
 
 
-function showAllAgeRatings() {
-    AgeRatingsModal.value.open();
-}
-
 const chosenAgeRating = computed(() => {
-    const ratings = props?.titleDetails?.age_ratings ?? []
-
-    // Try to find preferred locale
-    const pref = ratings.find(
-        r => r.iso_3166_1 === preferredLocale.iso_3166_1
-    )
-    if (pref && pref.rating) return pref
-
-    // Else fall back to US
-    return ratings.find(r => r.iso_3166_1 === fallbackLocale.iso_3166_1) ?? null
+    return resolveAgeRating(props?.titleDetails?.age_ratings);
 })
 
 const tmdbEditAgeRatingUrl = computed(() => {
@@ -233,7 +223,7 @@ const lastAirDate = computed(() => {
                         
                         <div class="flex-row">
                             <a
-                                :href="`https://www.justwatch.com/${preferredLocale.iso_639_1}/search?q=${titleDetails?.name_original}`"
+                                :href="`https://www.justwatch.com/${settings.primaryCountry}/search?q=${titleDetails?.name_original}`"
                                 target="_blank"
                                 class="btn btn-even-padding btn-text"
                                 title="Check Availability on JustWatch"
@@ -319,7 +309,7 @@ const lastAirDate = computed(() => {
                         </template>
     
                         |
-                        <div class="stat btn-underline" @click="showAllAgeRatings">
+                        <div class="stat btn-underline" @click="AgeRatingsModal.open()">
                             {{ chosenAgeRating?.rating || '-'  }}
                             <template v-if="chosenAgeRating?.descriptors">
                                 ({{ chosenAgeRating?.descriptors }})
@@ -469,13 +459,13 @@ const lastAirDate = computed(() => {
                             <td>
                                 <span>
                                     <Star
-                                        v-if="ageRating.iso_3166_1 === preferredLocale.iso_3166_1"
+                                        v-if="ageRating.iso_3166_1 === settings.primaryCountry"
                                         pack="filled"
                                         title="Your preferred language"
                                         size="sm"
                                     />
                                     <Star
-                                        v-else-if="ageRating.iso_3166_1 === fallbackLocale.iso_3166_1"
+                                        v-else-if="settings.preferredCountries.includes(ageRating.iso_3166_1)"
                                         title="Default backup"
                                         size="sm"
                                     />

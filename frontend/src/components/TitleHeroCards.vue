@@ -1,13 +1,13 @@
 <script setup>
 import { getTitleImageUrl } from '@/utils/imagePath';
-import { timeFormatters, numberFormatters } from '@/utils/formatters';
+import { timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg'
 import { ref, onMounted, onUnmounted } from 'vue';
 import PaginationDots from './PaginationDots.vue';
-import { fallbackLocale, preferredLocale } from '@/utils/conf';
 import { addToWatchCount, subtractFromWatchCount, toggleFavourite, toggleWatchlist } from '@/utils/titleActions';
 import LoadingButton from './LoadingButton.vue';
 import { Check, ChevronLeft, ChevronRight, Clock, Heart, Minus } from '@boxicons/vue';
+import { resolveAgeRating } from '@/utils/titleUtils';
 
 const waitingfor = ref({});
 const currentIndex = ref(0);
@@ -47,17 +47,6 @@ function getCardPosition(index) {
     // Split remaining cards into hidden states so they enter/exit from the correct sides
     if (diff === length - 2) return 'hidden-left';
     return 'hidden-right';
-}
-
-function chooseAgeRating(titleDetails) {
-    const ratings = titleDetails?.age_ratings ?? []
-
-    const pref = ratings.find(
-        r => r.iso_3166_1 === preferredLocale.iso_3166_1
-    )
-    if (pref && pref.rating) return pref
-
-    return ratings.find(r => r.iso_3166_1 === fallbackLocale.iso_3166_1) ?? null
 }
 
 const { heroCards } = defineProps({
@@ -121,8 +110,8 @@ onUnmounted(() => {
                                     {{ title.tmdb_vote_average }}
                                 </span>
         
-                                <template v-if="chooseAgeRating(title)?.rating">
-                                    <span>{{ chooseAgeRating(title)?.rating }}</span>
+                                <template v-if="resolveAgeRating(title?.age_ratings)?.rating">
+                                    <span>{{ resolveAgeRating(title?.age_ratings)?.rating }}</span>
                                 </template>
                             </div>
                             <div v-if="title.genres?.length > 0" class="genres">
