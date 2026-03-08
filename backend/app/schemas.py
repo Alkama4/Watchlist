@@ -1,5 +1,5 @@
 from typing import List, Optional, Annotated
-from pydantic import BaseModel, Field, computed_field, AfterValidator
+from pydantic import BaseModel, Field, computed_field, AfterValidator, model_validator
 from datetime import datetime, date
 from babel import Locale, UnknownLocaleError
 from app.models import ImageType, TitleType, SortBy, SortDirection
@@ -180,6 +180,7 @@ class TitleQueryIn(BaseModel):
     min_tmdb_rating: Optional[int] = Field(None, ge=0, le=10)
     min_imdb_rating: Optional[int] = Field(None, ge=0, le=10)
     exclude_title_ids: Optional[list[int]] = None
+    reference_title_id: Optional[int] = None
     sort_by: Optional[SortBy] = SortBy.default
     sort_direction: Optional[SortDirection] = SortDirection.default
     page_number: Optional[int] = Field(1, ge=1)
@@ -188,6 +189,12 @@ class TitleQueryIn(BaseModel):
         ge=1, 
         le=ABSOLUTE_MAX_QUERY_LIMIT
     )
+
+    @model_validator(mode='after')
+    def check_similarity_logic(self) -> 'TitleQueryIn':
+        if self.sort_by == SortBy.similarity and self.reference_title_id is None:
+            raise ValueError("reference_title_id must be provided when sorting by similarity")
+        return self
 
 
 # Card title out
@@ -212,6 +219,7 @@ class CardTitleOut(BaseModel):
     show_episode_count: Optional[int] = None
     tmdb_vote_average: Optional[float] = None
     tmdb_vote_count: Optional[int] = None
+    # similarity_score: Optional[float] = None
 
     default_poster_image_path: Optional[str] = None
     default_backdrop_image_path: Optional[str] = None

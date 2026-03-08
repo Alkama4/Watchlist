@@ -1,5 +1,6 @@
+import math
 from datetime import datetime, timezone
-from sqlalchemy import select, func, and_, exists, or_, not_
+from sqlalchemy import select, func, and_, exists, or_, not_, case
 from sqlalchemy.orm import selectinload, contains_eager
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Type
@@ -224,7 +225,7 @@ async def _get_user_sort_settings(user_id: int, db) -> dict:
 
 
 async def _apply_sorting_with_user_settings(
-    stmt, q: TitleQueryIn, user_id: int, db
+    stmt, q: TitleQueryIn, user_id: int, db: AsyncSession
 ):
     sort_by = q.sort_by
     sort_dir = q.sort_direction
@@ -243,7 +244,85 @@ async def _apply_sorting_with_user_settings(
                 "sort_direction", DEFAULT_SETTINGS.sort_direction
             ))
 
-    # mapping from enum to column
+
+    if sort_by == SortBy.similarity:
+        # --- FETCH REFERENCE TITLE ---
+        ref_stmt = select(
+            Title.tmdb_vote_average, 
+            Title.release_date, 
+            Title.original_language
+        ).where(
+            Title.title_id == q.reference_title_id
+        )
+        ref_result = await db.execute(ref_stmt)
+        ref_data = ref_result.first()
+
+        if not ref_data:
+            raise ValueError(f"Reference title_id {q.reference_title_id} not found.")
+
+        ref_rating, ref_date, ref_lang = ref_data
+        ref_rating = float(ref_rating or 0.0)
+        ref_year = ref_date.year if ref_date else None
+
+        ref_genres_stmt = select(TitleGenre.genre_id).where(
+            TitleGenre.title_id == q.reference_title_id
+        )
+        ref_genres_result = await db.execute(ref_genres_stmt)
+        ref_genres = [row[0] for row in ref_genres_result.all()]
+
+        # --- SCORE CALCULATIONS ---
+        # Genre Match Score (Base: 0.0 to 1.0)
+        if ref_genres:
+            genre_match_subq = (
+                select(func.count(TitleGenre.genre_id))
+                .where(
+                    TitleGenre.title_id == Title.title_id,
+                    TitleGenre.genre_id.in_(ref_genres)
+                )
+                .scalar_subquery()
+            )
+            title_genre_count_subq = (
+                select(func.count(TitleGenre.genre_id))
+                .where(TitleGenre.title_id == Title.title_id)
+                .scalar_subquery()
+            )
+            
+            avg_genre_count = (len(ref_genres) + title_genre_count_subq) / 2.0
+            genre_score = (genre_match_subq * 1.0) / avg_genre_count
+        else:
+            genre_score = 0.0
+
+        # Rating Proximity Score (Base: 0.0 to 1.0)
+        rating_diff = func.abs(func.coalesce(Title.tmdb_vote_average, 0.0) - ref_rating)
+        rating_score = (10.0 - rating_diff) / 10.0
+
+        # Era / Release Date Score (Base: 0.0 to 1.0)
+        if ref_year:
+            title_year = func.extract('year', Title.release_date)
+            year_diff = func.coalesce(func.abs(title_year - ref_year), 50)
+            capped_diff = case((year_diff > 50, 50), else_=year_diff)
+            era_score = 1.0 - (capped_diff / 50.0)
+        else:
+            era_score = 0.5
+
+        # Language Match Bonus (Multiplier: 1.0 or 1.1)
+        if ref_lang:
+            lang_match = case(
+                (Title.original_language == ref_lang, 1.1),
+                else_=1.0
+            )
+        else:
+            lang_match = 1.0
+
+        # --- COMBINE VALUES ---
+        weighted_base = (genre_score * 0.6) + (era_score * 0.3) + (rating_score * 0.1)
+        similarity_score = (weighted_base * lang_match).label("similarity_score")
+        
+        stmt = stmt.add_columns(similarity_score)
+        stmt = stmt.order_by(similarity_score.desc().nulls_last())
+        return stmt
+        
+    # Mapping for column sorts
     sort_map = {
         SortBy.tmdb_score: Title.tmdb_vote_average,
         SortBy.imdb_score: Title.imdb_vote_average,
@@ -299,7 +378,13 @@ def _build_title_list_out(
 ) -> TitleListOut:
     titles = []
 
-    for title, user_details, season_count, episode_count in rows:
+    for row in rows:
+        # Access by mapping keys
+        title = row["Title"]
+        user_details = row["UserTitleDetails"]
+        season_count = row["show_season_count"]
+        episode_count = row["show_episode_count"]
+        sim_score = row.get("similarity_score")
 
         translation = title.translations[0] if title.translations else None
 
@@ -310,26 +395,23 @@ def _build_title_list_out(
             if hasattr(title, f) and f not in {"genres", "user_details"}
         }
 
-        # Layer in Translation (Filtered to schema fields)
         if translation:
             title_data.update({
                 k: v for k, v in vars(translation).items() 
                 if k in title_schema.model_fields and v is not None
             })
 
-        # Add Calculated/Nested fields
         title_data.update({
             "show_season_count": season_count,
             "show_episode_count": episode_count,
+            "similarity_score": sim_score,  # Not actually returned due to being commented out of the pydantic schema
             "user_details": user_title_details_schema.model_validate(user_details, from_attributes=True) if user_details else None
         })
-
-        # Hero Specifics
+        
         if title_schema is HeroTitleOut:
             title_data["genres"] = [GenreElement.model_validate(tg.genre, from_attributes=True) for tg in title.genres]
             title_data["age_ratings"] = [AgeRatingElement.model_validate(r, from_attributes=True) for r in title.age_ratings]
 
-        # One-shot Validation
         titles.append(title_schema.model_validate(title_data))
 
     return TitleListOut(
@@ -365,5 +447,5 @@ async def run_title_search(
     stmt, page, size = _apply_pagination(stmt, q)
 
     result = await db.execute(stmt)
-    rows = result.unique().all()
+    rows = result.mappings().unique().all()
     return _build_title_list_out(rows, total, page, size, title_schema, user_title_details_schema)

@@ -31,6 +31,7 @@ class SortBy(enum.Enum):
     runtime = "runtime"
     release_date = "release_date"
     last_viewed_at = "last_viewed_at"
+    similarity = "similarity"
     random = "random"
 
 class Themes(enum.Enum):
