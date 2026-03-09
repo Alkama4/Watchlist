@@ -142,7 +142,7 @@ class TitleIn(BaseModel):
     title_type: TitleType
 
 
-class TitleWatchCountIn(BaseModel):
+class WatchCountIn(BaseModel):
     watch_count: int
 
 class TitleIsFavouriteIn(BaseModel):

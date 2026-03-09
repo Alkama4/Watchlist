@@ -49,7 +49,7 @@ async def set_season_image_preference(
 # @router.put("/{title_id}/watch_count")
 # async def update_title_watch_count(
 #     title_id: int,
-#     data: TitleWatchCountIn,
+#     data: WatchCountIn,
 #     user: User = Depends(get_current_user),
 #     db: AsyncSession = Depends(get_db),
 # ):

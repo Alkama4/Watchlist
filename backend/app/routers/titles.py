@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.dependencies import get_db
-from app.integrations import tmdb
 from app.routers.auth import get_current_user
 from app.services.titles.read import fetch_title_with_user_details
 from app.services.titles.search_internal import run_title_search
@@ -17,7 +16,7 @@ from app.schemas import (
     ImagePreferenceIn,
     TitleIn,
     TitleLocaleIn,
-    TitleWatchCountIn,
+    WatchCountIn,
     TitleIsFavouriteIn,
     TitleInWatchlistIn,
     TitleNotesIn,
@@ -205,7 +204,7 @@ async def update_title_watchlist_flag(
 @router.put("/{title_id}/watch_count")
 async def update_title_watch_count(
     title_id: int,
-    data: TitleWatchCountIn,
+    data: WatchCountIn,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
