@@ -58,6 +58,7 @@ async def get_home_overview(
             "filters": {
                 "watch_status": "partial",
                 "title_type": "tv",
+                "in_watchlist": True,
                 "sort_by": "last_viewed_at",
                 "sort_direction": "desc",
                 "page_size": 25
