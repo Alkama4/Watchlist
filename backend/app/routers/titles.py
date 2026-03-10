@@ -7,7 +7,7 @@ from app.services.titles.read import fetch_title_with_user_details
 from app.services.titles.search_internal import run_title_search
 from app.services.titles.search_tmdb import run_and_process_tmdb_search
 from app.services.titles.store import coordinate_title_fetching
-from app.services.titles.user_flags import set_user_title_value, set_title_watch_count
+from app.services.user_flags import set_user_title_value, set_title_watch_count
 from app.services.titles.preset_searches import fetch_similar_titles
 from app.services.images import fetch_image_details, set_user_image_choice
 from app.services.languages import check_translation_availability, get_users_global_preferred_locale
