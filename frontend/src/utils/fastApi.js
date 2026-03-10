@@ -215,6 +215,18 @@ export const fastApi = {
             url: `/seasons/${seasonId}/images/${imageType}`,
             data
         }),
+        setWatchCount: async (seasonId, watchCount) => fetchData({
+            method: 'put',
+            url: `/seasons/${seasonId}/watch_count`,
+            data: { watch_count: watchCount }
+        })
+    },
+    episodes: {
+        setWatchCount: async (episodeId, watchCount) => fetchData({
+            method: 'put',
+            url: `/episodes/${episodeId}/watch_count`,
+            data: { watch_count: watchCount }
+        })
     },
     media: {
         image: async (size, image_path) => fetchData({
