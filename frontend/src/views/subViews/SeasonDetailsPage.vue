@@ -113,6 +113,7 @@ onUnmounted(() => {
                 </div>
                 <p>{{ activeSeason?.overview }}</p>
                 <div class="actions">
+                    <Button @click="">Add</Button>
                     <Images
                         pack="filled"
                         class="btn btn-text btn-even-padding"
