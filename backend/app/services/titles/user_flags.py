@@ -42,12 +42,14 @@ async def set_title_watch_count(
         user_id=user_id,
         title_id=title_id,
         watch_count=watch_count,
-        last_watched_at=now
+        last_watched_at=now,
+        in_library=True
     ).on_conflict_do_update(
         index_elements=["user_id", "title_id"],
         set_={
             "watch_count": watch_count,
-            "last_watched_at": now
+            "last_watched_at": now,
+            "in_library": True
         }
     )
 
