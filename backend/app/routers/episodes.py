@@ -1,49 +1,29 @@
-from datetime import datetime, timezone
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.dialects.postgresql import insert
 from app.dependencies import get_db
 from app.routers.auth import get_current_user
-from app.schemas import (
-    WatchCountIn
-)
-from app.models import (
-    User,
-    UserEpisodeDetails
-)
+from app.services.user_flags import set_episode_watch_count
+from app.schemas import WatchCountIn
+from app.models import User
 
 router = APIRouter()
 
 
 @router.put("/{episode_id}/watch_count")
-async def set_season_image_preference(
+async def update_episode_watch_count(
     episode_id: int,
     data: WatchCountIn,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    now = datetime.now(timezone.utc)
-
-    print(data)
-    print(data.watch_count)
-    
-    stmt = insert(UserEpisodeDetails).values(
+    await set_episode_watch_count(
+        db=db,
         user_id=user.user_id,
         episode_id=episode_id,
-        watch_count=data.watch_count,
-        last_watched_at=now
-    ).on_conflict_do_update(
-        index_elements=["user_id", "episode_id"],
-        set_={
-            "watch_count": data.watch_count,
-            "last_watched_at": now
-        }
+        watch_count=data.watch_count
     )
-    await db.execute(stmt)
-    await db.commit()
     return {
         "episode_id": episode_id,
-        "watch_count": data.watch_count
+        "watch_count": data.watch_count,
+        "in_library": True
     }
-
-    # TODO: Decide. Do we want to add the title to library here?
