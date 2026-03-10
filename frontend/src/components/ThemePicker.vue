@@ -7,8 +7,8 @@ const settings = useSettingsStore();
 
 const textField = ref('');
 const themes = ref([
-    { id: 'void', name: 'Void (Default)', description: 'True black for OLED displays' },
-    { id: 'midnight', name: 'Midnight', description: 'Cool blue dark mode' },
+    { id: 'void', name: 'Void', description: 'True black for OLED displays' },
+    { id: 'midnight', name: 'Midnight (Default)', description: 'Cool blue dark mode' },
     { id: 'amethyst', name: 'Amethyst', description: 'Rich purple darkness' },
     { id: 'flashbang', name: 'Flashbang', description: 'Cover your eyes' },
     { id: '16-bit', name: '16-Bit', description: 'Greyscale retro vibes' },
