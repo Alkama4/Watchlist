@@ -1,7 +1,7 @@
 <script setup>
 import LoadingIndicator from '@/components/LoadingIndicator.vue';
 import NotFoundPage from './NotFoundPage.vue';
-import { nextTick, onMounted, provide, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, provide, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { fastApi } from '@/utils/fastApi';
 import TitleDetailsPage from '@/views/subViews/TitleDetailsPage.vue';
@@ -13,6 +13,11 @@ const jellyfinConfig = ref({})
 
 const pageLoading = ref(true);
 const route = useRoute();
+
+const tmdbBaseUrl = computed(() => {
+    const { title_type, tmdb_id } = titleDetails.value;
+    return `https://www.themoviedb.org/${title_type}/${tmdb_id}`;
+})
 
 async function fetchTitleDetails() {
     const title_id = route.params.title_id;
@@ -102,6 +107,7 @@ watch(pageLoading, (newLoading) => {
             v-else-if="route.query.season" 
             :titleDetails="titleDetails"
             :seasonNumber="route.query.season"
+            :tmdbBaseUrl="tmdbBaseUrl"
         />
 
         <TitleDetailsPage 
@@ -110,6 +116,7 @@ watch(pageLoading, (newLoading) => {
             :similarTitles="similarTitles"
             :fetchTitleDetails="fetchTitleDetails"
             :jellyfinConfig="jellyfinConfig"
+            :tmdbBaseUrl="tmdbBaseUrl"
         />
     </div>
 </template>

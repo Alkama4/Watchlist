@@ -14,10 +14,11 @@ import SeasonsListing from '@/components/SeasonsListing.vue';
 import EpisodeMap from '@/components/EpisodeMap.vue';
 import ModalImages from '@/components/modal/ModalImages.vue';
 import KebabMenu from '@/components/KebabMenu.vue';
-import { AlbumCovers, AlertCircle, AlertTriangle, Check, CheckCircle, Clock, Heart, Images, Link, ListMinus, ListPlus, MapIcon, Minus, RefreshCw, Star, Translate } from '@boxicons/vue';
+import { AlbumCovers, AlertCircle, AlertTriangle, Check, CheckCircle, Clock, Heart, Images, InfoCircle, Link, ListMinus, ListPlus, MapIcon, Minus, RefreshCw, Star, Translate } from '@boxicons/vue';
 import ModalLocale from '@/components/modal/ModalLocale.vue';
 import { resolveAgeRating } from '@/utils/titleUtils';
 import { useSettingsStore } from '@/stores/settings';
+import Tooltip from '@/components/Tooltip.vue';
 
 const props = defineProps({
     titleDetails: {
@@ -34,6 +35,10 @@ const props = defineProps({
     },
     jellyfinConfig: {
         type: Object,
+        required: true
+    },
+    tmdbBaseUrl: {
+        type: String,
         required: true
     }
 })
@@ -125,13 +130,12 @@ const chosenAgeRating = computed(() => {
     return resolveAgeRating(props?.titleDetails?.age_ratings);
 })
 
+
 const tmdbEditAgeRatingUrl = computed(() => {
-    const { title_type, tmdb_id } = props?.titleDetails;
-    const path =
-        title_type === 'movie'
-            ? 'edit?active_nav_item=release_information'
-            : 'edit?active_nav_item=content_ratings';
-    return `https://www.themoviedb.org/${title_type}/${tmdb_id}/${path}`;
+    const path = props?.titleDetails?.title_type === 'movie'
+        ? 'edit?active_nav_item=release_information'
+        : 'edit?active_nav_item=content_ratings';
+    return `${props.tmdbBaseUrl}/${path}`;
 })
 
 const jellyfinLink = computed(() => {
@@ -193,7 +197,7 @@ const lastAirDate = computed(() => {
                     <h4>External Resources</h4>
                     <div class="links-wrapper">
                         <a
-                            :href="`https://www.themoviedb.org/${titleDetails?.title_type}/${titleDetails?.tmdb_id}`"
+                            :href="tmdbBaseUrl"
                             target="_blank"
                             class="btn btn-even-padding btn-text"
                             title="View on TMDB"
@@ -442,7 +446,7 @@ const lastAirDate = computed(() => {
         <!-- Modals -->
 
         <ModalBase header="Age ratings" ref="AgeRatingsModal" :minimumCard="true">
-            <p>The following list shows age ratings by country for the current title. The star icon indicates your <Star pack="filled" size="xs"/> preferred language (or <Star size="xs"/> fallback). You can adjust your preffered languages in the <router-link to="/account">application settings</router-link>.</p>
+            <p>The following list shows age ratings by country for the current title. The star icon indicates your <Star pack="filled" size="xs" class="inline"/> preferred language (or <Star size="xs" class="inline"/> fallback). You can adjust your preffered languages in the <router-link to="/account">application settings</router-link>.</p>
             <div class="age-ratings-table">
                 <table>
                     <thead>
@@ -487,9 +491,14 @@ const lastAirDate = computed(() => {
                 </table>
             </div>
             <span class="subtle details-missing-note">
-                Can't find age ratings for your country? You can contribute the info on TMDB
-                <a class="subtle" target="_blank" :href="tmdbEditAgeRatingUrl">here</a>.
-                Changes usually take a few hours to appear in the "update title details" requests.
+                Missing age ratings for your country?
+                <a class="subtle" target="_blank" :href="tmdbEditAgeRatingUrl">Add them on TMDB</a>.
+                <Tooltip>
+                    <InfoCircle pack="filled" size="xs" class="inline"/>
+                    <template #content>
+                        TMDB takes a moment to process changes. They will appear here once the changes go live, and the titles details are updated.
+                    </template>
+                </Tooltip>
             </span>
         </ModalBase>
 
@@ -502,6 +511,7 @@ const lastAirDate = computed(() => {
             :titleId="titleDetails?.title_id"
             :userDetails="titleDetails?.user_details"
             :displayLocale="titleDetails?.display_locale"
+            :tmdbBaseUrl="tmdbBaseUrl"
         />
 
         <ModalLocale

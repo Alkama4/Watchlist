@@ -5,14 +5,16 @@ import { fastApi } from '@/utils/fastApi'
 import { buildImageUrl } from '@/utils/imagePath'
 import FilterDropDown from '../FilterDropDown.vue'
 import OptionPicker from '../OptionPicker.vue'
-import { ArrowOutUpRightSquare, RefreshCcwAltDot, Star } from '@boxicons/vue';
+import { ArrowOutUpRightSquare, InfoCircle, RefreshCcwAltDot, Star } from '@boxicons/vue';
+import Tooltip from '../Tooltip.vue'
 
 
 const props = defineProps({
     titleId: { type: Number, required: true },
     seasonId: { type: Number, required: true },
     userDetails: { type: Object, required: true },
-    displayLocale: { type: String, required: true }
+    displayLocale: { type: String, required: true },
+    tmdbBaseUrl: { type: String, required: false }
 })
 
 defineExpose({ open })
@@ -196,6 +198,19 @@ function updateDomData(imageType, imagePath) {
                     </div>
                 </div>
             </div>
+
+            <span v-if="tmdbBaseUrl" class="subtle bottom-text">
+                Want to vote or add images?
+                <a :href="`${tmdbBaseUrl}/images/${activeType}`" target="_blank" class="subtle">
+                    Browse {{ activeType }} on TMDB
+                </a>.
+                <Tooltip>
+                    <InfoCircle pack="filled" size="xs" class="inline"/>
+                    <template #content>
+                        TMDB takes a moment to process changes. They will appear here once the changes go live, and the titles details are updated.
+                    </template>
+                </Tooltip>
+            </span>
         </div>
     </ModalBase>
 </template>
@@ -339,4 +354,8 @@ hr {
         ) top left / 32px 32px;
 }
 
+.bottom-text {
+    text-align: center;
+    font-size: var(--fs-neg-1);
+}
 </style>

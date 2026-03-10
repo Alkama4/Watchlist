@@ -14,6 +14,10 @@ const props = defineProps({
     titleDetails: {
         type: Object,
         required: true
+    },
+    tmdbBaseUrl: {
+        type: String,
+        required: true
     }
 });
 
@@ -185,6 +189,7 @@ onUnmounted(() => {
             ref="ImagesModal"
             :seasonId="activeSeason?.season_id"
             :userDetails="activeSeason?.user_details"
+            :tmdbBaseUrl="tmdbBaseUrl"
         />
     </div>
 </template>
