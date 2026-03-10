@@ -6,7 +6,7 @@ import { useSearchStore } from '@/stores/search';
 import { fastApi } from '@/utils/fastApi';
 import { ref } from 'vue';
 import LoadingButton from '@/components/LoadingButton.vue';
-import { addToWatchCount, subtractFromWatchCount, toggleFavourite, toggleWatchlist } from '@/utils/titleActions';
+import { addToTitleWatchCount, subtractFromTitleWatchCount, toggleFavourite, toggleWatchlist } from '@/utils/titleActions';
 import { ArrowOutUpRightSquare, Check, Clock, Heart, ListMinus, ListPlus, Minus, Plus } from '@boxicons/vue';
 
 const searchStore = useSearchStore();
@@ -149,8 +149,8 @@ const { titleInfo, storeImageFlag } = defineProps({
                 <LoadingButton
                     class="inner-action"
                     :class="{'btn-positive': titleInfo?.user_details?.watch_count}"
-                    :loading="waiting?.addToWatchCount"
-                    @click.prevent="addToWatchCount(titleInfo, waiting)"
+                    :loading="waiting?.addToTitleWatchCount"
+                    @click.prevent="addToTitleWatchCount(titleInfo, waiting)"
                 >
                     <template v-if="titleInfo?.user_details?.watch_count >= 2">
                         {{ titleInfo?.user_details?.watch_count }}
@@ -160,8 +160,8 @@ const { titleInfo, storeImageFlag } = defineProps({
 
                 <LoadingButton
                     class="inner-action"
-                    :loading="waiting?.subtractFromWatchCount"
-                    @click.prevent="subtractFromWatchCount(titleInfo, waiting)"
+                    :loading="waiting?.subtractFromTitleWatchCount"
+                    @click.prevent="subtractFromTitleWatchCount(titleInfo, waiting)"
                 >
                     <Minus size="sm"/>
                 </LoadingButton>

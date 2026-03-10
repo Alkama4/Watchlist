@@ -34,24 +34,24 @@ export async function toggleWatchlist(title, waitingObject) {
     }
 }
 
-export async function addToWatchCount(title, waitingObject) {
-    waitingObject.addToWatchCount = true;
+export async function addToTitleWatchCount(title, waitingObject) {
+    waitingObject.addToTitleWatchCount = true;
     try {
         const response = await fastApi.titles.setWatchCount(title.title_id, title.user_details.watch_count + 1);
         title.user_details.watch_count = response.watch_count;
     } finally {
-        waitingObject.addToWatchCount = false;
+        waitingObject.addToTitleWatchCount = false;
     }
 }
 
-export async function subtractFromWatchCount(title, waitingObject) {
-    waitingObject.subtractFromWatchCount = true;
+export async function subtractFromTitleWatchCount(title, waitingObject) {
+    waitingObject.subtractFromTitleWatchCount = true;
     try {
         // Prevent going below 0
         const newCount = Math.max(0, title.user_details.watch_count - 1);
         const response = await fastApi.titles.setWatchCount(title.title_id, newCount);
         title.user_details.watch_count = response.watch_count;
     } finally {
-        waitingObject.subtractFromWatchCount = false;
+        waitingObject.subtractFromTitleWatchCount = false;
     }
 }

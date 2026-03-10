@@ -4,7 +4,7 @@ import { numberFormatters, timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg'
 import { ref, onMounted, onUnmounted } from 'vue';
 import PaginationDots from './PaginationDots.vue';
-import { addToWatchCount, subtractFromWatchCount, toggleFavourite, toggleWatchlist } from '@/utils/titleActions';
+import { addToTitleWatchCount, subtractFromTitleWatchCount, toggleFavourite, toggleWatchlist } from '@/utils/titleActions';
 import LoadingButton from './LoadingButton.vue';
 import { Check, ChevronLeft, ChevronRight, Clock, Heart, Minus } from '@boxicons/vue';
 import { resolveAgeRating } from '@/utils/titleUtils';
@@ -132,7 +132,7 @@ onUnmounted(() => {
                                         class="btn-even-padding inner-action add-button"
                                         :class="{'btn-positive': title?.user_details?.watch_count}"
                                         :loading="waitingfor?.watchCountAdd"
-                                        @click.prevent="addToWatchCount(title, waitingfor)"
+                                        @click.prevent="addToTitleWatchCount(title, waitingfor)"
                                     >
                                         <template v-if="title?.user_details?.watch_count >= 2">
                                             {{ title?.user_details?.watch_count }}
@@ -143,7 +143,7 @@ onUnmounted(() => {
                                     <LoadingButton
                                         class="btn-even-padding inner-action"
                                         :loading="waitingfor?.watchCountSubtract"
-                                        @click.prevent="subtractFromWatchCount(title, waitingfor)"
+                                        @click.prevent="subtractFromTitleWatchCount(title, waitingfor)"
                                     >
                                         <Minus/>
                                     </LoadingButton>
