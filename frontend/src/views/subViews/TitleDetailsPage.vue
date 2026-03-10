@@ -113,7 +113,7 @@ async function setTitleWatchCount(count) {
     props.titleDetails.user_details.watch_count = response.watch_count;
     props.titleDetails.user_details.in_library = response.in_library;
 }
-async function addToTitleWatchCount() {
+async function adjustWatchCount() {
     await setTitleWatchCount(props.titleDetails.user_details.watch_count + 1);
 }
 async function removeFromTitleWatchCount() {
@@ -354,7 +354,7 @@ const lastAirDate = computed(() => {
                         <div class="primary-actions">
                             <div class="watch-count-buttons">
                                 <button
-                                    @click="addToTitleWatchCount"
+                                    @click="adjustWatchCount"
                                     :class="titleDetails?.user_details?.watch_count ? 'btn-positive' : 'btn-primary'"
                                 >
                                     <template v-if="!titleDetails?.user_details?.watch_count">

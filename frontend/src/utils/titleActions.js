@@ -1,4 +1,5 @@
 import { fastApi } from "./fastApi";
+import { resolveSeasonWatchCount } from "./titleUtils";
 
 export async function toggleFavourite(title, waitingObject) {
     waitingObject.toggleFavourite = true;
@@ -34,24 +35,75 @@ export async function toggleWatchlist(title, waitingObject) {
     }
 }
 
-export async function addToTitleWatchCount(title, waitingObject) {
-    waitingObject.addToTitleWatchCount = true;
+async function _updateWatchCount({ item, waitingObject, loadingKey, apiCall, delta }) {
+    const itemId = item.title_id || item.season_id || item.episode_id;
+    waitingObject[`${loadingKey}_${itemId}`] = true;
+
     try {
-        const response = await fastApi.titles.setWatchCount(title.title_id, title.user_details.watch_count + 1);
-        title.user_details.watch_count = response.watch_count;
+        const currentCount = item?.user_details?.watch_count || resolveSeasonWatchCount(item) || 0;
+        const newCount = Math.max(0, currentCount + delta);
+        const response = await apiCall(itemId, newCount);
+
+        if (item?.season_id) {
+            item.episodes.forEach(ep => {
+                if (!ep.user_details) ep.user_details = {};
+                ep.user_details.watch_count = response.watch_count;
+            });
+        } else {
+            item.user_details.watch_count = response.watch_count;
+        }
     } finally {
-        waitingObject.addToTitleWatchCount = false;
+        waitingObject[`${loadingKey}_${itemId}`] = false;
     }
 }
 
-export async function subtractFromTitleWatchCount(title, waitingObject) {
-    waitingObject.subtractFromTitleWatchCount = true;
-    try {
-        // Prevent going below 0
-        const newCount = Math.max(0, title.user_details.watch_count - 1);
-        const response = await fastApi.titles.setWatchCount(title.title_id, newCount);
-        title.user_details.watch_count = response.watch_count;
-    } finally {
-        waitingObject.subtractFromTitleWatchCount = false;
+export const adjustWatchCount = {
+    title: {
+        add: (title, wait) => _updateWatchCount({
+            item: title, 
+            waitingObject: wait, 
+            loadingKey: 'titleWcAdd', 
+            apiCall: fastApi.titles.setWatchCount, 
+            delta: 1 
+        }),
+        subtract: (title, wait) => _updateWatchCount({
+            item: title, 
+            waitingObject: wait, 
+            loadingKey: 'titleWcSub', 
+            apiCall: fastApi.titles.setWatchCount, 
+            delta: -1 
+        }),
+    },
+    season: {
+        add: (season, wait) => _updateWatchCount({
+            item: season, 
+            waitingObject: wait, 
+            loadingKey: 'seasonWcAdd', 
+            apiCall: fastApi.seasons.setWatchCount, 
+            delta: 1
+        }),
+        subtract: (season, wait) => _updateWatchCount({
+            item: season, 
+            waitingObject: wait, 
+            loadingKey: 'seasonWcSub', 
+            apiCall: fastApi.seasons.setWatchCount, 
+            delta: -1
+        }),
+    },
+    episode: {
+        add: (episode, wait) => _updateWatchCount({
+            item: episode, 
+            waitingObject: wait, 
+            loadingKey: 'episodeWcAdd', 
+            apiCall: fastApi.episodes.setWatchCount, 
+            delta: 1 
+        }),
+        subtract: (episode, wait) => _updateWatchCount({
+            item: episode, 
+            waitingObject: wait, 
+            loadingKey: 'episodeWcSub', 
+            apiCall: fastApi.episodes.setWatchCount, 
+            delta: -1 
+        }),
     }
-}
+};

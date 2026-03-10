@@ -4,7 +4,7 @@ import { numberFormatters, timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg'
 import { ref, onMounted, onUnmounted } from 'vue';
 import PaginationDots from './PaginationDots.vue';
-import { addToTitleWatchCount, subtractFromTitleWatchCount, toggleFavourite, toggleWatchlist } from '@/utils/titleActions';
+import { adjustWatchCount, toggleFavourite, toggleWatchlist } from '@/utils/titleActions';
 import LoadingButton from './LoadingButton.vue';
 import { Check, ChevronLeft, ChevronRight, Clock, Heart, Minus } from '@boxicons/vue';
 import { resolveAgeRating } from '@/utils/titleUtils';
@@ -131,8 +131,8 @@ onUnmounted(() => {
                                     <LoadingButton
                                         class="btn-even-padding inner-action add-button"
                                         :class="{'btn-positive': title?.user_details?.watch_count}"
-                                        :loading="waitingfor?.watchCountAdd"
-                                        @click.prevent="addToTitleWatchCount(title, waitingfor)"
+                                        :loading="waitingfor[`titleWcAdd_${title?.title_id}`]"
+                                        @click.prevent="adjustWatchCount.title.add(title, waitingfor)"
                                     >
                                         <template v-if="title?.user_details?.watch_count >= 2">
                                             {{ title?.user_details?.watch_count }}
@@ -142,8 +142,8 @@ onUnmounted(() => {
 
                                     <LoadingButton
                                         class="btn-even-padding inner-action"
-                                        :loading="waitingfor?.watchCountSubtract"
-                                        @click.prevent="subtractFromTitleWatchCount(title, waitingfor)"
+                                        :loading="waitingfor[`titleWcSub_${title?.title_id}`]"
+                                        @click.prevent="adjustWatchCount.title.subtract(title, waitingfor)"
                                     >
                                         <Minus/>
                                     </LoadingButton>

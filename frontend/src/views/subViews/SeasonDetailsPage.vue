@@ -6,6 +6,9 @@ import { numberFormatters, timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg';
 import ModalImages from '@/components/modal/ModalImages.vue';
 import { ChevronLeft, Image, Images } from '@boxicons/vue';
+import { adjustWatchCount } from '@/utils/titleActions';
+import LoadingButton from '@/components/LoadingButton.vue';
+import { resolveSeasonWatchCount } from '@/utils/titleUtils';
 
 const props = defineProps({
     titleDetails: {
@@ -17,6 +20,7 @@ const props = defineProps({
 const route = useRoute();
 const router = useRouter();
 const ImagesModal = ref(null);
+const waitingFor = ref({});
 
 const activeSeason = computed(() => {
     const seasonNumber = Number(route.query.season);
@@ -113,7 +117,18 @@ onUnmounted(() => {
                 </div>
                 <p>{{ activeSeason?.overview }}</p>
                 <div class="actions">
-                    <Button @click="">Add</Button>
+                    <div>
+                        <LoadingButton
+                            :loading="waitingFor[`seasonWcAdd_${activeSeason?.season_id}`]"
+                            @click="adjustWatchCount.season.add(activeSeason, waitingFor, activeSeasonWatchCount)"
+                        >Add</LoadingButton>
+                        {{ resolveSeasonWatchCount(activeSeason) }}
+                        <LoadingButton
+                            :loading="waitingFor[`seasonWcAdd_${activeSeason?.season_id}`]"
+                            @click="adjustWatchCount.season.subtract(activeSeason, waitingFor, activeSeasonWatchCount)"
+                        >Remove</LoadingButton>
+                    </div>
+
                     <Images
                         pack="filled"
                         class="btn btn-text btn-even-padding"
@@ -140,6 +155,17 @@ onUnmounted(() => {
                             {{ timeFormatters.timestampToFullDate(episode.air_date) }}
                         </div>
                         <p>{{ episode.overview }}</p>
+                        <div>
+                            <LoadingButton
+                                :loading="waitingFor[`episodeWcAdd_${episode?.episode_id}`]"
+                                @click="adjustWatchCount.episode.add(episode, waitingFor)"
+                            >Add</LoadingButton>
+                            {{ episode?.user_details?.watch_count }}
+                            <LoadingButton
+                                :loading="waitingFor[`episodeWcSub_${episode?.episode_id}`]"
+                                @click="adjustWatchCount.episode.subtract(episode, waitingFor)"
+                            >Remove</LoadingButton>
+                        </div>
                     </div>
                 </div>
             </div>

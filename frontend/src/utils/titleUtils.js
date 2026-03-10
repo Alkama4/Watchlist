@@ -10,3 +10,10 @@ export function resolveAgeRating(ratings) {
 
     return ratings.find(r => r.iso_3166_1 === settings.defaultCountry) ?? null
 }
+
+export function resolveSeasonWatchCount(season) {
+    const episodes = season?.episodes || [];
+    if (episodes.length === 0) return 0;
+    const counts = episodes.map(ep => ep.user_details?.watch_count ?? 0);
+    return Math.min(...counts);
+}
