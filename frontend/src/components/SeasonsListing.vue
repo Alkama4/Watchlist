@@ -14,7 +14,7 @@ defineProps({
 
 const wrapper = ref(null)
 const expanded = ref(false)
-const visibleSeasons = 3
+const visibleSeasons = 2
 
 const limitHeight = (116 + 12) * visibleSeasons + 68
 const scrollHeight = computed(() => wrapper.value?.scrollHeight)
@@ -28,7 +28,7 @@ const computedHeight = computed(() => {
 
 <template>
     <div class="season-listing">
-        <h4>Seasons</h4>
+        <h3>Seasons</h3>
         <div class="seasons-container" :style="{ height: computedHeight + 'px' }">
             <div ref="wrapper" class="seasons-wrapper">
                 <router-link
@@ -45,16 +45,32 @@ const computedHeight = computed(() => {
 
                     <div class="details">
                         <h4>{{ season?.season_name }}</h4>
-                        <div class="detail-row">
-                            <Tmdb/>
-                            {{ numberFormatters.formatNumberToLocale(season?.tmdb_vote_average) }}
-                            &bull;
-                            {{ timeFormatters.timestampToYear(season?.episodes[0]?.air_date) }}
+                        
+                        <div class="meta-row">
+                            <span class="meta-item">
+                                <Tmdb class="tmdb-icon"/>
+                                {{ numberFormatters.formatNumberToLocale(season?.tmdb_vote_average) }}
+                            </span>
+                            <span class="dot">&bull;</span>
+                            <span class="meta-item">
+                                {{ timeFormatters.timestampToYear(season?.episodes?.[0]?.air_date) }}
+                                <template v-if="
+                                    season?.episodes?.length > 1 && 
+                                    timeFormatters.timestampToYear(season?.episodes?.[0]?.air_date) !== 
+                                    timeFormatters.timestampToYear(season?.episodes?.[season.episodes.length - 1]?.air_date)
+                                ">
+                                    - {{ timeFormatters.timestampToYear(season?.episodes?.[season.episodes.length - 1]?.air_date) }}
+                                </template>
+                            </span>
+                            <span class="dot">&bull;</span>
+                            <span class="meta-item">
+                                {{ season?.episodes?.length }} episodes
+                            </span>
                         </div>
 
-                        <div class="detail-row">
-                            {{ season?.episodes?.length }} episodes
-                        </div>
+                        <p v-if="season?.overview" class="overview">
+                            {{ season.overview }}
+                        </p>
                     </div>
                 </router-link>
             </div>
@@ -66,14 +82,10 @@ const computedHeight = computed(() => {
             >
                 <div class="show-more-text">
                     <template v-if="expanded">
-                        <ChevronUp/>
-                        Show less
-                        <ChevronUp/>
+                        <ChevronUp/> Show less <ChevronUp/>
                     </template>
                     <template v-else>
-                        <ChevronDown/>
-                        Show more
-                        <ChevronDown/>
+                        <ChevronDown/> Show more <ChevronDown/>
                     </template>
                 </div>
             </div>
@@ -96,6 +108,69 @@ const computedHeight = computed(() => {
     gap: var(--spacing-sm-md);
 }
 
+.season-card {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-sm-md);
+    border-radius: var(--border-radius-md);
+    align-items: flex-start;
+    text-align: left;
+    font-weight: 400;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+img.poster {
+    height: 100px;
+    width: 66px; /* Explicit width enforces the 2/3 aspect ratio strictly in flexbox */
+    border-radius: var(--border-radius-sm);
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.details {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-width: 0; /* Prevents text overflow from pushing flex layout */
+    gap: var(--spacing-xs-sm);
+    padding-top: var(--spacing-xs);
+
+    h4 {
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .meta-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--spacing-xs);
+        font-size: var(--fs-neg-1);
+        color: var(--c-text-soft);
+    
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+    }
+    
+    .overview {
+        margin: 0;
+        font-size: var(--fs-neg-1);
+        color: var(--c-text-soft);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.4;
+    }
+}
+
+
+/* Fade Overlay */
 .fade-overlay {
     position: absolute;
     bottom: 0;
@@ -107,9 +182,15 @@ const computedHeight = computed(() => {
     align-items: flex-end;
     cursor: pointer;
     transition: height 0.25s var(--transition-ease-out);
-
+    
     &.expanded {
         height: 38px;
+    }
+    &:hover .show-more-text {
+        transform: translateY(4px);
+    }
+    &:hover.expanded .show-more-text {
+        transform: translateY(-4px);
     }
 
     .show-more-text {
@@ -124,59 +205,5 @@ const computedHeight = computed(() => {
         background-color: transparent !important;
         transition: 0.3s transform var(--transition-bounce);
     }
-
-    &:hover .show-more-text {
-        transform: translateY(4px);
-    }
-    &:hover.expanded .show-more-text {
-        transform: translateY(-4px);
-    }
-}
-
-.season-card {
-    gap: var(--spacing-sm-md);
-    border-radius: var(--border-radius-md);
-    justify-content: flex-start;
-    font-weight: 400;
-}
-
-img.poster {
-    height: 100px;
-    border-radius: var(--border-radius-sm);
-    aspect-ratio: 2/3;
-    object-fit: cover;
-}
-
-.button-row {
-    margin-top: var(--spacing-sm);
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: var(--spacing-sm);
-}
-.button-row a {
-    padding: var(--spacing-sm);
-    width: 32px;
-    box-sizing: border-box;
-}
-
-.details {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-}
-
-h4 {
-    margin: 0;
-    margin-bottom: var(--spacing-sm);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.detail-row {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    font-size: var(--fs-neg-1);
 }
 </style>
