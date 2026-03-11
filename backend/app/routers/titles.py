@@ -85,6 +85,7 @@ async def add_new_title_to_library(
         title_id,
         in_library=True
     )
+    await db.commit()
 
     return {
         "title_id": title_id,
@@ -141,6 +142,7 @@ async def add_existing_title_to_library(
         title_id,
         in_library=True
     )
+    await db.commit()
     return {"title_id": title_id, "in_library": True}
 
 
@@ -156,6 +158,7 @@ async def remove_existing_title_from_library(
         title_id,
         in_library=False
     )
+    await db.commit()
     return {"title_id": title_id, "in_library": False}
 
 
@@ -173,6 +176,7 @@ async def update_title_favourite_flag(
         is_favourite=data.is_favourite,
         in_library=True
     )
+    await db.commit()
     return {
         "title_id": title_id,
         "is_favourite": data.is_favourite,
@@ -194,6 +198,7 @@ async def update_title_watchlist_flag(
         in_watchlist=data.in_watchlist,
         in_library=True
     )
+    await db.commit()
     return {
         "title_id": title_id,
         "in_watchlist": data.in_watchlist,
@@ -235,6 +240,7 @@ async def update_title_notes(
         notes=data.notes,
         in_library=True
     )
+    await db.commit()
     return {
         "title_id": title_id,
         "notes": data.notes,
@@ -283,6 +289,9 @@ async def set_title_language_for_user(
             tmdb_id=title.tmdb_id,
             user_id=user.user_id
         )
+    
+    else:
+        await db.commit()
 
     return {
         "title_id": title_id,
