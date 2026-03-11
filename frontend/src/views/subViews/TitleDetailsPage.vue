@@ -14,13 +14,12 @@ import SeasonsListing from '@/components/SeasonsListing.vue';
 import EpisodeMap from '@/components/EpisodeMap.vue';
 import ModalImages from '@/components/modal/ModalImages.vue';
 import KebabMenu from '@/components/KebabMenu.vue';
-import { AlbumCovers, AlertCircle, AlertTriangle, Check, CheckCircle, Clock, Heart, Images, InfoCircle, Link, ListMinus, ListPlus, MapIcon, Minus, RefreshCw, Star, Translate } from '@boxicons/vue';
+import { AlbumCovers, AlertCircle, AlertTriangle, CheckCircle, Clock, Heart, Images, InfoCircle, Link, ListMinus, ListPlus, MapIcon, RefreshCw, Star, Translate } from '@boxicons/vue';
 import ModalLocale from '@/components/modal/ModalLocale.vue';
 import { resolveAgeRating } from '@/utils/titleUtils';
 import { useSettingsStore } from '@/stores/settings';
 import Tooltip from '@/components/Tooltip.vue';
-import { adjustWatchCount } from '@/utils/titleActions';
-import LoadingButton from '@/components/LoadingButton.vue';
+import WatchCountButtons from '@/components/WatchCountButtons.vue';
 
 const props = defineProps({
     titleDetails: {
@@ -345,30 +344,10 @@ const lastAirDate = computed(() => {
 
                     <div class="actions">
                         <div class="primary-actions">
-                            <div class="watch-count-buttons">
-                                <LoadingButton
-                                    :class="titleDetails?.user_details?.watch_count ? 'btn-positive' : 'btn-primary'"
-                                    :loading="waitingFor[`titleWcAdd_${titleDetails?.title_id}`]"
-                                    @click="adjustWatchCount.title.add(titleDetails, waitingFor)"
-                                >
-                                    <template v-if="!titleDetails?.user_details?.watch_count">
-                                        Mark watched
-                                    </template>
-                                    <template v-else-if="titleDetails?.user_details?.watch_count == 1">
-                                        <Check size="sm"/> Watched
-                                    </template>
-                                    <template v-else-if="titleDetails?.user_details?.watch_count > 1">
-                                        Watched {{ titleDetails?.user_details?.watch_count }} times
-                                    </template>
-                                </LoadingButton>
-                                <LoadingButton
-                                    v-if="titleDetails?.user_details?.watch_count"
-                                    :loading="waitingFor[`titleWcSub_${titleDetails?.title_id}`]"
-                                    @click="adjustWatchCount.title.subtract(titleDetails, waitingFor)"
-                                >
-                                    <Minus size="sm"/>
-                                </LoadingButton>
-                            </div>
+                            <WatchCountButtons
+                                :watchCount="titleDetails?.user_details?.watch_count"
+                                :item="titleDetails"
+                            />
                             
                             <Heart
                                 pack="filled"
@@ -645,29 +624,6 @@ img.poster {
 
     .genres {
         gap: var(--spacing-xs);
-    }
-}
-
-
-.watch-count-buttons {
-    display: flex;
-    width: 220px;
-
-    button:first-child {
-        flex: 1;
-    }
-    button:last-child {
-        width: 52px;
-    }
-    button:first-child:not(:last-child) {
-        border-top-right-radius: 0;
-        border-bottom-right-radius: 0;
-    }
-    button:last-child:not(:first-child) {
-        /* padding-inline: var(--spacing-md); */
-        padding-inline: 0;
-        border-top-left-radius: 0;
-        border-bottom-left-radius: 0;
     }
 }
 

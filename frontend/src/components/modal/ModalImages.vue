@@ -117,7 +117,7 @@ function updateDomData(imageType, imagePath) {
 </script>
 
 <template>
-    <ModalBase header="Title Images" ref="modalRef">
+    <ModalBase :header="titleId ? 'Title Images' : 'Season Images'" ref="modalRef">
         <div class="modal-images" :class="activeType">
             <details>
                 <summary>How are images selected?</summary>

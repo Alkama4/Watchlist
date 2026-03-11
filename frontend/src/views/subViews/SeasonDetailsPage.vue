@@ -9,6 +9,8 @@ import { ChevronLeft, Image, Images } from '@boxicons/vue';
 import { adjustWatchCount } from '@/utils/titleActions';
 import LoadingButton from '@/components/LoadingButton.vue';
 import { resolveSeasonWatchCount } from '@/utils/titleUtils';
+import WatchCountButtons from '@/components/WatchCountButtons.vue';
+import KebabMenu from '@/components/KebabMenu.vue';
 
 const props = defineProps({
     titleDetails: {
@@ -121,22 +123,15 @@ onUnmounted(() => {
                 </div>
                 <p>{{ activeSeason?.overview }}</p>
                 <div class="actions">
-                    <div>
-                        <LoadingButton
-                            :loading="waitingFor[`seasonWcAdd_${activeSeason?.season_id}`]"
-                            @click="adjustWatchCount.season.add(activeSeason, waitingFor, activeSeasonWatchCount)"
-                        >Add</LoadingButton>
-                        {{ resolveSeasonWatchCount(activeSeason) }}
-                        <LoadingButton
-                            :loading="waitingFor[`seasonWcAdd_${activeSeason?.season_id}`]"
-                            @click="adjustWatchCount.season.subtract(activeSeason, waitingFor, activeSeasonWatchCount)"
-                        >Remove</LoadingButton>
-                    </div>
+                    <WatchCountButtons
+                        :watchCount="resolveSeasonWatchCount(activeSeason)"
+                        :item="activeSeason"
+                    />
 
-                    <Images
-                        pack="filled"
-                        class="btn btn-text btn-even-padding"
-                        @click="ImagesModal.open()"
+                    <KebabMenu
+                        :menuItems="[
+                            { iconComponent: Images, label: 'Manage Images', action: ImagesModal?.open }
+                        ]"
                     />
                 </div>
             </div>
@@ -215,15 +210,21 @@ onUnmounted(() => {
     height: fit-content;
     background-color: var(--c-bg-level-1);
     padding: var(--spacing-md);
-    padding-bottom: var(--spacing-lg);
+    /* padding-bottom: var(--spacing-lg); */
     border-radius: var(--border-radius-lg);
-}
-.season-details img.season-poster {
-    width: 100%;
-    aspect-ratio: 2/3;
-    background-color: var(--c-bg-level-2);
-    object-fit: cover;
-    border-radius: var(--border-radius-lg);
+
+    img.season-poster {
+        width: 100%;
+        aspect-ratio: 2/3;
+        background-color: var(--c-bg-level-2);
+        object-fit: cover;
+        border-radius: var(--border-radius-lg);
+    }
+    .actions {
+        display: flex;
+        gap: var(--spacing-sm);
+        justify-content: space-between;
+    }
 }
 
 .episodes-wrapper {
