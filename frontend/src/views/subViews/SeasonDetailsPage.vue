@@ -125,7 +125,8 @@ onUnmounted(() => {
                 <div class="actions">
                     <WatchCountButtons
                         :watchCount="resolveSeasonWatchCount(activeSeason)"
-                        :item="activeSeason"
+                        :title="titleDetails"
+                        :season="activeSeason"
                     />
 
                     <KebabMenu
@@ -157,12 +158,12 @@ onUnmounted(() => {
                         <div>
                             <LoadingButton
                                 :loading="waitingFor[`episodeWcAdd_${episode?.episode_id}`]"
-                                @click="adjustWatchCount.episode.add(episode, waitingFor)"
+                                @click="adjustWatchCount.episode.add(episode, waitingFor, titleDetails)"
                             >Add</LoadingButton>
                             {{ episode?.user_details?.watch_count }}
                             <LoadingButton
                                 :loading="waitingFor[`episodeWcSub_${episode?.episode_id}`]"
-                                @click="adjustWatchCount.episode.subtract(episode, waitingFor)"
+                                @click="adjustWatchCount.episode.subtract(episode, waitingFor, titleDetails)"
                             >Remove</LoadingButton>
                         </div>
                     </div>

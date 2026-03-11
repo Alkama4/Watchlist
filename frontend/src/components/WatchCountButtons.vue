@@ -7,13 +7,9 @@ import { adjustWatchCount } from '@/utils/titleActions';
 const waitingFor = ref({});
 
 defineProps({
-    watchCount: {
-        type: Boolean,
-        default: false
-    },
-    item: {
-        required: true
-    },
+    watchCount: { type: Boolean, default: false },
+    title: { required: false },
+    season: { required: false }
 })
 </script>
 
@@ -21,8 +17,8 @@ defineProps({
     <div class="watch-count-buttons">
         <LoadingButton
             :class="watchCount ? 'btn-positive' : 'btn-primary'"
-            :loading="waitingFor[`titleWcAdd_${item?.title_id || item?.season_id}`]"
-            @click="adjustWatchCount.title.add(item, waitingFor)"
+            :loading="waitingFor[`${season ? 'season' : 'title'}WcAdd_${season?.season_id || title?.title_id}`]"
+            @click="adjustWatchCount[season ? 'season' : 'title'].add(season || title, waitingFor, title)"
         >
             <template v-if="!watchCount">
                 Mark watched
@@ -36,8 +32,8 @@ defineProps({
         </LoadingButton>
         <LoadingButton
             v-if="watchCount"
-            :loading="waitingFor[`titleWcSub_${item?.title_id || item?.season_id}`]"
-            @click="adjustWatchCount.title.subtract(item, waitingFor)"
+            :loading="waitingFor[`${season ? 'season' : 'title'}WcSub_${season?.season_id || title?.title_id}`]"
+            @click="adjustWatchCount[season ? 'season' : 'title'].subtract(season || title, waitingFor, title)"
         >
             <Minus size="sm"/>
         </LoadingButton>

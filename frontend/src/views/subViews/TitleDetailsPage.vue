@@ -346,7 +346,7 @@ const lastAirDate = computed(() => {
                         <div class="primary-actions">
                             <WatchCountButtons
                                 :watchCount="titleDetails?.user_details?.watch_count"
-                                :item="titleDetails"
+                                :title="titleDetails"
                             />
                             
                             <Heart

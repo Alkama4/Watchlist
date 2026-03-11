@@ -35,75 +35,53 @@ export async function toggleWatchlist(title, waitingObject) {
     }
 }
 
-async function _updateWatchCount({ item, waitingObject, loadingKey, apiCall, delta }) {
-    const itemId = item.title_id || item.season_id || item.episode_id;
-    waitingObject[`${loadingKey}_${itemId}`] = true;
+
+async function _updateWatchCount(item, title, wait, key, api, delta) {
+    const id = item.title_id || item.season_id || item.episode_id;
+    const loader = `${key}_${id}`;
+    wait[loader] = true;
 
     try {
-        const currentCount = item?.user_details?.watch_count || resolveSeasonWatchCount(item) || 0;
-        const newCount = Math.max(0, currentCount + delta);
-        const response = await apiCall(itemId, newCount);
+        const current = item.user_details?.watch_count || resolveSeasonWatchCount(item) || 0;
+        const { watch_count: next } = await api(id, Math.max(0, current + delta));
 
-        if (item?.season_id) {
-            item.episodes.forEach(ep => {
-                if (!ep.user_details) ep.user_details = {};
-                ep.user_details.watch_count = response.watch_count;
+        // Update the item itself
+        if (!item.user_details) item.user_details = {};
+        item.user_details.watch_count = next;
+
+        // Cascade changes down (Title -> Seasons -> Episodes)
+        if (item.title_id) {
+            title.seasons?.forEach(s => s.episodes?.forEach(e => {
+                e.user_details = { ...e.user_details, watch_count: next };
+            }));
+        } else if (item.season_id) {
+            item.episodes?.forEach(e => {
+                e.user_details = { ...e.user_details, watch_count: next };
             });
-        } else {
-            item.user_details.watch_count = response.watch_count;
+        }
+
+        // Sync changes up (Episode/Season -> Title)
+        if (!item.title_id && title?.seasons) {
+            const allEps = title.seasons.flatMap(s => s.episodes ?? []);
+            const minWatch = Math.min(...allEps.map(e => e.user_details?.watch_count ?? 0));
+            title.user_details = { ...title.user_details, watch_count: minWatch };
         }
     } finally {
-        waitingObject[`${loadingKey}_${itemId}`] = false;
+        wait[loader] = false;
     }
 }
 
 export const adjustWatchCount = {
     title: {
-        add: (title, wait) => _updateWatchCount({
-            item: title, 
-            waitingObject: wait, 
-            loadingKey: 'titleWcAdd', 
-            apiCall: fastApi.titles.setWatchCount, 
-            delta: 1 
-        }),
-        subtract: (title, wait) => _updateWatchCount({
-            item: title, 
-            waitingObject: wait, 
-            loadingKey: 'titleWcSub', 
-            apiCall: fastApi.titles.setWatchCount, 
-            delta: -1 
-        }),
+        add: (item, wait) => _updateWatchCount(item, item, wait, 'titleWcAdd', fastApi.titles.setWatchCount, 1),
+        subtract: (item, wait) => _updateWatchCount(item, item, wait, 'titleWcSub', fastApi.titles.setWatchCount, -1),
     },
     season: {
-        add: (season, wait) => _updateWatchCount({
-            item: season, 
-            waitingObject: wait, 
-            loadingKey: 'seasonWcAdd', 
-            apiCall: fastApi.seasons.setWatchCount, 
-            delta: 1
-        }),
-        subtract: (season, wait) => _updateWatchCount({
-            item: season, 
-            waitingObject: wait, 
-            loadingKey: 'seasonWcSub', 
-            apiCall: fastApi.seasons.setWatchCount, 
-            delta: -1
-        }),
+        add: (item, wait, title) => _updateWatchCount(item, title, wait, 'seasonWcAdd', fastApi.seasons.setWatchCount, 1),
+        subtract: (item, wait, title) => _updateWatchCount(item, title, wait, 'seasonWcSub', fastApi.seasons.setWatchCount, -1),
     },
     episode: {
-        add: (episode, wait) => _updateWatchCount({
-            item: episode, 
-            waitingObject: wait, 
-            loadingKey: 'episodeWcAdd', 
-            apiCall: fastApi.episodes.setWatchCount, 
-            delta: 1 
-        }),
-        subtract: (episode, wait) => _updateWatchCount({
-            item: episode, 
-            waitingObject: wait, 
-            loadingKey: 'episodeWcSub', 
-            apiCall: fastApi.episodes.setWatchCount, 
-            delta: -1 
-        }),
+        add: (item, wait, title) => _updateWatchCount(item, title, wait, 'episodeWcAdd', fastApi.episodes.setWatchCount, 1),
+        subtract: (item, wait, title) => _updateWatchCount(item, title, wait, 'episodeWcSub', fastApi.episodes.setWatchCount, -1),
     }
 };
