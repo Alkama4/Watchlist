@@ -19,6 +19,8 @@ import ModalLocale from '@/components/modal/ModalLocale.vue';
 import { resolveAgeRating } from '@/utils/titleUtils';
 import { useSettingsStore } from '@/stores/settings';
 import Tooltip from '@/components/Tooltip.vue';
+import { adjustWatchCount } from '@/utils/titleActions';
+import LoadingButton from '@/components/LoadingButton.vue';
 
 const props = defineProps({
     titleDetails: {
@@ -113,23 +115,10 @@ async function addToLibrary() {
     props.titleDetails.user_details.in_library = response.in_library;
 }
 
-async function setTitleWatchCount(count) {
-    const response = await fastApi.titles.setWatchCount(props.titleDetails.title_id, count);
-    props.titleDetails.user_details.watch_count = response.watch_count;
-    props.titleDetails.user_details.in_library = response.in_library;
-}
-async function adjustWatchCount() {
-    await setTitleWatchCount(props.titleDetails.user_details.watch_count + 1);
-}
-async function removeFromTitleWatchCount() {
-    await setTitleWatchCount(props.titleDetails.user_details.watch_count - 1);
-}
-
 
 const chosenAgeRating = computed(() => {
     return resolveAgeRating(props?.titleDetails?.age_ratings);
 })
-
 
 const tmdbEditAgeRatingUrl = computed(() => {
     const path = props?.titleDetails?.title_type === 'movie'
@@ -357,9 +346,10 @@ const lastAirDate = computed(() => {
                     <div class="actions">
                         <div class="primary-actions">
                             <div class="watch-count-buttons">
-                                <button
-                                    @click="adjustWatchCount"
+                                <LoadingButton
                                     :class="titleDetails?.user_details?.watch_count ? 'btn-positive' : 'btn-primary'"
+                                    :loading="waitingFor[`titleWcAdd_${titleDetails?.title_id}`]"
+                                    @click="adjustWatchCount.title.add(titleDetails, waitingFor)"
                                 >
                                     <template v-if="!titleDetails?.user_details?.watch_count">
                                         Mark watched
@@ -370,13 +360,14 @@ const lastAirDate = computed(() => {
                                     <template v-else-if="titleDetails?.user_details?.watch_count > 1">
                                         Watched {{ titleDetails?.user_details?.watch_count }} times
                                     </template>
-                                </button>
-                                <button 
+                                </LoadingButton>
+                                <LoadingButton
                                     v-if="titleDetails?.user_details?.watch_count"
-                                    @click="removeFromTitleWatchCount"
+                                    :loading="waitingFor[`titleWcSub_${titleDetails?.title_id}`]"
+                                    @click="adjustWatchCount.title.subtract(titleDetails, waitingFor)"
                                 >
                                     <Minus size="sm"/>
-                                </button>
+                                </LoadingButton>
                             </div>
                             
                             <Heart
@@ -665,12 +656,16 @@ img.poster {
     button:first-child {
         flex: 1;
     }
+    button:last-child {
+        width: 52px;
+    }
     button:first-child:not(:last-child) {
         border-top-right-radius: 0;
         border-bottom-right-radius: 0;
     }
     button:last-child:not(:first-child) {
-        padding-inline: var(--spacing-md);
+        /* padding-inline: var(--spacing-md); */
+        padding-inline: 0;
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;
     }
