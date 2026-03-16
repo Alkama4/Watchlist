@@ -39,10 +39,31 @@ const totalRuntime = computed(() => {
     return activeSeason.value.episodes.reduce((acc, ep) => acc + (ep.runtime || 0), 0);
 });
 
+const isSeasonSpoilersHidden = computed(() => {
+    if (!activeSeason.value?.episodes) return true;
+    const unwatchedEpisodes = activeSeason.value.episodes.filter(
+        ep => !(ep.user_details?.watch_count > 0)
+    );
+    return unwatchedEpisodes.every(episode => getEpisodeSpoilerStatus(episode));
+});
+
+function toggleSeasonSpoilers() {
+    if (!activeSeason.value?.episodes) return;
+    const targetState = !isSeasonSpoilersHidden.value;
+    activeSeason.value.episodes.forEach(episode => {
+        if (!(episode.user_details?.watch_count > 0)) {
+            episode.spoildersHidden = targetState;
+        }
+    });
+}
+
 // Could potetntially be simplified by reversing the logic
 // and removing this function, but works fine as is.
 function getEpisodeSpoilerStatus(episode, includeWatchCountCheck = false) {
-    if (episode?.spoildersHidden == undefined) return true;
+    if (episode?.spoildersHidden == undefined) {
+        if (episode?.user_details?.watch_count > 0) return false;
+        else return true;
+    }
     if (includeWatchCountCheck) return episode?.spoildersHidden && !episode?.user_details?.watch_count > 0
     else return episode?.spoildersHidden;
 }
@@ -155,11 +176,19 @@ onUnmounted(() => {
                 </div>
                 <p>{{ activeSeason?.overview }}</p>
                 <div class="actions">
-                    <WatchCountButtons
-                        :watchCount="resolveSeasonWatchCount(activeSeason)"
-                        :title="titleDetails"
-                        :season="activeSeason"
-                    />
+                    <div class="primary-actions">
+                        <WatchCountButtons
+                            :watchCount="resolveSeasonWatchCount(activeSeason)"
+                            :title="titleDetails"
+                            :season="activeSeason"
+                        />
+
+                        <component
+                            :is="isSeasonSpoilersHidden ? EyeSlash : Eye"
+                            class="btn btn-text btn-even-padding"
+                            @click="toggleSeasonSpoilers"
+                        />
+                    </div>
 
                     <KebabMenu
                         :menuItems="[
@@ -277,6 +306,11 @@ onUnmounted(() => {
         display: flex;
         gap: var(--spacing-sm);
         justify-content: space-between;
+
+        .primary-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
     }
 }
 
