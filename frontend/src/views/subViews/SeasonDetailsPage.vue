@@ -41,9 +41,34 @@ const totalRuntime = computed(() => {
 
 // Could potetntially be simplified by reversing the logic
 // and removing this function, but works fine as is.
-function getEpisodeSpoilerStatus(episode) {
+function getEpisodeSpoilerStatus(episode, includeWatchCountCheck = false) {
     if (episode?.spoildersHidden == undefined) return true;
-    return episode?.spoildersHidden;
+    if (includeWatchCountCheck) return episode?.spoildersHidden && !episode?.user_details?.watch_count > 0
+    else return episode?.spoildersHidden;
+}
+
+function getObfuscatedText(text, isHidden) {
+    if (!text) return '';
+    if (!isHidden) return text;
+
+    const charPool = "abcdefghijklmnopqrstuvwxyz";
+    
+    let seed = 0;
+    for (let i = 0; i < text.length; i++) {
+        seed = ((seed << 5) - seed) + text.charCodeAt(i);
+        seed = seed & seed;
+    }
+
+    return text.split('').map((char, index) => {
+        if (/[ \n\t.,!?;:]/.test(char)) return char;
+
+        const x = Math.sin(seed + index + char.charCodeAt(0)) * 10000;
+        
+        const pseudoRandom = Math.floor(Math.abs(x));
+        const poolIndex = pseudoRandom % charPool.length;
+        
+        return charPool[poolIndex];
+    }).join('');
 }
 
 const handleBack = () => {
@@ -159,7 +184,7 @@ onUnmounted(() => {
                             class="episode-backdrop"
                         >
                         <EyeSlash
-                            v-if="getEpisodeSpoilerStatus(episode) && !episode?.user_details?.watch_count > 0"
+                            v-if="getEpisodeSpoilerStatus(episode, true)"
                             size="lg" class="eye-icon"
                         />
                         <Eye
@@ -167,8 +192,11 @@ onUnmounted(() => {
                             size="lg" class="eye-icon"
                         />
                     </div>
-                    <div>
-                        <h4>{{ episode?.episode_number }}. {{ episode?.episode_name }}</h4>
+                    <div :class="{'obfuscate': false}">
+                        <h4>
+                            <span class="number">{{ episode?.episode_number }}. </span>
+                            <span class="name">{{ getObfuscatedText(episode?.episode_name, getEpisodeSpoilerStatus(episode, true)) }}</span>
+                        </h4>
                         <div>
                             {{ timeFormatters.minutesToHrAndMin(episode.runtime) }}
                             &bull;
@@ -178,7 +206,7 @@ onUnmounted(() => {
                             &bull;
                             {{ timeFormatters.timestampToFullDate(episode.air_date) }}
                         </div>
-                        <p>{{ episode.overview }}</p>
+                        <p>{{ getObfuscatedText(episode.overview, getEpisodeSpoilerStatus(episode, true)) }}</p>
                         <div>
                             <LoadingButton
                                 :loading="waitingFor[`episodeWcAdd_${episode?.episode_id}`]"
@@ -299,7 +327,7 @@ onUnmounted(() => {
             
             &:hover {
                 img {
-                    filter: blur(0px) brightness(0.75);
+                    filter: blur(0px) opacity(0.66);
                 }
                 .eye-icon {
                     opacity: 1;
@@ -315,7 +343,7 @@ onUnmounted(() => {
                 }
                 
                 &:hover img {
-                    filter: blur(var(--blur-heavy)) brightness(0.75);
+                    filter: blur(var(--blur-heavy)) opacity(0.66);
                 }
             }
         }
@@ -327,6 +355,15 @@ onUnmounted(() => {
     }
     p {
         margin: var(--spacing-sm) 0;
+
+    }
+    .obfuscate {
+        h4 .name {
+            filter: blur(6px);
+        }
+        p {
+            filter: blur(6px);
+        }
     }
 }
 
