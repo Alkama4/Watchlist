@@ -216,6 +216,15 @@ onUnmounted(() => {
                                 {{ getObfuscatedText(episode?.episode_name, isEpisodeSpoilerVisible(episode)) }}
                             </span>
                         </h4>
+                        <div>
+                            {{ timeFormatters.minutesToHrAndMin(episode.runtime) }}
+                            &bull;
+                            <Tmdb/>
+                            {{ numberFormatters.formatNumberToLocale(episode.tmdb_vote_average) }}
+                            ({{ numberFormatters.formatCompactNumber(episode.tmdb_vote_count) }} votes)
+                            &bull;
+                            {{ timeFormatters.timestampToFullDate(episode.air_date) }}
+                        </div>
                         <p>{{ getObfuscatedText(episode.overview, isEpisodeSpoilerVisible(episode)) }}</p>
                         <div>
                             <LoadingButton
