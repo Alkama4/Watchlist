@@ -160,13 +160,26 @@ onUnmounted(() => {
                     class="season-poster"
                 >
                 <h3>{{ activeSeason?.season_name }}</h3>
-                <div>
-                    <Tmdb/>
-                    {{ numberFormatters.formatNumberToLocale(activeSeason?.tmdb_vote_average) }}
-                    &bull;
-                    {{ activeSeason?.episodes?.length }} episodes
-                    &bull;
-                    {{ timeFormatters.minutesToHrAndMin(totalRuntime) }}
+                <div class="meta-row">
+                    <span>
+                        <Tmdb/>
+                        {{ numberFormatters.formatNumberToLocale(activeSeason?.tmdb_vote_average) }}
+                    </span>
+                    |
+                    <span>
+                        {{ timeFormatters.timestampToYear(activeSeason?.episodes?.[0]?.air_date) }}
+                        <template v-if="
+                            activeSeason?.episodes?.length > 1 && 
+                            timeFormatters.timestampToYear(activeSeason?.episodes?.[0]?.air_date) !== 
+                            timeFormatters.timestampToYear(activeSeason?.episodes?.[activeSeason.episodes.length - 1]?.air_date)
+                        ">
+                            - {{ timeFormatters.timestampToYear(activeSeason?.episodes?.[activeSeason.episodes.length - 1]?.air_date) }}
+                        </template>
+                    </span>
+                    |
+                    <span>{{ activeSeason?.episodes?.length }} episodes</span>
+                    |
+                    <span>{{ timeFormatters.minutesToHrAndMin(totalRuntime) }}</span>
                 </div>
                 <p>{{ activeSeason?.overview }}</p>
                 <div class="actions">
@@ -291,6 +304,15 @@ onUnmounted(() => {
         background-color: var(--c-bg-level-2);
         object-fit: cover;
         border-radius: var(--border-radius-lg);
+    }
+    .meta-row {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        column-gap: var(--spacing-sm-md);
+        row-gap: var(--spacing-xs);
+        font-weight: 600;
+        flex-wrap: wrap;
     }
     .actions {
         display: flex;
