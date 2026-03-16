@@ -5,7 +5,7 @@ import { getTitleImageUrl } from '@/utils/imagePath';
 import { numberFormatters, timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg';
 import ModalImages from '@/components/modal/ModalImages.vue';
-import { ChevronLeft, Image, Images } from '@boxicons/vue';
+import { ChevronLeft, Eye, EyeSlash, Image, Images } from '@boxicons/vue';
 import { adjustWatchCount } from '@/utils/titleActions';
 import LoadingButton from '@/components/LoadingButton.vue';
 import { resolveSeasonWatchCount } from '@/utils/titleUtils';
@@ -38,6 +38,13 @@ const totalRuntime = computed(() => {
     if (!activeSeason.value?.episodes) return 0;
     return activeSeason.value.episodes.reduce((acc, ep) => acc + (ep.runtime || 0), 0);
 });
+
+// Could potetntially be simplified by reversing the logic
+// and removing this function, but works fine as is.
+function getEpisodeSpoilerStatus(episode) {
+    if (episode?.spoildersHidden == undefined) return true;
+    return episode?.spoildersHidden;
+}
 
 const handleBack = () => {
     // If we came from the overview of the SAME title
@@ -138,11 +145,28 @@ onUnmounted(() => {
             </div>
             <div class="episodes-wrapper">
                 <div v-for="episode in activeSeason?.episodes" class="episode">
-                    <img 
-                        :src="getTitleImageUrl(episode, '800', 'backdrop')"
-                        :alt="`Episode backdrop: ${episode?.episode_number}. ${episode?.episode_name}`"
-                        class="episode-backdrop"
+                    <div
+                        class="episode-backdrop-wrapper"
+                        :class="{
+                            'btn-text unwatched': !episode?.user_details?.watch_count > 0,
+                            'spoilers-hidden': getEpisodeSpoilerStatus(episode)
+                        }"
+                        @click="episode.spoildersHidden = !getEpisodeSpoilerStatus(episode)"
                     >
+                        <img 
+                            :src="getTitleImageUrl(episode, '800', 'backdrop')"
+                            :alt="`Episode backdrop: ${episode?.episode_number}. ${episode?.episode_name}`"
+                            class="episode-backdrop"
+                        >
+                        <EyeSlash
+                            v-if="getEpisodeSpoilerStatus(episode) && !episode?.user_details?.watch_count > 0"
+                            size="lg" class="eye-icon"
+                        />
+                        <Eye
+                            v-else
+                            size="lg" class="eye-icon"
+                        />
+                    </div>
                     <div>
                         <h4>{{ episode?.episode_number }}. {{ episode?.episode_name }}</h4>
                         <div>
@@ -242,20 +266,68 @@ onUnmounted(() => {
     padding: var(--spacing-sm-md);
     border-radius: var(--border-radius-lg);
     transition: background-color 0.1s ease-out;
-}
-.episode img.episode-backdrop {
-    width: 400px;
-    aspect-ratio: 16/9;
-    background-color: var(--c-bg-level-1);
-    object-fit: cover;
-    border-radius: var(--border-radius-md);
-}
-.episode h4 {
-    margin-top: 0;
-    margin-bottom: var(--spacing-sm);
-}
-.episode p {
-    margin: var(--spacing-sm) 0;
+
+    .episode-backdrop-wrapper {
+        position: relative;
+        width: 400px;
+        aspect-ratio: 16/9;
+        background-color: var(--c-bg-level-1);
+        border-radius: var(--border-radius-md);
+        overflow: hidden;
+
+        .eye-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-50%);
+            opacity: 0;
+            transition: opacity 0.1s var(--transition-ease-out);
+        }
+        
+        img.episode-backdrop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: filter 0.1s var(--transition-ease-out);
+        }
+
+        &.unwatched {
+            user-select: none;
+            
+            &:hover {
+                img {
+                    filter: blur(0px) brightness(0.75);
+                }
+                .eye-icon {
+                    opacity: 1;
+                }
+            } 
+
+            &.spoilers-hidden {
+                img {
+                    filter: blur(var(--blur-heavy)); 
+                }
+                .eye-icon {
+                    opacity: 1;
+                }
+                
+                &:hover img {
+                    filter: blur(var(--blur-heavy)) brightness(0.75);
+                }
+            }
+        }
+    }
+
+    h4 {
+        margin-top: 0;
+        margin-bottom: var(--spacing-sm);
+    }
+    p {
+        margin: var(--spacing-sm) 0;
+    }
 }
 
 
