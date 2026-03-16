@@ -39,41 +39,39 @@ const totalRuntime = computed(() => {
     return activeSeason.value.episodes.reduce((acc, ep) => acc + (ep.runtime || 0), 0);
 });
 
-const isSeasonSpoilersHidden = computed(() => {
-    if (!activeSeason.value?.episodes) return true;
+const areSeasonSpoilersVisible = computed(() => {
+    if (!activeSeason.value?.episodes) return false;
+
     const unwatchedEpisodes = activeSeason.value.episodes.filter(
         ep => !(ep.user_details?.watch_count > 0)
     );
-    return unwatchedEpisodes.every(episode => getEpisodeSpoilerStatus(episode));
+
+    return unwatchedEpisodes.some(episode => isEpisodeSpoilerVisible(episode));
 });
 
+// 2. Updated Toggle Logic
 function toggleSeasonSpoilers() {
     if (!activeSeason.value?.episodes) return;
-    const targetState = !isSeasonSpoilersHidden.value;
+    // If they are currently visible, we want to hide them (false), and vice-versa
+    const targetState = !areSeasonSpoilersVisible.value; 
     activeSeason.value.episodes.forEach(episode => {
         if (!(episode.user_details?.watch_count > 0)) {
-            episode.spoildersHidden = targetState;
+            episode.spoilersVisible = targetState;
         }
     });
 }
 
-// Could potetntially be simplified by reversing the logic
-// and removing this function, but works fine as is.
-function getEpisodeSpoilerStatus(episode, includeWatchCountCheck = false) {
-    if (episode?.spoildersHidden == undefined) {
-        if (episode?.user_details?.watch_count > 0) return false;
-        else return true;
-    }
-    if (includeWatchCountCheck) return episode?.spoildersHidden && !episode?.user_details?.watch_count > 0
-    else return episode?.spoildersHidden;
+// 3. Updated Helper Name & Logic
+function isEpisodeSpoilerVisible(episode) {
+    return !!(episode?.spoilersVisible || episode?.user_details?.watch_count > 0);
 }
 
-function getObfuscatedText(text, isHidden) {
+// 4. Updated Obfuscation Parameter
+function getObfuscatedText(text, isVisible) {
     if (!text) return '';
-    if (!isHidden) return text;
+    if (isVisible) return text; // Logic flipped: return text if visible
 
     const charPool = "abcdefghijklmnopqrstuvwxyz";
-    
     let seed = 0;
     for (let i = 0; i < text.length; i++) {
         seed = ((seed << 5) - seed) + text.charCodeAt(i);
@@ -82,13 +80,9 @@ function getObfuscatedText(text, isHidden) {
 
     return text.split('').map((char, index) => {
         if (/[ \n\t.,!?;:]/.test(char)) return char;
-
         const x = Math.sin(seed + index + char.charCodeAt(0)) * 10000;
-        
         const pseudoRandom = Math.floor(Math.abs(x));
-        const poolIndex = pseudoRandom % charPool.length;
-        
-        return charPool[poolIndex];
+        return charPool[pseudoRandom % charPool.length];
     }).join('');
 }
 
@@ -184,7 +178,7 @@ onUnmounted(() => {
                         />
 
                         <component
-                            :is="isSeasonSpoilersHidden ? EyeSlash : Eye"
+                            :is="areSeasonSpoilersVisible ? Eye : EyeSlash"
                             class="btn btn-text btn-even-padding"
                             @click="toggleSeasonSpoilers"
                         />
@@ -198,44 +192,31 @@ onUnmounted(() => {
                 </div>
             </div>
             <div class="episodes-wrapper">
-                <div v-for="episode in activeSeason?.episodes" class="episode">
+                <div v-for="episode in activeSeason?.episodes" :key="episode.episode_id" class="episode">
                     <div
                         class="episode-backdrop-wrapper"
                         :class="{
-                            'btn-text unwatched': !episode?.user_details?.watch_count > 0,
-                            'spoilers-hidden': getEpisodeSpoilerStatus(episode)
+                            'btn-text unwatched': !(episode?.user_details?.watch_count > 0),
+                            'spoilers-visible': isEpisodeSpoilerVisible(episode)
                         }"
-                        @click="episode.spoildersHidden = !getEpisodeSpoilerStatus(episode)"
+                        @click="episode.spoilersVisible = !isEpisodeSpoilerVisible(episode)"
                     >
                         <img 
                             :src="getTitleImageUrl(episode, '800', 'backdrop')"
                             :alt="`Episode backdrop: ${episode?.episode_number}. ${episode?.episode_name}`"
                             class="episode-backdrop"
                         >
-                        <EyeSlash
-                            v-if="getEpisodeSpoilerStatus(episode, true)"
-                            size="lg" class="eye-icon"
-                        />
-                        <Eye
-                            v-else
-                            size="lg" class="eye-icon"
-                        />
+                        <Eye v-if="isEpisodeSpoilerVisible(episode)" size="lg" class="eye-icon" />
+                        <EyeSlash v-else size="lg" class="eye-icon" />
                     </div>
-                    <div :class="{'obfuscate': false}">
+                    <div>
                         <h4>
                             <span class="number">{{ episode?.episode_number }}. </span>
-                            <span class="name">{{ getObfuscatedText(episode?.episode_name, getEpisodeSpoilerStatus(episode, true)) }}</span>
+                            <span class="name">
+                                {{ getObfuscatedText(episode?.episode_name, isEpisodeSpoilerVisible(episode)) }}
+                            </span>
                         </h4>
-                        <div>
-                            {{ timeFormatters.minutesToHrAndMin(episode.runtime) }}
-                            &bull;
-                            <Tmdb/>
-                            {{ numberFormatters.formatNumberToLocale(episode.tmdb_vote_average) }}
-                            ({{ numberFormatters.formatCompactNumber(episode.tmdb_vote_count) }} votes)
-                            &bull;
-                            {{ timeFormatters.timestampToFullDate(episode.air_date) }}
-                        </div>
-                        <p>{{ getObfuscatedText(episode.overview, getEpisodeSpoilerStatus(episode, true)) }}</p>
+                        <p>{{ getObfuscatedText(episode.overview, isEpisodeSpoilerVisible(episode)) }}</p>
                         <div>
                             <LoadingButton
                                 :loading="waitingFor[`episodeWcAdd_${episode?.episode_id}`]"
@@ -358,27 +339,26 @@ onUnmounted(() => {
 
         &.unwatched {
             user-select: none;
-            
-            &:hover {
-                img {
-                    filter: blur(0px) opacity(0.66);
-                }
-                .eye-icon {
-                    opacity: 1;
-                }
-            } 
 
-            &.spoilers-hidden {
-                img {
-                    filter: blur(var(--blur-heavy)); 
-                }
-                .eye-icon {
-                    opacity: 1;
-                }
-                
-                &:hover img {
-                    filter: blur(var(--blur-heavy)) opacity(0.66);
-                }
+            img.episode-backdrop {
+                filter: blur(var(--blur-heavy));
+            }
+            
+            .eye-icon {
+                opacity: 1;
+            }
+            &.spoilers-visible:not(:hover) .eye-icon {
+                opacity: 0;
+            }
+
+            &.spoilers-visible img.episode-backdrop {
+                filter: blur(0px) opacity(1);
+            }
+            &:hover img.episode-backdrop {
+                filter: blur(var(--blur-heavy)) opacity(0.66);
+            }
+            &.spoilers-visible:hover img.episode-backdrop {
+                filter: blur(0px) opacity(0.66);
             }
         }
     }
