@@ -71,7 +71,7 @@ function getObfuscatedText(text, isVisible) {
     if (!text) return '';
     if (isVisible) return text; // Logic flipped: return text if visible
 
-    const charPool = "abcdefghijklmnopqrstuvwxyz";
+    const charPool = "eeeettttaaaoooinnnsssrrrhhhddllluuuccmmffyywwggppbvkxqjzeeeeettttaaaoooinnnsssrrrhhhddllluuuccmmffyywwggpp";
     let seed = 0;
     for (let i = 0; i < text.length; i++) {
         seed = ((seed << 5) - seed) + text.charCodeAt(i);
@@ -222,7 +222,7 @@ onUnmounted(() => {
                         <Eye v-if="isEpisodeSpoilerVisible(episode)" size="lg" class="eye-icon" />
                         <EyeSlash v-else size="lg" class="eye-icon" />
                     </div>
-                    <div>
+                    <div class="details">
                         <h4>
                             <span class="number">{{ episode?.episode_number }}. </span>
                             <span class="name">
@@ -239,16 +239,13 @@ onUnmounted(() => {
                             {{ timeFormatters.timestampToFullDate(episode.air_date) }}
                         </div>
                         <p>{{ getObfuscatedText(episode.overview, isEpisodeSpoilerVisible(episode)) }}</p>
-                        <div>
-                            <LoadingButton
-                                :loading="waitingFor[`episodeWcAdd_${episode?.episode_id}`]"
-                                @click="adjustWatchCount.episode.add(episode, waitingFor, titleDetails)"
-                            >Add</LoadingButton>
-                            {{ episode?.user_details?.watch_count }}
-                            <LoadingButton
-                                :loading="waitingFor[`episodeWcSub_${episode?.episode_id}`]"
-                                @click="adjustWatchCount.episode.subtract(episode, waitingFor, titleDetails)"
-                            >Remove</LoadingButton>
+
+                        <div class="controls">
+                            <WatchCountButtons
+                                :watchCount="episode?.user_details?.watch_count"
+                                :title="titleDetails"
+                                :episode="episode"
+                            />
                         </div>
                     </div>
                 </div>
@@ -330,14 +327,15 @@ onUnmounted(() => {
     display: flex;
     flex-direction: column;
     max-height: 100%;
+    /* gap: var(--spacing-lg); */
 }
 
 .episode {
     display: grid;
     grid-template-columns: auto 1fr;
-    gap: var(--spacing-md);
+    gap: var(--spacing-md-lg);
     max-width: 1400px;
-    padding: var(--spacing-sm-md);
+    margin: var(--spacing-sm-md);
     border-radius: var(--border-radius-lg);
     transition: background-color 0.1s ease-out;
 
@@ -394,20 +392,30 @@ onUnmounted(() => {
         }
     }
 
-    h4 {
-        margin-top: 0;
-        margin-bottom: var(--spacing-sm);
-    }
-    p {
-        margin: var(--spacing-sm) 0;
-
-    }
-    .obfuscate {
-        h4 .name {
-            filter: blur(6px);
+    .details {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: var(--spacing-sm);
+    
+        h4 {
+            -webkit-line-clamp: 1;
+            line-clamp: 1;
         }
         p {
-            filter: blur(6px);
+            -webkit-line-clamp: 4;
+            line-clamp: 4;
+        }
+        h4,
+        p {
+            margin: 0;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .controls {
+            margin-top: var(--spacing-sm);
         }
     }
 }
