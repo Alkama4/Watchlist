@@ -392,6 +392,7 @@ img.logo {
                 }
 
                 .inner-action {
+                    box-sizing: border-box;
                     aspect-ratio: 1;
                     height: 100%;
                     font-size: var(--fs-0);
