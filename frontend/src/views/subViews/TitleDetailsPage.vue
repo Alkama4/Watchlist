@@ -166,8 +166,9 @@ const lastAirDate = computed(() => {
                 class="backdrop"
             >
     
-            <div class="logo-wrapper" v-if="getTitleImageUrl(titleDetails, 'original', 'logo')">
+            <div class="logo-wrapper">
                 <img 
+                    v-if="getTitleImageUrl(titleDetails, 'original', 'logo')"
                     :src="getTitleImageUrl(titleDetails, 'original', 'logo')"
                     :alt="`${titleDetails?.title_type} logo: ${titleDetails?.name}`"
                     class="logo"
