@@ -1,24 +1,48 @@
 <script setup>
 import { Check, Minus } from '@boxicons/vue';
 import LoadingButton from './LoadingButton.vue';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { adjustWatchCount } from '@/utils/titleActions';
+
+const props = defineProps({
+    watchCount: { type: [Number, Boolean], default: 0 },
+    title: { type: Object, required: false },
+    season: { type: Object, required: false },
+    episode: { type: Object, required: false }
+});
 
 const waitingFor = ref({});
 
-defineProps({
-    watchCount: { type: Boolean, default: false },
-    title: { required: false },
-    season: { required: false }
-})
+const entity = computed(() => {
+    if (props.episode) return {
+        type: 'episode',
+        data: props.episode,
+        id: props.episode.episode_id
+    };
+    if (props.season) return {
+        type: 'season',
+        data: props.season,
+        id: props.season.season_id
+    };
+    return {
+        type: 'title',
+        data: props.title,
+        id: props.title?.title_id
+    };
+});
+
+const handleAction = (action) => {
+    const { type, data } = entity.value;
+    adjustWatchCount[type][action](data, waitingFor.value, props.title);
+};
 </script>
 
 <template>
     <div class="watch-count-buttons">
         <LoadingButton
             :class="watchCount ? 'btn-positive' : 'btn-primary'"
-            :loading="waitingFor[`${season ? 'season' : 'title'}WcAdd_${season?.season_id || title?.title_id}`]"
-            @click="adjustWatchCount[season ? 'season' : 'title'].add(season || title, waitingFor, title)"
+            :loading="waitingFor[`${entity.type}WcAdd_${entity.id}`]"
+            @click="handleAction('add')"
         >
             <template v-if="!watchCount">
                 Mark watched
@@ -30,10 +54,11 @@ defineProps({
                 Watched {{ watchCount }} times
             </template>
         </LoadingButton>
+
         <LoadingButton
             v-if="watchCount"
-            :loading="waitingFor[`${season ? 'season' : 'title'}WcSub_${season?.season_id || title?.title_id}`]"
-            @click="adjustWatchCount[season ? 'season' : 'title'].subtract(season || title, waitingFor, title)"
+            :loading="waitingFor[`${entity.type}WcSub_${entity.id}`]"
+            @click="handleAction('subtract')"
         >
             <Minus size="sm"/>
         </LoadingButton>
