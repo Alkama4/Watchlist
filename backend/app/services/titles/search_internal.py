@@ -114,6 +114,7 @@ def _apply_filters(stmt, q: TitleQueryIn):
                 .join(Season, Season.season_id == Episode.season_id)
                 .where(
                     Season.title_id == Title.title_id,
+                    Season.season_number > 0,
                     UserEpisodeDetails.user_id == UserTitleDetails.user_id,
                     UserEpisodeDetails.watch_count > 0
                 )
