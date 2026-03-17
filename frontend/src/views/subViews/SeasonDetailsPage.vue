@@ -190,11 +190,13 @@ onUnmounted(() => {
                             :season="activeSeason"
                         />
 
-                        <component
-                            :is="areSeasonSpoilersVisible ? Eye : EyeSlash"
-                            class="btn btn-text btn-even-padding"
+                        <button
+                            class="btn-text btn-even-padding"
                             @click="toggleSeasonSpoilers"
-                        />
+                            :disabled="resolveSeasonWatchCount(activeSeason)"
+                        >
+                            <component :is="areSeasonSpoilersVisible ? Eye : EyeSlash"/>
+                        </button>
                     </div>
 
                     <KebabMenu
