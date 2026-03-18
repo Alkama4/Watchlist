@@ -75,11 +75,9 @@ const computedHeight = computed(() => {
                             </span>
                         </div>
 
-                        <p v-if="season?.overview" class="overview">
-                            {{ season.overview }}
+                        <p class="overview" :class="{'empty': !season?.overview}">
+                            {{ season?.overview || "No overview available." }}
                         </p>
-
-                        
                     </div>
                 </router-link>
             </div>
@@ -193,6 +191,11 @@ img.poster {
         -webkit-box-orient: vertical;
         overflow: hidden;
         line-height: 1.4;
+
+        &.empty {
+            color: var(--c-text-subtle);
+            font-style: italic;
+        }
     }
 }
 
