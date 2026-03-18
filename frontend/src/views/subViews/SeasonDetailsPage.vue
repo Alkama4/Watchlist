@@ -5,9 +5,7 @@ import { getTitleImageUrl } from '@/utils/imagePath';
 import { numberFormatters, timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg';
 import ModalImages from '@/components/modal/ModalImages.vue';
-import { ChevronLeft, Eye, EyeSlash, Image, Images } from '@boxicons/vue';
-import { adjustWatchCount } from '@/utils/titleActions';
-import LoadingButton from '@/components/LoadingButton.vue';
+import { ChevronLeft, Eye, EyeSlash, Images } from '@boxicons/vue';
 import { resolveSeasonWatchCount } from '@/utils/titleUtils';
 import WatchCountButtons from '@/components/WatchCountButtons.vue';
 import KebabMenu from '@/components/KebabMenu.vue';
@@ -194,6 +192,9 @@ onUnmounted(() => {
                             class="btn-text btn-even-padding"
                             @click="toggleSeasonSpoilers"
                             :disabled="resolveSeasonWatchCount(activeSeason)"
+                            :title="resolveSeasonWatchCount(activeSeason) 
+                                ? 'All episodes watched - no spoilers to show.' 
+                                : (areSeasonSpoilersVisible ? 'Hide spoilers' : 'Show spoilers')"
                         >
                             <component :is="areSeasonSpoilersVisible ? Eye : EyeSlash"/>
                         </button>
