@@ -181,7 +181,7 @@ onUnmounted(() => {
                     |
                     <span>{{ timeFormatters.minutesToHrAndMin(totalRuntime) }}</span>
                 </div>
-                <p>{{ activeSeason?.overview }}</p>
+                <p :class="{'unavailable': !activeSeason?.overview}">{{ activeSeason?.overview || 'No overview available.' }}</p>
                 <div class="actions">
                     <div class="primary-actions">
                         <WatchCountButtons
@@ -322,6 +322,11 @@ onUnmounted(() => {
             display: flex;
             gap: var(--spacing-sm);
         }
+    }
+
+    .unavailable {
+        color: var(--c-text-subtle);
+        font-style: italic;
     }
 }
 

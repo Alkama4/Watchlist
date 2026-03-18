@@ -75,7 +75,7 @@ const computedHeight = computed(() => {
                             </span>
                         </div>
 
-                        <p class="overview" :class="{'empty': !season?.overview}">
+                        <p class="overview" :class="{'unavailable': !season?.overview}">
                             {{ season?.overview || "No overview available." }}
                         </p>
                     </div>
@@ -192,7 +192,7 @@ img.poster {
         overflow: hidden;
         line-height: 1.4;
 
-        &.empty {
+        &.unavailable {
             color: var(--c-text-subtle);
             font-style: italic;
         }
