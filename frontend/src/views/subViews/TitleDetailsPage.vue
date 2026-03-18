@@ -178,7 +178,7 @@ const lastAirDate = computed(() => {
             <div class="main-info">
                 <div class="left-side">
                     <img 
-                        :src="getTitleImageUrl(titleDetails, 'original', 'poster')"
+                        :src="getTitleImageUrl(titleDetails, '800', 'poster')"
                         :alt="`${titleDetails?.title_type} poster: ${titleDetails?.name}`"
                         class="poster"
                     >
