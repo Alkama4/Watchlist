@@ -231,7 +231,7 @@ onUnmounted(() => {
                                 {{ getObfuscatedText(episode?.episode_name, isEpisodeSpoilerVisible(episode)) }}
                             </span>
                         </h4>
-                        <div>
+                        <div class="meta-row">
                             {{ timeFormatters.minutesToHrAndMin(episode.runtime) }}
                             &bull;
                             <Tmdb/>
@@ -405,15 +405,19 @@ onUnmounted(() => {
             line-clamp: 1;
         }
         p {
-            -webkit-line-clamp: 4;
-            line-clamp: 4;
+            -webkit-line-clamp: 5;
+            line-clamp: 5;
         }
-        h4,
-        p {
+        h4, p {
             margin: 0;
             display: -webkit-box;
             -webkit-box-orient: vertical;
             overflow: hidden;
+        }
+
+        p, .meta-row {
+            color: var(--c-text-soft);
+            font-size: 0.95rem;
         }
 
         .controls {
