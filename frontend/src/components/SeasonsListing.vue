@@ -3,7 +3,8 @@ import { computed, ref } from 'vue'
 import { getTitleImageUrl } from '@/utils/imagePath';
 import { numberFormatters, timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg'
-import { ChevronDown, ChevronUp } from '@boxicons/vue';
+import { Check, ChevronDown, ChevronUp } from '@boxicons/vue';
+import { resolveSeasonWatchCount } from '@/utils/titleUtils';
 
 defineProps({
     titleDetails: {
@@ -44,7 +45,13 @@ const computedHeight = computed(() => {
                     >
 
                     <div class="details">
-                        <h4>{{ season?.season_name }}</h4>
+                        <h4>
+                            <div v-if="resolveSeasonWatchCount(season)" class="watch-count">
+                                <template v-if="resolveSeasonWatchCount(season) == 1"><Check size="xs"/></template>
+                                <template v-else>{{ resolveSeasonWatchCount(season) }}</template>
+                            </div>
+                            {{ season?.season_name }}
+                        </h4>
                         
                         <div class="meta-row">
                             <span class="meta-item">
@@ -71,6 +78,8 @@ const computedHeight = computed(() => {
                         <p v-if="season?.overview" class="overview">
                             {{ season.overview }}
                         </p>
+
+                        
                     </div>
                 </router-link>
             </div>
@@ -109,6 +118,7 @@ const computedHeight = computed(() => {
 }
 
 .season-card {
+    position: relative;
     display: flex;
     flex-direction: row;
     gap: var(--spacing-sm-md);
@@ -140,6 +150,22 @@ img.poster {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        display: flex;
+        gap: var(--spacing-sm);
+        align-items: center;
+    }
+
+    .watch-count {
+        background-color: var(--c-positive);
+        border-radius: 100px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        
+        font-weight: 600;
+        font-size: var(--fs-neg-1);
+        width: var(--spacing-md-lg);
+        height: var(--spacing-md-lg);
     }
 
     .meta-row {
@@ -163,6 +189,7 @@ img.poster {
         color: var(--c-text-soft);
         display: -webkit-box;
         -webkit-line-clamp: 2;
+        line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
         line-height: 1.4;
