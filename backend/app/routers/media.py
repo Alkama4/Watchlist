@@ -3,9 +3,12 @@ import asyncio
 from PIL import Image
 import aiofiles
 import httpx
-from fastapi import APIRouter, HTTPException, Query, Request, Response
+from fastapi import APIRouter, HTTPException, Query, Request, Response, Depends
 from fastapi.responses import FileResponse, StreamingResponse
 import shutil
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.dependencies import get_db
+from app.services.video_assets import sync_all_video_assets
 
 router = APIRouter()
 
@@ -232,3 +235,10 @@ async def stream_video(request: Request):
         status_code=206 if is_range else 200,
         headers=headers,
     )
+
+
+@router.post("/video_assets/sync")
+async def synchronize_video_assets_relationships_with_titles(
+    db: AsyncSession = Depends(get_db),
+):
+    return await sync_all_video_assets(db)
