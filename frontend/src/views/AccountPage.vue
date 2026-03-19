@@ -91,11 +91,23 @@ async function syncJellyfin() {
     waitingFor.value.jellyfinSync = true;
     try {
         const response = await fastApi.integrations.syncJellyfin();
-        alert(`${response.message}. ${response.details.newly_linked} links added, ${response.details.total_matched_in_library} links in total, ${response.details.jellyfin_library_size} titles in Jellyfin`)
+        alert(`${response.message} ${response.details.newly_linked} links added, ${response.details.total_matched_in_library} links in total, ${response.details.jellyfin_library_size} titles in Jellyfin`)
     } catch(e) {
         alert(JSON.parse(e.request.response).detail);
     } finally {
         waitingFor.value.jellyfinSync = false;
+    }
+}
+
+async function syncVideoAssets() {
+    waitingFor.value.vidoeAssetSync = true;
+    try {
+        const response = await fastApi.media.syncVideoAssets();
+        alert(`${response.message} ${response.details.added_links} links added, ${response.details.removed_links} links removed, ${response.details.total_links} links in total, ${response.details.total_titles_with_links} titles with links.`)
+    } catch(e) {
+        alert(JSON.parse(e.request.response).detail);
+    } finally {
+        waitingFor.value.vidoeAssetSync = false;
     }
 }
 
@@ -122,6 +134,21 @@ onMounted(async () => {
                     <hr>
                     <button @click="deleteAccountInit" class="btn-negative">Delete Account</button>
                 </div>
+            </div>
+            <h1 style="margin-top: var(--spacing-lg);">Actions</h1>
+            <div class="actions">
+                <LoadingButton
+                    :loading="waitingFor?.jellyfinSync"
+                    @click="syncJellyfin"
+                >
+                    Manually sync Jellyfin
+                </LoadingButton>
+                <LoadingButton
+                    :loading="waitingFor?.vidoeAssetSync"
+                    @click="syncVideoAssets"
+                >
+                    Manually sync video assets
+                </LoadingButton>
             </div>
         </div>
 
@@ -156,14 +183,6 @@ onMounted(async () => {
 
             <h3>Themes</h3>
             <ThemePicker/>
-
-            <h1 style="margin-top: var(--spacing-lg);">Actions</h1>
-            <LoadingButton
-                :loading="waitingFor?.jellyfinSync"
-                @click="syncJellyfin"
-            >
-                Manually sync jellyfin
-            </LoadingButton>
         </div>
 
 
@@ -242,6 +261,12 @@ onMounted(async () => {
 /* Settings column */
 .settings-column {
     flex: 2 1 400px;
+}
+
+.actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
 }
 
 
