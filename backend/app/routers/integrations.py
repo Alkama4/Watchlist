@@ -49,7 +49,7 @@ async def sync_jellyfin_links(db: AsyncSession = Depends(get_db)):
         await db.commit()
 
     return {
-        "message": "Sync completed successfully",
+        "message": "Sync completed successfully.",
         "details": {
             "newly_linked": updated_count,
             "already_linked": already_linked_count,

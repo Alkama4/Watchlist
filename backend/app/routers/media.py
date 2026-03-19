@@ -256,4 +256,8 @@ async def stream_video(
 async def synchronize_video_assets_relationships_with_titles(
     db: AsyncSession = Depends(get_db),
 ):
-    return await sync_all_video_assets(db)
+    details = await sync_all_video_assets(db)
+    return {
+        "message": "Sync completed successfully.",
+        "details": details
+    }
