@@ -125,8 +125,15 @@ class VideoAssetOut(BaseModel):
     video_asset_id: int
     file_name: str
     video_type: Optional[VideoType]
+
     resolution: Optional[str] = None
-    is_hdr: bool
+    hdr_type: Optional[str] = None
+    filesize_bytes: Optional[int] = None
+    duration_ms: Optional[int] = None
+
+    codec: Optional[str] = None
+    bit_depth: Optional[int] = None
+    frame_rate: Optional[float] = None
     
 
 ####### Titles #######

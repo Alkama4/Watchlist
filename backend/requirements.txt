@@ -11,3 +11,4 @@ aiofiles
 pillow
 babel
 RapidFuzz
+pymediainfo

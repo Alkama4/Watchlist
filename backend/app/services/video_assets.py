@@ -1,9 +1,11 @@
 import json
 import re
 import os
+import asyncio
 from pathlib import Path
 from typing import Dict, Any, List, Tuple, Optional, Set
 from rapidfuzz import fuzz
+from pymediainfo import MediaInfo
 from sqlalchemy import select, extract, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -223,10 +225,47 @@ async def _process_title_folder(db: AsyncSession, title: Title, folder_path: Pat
     processed_paths: Set[str] = set()
     added_count = 0
     
-    for file in folder_path.rglob("*"):
-        if file.suffix.lower() not in ['.mkv', '.mp4', '.avi']:
-            continue
+    # 1. Gather all valid video files first
+    valid_files = [f for f in folder_path.rglob("*") if f.suffix.lower() in ['.mkv', '.mp4', '.avi']]
+    if not valid_files:
+        return unmapped_files, processed_paths, added_count
+
+    # 2. Batch fetch existing DB assets for these files to avoid N+1 queries
+    str_paths = [str(f.absolute()) for f in valid_files]
+    stmt = select(VideoAsset).where(VideoAsset.file_path.in_(str_paths))
+    result = await db.execute(stmt)
+    asset_map = {a.file_path: a for a in result.scalars().all()}
+
+    # 3. Figure out which files need a deep scan based on mtime
+    files_to_scan = []
+    file_mtimes = {}
+    for f in valid_files:
+        path_str = str(f.absolute())
+        current_mtime = f.stat().st_mtime
+        file_mtimes[path_str] = current_mtime
         
+        asset = asset_map.get(path_str) 
+        # If new, or if the file was modified on disk since we last checked
+        if not asset or getattr(asset, 'mtime', 0) < current_mtime:
+            files_to_scan.append(path_str)
+
+    # 4. Run the deep scans concurrently using the default ThreadPool
+    parsed_metadata_map = {}
+    if files_to_scan:
+        async def _parse_worker(path: str):
+            # to_thread offloads the blocking I/O so your async loop doesn't freeze
+            return path, await asyncio.to_thread(_extract_media_info, path)
+        
+        results = await asyncio.gather(*[_parse_worker(p) for p in files_to_scan])
+        parsed_metadata_map = {p: meta for p, meta in results}
+
+    # 5. Process files and update the DB sequentially (Thread-safe for SQLAlchemy)
+    for file in valid_files:
+        path_str = str(file.absolute())
+        current_mtime = file_mtimes[path_str]
+        existing_asset = asset_map.get(path_str)
+        metadata = parsed_metadata_map.get(path_str)
+
         v_type = VideoType.movie if title.title_type == TitleType.movie else VideoType.episode
         
         rel_parts = file.relative_to(folder_path).parts[:-1]
@@ -235,29 +274,30 @@ async def _process_title_folder(db: AsyncSession, title: Title, folder_path: Pat
             if not has_season_folder:
                 v_type = VideoType.featurette
 
+        ep_id = None
         if v_type == VideoType.episode:
-            episode_id, error_msg = await _match_episode_to_db(db, title, file)
-            if not episode_id:
+            ep_id, error_msg = await _match_episode_to_db(db, title, file)
+            if not ep_id:
                 unmapped_files.append({
-                    "path": str(file),
+                    "path": path_str,
                     "failure_reason": error_msg,
-                    "context": {
-                        "title_id": title.title_id,
-                        "title_name": title.name_original,
-                        "file_name": file.name
-                    }
+                    "context": {"title_id": title.title_id, "file_name": file.name}
                 })
                 continue 
-            
         
-            path_str, is_new = await _upsert_media_asset(db, None, episode_id, v_type, file)
-            processed_paths.add(path_str)
-            if is_new: added_count += 1
-        else:
+        is_new = await _upsert_media_asset(
+            db=db, 
+            existing_asset=existing_asset,
+            title_id=title.title_id if v_type != VideoType.episode else None, 
+            episode_id=ep_id, 
+            v_type=v_type, 
+            file_path=file,
+            current_mtime=current_mtime,
+            metadata=metadata
+        )
         
-            path_str, is_new = await _upsert_media_asset(db, title.title_id, None, v_type, file)
-            processed_paths.add(path_str)
-            if is_new: added_count += 1
+        processed_paths.add(path_str)
+        if is_new: added_count += 1
             
     return unmapped_files, processed_paths, added_count
 
@@ -286,39 +326,91 @@ async def _match_episode_to_db(db: AsyncSession, title: Title, file_path: Path) 
     return ep_id, None
 
 
-async def _upsert_media_asset(db: AsyncSession, title_id, episode_id, v_type, file_path: Path) -> Tuple[str, bool]:
+async def _upsert_media_asset(
+    db: AsyncSession, 
+    existing_asset: Optional[VideoAsset], 
+    title_id: Optional[int], 
+    episode_id: Optional[int], 
+    v_type, 
+    file_path: Path,
+    current_mtime: float,
+    metadata: Optional[Dict[str, Any]]
+) -> bool:
+    
     str_path = str(file_path.absolute())
-    stmt = select(VideoAsset).where(VideoAsset.file_path == str_path)
-    result = await db.execute(stmt)
-    asset = result.scalar_one_or_none()
-    
-    hdr_match = HDR_REGEX.search(file_path.name)
-    res_match = RES_REGEX.search(file_path.name)
-    resolution = None
-    if res_match:
-        val = res_match.group(1).lower()
-        if val == "4k":
-            resolution = "2160p"
-        else:
-            resolution = val
-    
     is_new = False
+    asset = existing_asset
+
     if not asset:
         asset = VideoAsset(
             file_path=str_path,
             file_name=file_path.name,
             title_id=title_id,
             episode_id=episode_id,
-            video_type=v_type,
-            resolution=resolution if resolution else None,
-            is_hdr=True if hdr_match else False
+            video_type=v_type
         )
         db.add(asset)
         is_new = True
     else:
+        # Always sync basic fields just in case it got moved/renamed
         asset.file_name = file_path.name 
-        asset.resolution = resolution if resolution else asset.resolution
-        asset.is_hdr = True if hdr_match else asset.is_hdr
+        asset.title_id = title_id
+        asset.episode_id = episode_id
+        asset.video_type = v_type
+
+    # If this file was newly scanned (or modified), update the deep metadata
+    if metadata is not None:
+        asset.filesize_bytes = metadata.get("filesize_bytes")
+        asset.duration_ms = metadata.get("duration_ms")
+        asset.codec = metadata.get("codec")
+        asset.bit_depth = metadata.get("bit_depth")
+        asset.frame_rate = metadata.get("frame_rate")
+        
+        # Prefer true metadata, fallback to regex for resolution
+        if metadata.get("resolution"):
+            asset.resolution = metadata["resolution"]
+        else:
+            res_match = RES_REGEX.search(file_path.name)
+            asset.resolution = "2160p" if (res_match and res_match.group(1).lower() == "4k") else (res_match.group(1).lower() if res_match else asset.resolution)
+        
+        asset.hdr_type = metadata.get("hdr_type")
+        asset.mtime = current_mtime
 
     await db.commit()
-    return str_path, is_new
+    return is_new
+
+
+def _extract_media_info(file_path: str) -> dict:
+    """Reads file headers using libmediainfo. Runs synchronously."""
+    try:
+        print(f"Reading metadata for {file_path}")
+        mi = MediaInfo.parse(file_path, parse_speed=0)
+        general = mi.general_tracks[0] if mi.general_tracks else None
+        video = mi.video_tracks[0] if mi.video_tracks else None
+
+        if not general and not video:
+            return {}
+
+        bit_depth = None
+        if video and video.bit_depth:
+            digits = ''.join(filter(str.isdigit, str(video.bit_depth)))
+            bit_depth = int(digits) if digits else None
+
+        frame_rate = None
+        if video and video.frame_rate:
+            try:
+                frame_rate = float(video.frame_rate)
+            except ValueError:
+                pass
+
+        return {
+            "resolution": f"{video.width}x{video.height}" if video and video.width else None,
+            "hdr_type": video.hdr_format if video else None,
+            "filesize_bytes": general.file_size if general else None,
+            "duration_ms": general.duration if general else None,
+            "codec": video.format if video else None,
+            "bit_depth": bit_depth,
+            "frame_rate": frame_rate
+        }
+    except Exception:
+        return {}
