@@ -1,14 +1,16 @@
 import os
 import asyncio
-from PIL import Image
 import aiofiles
 import httpx
+import shutil
+from PIL import Image
 from fastapi import APIRouter, HTTPException, Query, Request, Response, Depends
 from fastapi.responses import FileResponse, StreamingResponse
-import shutil
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.dependencies import get_db
+from sqlalchemy import select
 from app.services.video_assets import sync_all_video_assets
+from app.dependencies import get_db
+from app.models import VideoAsset
 
 router = APIRouter()
 
@@ -165,39 +167,43 @@ async def get_image(
         return FileResponse(local_file_path)
 
 
-# VIDEO_PATH = "C:\\Users\\aleks\\Desktop\\large_test_file.mkv"
-VIDEO_PATH = "C:\\Users\\aleks\\Desktop\\small_test_file.mkv"
+@router.get("/video/{video_asset_id}/{title}")
+@router.get("/video/{video_asset_id}")
+async def stream_video(
+    video_asset_id: int, 
+    request: Request, 
+    title: str = None,  # Not used here, players/browsers pick it up from the url
+    db: AsyncSession = Depends(get_db)
+):
+    # 1. Fetch the file path from the database
+    stmt = select(VideoAsset.file_path).where(VideoAsset.video_asset_id == video_asset_id)
+    result = await db.execute(stmt)
+    video_path = result.scalar_one_or_none()
 
-@router.api_route("/video", methods=["GET", "HEAD"])
-async def stream_video(request: Request):
-    if not os.path.exists(VIDEO_PATH):
-        raise HTTPException(status_code=404)
+    if not video_path:
+        raise HTTPException(status_code=404, detail="Video asset record not found")
 
-    file_size = os.path.getsize(VIDEO_PATH)
+    # 2. Check if the physical file exists
+    if not os.path.exists(video_path):
+        raise HTTPException(status_code=404, detail="Video file missing on disk")
+
+    file_size = os.path.getsize(video_path)
     range_header = request.headers.get("range")
 
     start = 0
     end = file_size - 1
 
+    # Byte-range logic
     if range_header:
         units, _, value = range_header.partition("=")
-        if units != "bytes":
-            range_header = None
-        elif "," in value:
-            # Multi-range not supported → ignore per common practice
-            range_header = None
-        else:
+        if units == "bytes" and "," not in value:
             start_str, _, end_str = value.partition("-")
-
-            if start_str == "":
-                if not end_str:
-                    range_header = None
-                else:
-                    length = int(end_str)
-                    start = max(file_size - length, 0)
-                    end = file_size - 1
+            
+            if start_str == "" and end_str:
+                length = int(end_str)
+                start = max(file_size - length, 0)
             else:
-                start = int(start_str)
+                start = int(start_str) if start_str else 0
                 if end_str:
                     end = int(end_str)
 
@@ -207,10 +213,18 @@ async def stream_video(request: Request):
     is_range = range_header is not None
     chunk_size = end - start + 1
 
+    ext = os.path.splitext(video_path)[1].lower()
+    if ext == ".mkv":
+        content_type = "video/x-matroska"
+    elif ext == ".webm":
+        content_type = "video/webm"
+    else:
+        content_type = "video/mp4"
+
     headers = {
         "Accept-Ranges": "bytes",
         "Content-Length": str(chunk_size),
-        "Content-Type": "video/x-matroska",
+        "Content-Type": content_type
     }
 
     if is_range:
@@ -219,8 +233,9 @@ async def stream_video(request: Request):
     if request.method == "HEAD":
         return Response(status_code=206 if is_range else 200, headers=headers)
 
+    # Helper generator to stream the file
     def iter_file():
-        with open(VIDEO_PATH, "rb") as f:
+        with open(video_path, "rb") as f:
             f.seek(start)
             remaining = chunk_size
             while remaining > 0:
