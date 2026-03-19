@@ -5,10 +5,11 @@ import { getTitleImageUrl } from '@/utils/imagePath';
 import { numberFormatters, timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg';
 import ModalImages from '@/components/modal/ModalImages.vue';
-import { ChevronLeft, Eye, EyeSlash, Images } from '@boxicons/vue';
-import { resolveSeasonWatchCount } from '@/utils/titleUtils';
+import { Bug, ChevronLeft, Copy, Eye, EyeSlash, Images, Play } from '@boxicons/vue';
+import { buildVideoAssetUrl, resolveSeasonWatchCount } from '@/utils/titleUtils';
 import WatchCountButtons from '@/components/WatchCountButtons.vue';
 import KebabMenu from '@/components/KebabMenu.vue';
+import FilterDropDown from '@/components/FilterDropDown.vue';
 
 const props = defineProps({
     titleDetails: {
@@ -24,7 +25,6 @@ const props = defineProps({
 const route = useRoute();
 const router = useRouter();
 const ImagesModal = ref(null);
-const waitingFor = ref({});
 
 const activeSeason = computed(() => {
     const seasonNumber = Number(route.query.season);
@@ -96,6 +96,13 @@ const handleBack = () => {
         router.push({ path: route.path, query: {} });
     }
 };
+
+function copyUrl(url) {
+    if (!url) return;
+    navigator.clipboard.writeText(url)
+        .then(() => console.log('Copied!', url))
+        .catch(err => console.error('Failed to copy', err));
+}
 
 function next() {
     const nextSeason = Number(route.query.season) + 1;
@@ -249,6 +256,41 @@ onUnmounted(() => {
                                 :title="titleDetails"
                                 :episode="episode"
                             />
+                            <FilterDropDown label="Watch now">
+                                <div 
+                                    v-for="video in episode?.video_assets" 
+                                    :key="video?.video_asset_id"
+                                    class="video-row"
+                                    style="display: flex; align-items: center; gap: 10px; padding: 5px 10px;"
+                                >
+                                    <div style="min-width: 80px; display: flex; align-items: center; gap: 5px;">
+                                        <span v-if="video?.is_hdr" class="hdr-tag">HDR</span>
+                                        <strong>{{ video?.resolution }}</strong>
+                                    </div>
+
+                                    <a
+                                        :href="buildVideoAssetUrl(video, titleDetails, 'mpv-handler', activeSeason, episode)"
+                                        class="btn btn-text btn-even-padding no-deco"
+                                        title="Launch MPV"
+                                    >
+                                        <Play pack="filled" size="sm"/> <span>Launch MPV</span>
+                                    </a>
+                                    <a
+                                        :href="buildVideoAssetUrl(video, titleDetails, 'mpv-handler-debug', activeSeason, episode)"
+                                        class="btn btn-text btn-even-padding no-deco"
+                                        title="Debug"
+                                    >
+                                        <Bug pack="filled" size="sm"/> <span>Debug</span>
+                                    </a>
+                                    <button
+                                        class="btn-text btn-even-padding"
+                                        title="Copy URL"
+                                        @click="copyUrl(buildVideoAssetUrl(video, titleDetails, 'base', activeSeason, episode))"
+                                    >
+                                        <Copy pack="filled" size="sm"/> <span>Copy URL</span>
+                                    </button>
+                                </div>
+                            </FilterDropDown>
                         </div>
                     </div>
                 </div>
@@ -428,6 +470,8 @@ onUnmounted(() => {
 
         .controls {
             margin-top: var(--spacing-sm);
+            display: flex;
+            gap: var(--spacing-sm);
         }
     }
 }

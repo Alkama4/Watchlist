@@ -14,12 +14,13 @@ import SeasonsListing from '@/components/SeasonsListing.vue';
 import EpisodeMap from '@/components/EpisodeMap.vue';
 import ModalImages from '@/components/modal/ModalImages.vue';
 import KebabMenu from '@/components/KebabMenu.vue';
-import { AlbumCovers, AlertCircle, AlertTriangle, CheckCircle, Clock, Heart, Images, InfoCircle, Link, ListMinus, ListPlus, MapIcon, RefreshCw, Star, Translate } from '@boxicons/vue';
+import { AlbumCovers, AlertCircle, AlertTriangle, CheckCircle, Clock, Heart, Images, InfoCircle, Link, ListMinus, ListPlus, MapIcon, Play, RefreshCw, Star, Translate } from '@boxicons/vue';
 import ModalLocale from '@/components/modal/ModalLocale.vue';
-import { resolveAgeRating } from '@/utils/titleUtils';
+import { buildVideoAssetUrl, resolveAgeRating } from '@/utils/titleUtils';
 import { useSettingsStore } from '@/stores/settings';
 import Tooltip from '@/components/Tooltip.vue';
 import WatchCountButtons from '@/components/WatchCountButtons.vue';
+import FilterDropDown from '@/components/FilterDropDown.vue';
 
 const props = defineProps({
     titleDetails: {
@@ -387,6 +388,55 @@ const lastAirDate = computed(() => {
                                 class="btn btn-text btn-even-padding"
                                 @click="addToLibrary"
                             />
+
+                            <FilterDropDown label="Watch now" v-if="titleDetails?.video_assets">
+                                <div 
+                                    v-for="(video, index) in titleDetails?.video_assets" 
+                                    :key="video?.video_asset_id"
+                                    class="video-row"
+                                    :style="{
+                                        display: 'flex', 
+                                        flexDirection: 'column', 
+                                        padding: 'var(--spacing-sm) var(--spacing-md)',
+                                        borderTop: index > 0 ? '1px solid var(--border-color-subtle)' : 'none'
+                                    }"
+                                >
+                                    <div 
+                                        class="subtle" 
+                                        :title="video?.file_name"
+                                        style="font-size: var(--fs-neg-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; opacity: 0.7;"
+                                    >
+                                        {{ video?.video_type }}
+                                        &bull;
+                                        {{ video?.file_name }}
+                                    </div>
+
+                                    <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
+                                        <div style="min-width: 75px; display: flex; align-items: center; gap: 4px; flex-shrink: 0;">
+                                            <span v-if="video?.is_hdr" class="hdr-tag">HDR</span>
+                                            <strong style="font-size: var(--fs-neg-1);">{{ video?.resolution }}</strong>
+                                        </div>
+
+                                        <div style="display: flex; gap: 4px;">
+                                            <a
+                                                v-for="handler in [
+                                                    { type: 'base', label: 'Direct', title: 'Direct Link' },
+                                                    { type: 'mpv-handler', label: 'MPV', title: 'MPV' },
+                                                    { type: 'mpv-handler-debug', label: 'Debug', title: 'Debug' }
+                                                ]"
+                                                :key="handler.type"
+                                                :href="buildVideoAssetUrl(video, titleDetails, handler.type)"
+                                                :title="handler.title"
+                                                class="btn btn-text btn-even-padding no-deco"
+                                                style="padding: 2px 8px;"
+                                            >
+                                                <Play pack="filled" size="sm"/> 
+                                                <span style="font-size: var(--fs-neg-1);">{{ handler.label }}</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </FilterDropDown>
                         </div>
 
                         <KebabMenu
