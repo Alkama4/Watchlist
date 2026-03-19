@@ -256,7 +256,7 @@ onUnmounted(() => {
                                 :title="titleDetails"
                                 :episode="episode"
                             />
-                            <FilterDropDown label="Watch now">
+                            <FilterDropDown v-if="episode?.video_assets" label="Watch now">
                                 <div 
                                     v-for="video in episode?.video_assets" 
                                     :key="video?.video_asset_id"
