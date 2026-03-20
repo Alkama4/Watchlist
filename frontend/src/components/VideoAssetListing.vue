@@ -85,9 +85,11 @@ const formatHeader = (type) => {
     /* font-size: var(--fs-neg-2); */
     color: var(--c-text-subtle);
     padding: var(--spacing-sm) var(--spacing-sm-md) var(--spacing-xs);
-    position: sticky;
+    /* position: sticky; */
     top: 0;
-    background: var(--c-bg-base);
+    /* background: var(--c-bg-base); */
+    /* backdrop-filter: blur(var(--blur-subtle)); */
+    /* background-color: var(--c-bg-opaque-base); */
     z-index: 1;
     margin: 0;
 }
