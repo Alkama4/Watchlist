@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps } from 'vue';
+import { defineProps, computed } from 'vue';
 import LabelDropDown from './LabelDropDown.vue';
 import VideoAssetCard from './VideoAssetCard.vue';
 
@@ -9,19 +9,51 @@ const props = defineProps({
     season: { type: [Object, Number, String], default: null },
     episode: { type: Object, default: () => ({}) },
 });
+
+// Group assets by video_type
+const groupedAssets = computed(() => {
+    const assets = Array.isArray(props.videoAssets) 
+        ? props.videoAssets 
+        : Object.values(props.videoAssets);
+
+    return assets.reduce((groups, video) => {
+        const type = video?.video_type || 'other';
+        if (!groups[type]) groups[type] = [];
+        groups[type].push(video);
+        return groups;
+    }, {});
+});
+
+const formatHeader = (type) => {
+    if (!type) return 'Unknown Assets';
+    const cleanType = type.toLowerCase();
+    return cleanType.charAt(0).toUpperCase() + cleanType.slice(1) + 's';
+};
 </script>
 
 <template>
-    <LabelDropDown v-if="videoAssets && videoAssets.length" label="Video Assets" class="video-dropdown">
+    <LabelDropDown v-if="videoAssets && Object.keys(videoAssets).length" label="Video Assets" class="video-dropdown">
         <div class="video-list">
-            <VideoAssetCard 
-                v-for="video in videoAssets" 
-                :key="video?.video_asset_id"
-                :video="video"
-                :title="title"
-                :season="season"
-                :episode="episode"
-            />
+            <div 
+                v-for="(videos, type, index) in groupedAssets" 
+                :key="type" 
+                class="asset-group"
+            >
+                <hr v-if="index">
+
+                <h6 class="group-header">
+                    {{ formatHeader(type) }} ({{ videos.length }})
+                </h6>
+
+                <VideoAssetCard 
+                    v-for="video in videos" 
+                    :key="video?.video_asset_id"
+                    :video="video"
+                    :title="title"
+                    :season="season"
+                    :episode="episode"
+                />
+            </div>
         </div>
     </LabelDropDown>
 </template>
@@ -36,20 +68,27 @@ const props = defineProps({
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xs);
-    padding: var(--spacing-xs);
-    max-height: 40vh;
+    max-height: 50vh; /* Increased slightly to account for headers */
     overflow-y: auto;
 }
 
-/* Featurettes header if you decide to use it for sectioning later */
-.featurettes-header {
-    font-size: var(--fs-neg-1);
-    font-weight: 700;
-    text-transform: uppercase;
+.asset-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.group-header {
+    font-weight: 600;
+    /* letter-spacing: 1px; */
+    /* text-transform: uppercase; */
+    /* font-size: var(--fs-neg-2); */
     color: var(--c-text-subtle);
-    padding: var(--spacing-md) var(--spacing-md) var(--spacing-xs);
-    border-top: 1px solid var(--c-border-subtle, var(--c-border));
-    margin-top: var(--spacing-sm);
-    letter-spacing: 0.5px;
+    padding: var(--spacing-sm) var(--spacing-sm-md) var(--spacing-xs);
+    position: sticky;
+    top: 0;
+    background: var(--c-bg-base);
+    z-index: 1;
+    margin: 0;
 }
 </style>
