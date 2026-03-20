@@ -23,22 +23,18 @@ export function buildVideoAssetUrl(video, titleDetails, type = "base", season = 
     const titleName = titleDetails?.name;
     let label = null;
 
-    // Episode case
     if (episode?.episode_number !== undefined) {
-        const sNum = season.season_number;
-        const eNum = episode.episode_number;
+        const sNum = season?.season_number;
+        const eNum = episode?.episode_number;
         label = `${titleName} - S${sNum}E${eNum}`;
-    }
-    // Movie case
-    else if (video?.video_type === "movie") {
+    } else if (video?.video_type === "movie") {
         label = titleName;
-    }
-    // Featurette / other
-    else if (video?.file_name) {
+    } else if (video?.file_name) {
         const featuretteName = video.file_name.split(".")[0];
         label = `${titleName} - ${featuretteName}`;
     }
 
+    // 2. Build the Raw API URL
     const path = `/media/video/${video?.video_asset_id}`;
     const fullPath = label ? `${path}/${label}` : path;
     const baseUrl = encodeURI(`${API_BASE_URL}${fullPath}`);
@@ -47,12 +43,23 @@ export function buildVideoAssetUrl(video, titleDetails, type = "base", season = 
         return baseUrl;
     }
 
-    const safeEncoded = btoa(baseUrl)
-        .replace(/\+/g, "-")
-        .replace(/\//g, "_")
-        .replace(/=+$/g, "");
+    if (type === "mpv-kt") {
+        const intentParts = [
+            `intent:${baseUrl}#Intent`,
+            `action=android.intent.action.VIEW`,
+            `package=live.mehiz.mpvkt`,
+            `S.title=${encodeURIComponent(label || 'Video')}`,
+            `type=video/*`,
+            `end`
+        ];
+        return intentParts.join(';');
+    }
 
     if (type === "mpv-handler" || type === "mpv-handler-debug") {
+        const safeEncoded = btoa(baseUrl)
+            .replace(/\+/g, "-")
+            .replace(/\//g, "_")
+            .replace(/=+$/g, "");
         return `${type}://play/${safeEncoded}`;
     }
 

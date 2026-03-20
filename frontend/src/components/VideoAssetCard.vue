@@ -1,5 +1,5 @@
 <script setup>
-import { ref, defineProps } from 'vue'; // Added ref
+import { ref, defineProps, computed } from 'vue'; // Added ref
 import { buildVideoAssetUrl } from '@/utils/titleUtils';
 import { timeFormatters } from '@/utils/formatters';
 import { ChevronDown } from '@boxicons/vue';
@@ -60,11 +60,32 @@ const toggleSpecs = () => {
 const msToMin = (ms) => {
     return Math.floor(ms / 1000 / 60)
 }
+
+const getDeviceHandler = () => {
+    // Check modern User-Agent Client Hints (Chrome, Edge, etc.)
+    if (navigator.userAgentData?.platform) {
+        return navigator.userAgentData.platform === "Android" ? 'mpv-kt' : 'mpv-handler';
+    }
+    
+    // Fallback to the standard userAgent string (Firefox, Safari, older browsers)
+    const ua = navigator.userAgent;
+    if (/android/i.test(ua)) {
+        return 'mpv-kt';
+    }
+
+    return 'mpv-handler';
+};
+
+const videoAssetUrl = computed(() => {
+    const handlerType = getDeviceHandler();
+    return buildVideoAssetUrl(props.video, props.title, handlerType, props.season, props.episode);
+});
+
 </script>
 
 <template>
     <a 
-        :href="buildVideoAssetUrl(video, title, 'mpv-handler', season, episode)"
+        :href="videoAssetUrl"
         class="video-card btn btn-text no-deco"
     >
         <div class="card-header">
