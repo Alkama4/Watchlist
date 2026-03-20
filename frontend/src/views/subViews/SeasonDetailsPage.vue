@@ -10,6 +10,7 @@ import { buildVideoAssetUrl, resolveSeasonWatchCount } from '@/utils/titleUtils'
 import WatchCountButtons from '@/components/WatchCountButtons.vue';
 import KebabMenu from '@/components/KebabMenu.vue';
 import FilterDropDown from '@/components/FilterDropDown.vue';
+import VideoAssetListing from '@/components/VideoAssetListing.vue';
 
 const props = defineProps({
     titleDetails: {
@@ -256,41 +257,12 @@ onUnmounted(() => {
                                 :title="titleDetails"
                                 :episode="episode"
                             />
-                            <FilterDropDown v-if="episode?.video_assets" label="Watch now">
-                                <div 
-                                    v-for="video in episode?.video_assets" 
-                                    :key="video?.video_asset_id"
-                                    class="video-row"
-                                    style="display: flex; align-items: center; gap: 10px; padding: 5px 10px;"
-                                >
-                                    <div style="min-width: 80px; display: flex; align-items: center; gap: 5px;">
-                                        <span v-if="video?.is_hdr" class="hdr-tag">HDR</span>
-                                        <strong>{{ video?.resolution }}</strong>
-                                    </div>
-
-                                    <a
-                                        :href="buildVideoAssetUrl(video, titleDetails, 'mpv-handler', activeSeason, episode)"
-                                        class="btn btn-text btn-even-padding no-deco"
-                                        title="Launch MPV"
-                                    >
-                                        <Play pack="filled" size="sm"/> <span>Launch MPV</span>
-                                    </a>
-                                    <a
-                                        :href="buildVideoAssetUrl(video, titleDetails, 'mpv-handler-debug', activeSeason, episode)"
-                                        class="btn btn-text btn-even-padding no-deco"
-                                        title="Debug"
-                                    >
-                                        <Bug pack="filled" size="sm"/> <span>Debug</span>
-                                    </a>
-                                    <button
-                                        class="btn-text btn-even-padding"
-                                        title="Copy URL"
-                                        @click="copyUrl(buildVideoAssetUrl(video, titleDetails, 'base', activeSeason, episode))"
-                                    >
-                                        <Copy pack="filled" size="sm"/> <span>Copy URL</span>
-                                    </button>
-                                </div>
-                            </FilterDropDown>
+                            <VideoAssetListing
+                                :videoAssets="episode?.video_assets"
+                                :title="titleDetails"
+                                :season="activeSeason"
+                                :episode="episode"
+                            />
                         </div>
                     </div>
                 </div>
