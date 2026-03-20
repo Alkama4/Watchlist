@@ -79,7 +79,7 @@ watch(
     background-color: var(--c-bg-opaque-base);
     backdrop-filter: blur(var(--blur-subtle));
     padding: var(--spacing-xs);
-    border-radius: var(--border-radius-md);
+    border-radius: var(--border-radius-md-lg);
     border: 1px solid var(--c-border);
 
     display: flex;
