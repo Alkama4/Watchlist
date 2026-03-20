@@ -3,7 +3,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useSearchStore } from '@/stores/search';
 import { fastApi } from '@/utils/fastApi';
 import TitleCard from '@/components/TitleCard.vue';
-import FilterDropDown from '@/components/FilterDropDown.vue';
+import LabelDropDown from '@/components/LabelDropDown.vue';
 import OptionPicker from '@/components/OptionPicker.vue';
 import Imdb from '@/assets/icons/imdb.svg'
 import Tmdb from '@/assets/icons/tmdb.svg'
@@ -17,6 +17,7 @@ const initialSearchParams = {
     is_favourite: null,
     in_watchlist: null,
     jellyfin_link: null,
+    has_video_assets: null,
     sort_by: 'default',
     sort_direction: 'default',
 }
@@ -44,19 +45,23 @@ const typeOptions = [
     { icon: Tv, label: 'TV-show', value: 'tv', type: 'primary' },
 ]
 const watchStatusOptions = [
-    { icon: Circle, label: 'Completed', value: 'completed', type: 'positive' },
-    { icon: CircleHalf, label: 'Partial', value: 'partial', type: 'primary' },
-    { icon: Circle, iconNotFilled: true, label: 'Not watched', value: 'not_watched',  type: 'negative' },
+    { icon: Circle, label: 'Finished', value: 'completed', type: 'positive' },
+    { icon: CircleHalf, label: 'In progress', value: 'partial', type: 'primary' },
+    { icon: Circle, iconNotFilled: true, label: 'Unwatched', value: 'not_watched',  type: 'negative' },
 ]
 const favouriteOptions = [
     { icon: Heart, label: 'Favourite', value: true,  type: 'positive' },
     { icon: Heart, iconNotFilled: true, label: 'Not favourite', value: false, type: 'negative' },
 ]
 const watchlistOptions = [
-    { icon: Clock, label: 'In your watchlist', value: true,  type: 'positive' },
-    { icon: Clock, iconNotFilled: true, label: 'Not in your watchlist', value: false, type: 'negative' },
+    { icon: Clock, label: 'In watchlist', value: true,  type: 'positive' },
+    { icon: Clock, iconNotFilled: true, label: 'Not in watchlist', value: false, type: 'negative' },
 ]
 const jellyfinOptions = [
+    { icon: Check, label: 'Available', value: true,  type: 'positive' },
+    { icon: X, label: 'Not available', value: false, type: 'negative' },
+]
+const videoAssetOptions = [
     { icon: Check, label: 'Available', value: true,  type: 'positive' },
     { icon: X, label: 'Not available', value: false, type: 'negative' },
 ]
@@ -230,7 +235,7 @@ onUnmounted(() => {
         </h1>
         <div class="filters">
             <div>
-                <FilterDropDown
+                <LabelDropDown
                     label="Type"
                     :disabled="searchStore.tmdbFallback"
                     :modified="searchParams.title_type != initialSearchParams.title_type"
@@ -239,11 +244,11 @@ onUnmounted(() => {
                         v-model="searchParams.title_type"
                         :options="typeOptions"
                     />
-                </FilterDropDown>
+                </LabelDropDown>
 
                 <hr>
 
-                <FilterDropDown 
+                <LabelDropDown 
                     label="Watch status" 
                     :disabled="searchStore.tmdbFallback"
                     :modified="searchParams.watch_status != initialSearchParams.watch_status"
@@ -252,9 +257,9 @@ onUnmounted(() => {
                         v-model="searchParams.watch_status"
                         :options="watchStatusOptions"
                     />
-                </FilterDropDown>
+                </LabelDropDown>
                 
-                <FilterDropDown 
+                <LabelDropDown 
                     label="Favourite" 
                     :disabled="searchStore.tmdbFallback"
                     :modified="searchParams.is_favourite != initialSearchParams.is_favourite"
@@ -263,9 +268,9 @@ onUnmounted(() => {
                         v-model="searchParams.is_favourite"
                         :options="favouriteOptions"
                     />
-                </FilterDropDown>
+                </LabelDropDown>
                 
-                <FilterDropDown 
+                <LabelDropDown 
                     label="Watchlist" 
                     :disabled="searchStore.tmdbFallback"
                     :modified="searchParams.in_watchlist != initialSearchParams.in_watchlist"
@@ -274,11 +279,11 @@ onUnmounted(() => {
                         v-model="searchParams.in_watchlist"
                         :options="watchlistOptions"
                     />
-                </FilterDropDown>
+                </LabelDropDown>
                 
                 <hr>
                 
-                <FilterDropDown 
+                <LabelDropDown 
                     label="Jellyfin" 
                     :disabled="searchStore.tmdbFallback"
                     :modified="searchParams.jellyfin_link != initialSearchParams.jellyfin_link"
@@ -287,7 +292,18 @@ onUnmounted(() => {
                         v-model="searchParams.jellyfin_link"
                         :options="jellyfinOptions"
                     />
-                </FilterDropDown>
+                </LabelDropDown>
+
+                <LabelDropDown 
+                    label="Video Assets" 
+                    :disabled="searchStore.tmdbFallback"
+                    :modified="searchParams.has_video_assets != initialSearchParams.has_video_assets"
+                >
+                    <OptionPicker
+                        v-model="searchParams.has_video_assets"
+                        :options="videoAssetOptions"
+                    />
+                </LabelDropDown>
 
                 <div v-if="searchParamsIsDirty" class="flex-row">
                     <hr>
@@ -304,7 +320,7 @@ onUnmounted(() => {
             </div>
 
             <div>
-                <FilterDropDown 
+                <LabelDropDown 
                     label="Sort by" 
                     :disabled="searchStore.tmdbFallback"
                     :modified="searchParams.sort_by != initialSearchParams.sort_by"
@@ -314,7 +330,7 @@ onUnmounted(() => {
                         :options="sortByOptions"
                         :defaultValue="'default'"
                     />
-                </FilterDropDown>
+                </LabelDropDown>
 
                 <button
                     class="btn-text btn-even-padding filter-icon-button"

@@ -1,5 +1,5 @@
 import enum
-from sqlalchemy import Column, Integer, String, DECIMAL, BigInteger, Date, Text, Boolean, Enum, ForeignKey, UniqueConstraint, DateTime
+from sqlalchemy import CheckConstraint, Column, Float, Integer, String, DECIMAL, BigInteger, Date, Text, Boolean, Enum, ForeignKey, UniqueConstraint, DateTime
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -40,6 +40,11 @@ class Themes(enum.Enum):
     amethyst = "amethyst"
     flashbang = "flashbang"
     sixteen_bit = "16-bit"
+
+class VideoType(enum.Enum):
+    movie = "movie"
+    episode = "episode"
+    featurette = "featurette"
 
 
 ##### USER AND AUTH #####
@@ -399,3 +404,39 @@ class ImageLink(Base):
     title = relationship("Title", back_populates="image_links")
     season = relationship("Season", back_populates="image_links")
     episode = relationship("Episode", back_populates="image_links")
+
+
+class VideoAsset(Base):
+    __tablename__ = "video_assets"
+
+    video_asset_id = Column(Integer, primary_key=True, autoincrement=True)
+    file_path = Column(String(512), unique=True, nullable=False, index=True)
+    file_name = Column(String(256), nullable=False)
+
+    title_id = Column(Integer, ForeignKey("titles.title_id", ondelete="CASCADE"), nullable=True)
+    episode_id = Column(Integer, ForeignKey("episodes.episode_id", ondelete="CASCADE"), nullable=True)
+    video_type = Column(Enum(VideoType), nullable=False)
+    
+    # Metadata
+    resolution = Column(String(16))
+    hdr_type = Column(String(255))
+    filesize_bytes = Column(BigInteger)
+    duration_ms = Column(BigInteger)
+    
+    # Added Value
+    codec = Column(String(64))
+    bit_depth = Column(Integer)
+    frame_rate = Column(Float)
+    
+    # Sync Logic
+    mtime = Column(Float)
+
+    __table_args__ = (
+        CheckConstraint(
+            '(title_id IS NOT NULL) OR (episode_id IS NOT NULL)', 
+            name='chk_video_has_parent'
+        ),
+    )
+
+    title = relationship("Title", backref="video_assets")
+    episode = relationship("Episode", backref="video_assets")

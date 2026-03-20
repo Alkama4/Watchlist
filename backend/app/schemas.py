@@ -2,7 +2,7 @@ from typing import List, Optional, Annotated
 from pydantic import BaseModel, Field, computed_field, AfterValidator, model_validator
 from datetime import datetime, date
 from babel import Locale, UnknownLocaleError
-from app.models import ImageType, TitleType, SortBy, SortDirection
+from app.models import ImageType, TitleType, SortBy, SortDirection, VideoType
 from app.config import DEFAULT_MAX_QUERY_LIMIT, ABSOLUTE_MAX_QUERY_LIMIT
 
 
@@ -82,7 +82,7 @@ class UserSettingIn(BaseModel):
     value: str
 
 
-####### Images #######
+####### Media #######
 
 class ImageOut(BaseModel):
     file_path: str
@@ -119,6 +119,21 @@ class ImageListsOut(BaseModel):
 
 class ImagePreferenceIn(BaseModel):
     image_path: Optional[str] = None
+
+
+class VideoAssetOut(BaseModel):
+    video_asset_id: int
+    file_name: str
+    video_type: Optional[VideoType]
+
+    resolution: Optional[str] = None
+    hdr_type: Optional[str] = None
+    filesize_bytes: Optional[int] = None
+    duration_ms: Optional[int] = None
+
+    codec: Optional[str] = None
+    bit_depth: Optional[int] = None
+    frame_rate: Optional[float] = None
     
 
 ####### Titles #######
@@ -175,6 +190,7 @@ class TitleQueryIn(BaseModel):
     release_year_max: Optional[int] = None
     is_released: Optional[bool] = None
     jellyfin_link: Optional[bool] = None
+    has_video_assets: Optional[bool] = None
     genres_include: Optional[List[int]] = None
     genres_exclude: Optional[List[int]] = None
     min_tmdb_rating: Optional[int] = Field(None, ge=0, le=10)
@@ -302,6 +318,7 @@ class EpisodeOut(BaseModel):
     last_updated: datetime
 
     user_details: Optional[UserEpisodeDetailsOut] = None  
+    video_assets: Optional[List[VideoAssetOut]] = None
 
     class Config:
         from_attributes = True
@@ -353,6 +370,7 @@ class TitleOut(BaseModel):
 
     seasons: List[SeasonOut] = Field(default_factory=list)
     user_details: Optional[UserTitleDetailsOut] = None
+    video_assets: Optional[List[VideoAssetOut]] = None
 
     class Config:
         from_attributes = True

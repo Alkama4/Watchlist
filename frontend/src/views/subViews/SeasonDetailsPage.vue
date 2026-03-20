@@ -5,10 +5,12 @@ import { getTitleImageUrl } from '@/utils/imagePath';
 import { numberFormatters, timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg';
 import ModalImages from '@/components/modal/ModalImages.vue';
-import { ChevronLeft, Eye, EyeSlash, Images } from '@boxicons/vue';
-import { resolveSeasonWatchCount } from '@/utils/titleUtils';
+import { Bug, ChevronLeft, Copy, Eye, EyeSlash, Images, Play } from '@boxicons/vue';
+import { buildVideoAssetUrl, resolveSeasonWatchCount } from '@/utils/titleUtils';
 import WatchCountButtons from '@/components/WatchCountButtons.vue';
 import KebabMenu from '@/components/KebabMenu.vue';
+import LabelDropDown from '@/components/LabelDropDown.vue';
+import VideoAssetListing from '@/components/VideoAssetListing.vue';
 
 const props = defineProps({
     titleDetails: {
@@ -24,7 +26,6 @@ const props = defineProps({
 const route = useRoute();
 const router = useRouter();
 const ImagesModal = ref(null);
-const waitingFor = ref({});
 
 const activeSeason = computed(() => {
     const seasonNumber = Number(route.query.season);
@@ -96,6 +97,13 @@ const handleBack = () => {
         router.push({ path: route.path, query: {} });
     }
 };
+
+function copyUrl(url) {
+    if (!url) return;
+    navigator.clipboard.writeText(url)
+        .then(() => console.log('Copied!', url))
+        .catch(err => console.error('Failed to copy', err));
+}
 
 function next() {
     const nextSeason = Number(route.query.season) + 1;
@@ -247,6 +255,12 @@ onUnmounted(() => {
                             <WatchCountButtons
                                 :watchCount="episode?.user_details?.watch_count"
                                 :title="titleDetails"
+                                :episode="episode"
+                            />
+                            <VideoAssetListing
+                                :videoAssets="episode?.video_assets"
+                                :title="titleDetails"
+                                :season="activeSeason"
                                 :episode="episode"
                             />
                         </div>
@@ -428,6 +442,8 @@ onUnmounted(() => {
 
         .controls {
             margin-top: var(--spacing-sm);
+            display: flex;
+            gap: var(--spacing-sm);
         }
     }
 }

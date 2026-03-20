@@ -14,12 +14,14 @@ import SeasonsListing from '@/components/SeasonsListing.vue';
 import EpisodeMap from '@/components/EpisodeMap.vue';
 import ModalImages from '@/components/modal/ModalImages.vue';
 import KebabMenu from '@/components/KebabMenu.vue';
-import { AlbumCovers, AlertCircle, AlertTriangle, CheckCircle, Clock, Heart, Images, InfoCircle, Link, ListMinus, ListPlus, MapIcon, RefreshCw, Star, Translate } from '@boxicons/vue';
+import { AlbumCovers, AlertCircle, AlertTriangle, CheckCircle, Clock, Heart, Images, InfoCircle, Link, ListMinus, ListPlus, MapIcon, Play, RefreshCw, Star, Translate } from '@boxicons/vue';
 import ModalLocale from '@/components/modal/ModalLocale.vue';
-import { resolveAgeRating } from '@/utils/titleUtils';
+import { buildVideoAssetUrl, resolveAgeRating } from '@/utils/titleUtils';
 import { useSettingsStore } from '@/stores/settings';
 import Tooltip from '@/components/Tooltip.vue';
 import WatchCountButtons from '@/components/WatchCountButtons.vue';
+import LabelDropDown from '@/components/LabelDropDown.vue';
+import VideoAssetListing from '@/components/VideoAssetListing.vue';
 
 const props = defineProps({
     titleDetails: {
@@ -375,17 +377,9 @@ const lastAirDate = computed(() => {
                                 @click="$refs.EpisodeMapModal.open()"
                             />
     
-                            <ListMinus
-                                v-if="titleDetails?.user_details?.in_library"
-                                pack="filled"
-                                class="btn btn-text btn-even-padding"
-                                @click="removeFromLibrary"
-                            />
-                            <ListPlus
-                                v-else
-                                pack="filled"
-                                class="btn btn-text btn-even-padding"
-                                @click="addToLibrary"
+                            <VideoAssetListing
+                                :videoAssets="titleDetails?.video_assets"
+                                :title="titleDetails"
                             />
                         </div>
 
@@ -394,6 +388,11 @@ const lastAirDate = computed(() => {
                                 { iconComponent: RefreshCw, label: 'Update Details', action: updateTitleDetails },
                                 { iconComponent: Images, label: 'Manage Images', action: ImagesModal?.open },
                                 { iconComponent: Translate, label: 'Change Language', action: LocaleModal?.open },
+                                {
+                                    iconComponent: titleDetails?.user_details?.in_library ? ListMinus : ListPlus,
+                                    label: titleDetails?.user_details?.in_library ? 'Remove from Library' : 'Add to Library',
+                                    action: titleDetails?.user_details?.in_library ? removeFromLibrary : addToLibrary
+                                },
                             ]"
                         />
                     </div>

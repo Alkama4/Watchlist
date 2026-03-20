@@ -229,9 +229,9 @@ export const fastApi = {
         })
     },
     media: {
-        image: async (size, image_path) => fetchData({
-            method: 'get',
-            url: `/media/image/${size}/${image_path}`
+        syncVideoAssets: async () => fetchData({
+            method: 'post',
+            url: `/media/video_assets/sync`
         })
     },
     integrations: {

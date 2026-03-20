@@ -12,7 +12,8 @@ from app.schemas import (
     UserEpisodeDetailsOut,
     UserSeasonDetailsOut,
     UserTitleDetailsOut,
-    TitleOut
+    TitleOut,
+    VideoAssetOut
 )
 from app.models import (
     Episode,
@@ -43,6 +44,7 @@ async def fetch_title_with_user_details(db: AsyncSession, title_id: int, user_id
             selectinload(Title.user_details.and_(UserTitleDetails.user_id == user_id)),
             selectinload(Title.genres).selectinload(TitleGenre.genre),
             selectinload(Title.age_ratings),
+            selectinload(Title.video_assets),
             
             # Load Seasons + filtered children
             selectinload(Title.seasons.and_(Season.season_number != 0)).options(
@@ -56,7 +58,8 @@ async def fetch_title_with_user_details(db: AsyncSession, title_id: int, user_id
                     selectinload(Episode.translations.and_(
                         EpisodeTranslation.iso_639_1 == locale_ctx.preferred_iso_639_1
                     )),
-                    selectinload(Episode.user_details.and_(UserEpisodeDetails.user_id == user_id))
+                    selectinload(Episode.user_details.and_(UserEpisodeDetails.user_id == user_id)),
+                    selectinload(Episode.video_assets)
                 )
             )
         )
@@ -85,7 +88,7 @@ def _build_title_out(title: Title, locale_ctx) -> TitleOut:
     title_dict = {
         field: getattr(title, field)
         for field in TitleOut.model_fields
-        if hasattr(title, field) and field not in {"genres", "user_details", "seasons", "age_ratings"}
+        if hasattr(title, field) and field not in {"genres", "user_details", "seasons", "age_ratings", "video_assets"}
     }
     
     # Apply Title Translation fields
@@ -99,9 +102,12 @@ def _build_title_out(title: Title, locale_ctx) -> TitleOut:
     user_detail = title.user_details[0] if title.user_details else None
     title_dict["user_details"] = UserTitleDetailsOut.model_validate(user_detail) if user_detail else None
     
-    # Map Genres & Ratings
+    # Map Genres, Ratings & Video Assets
     title_dict["genres"] = [GenreElement.model_validate(tg.genre, from_attributes=True) for tg in title.genres]
     title_dict["age_ratings"] = [AgeRatingElement.model_validate(r, from_attributes=True) for r in title.age_ratings]
+    title_dict["video_assets"] = [
+        VideoAssetOut.model_validate(va, from_attributes=True) for va in title.video_assets
+    ] if title.video_assets else None
 
     title_dict["display_locale"] = locale_ctx.preferred_locale
 
@@ -134,10 +140,11 @@ def _build_title_out(title: Title, locale_ctx) -> TitleOut:
         # Map episodes
         episodes_out = []
         for e in s.episodes:
+            # Added "video_assets" to the exclusion set here too
             e_dict = {
                 field: getattr(e, field)
                 for field in EpisodeOut.model_fields
-                if hasattr(e, field) and field not in {"user_details"}
+                if hasattr(e, field) and field not in {"user_details", "video_assets"}
             }
             
             e_trans = e.translations[0] if e.translations else None
@@ -146,6 +153,11 @@ def _build_title_out(title: Title, locale_ctx) -> TitleOut:
             
             e_user = e.user_details[0] if e.user_details else None
             e_dict["user_details"] = UserEpisodeDetailsOut.model_validate(e_user) if e_user else None
+
+            # Map Episode-level Video Assets
+            e_dict["video_assets"] = [
+                VideoAssetOut.model_validate(va, from_attributes=True) for va in e.video_assets
+            ] if e.video_assets else None
 
             episodes_out.append(EpisodeOut(**e_dict))
         

@@ -17,7 +17,8 @@ from app.models import (
     UserSetting,
     UserTitleDetails,
     UserEpisodeDetails,
-    TitleGenre
+    TitleGenre,
+    VideoAsset
 )
 from app.schemas import (
     CardTitleOut,
@@ -178,6 +179,23 @@ def _apply_filters(stmt, q: TitleQueryIn):
             stmt = stmt.where(Title.jellyfin_id.is_not(None))
         else:
             stmt = stmt.where(Title.jellyfin_id.is_(None))
+
+    if q.has_video_assets is not None:
+        asset_exists_subq = (
+            select(VideoAsset.video_asset_id)
+            .outerjoin(Episode, VideoAsset.episode_id == Episode.episode_id)
+            .where(
+                or_(
+                    VideoAsset.title_id == Title.title_id,
+                    Episode.title_id == Title.title_id
+                )
+            )
+        )
+
+        if q.has_video_assets is True:
+            stmt = stmt.where(exists(asset_exists_subq))
+        else:
+            stmt = stmt.where(~exists(asset_exists_subq))
 
     if q.genres_include:
         stmt = stmt.where(
