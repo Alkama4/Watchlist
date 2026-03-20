@@ -17,6 +17,7 @@ const initialSearchParams = {
     is_favourite: null,
     in_watchlist: null,
     jellyfin_link: null,
+    has_video_assets: null,
     sort_by: 'default',
     sort_direction: 'default',
 }
@@ -44,19 +45,23 @@ const typeOptions = [
     { icon: Tv, label: 'TV-show', value: 'tv', type: 'primary' },
 ]
 const watchStatusOptions = [
-    { icon: Circle, label: 'Completed', value: 'completed', type: 'positive' },
-    { icon: CircleHalf, label: 'Partial', value: 'partial', type: 'primary' },
-    { icon: Circle, iconNotFilled: true, label: 'Not watched', value: 'not_watched',  type: 'negative' },
+    { icon: Circle, label: 'Finished', value: 'completed', type: 'positive' },
+    { icon: CircleHalf, label: 'In progress', value: 'partial', type: 'primary' },
+    { icon: Circle, iconNotFilled: true, label: 'Unwatched', value: 'not_watched',  type: 'negative' },
 ]
 const favouriteOptions = [
     { icon: Heart, label: 'Favourite', value: true,  type: 'positive' },
     { icon: Heart, iconNotFilled: true, label: 'Not favourite', value: false, type: 'negative' },
 ]
 const watchlistOptions = [
-    { icon: Clock, label: 'In your watchlist', value: true,  type: 'positive' },
-    { icon: Clock, iconNotFilled: true, label: 'Not in your watchlist', value: false, type: 'negative' },
+    { icon: Clock, label: 'In watchlist', value: true,  type: 'positive' },
+    { icon: Clock, iconNotFilled: true, label: 'Not in watchlist', value: false, type: 'negative' },
 ]
 const jellyfinOptions = [
+    { icon: Check, label: 'Available', value: true,  type: 'positive' },
+    { icon: X, label: 'Not available', value: false, type: 'negative' },
+]
+const videoAssetOptions = [
     { icon: Check, label: 'Available', value: true,  type: 'positive' },
     { icon: X, label: 'Not available', value: false, type: 'negative' },
 ]
@@ -286,6 +291,17 @@ onUnmounted(() => {
                     <OptionPicker
                         v-model="searchParams.jellyfin_link"
                         :options="jellyfinOptions"
+                    />
+                </LabelDropDown>
+
+                <LabelDropDown 
+                    label="Video Assets" 
+                    :disabled="searchStore.tmdbFallback"
+                    :modified="searchParams.has_video_assets != initialSearchParams.has_video_assets"
+                >
+                    <OptionPicker
+                        v-model="searchParams.has_video_assets"
+                        :options="videoAssetOptions"
                     />
                 </LabelDropDown>
 
