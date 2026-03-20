@@ -68,7 +68,7 @@ const formatHeader = (type) => {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xs);
-    max-height: 50vh; /* Increased slightly to account for headers */
+    max-height: clamp(300px, 50vh, 700px);
     overflow-y: auto;
 }
 

@@ -1,7 +1,8 @@
 <script setup>
-import { defineProps } from 'vue';
+import { ref, defineProps } from 'vue'; // Added ref
 import { buildVideoAssetUrl } from '@/utils/titleUtils';
 import { timeFormatters } from '@/utils/formatters';
+import { ChevronDown } from '@boxicons/vue';
 
 const props = defineProps({
     video: { type: Object, required: true },
@@ -9,6 +10,9 @@ const props = defineProps({
     season: { type: [Object, Number, String], default: null },
     episode: { type: Object, default: () => ({}) },
 });
+
+const showSpecs = ref(false);
+
 
 const getHdrTags = (hdrString) => {
     if (!hdrString || hdrString.trim() === "") return ['SDR'];
@@ -48,6 +52,14 @@ const getVideoLabel = (video) => {
         return video?.file_name?.split(".")[0] || 'Unknown Source';
     }
 };
+
+const toggleSpecs = () => {
+    showSpecs.value = !showSpecs.value;
+};
+
+const msToMin = (ms) => {
+    return Math.floor(ms / 1000 / 60)
+}
 </script>
 
 <template>
@@ -56,31 +68,52 @@ const getVideoLabel = (video) => {
         class="video-card btn btn-text no-deco"
     >
         <div class="card-header">
-            <h5 class="video-title">{{ getVideoLabel(video) }}</h5>
-            <div class="badge-group">
-                <span class="badge res-badge">{{ formatResolution(video?.resolution) }}</span>
-                <span 
-                    v-for="tag in getHdrTags(video?.hdr_type)" 
-                    :key="tag"
-                    :class="['badge', 'hdr-badge', tag.toLowerCase().replace('+', '-plus').replace(' ', '-')]"
+            <div class="main-section">
+                <h5 class="video-title">{{ getVideoLabel(video) }}</h5>
+                
+                <div class="badge-group">
+                    <span class="badge res-badge">{{ formatResolution(video?.resolution) }}</span>
+                    <span 
+                        v-for="tag in getHdrTags(video?.hdr_type)" 
+                        :key="tag"
+                        :class="['badge', 'hdr-badge', tag.toLowerCase().replace('+', '-plus').replace(' ', '-')]"
+                    >
+                        {{ tag }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="toggle-specs-wrapper">
+                <button 
+                    class="toggle-specs-btn btn-text btn-even-padding" 
+                    @click.stop.prevent="toggleSpecs"
+                    :class="{ 'active': showSpecs }"
                 >
-                    {{ tag }}
-                </span>
+                    <ChevronDown/>
+                </button>
             </div>
         </div>
 
-        <div class="card-specs">
-            <span class="spec-item spec-codec">{{ video?.codec }}</span>
-            <span class="spec-dot">&bull;</span>
-            <span class="spec-item">{{ video?.bit_depth }} bit</span>
-            <span class="spec-dot">&bull;</span>
-            <span class="spec-item">{{ Math.round(video?.frame_rate) }} fps</span>
-            <span class="spec-dot">&bull;</span>
-            <span class="spec-item">{{ formatSize(video?.filesize_bytes) }}</span>
-            <template v-if="video?.duration_ms">
-                <span class="spec-dot">&bull;</span>
-                <span class="spec-item">{{ formatBitrate(video?.filesize_bytes, video?.duration_ms) }}</span>
-            </template>
+        <div class="card-specs" :class="{ 'is-expanded': showSpecs }">
+            <div class="specs-target">
+                <div class="specs-wrapper">
+                    <span class="spec-item duration">
+                        {{ timeFormatters.minutesToHrAndMin(msToMin(video?.duration_ms)) }}
+                    </span>
+                    <span class="seperator">&bull;</span>
+
+                    <span class="spec-item codec">{{ video?.codec }}</span>
+                    <span class="seperator">&bull;</span>
+                    <span class="spec-item">{{ video?.bit_depth }} bit</span>
+                    <span class="seperator">&bull;</span>
+                    <span class="spec-item">{{ Math.round(video?.frame_rate) }} fps</span>
+                    <span class="seperator">&bull;</span>
+
+                    <span class="spec-item">{{ formatBitrate(video?.filesize_bytes, video?.duration_ms) }}</span>
+                    <span class="seperator">&bull;</span>
+                    <span class="spec-item filesize">{{ formatSize(video?.filesize_bytes) }}</span>
+                </div>
+            </div>
         </div>
     </a>
 </template>
@@ -90,15 +123,23 @@ const getVideoLabel = (video) => {
     display: flex;
     flex-direction: column;
     align-items: start;
-    gap: var(--spacing-xs);
+    gap: 0;
     padding: var(--spacing-sm) var(--spacing-sm-md);
-    flex-shrink: 0; /* Prevents squishing in restricted height containers */
+    flex-shrink: 0;
 }
 
 .card-header {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: var(--spacing-xs);
+    width: 100%;
+}
+
+.main-section {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: var(--spacing-sm);
 }
 
 .video-title {
@@ -108,22 +149,41 @@ const getVideoLabel = (video) => {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    flex: 1;
 }
+
+
+.toggle-specs-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    .toggle-specs-btn {
+        margin-left: var(--spacing-sm);
+        
+        svg {
+            transition: transform 0.1s var(--transition-ease-out);
+        }
+        &.active svg {
+            transform: rotate(180deg);
+        }
+    }
+}
+
 
 .badge-group {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
     gap: var(--spacing-xs);
+    color: var(--c-text-soft);
 }
 
 .badge {
-    font-size: var(--fs-neg-2);
+    font-size: 0.66rem;
     font-weight: 700;
-    padding: 3px 6px;
+    padding: 2px 6px;
     border-radius: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
     white-space: nowrap;
 }
 
@@ -131,35 +191,62 @@ const getVideoLabel = (video) => {
     background-color: var(--c-text-strong);
     color: var(--c-bg-base);
 }
-
 .hdr-badge {
     background-color: var(--c-neutral);
     color: var(--c-text);
+
+    &.dolby-vision {
+        background-color: var(--c-accent);
+    }
+    &.hdr10-plus {
+        background-color: var(--c-favourite);
+    }
+    &.hdr10 {
+        background-color: var(--c-warning);
+        color: var(--c-text-black);
+    }
+    &.sdr {
+        background-color: transparent;
+        border: 1px solid var(--c-border);
+        color: var(--c-text-subtle);
+    }
 }
 
-.hdr-badge.dolby-vision { background-color: var(--c-accent); }
-.hdr-badge.hdr10-plus { background-color: var(--c-favourite); }
-.hdr-badge.hdr10 { 
-    background-color: var(--c-warning); 
-    color: var(--c-text-black);
-}
-.hdr-badge.sdr { 
-    background-color: transparent; 
-    border: 1px solid var(--c-border); 
-    color: var(--c-text-subtle);
-}
-
+/* Collapsible Specs Logic */
 .card-specs {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.15s var(--transition-ease-out),
+                opacity 0.15s var(--transition-ease-out);
+    opacity: 0;
+    overflow: hidden;
+    width: 100%;
+}
+
+.card-specs.is-expanded {
+    grid-template-rows: 1fr;
+    opacity: 1;
+}
+
+/* This inner div ensures the content doesn't pop in abruptly */
+.specs-target {
+    min-height: 0;
+}
+
+.specs-wrapper {
+    margin-top: var(--spacing-sm);
     display: flex;
     align-items: center;
-    flex-wrap: nowrap;
-    gap: 6px;
+    gap: var(--spacing-xs);
     font-size: var(--fs-neg-1);
     color: var(--c-text-soft);
-    margin-top: 2px;
 }
 
-.spec-item { white-space: nowrap; }
-.spec-codec { font-weight: 600; color: var(--c-text); }
-.spec-dot { font-size: 0.8em; opacity: 0.5; user-select: none; }
+.spec-item {
+    white-space: nowrap;
+}
+
+.seperator {
+    opacity: 0.5;
+}
 </style>
