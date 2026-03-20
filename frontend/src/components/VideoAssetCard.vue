@@ -197,9 +197,11 @@ const msToMin = (ms) => {
 
     &.dolby-vision {
         background-color: var(--c-accent);
+        color: var(--c-text-white);
     }
     &.hdr10-plus {
         background-color: var(--c-favourite);
+        color: var(--c-text-white);
     }
     &.hdr10 {
         background-color: var(--c-warning);

@@ -71,7 +71,7 @@
     --o-text-norm-n-inv: -0.125;
 
     --c-primary:    oklch(37.53% 0.00004 271.152);
-    --c-neutral:    oklch(76.039% 0.00009 271.152);
+    --c-neutral:    oklch(85% 0 271.152 / 50%);
 
     --c-accent:     oklch(31.937% 0.05307 252.63);
     --c-favourite:  oklch(47.208% 0.17851 15.682);
@@ -117,7 +117,7 @@
     --o-text-norm-n-inv: -0.075;
 
     --c-primary: hsl(210, 4%, 27%);
-    --c-neutral: hsl(210, 4%, 66%);
+    --c-neutral: hsla(210, 4%, 50%, 50%);
 
     --c-accent: hsl(222, 80%, 45%);
     --c-favourite: hsl(0, 80%, 50%);
@@ -138,9 +138,9 @@
     --details-backdrop-fade-intensity: 0.5;
     --details-backdrop-min-brightness: 0.2;
 
-    .btn-text:not(.theme-picker-fix) {
+    /* .btn-text:not(.theme-picker-fix) {
         border-radius: 100px;
-    }
+    } */
 
     .btn-negative,
     .btn-positive,
