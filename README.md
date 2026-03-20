@@ -5,7 +5,10 @@
 
 Watchlist is a full rewrite of the watchlist feature from a previous hobby project. This time it’s being built as a standalone application from the ground up, applying lessons learned to improve structure, maintainability, and overall design.
 
-![Alpha preview of the homepage](/images/home_page.png "Alpha preview of the homepage")
+![Alpha preview of the homepage](/images/home_page.png)
+
+> [!TIP]
+> **Want to see more?** Check out the full list of screenshots [here](SCREENSHOTS.md).
 
 
 ## Planned key features
@@ -30,7 +33,7 @@ For the database, it’s recommended to run a local PostgreSQL server and connec
 
 ## Deployment
 
-The project will be deployable via Docker. Images will be automatically built and published to GHCR.
+The project will be deployable via Docker. Once implemented docker images will be published to GHCR.
 
 
 ## License
