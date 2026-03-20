@@ -377,19 +377,6 @@ const lastAirDate = computed(() => {
                                 @click="$refs.EpisodeMapModal.open()"
                             />
     
-                            <ListMinus
-                                v-if="titleDetails?.user_details?.in_library"
-                                pack="filled"
-                                class="btn btn-text btn-even-padding"
-                                @click="removeFromLibrary"
-                            />
-                            <ListPlus
-                                v-else
-                                pack="filled"
-                                class="btn btn-text btn-even-padding"
-                                @click="addToLibrary"
-                            />
-
                             <VideoAssetListing
                                 :videoAssets="titleDetails?.video_assets"
                                 :title="titleDetails"
@@ -401,6 +388,11 @@ const lastAirDate = computed(() => {
                                 { iconComponent: RefreshCw, label: 'Update Details', action: updateTitleDetails },
                                 { iconComponent: Images, label: 'Manage Images', action: ImagesModal?.open },
                                 { iconComponent: Translate, label: 'Change Language', action: LocaleModal?.open },
+                                {
+                                    iconComponent: titleDetails?.user_details?.in_library ? ListMinus : ListPlus,
+                                    label: titleDetails?.user_details?.in_library ? 'Remove from Library' : 'Add to Library',
+                                    action: titleDetails?.user_details?.in_library ? removeFromLibrary : addToLibrary
+                                },
                             ]"
                         />
                     </div>
