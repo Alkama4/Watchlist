@@ -20,7 +20,7 @@ import { buildVideoAssetUrl, resolveAgeRating } from '@/utils/titleUtils';
 import { useSettingsStore } from '@/stores/settings';
 import Tooltip from '@/components/Tooltip.vue';
 import WatchCountButtons from '@/components/WatchCountButtons.vue';
-import FilterDropDown from '@/components/FilterDropDown.vue';
+import LabelDropDown from '@/components/LabelDropDown.vue';
 import VideoAssetListing from '@/components/VideoAssetListing.vue';
 
 const props = defineProps({

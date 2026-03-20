@@ -3,7 +3,7 @@ import { ref, computed, inject } from 'vue'
 import ModalBase from '@/components/modal/ModalBase.vue'
 import { fastApi } from '@/utils/fastApi'
 import { buildImageUrl } from '@/utils/imagePath'
-import FilterDropDown from '../FilterDropDown.vue'
+import LabelDropDown from '../LabelDropDown.vue'
 import OptionPicker from '../OptionPicker.vue'
 import { ArrowOutUpRightSquare, InfoCircle, RefreshCcwAltDot, Star } from '@boxicons/vue';
 import Tooltip from '../Tooltip.vue'
@@ -145,7 +145,7 @@ function updateDomData(imageType, imagePath) {
 
                 <hr>
 
-                <FilterDropDown
+                <LabelDropDown
                     label="Image Locale"
                     :modified="localeFilters[activeType] != localeFilterDefaults[activeType]"
                 >
@@ -154,7 +154,7 @@ function updateDomData(imageType, imagePath) {
                         defaultValue="all"
                         :options="localeFilterOptions"
                     />
-                </FilterDropDown>
+                </LabelDropDown>
 
                 <RefreshCcwAltDot
                     v-if="localeFilters[activeType] != localeFilterDefaults[activeType]"

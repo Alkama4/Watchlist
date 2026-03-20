@@ -9,7 +9,7 @@ import { Bug, ChevronLeft, Copy, Eye, EyeSlash, Images, Play } from '@boxicons/v
 import { buildVideoAssetUrl, resolveSeasonWatchCount } from '@/utils/titleUtils';
 import WatchCountButtons from '@/components/WatchCountButtons.vue';
 import KebabMenu from '@/components/KebabMenu.vue';
-import FilterDropDown from '@/components/FilterDropDown.vue';
+import LabelDropDown from '@/components/LabelDropDown.vue';
 import VideoAssetListing from '@/components/VideoAssetListing.vue';
 
 const props = defineProps({

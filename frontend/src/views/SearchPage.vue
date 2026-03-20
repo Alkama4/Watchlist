@@ -3,7 +3,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useSearchStore } from '@/stores/search';
 import { fastApi } from '@/utils/fastApi';
 import TitleCard from '@/components/TitleCard.vue';
-import FilterDropDown from '@/components/FilterDropDown.vue';
+import LabelDropDown from '@/components/LabelDropDown.vue';
 import OptionPicker from '@/components/OptionPicker.vue';
 import Imdb from '@/assets/icons/imdb.svg'
 import Tmdb from '@/assets/icons/tmdb.svg'
@@ -230,7 +230,7 @@ onUnmounted(() => {
         </h1>
         <div class="filters">
             <div>
-                <FilterDropDown
+                <LabelDropDown
                     label="Type"
                     :disabled="searchStore.tmdbFallback"
                     :modified="searchParams.title_type != initialSearchParams.title_type"
@@ -239,11 +239,11 @@ onUnmounted(() => {
                         v-model="searchParams.title_type"
                         :options="typeOptions"
                     />
-                </FilterDropDown>
+                </LabelDropDown>
 
                 <hr>
 
-                <FilterDropDown 
+                <LabelDropDown 
                     label="Watch status" 
                     :disabled="searchStore.tmdbFallback"
                     :modified="searchParams.watch_status != initialSearchParams.watch_status"
@@ -252,9 +252,9 @@ onUnmounted(() => {
                         v-model="searchParams.watch_status"
                         :options="watchStatusOptions"
                     />
-                </FilterDropDown>
+                </LabelDropDown>
                 
-                <FilterDropDown 
+                <LabelDropDown 
                     label="Favourite" 
                     :disabled="searchStore.tmdbFallback"
                     :modified="searchParams.is_favourite != initialSearchParams.is_favourite"
@@ -263,9 +263,9 @@ onUnmounted(() => {
                         v-model="searchParams.is_favourite"
                         :options="favouriteOptions"
                     />
-                </FilterDropDown>
+                </LabelDropDown>
                 
-                <FilterDropDown 
+                <LabelDropDown 
                     label="Watchlist" 
                     :disabled="searchStore.tmdbFallback"
                     :modified="searchParams.in_watchlist != initialSearchParams.in_watchlist"
@@ -274,11 +274,11 @@ onUnmounted(() => {
                         v-model="searchParams.in_watchlist"
                         :options="watchlistOptions"
                     />
-                </FilterDropDown>
+                </LabelDropDown>
                 
                 <hr>
                 
-                <FilterDropDown 
+                <LabelDropDown 
                     label="Jellyfin" 
                     :disabled="searchStore.tmdbFallback"
                     :modified="searchParams.jellyfin_link != initialSearchParams.jellyfin_link"
@@ -287,7 +287,7 @@ onUnmounted(() => {
                         v-model="searchParams.jellyfin_link"
                         :options="jellyfinOptions"
                     />
-                </FilterDropDown>
+                </LabelDropDown>
 
                 <div v-if="searchParamsIsDirty" class="flex-row">
                     <hr>
@@ -304,7 +304,7 @@ onUnmounted(() => {
             </div>
 
             <div>
-                <FilterDropDown 
+                <LabelDropDown 
                     label="Sort by" 
                     :disabled="searchStore.tmdbFallback"
                     :modified="searchParams.sort_by != initialSearchParams.sort_by"
@@ -314,7 +314,7 @@ onUnmounted(() => {
                         :options="sortByOptions"
                         :defaultValue="'default'"
                     />
-                </FilterDropDown>
+                </LabelDropDown>
 
                 <button
                     class="btn-text btn-even-padding filter-icon-button"

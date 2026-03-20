@@ -1,6 +1,6 @@
 <script setup>
 import { defineProps, computed } from 'vue';
-import FilterDropDown from './FilterDropDown.vue';
+import LabelDropDown from './LabelDropDown.vue';
 import { buildVideoAssetUrl } from '@/utils/titleUtils';
 import { timeFormatters } from '@/utils/formatters';
 
@@ -71,7 +71,7 @@ const getVideoLabel = (video) => {
 </script>
 
 <template>
-    <FilterDropDown v-if="videoList.length" label="Watch now" class="video-dropdown">
+    <LabelDropDown v-if="videoList.length" label="Watch now" class="video-dropdown">
         
         <div class="video-list">
             <a 
@@ -151,7 +151,7 @@ const getVideoLabel = (video) => {
             </div>
         </template>
         
-    </FilterDropDown>
+    </LabelDropDown>
 </template>
 
 <style scoped>
