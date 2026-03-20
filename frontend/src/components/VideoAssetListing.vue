@@ -32,7 +32,10 @@ const formatHeader = (type) => {
 </script>
 
 <template>
-    <LabelDropDown v-if="videoAssets && Object.keys(videoAssets).length" label="Video Assets" class="video-dropdown">
+    <LabelDropDown
+        v-if="videoAssets && Object.keys(videoAssets).length"
+        :label="`Video Assets (${videoAssets.length})`"
+    >
         <div class="video-list">
             <div 
                 v-for="(videos, type, index) in groupedAssets" 
@@ -59,11 +62,6 @@ const formatHeader = (type) => {
 </template>
 
 <style scoped>
-.video-dropdown {
-    display: flex;
-    flex-direction: column;
-}
-
 .video-list {
     display: flex;
     flex-direction: column;
