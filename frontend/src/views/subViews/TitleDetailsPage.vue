@@ -1,5 +1,5 @@
 <script setup>
-import TitleCarousel from '@/components/TitleCarousel.vue';
+import TitleCardCarousel from '@/components/TitleCardCarousel.vue';
 import { fastApi } from '@/utils/fastApi';
 import { isoFormatters, numberFormatters, timeFormatters } from '@/utils/formatters';
 import { getTitleImageUrl } from '@/utils/imagePath';
@@ -406,7 +406,7 @@ const lastAirDate = computed(() => {
             </div>
         </div>
 
-        <TitleCarousel 
+        <TitleCardCarousel 
             v-if="similarTitles?.titles?.length > 0"
             :carouselData="similarTitles"
             class="layout-spacing-bottom"

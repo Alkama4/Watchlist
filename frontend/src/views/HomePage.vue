@@ -1,10 +1,11 @@
 <script setup>
 import TitleHeroCards from '@/components/TitleHeroCards.vue';
-import TitleCarousel from '@/components/TitleCarousel.vue';
+import TitleCardCarousel from '@/components/TitleCardCarousel.vue';
 import { fastApi } from '@/utils/fastApi';
 import { onMounted, ref } from 'vue';
 import { Captions, Disc, Film, FilmRollAlt, Happy, HappyBeaming, ListPlay, Movie, Pause, Play, PlayCircle, Popcorn, StopCircle, Tv, Video, VideoCinema } from '@boxicons/vue';
 import LoadingIndicator from '@/components/LoadingIndicator.vue';
+import TitleHeroCardCarousel from '@/components/TitleHeroCardCarousel.vue';
 
 const homeData = ref({});
 const waiting = ref(true);
@@ -68,8 +69,8 @@ const scatteredIcons = iconList.map((icon, index) => {
 
 <template>
     <div v-if="homeData?.normal_cards?.length > 0" class="home-page layout-spacing-bottom">
-        <TitleHeroCards :heroCards="homeData?.hero_cards" />
-        <TitleCarousel v-for="list in homeData?.normal_cards" :carouselData="list"/>
+        <TitleHeroCardCarousel :heroCards="homeData?.hero_cards" />
+        <TitleCardCarousel v-for="list in homeData?.normal_cards" :carouselData="list"/>
     </div>
 
     <LoadingIndicator v-else-if="waiting"/>

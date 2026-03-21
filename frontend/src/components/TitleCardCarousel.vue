@@ -12,7 +12,7 @@ defineProps({
 </script>
 
 <template>
-    <div class="carousel layout-full-contained">
+    <div class="title-carousel layout-full-contained">
         <div class="layout-contained">
             <h3>{{ carouselData?.header }}</h3>
         </div>
