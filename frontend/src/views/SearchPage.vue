@@ -440,7 +440,7 @@ onUnmounted(() => {
 
 .title-card-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(var(--title-card-width), 1fr));
     gap: var(--spacing-lg) var(--spacing-md);
 
     .title-card {

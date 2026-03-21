@@ -197,19 +197,19 @@ const { titleInfo, storeImageFlag } = defineProps({
 
 <style scoped>
 .title-card {
-    width: 200px;
+    width: var(--title-card-width);
     display: inline-flex;
     flex-direction: column;
     text-decoration: none;
     position: relative;
-    padding-right: var(--spacing-md);
+    margin-right: var(--spacing-md);
 
     animation: fadeIn 0.5s var(--transition-ease-out) forwards;
     opacity: 0;
 }
 .title-card:last-of-type,
 .title-card.grid-mode {
-    padding-right: 0;
+    margin-right: 0;
 }
 
 @keyframes fadeIn {

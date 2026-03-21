@@ -176,8 +176,14 @@
     --z-nav: 1000;
 }
 
-/* -----------Blur amounts ----------- */
+/* ----------- Blur amounts ----------- */
 :root {
     --blur-heavy: 32px;
     --blur-subtle: 16px;
 }
+
+/* ----------- Specials ----------- */
+:root {
+    --title-card-width: 185px;
+}
+
