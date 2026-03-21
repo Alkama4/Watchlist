@@ -1,5 +1,5 @@
 <script setup>
-import { ref, defineProps, computed } from 'vue'; // Added ref
+import { ref, computed } from 'vue'; // Added ref
 import { buildVideoAssetUrl } from '@/utils/titleUtils';
 import { timeFormatters } from '@/utils/formatters';
 import { ChevronDown } from '@boxicons/vue';
