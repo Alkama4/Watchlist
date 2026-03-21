@@ -11,33 +11,24 @@ const { heroCards } = defineProps({
     heroCards: { type: Object, required: true }
 });
 
+function handleKeydown(e) {
+    if (!flicking.value) return;
 
-// function next() {
-//     if (!heroCards?.titles?.length) return;
-//     currentIndex.value = (currentIndex.value + 1) % heroCards.titles.length;
-// }
+    if (e.key === 'ArrowRight') {
+        flicking.value.next().catch(() => {}); 
+    }
+    if (e.key === 'ArrowLeft') {
+        flicking.value.prev().catch(() => {});
+    }
+}
 
-// function prev() {
-//     if (!heroCards?.titles?.length) return;
-//     currentIndex.value = (currentIndex.value - 1 + heroCards.titles.length) % heroCards.titles.length;
-// }
+onMounted(() => {
+    window.addEventListener('keydown', handleKeydown);
+});
 
-// function handleKeydown(e) {
-//     if (e.key === 'ArrowRight') {
-//         next();
-//     }
-//     if (e.key === 'ArrowLeft') {
-//         prev();
-//     }
-// }
-
-// onMounted(() => {
-//     window.addEventListener('keydown', handleKeydown);
-// });
-
-// onUnmounted(() => {
-//     window.removeEventListener('keydown', handleKeydown);
-// });
+onUnmounted(() => {
+    window.removeEventListener('keydown', handleKeydown);
+});
 </script>
 
 <template>
