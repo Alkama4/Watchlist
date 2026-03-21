@@ -2,24 +2,50 @@
 import { getTitleImageUrl } from '@/utils/imagePath';
 import { numberFormatters, timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg'
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { adjustWatchCount, toggleFavourite, toggleWatchlist } from '@/utils/titleActions';
 import LoadingButton from './LoadingButton.vue';
 import { Check, Clock, Heart, Minus } from '@boxicons/vue';
 import { resolveAgeRating } from '@/utils/titleUtils';
+
+const waitingfor = ref({});
 
 const props = defineProps({
     title: {
         type: Object,
         required: true
     },
-    positionClass: {
-        type: String,
-        default: ''
+    index: {
+        type: Number,
+        required: true
+    },
+    indexProgress: {
+        type: Number,
+        default: 0
     }
 });
 
-const waitingfor = ref({});
+
+const cardProgress = computed(() => props.index - props.indexProgress);
+const cardVisibility = computed(() => {
+    const distance = Math.abs(props.index - props.indexProgress);
+    return Math.max(0, 1 - distance);
+});
+
+
+const backdropStyle = computed(() => ({
+    opacity: cardVisibility.value * 0.7 + 0.3
+}));
+
+const logoStyle = computed(() => ({
+    transform: `translateX(calc(-50% + ${cardProgress.value * 20}cqw))`, 
+    opacity: cardVisibility.value
+}));
+
+const detailsStyle = computed(() => ({
+    transform: `translateX(${cardProgress.value * 20}cqw)`,
+    opacity: cardVisibility.value
+}));
 </script>
 
 <template>
@@ -34,6 +60,7 @@ const waitingfor = ref({});
             <img
                 :src="getTitleImageUrl(title, 'original', 'backdrop')"
                 :alt="`${title.title_type} backdrop: ${title.name}`"
+                :style="backdropStyle"
                 class="backdrop"
                 draggable="false"
             >
@@ -42,12 +69,13 @@ const waitingfor = ref({});
         <img
             :src="getTitleImageUrl(title, 'original', 'logo')"
             :alt="`Logo for the title ${title.name}`"
+            :style="logoStyle"
             class="logo"
             draggable="false"
         >
 
         <div class="details-wrapper">
-            <div class="details no-deco">
+            <div class="details no-deco" :style="detailsStyle">
                 <div class="stats">
                     <span>{{ timeFormatters.timestampToYear(title.release_date) }}</span>
 
@@ -70,13 +98,14 @@ const waitingfor = ref({});
                         <span>{{ resolveAgeRating(title?.age_ratings)?.rating }}</span>
                     </template>
                 </div>
-                <div v-if="title.genres?.length > 0" class="genres">
+
+                <div v-if="title.genres?.length > 0" class="genres" >
                     <span v-for="genre in title.genres" :key="genre.genre_name">
                         {{ genre?.genre_name }}
                     </span>
                 </div>
 
-                <div class="actions">
+                <div class="actions" >
                     <div
                         :class="{
                             'watched btn': title?.user_details?.watch_count
@@ -161,6 +190,7 @@ const waitingfor = ref({});
     overflow: hidden;
     user-select: none;
     position: relative;
+    container-type: inline-size
 }
 .title-hero-card:last-of-type {
     margin-right: 0;

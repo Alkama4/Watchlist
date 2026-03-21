@@ -1,48 +1,49 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import Flicking from '@egjs/vue3-flicking';
+import { useFlickingReactiveAPI } from "@egjs/vue3-flicking";
 import TitleHeroCard from './TitleHeroCard.vue';
 
-const currentIndex = ref(0);
+const flicking = ref(null);
+const { indexProgress } = useFlickingReactiveAPI(flicking);
 
 const { heroCards } = defineProps({
-    heroCards: {
-        type: Object,
-        required: true
-    }
+    heroCards: { type: Object, required: true }
 });
 
-function next() {
-    if (!heroCards?.titles?.length) return;
-    currentIndex.value = (currentIndex.value + 1) % heroCards.titles.length;
-}
 
-function prev() {
-    if (!heroCards?.titles?.length) return;
-    currentIndex.value = (currentIndex.value - 1 + heroCards.titles.length) % heroCards.titles.length;
-}
+// function next() {
+//     if (!heroCards?.titles?.length) return;
+//     currentIndex.value = (currentIndex.value + 1) % heroCards.titles.length;
+// }
 
-function handleKeydown(e) {
-    if (e.key === 'ArrowRight') {
-        next();
-    }
-    if (e.key === 'ArrowLeft') {
-        prev();
-    }
-}
+// function prev() {
+//     if (!heroCards?.titles?.length) return;
+//     currentIndex.value = (currentIndex.value - 1 + heroCards.titles.length) % heroCards.titles.length;
+// }
 
-onMounted(() => {
-    window.addEventListener('keydown', handleKeydown);
-});
+// function handleKeydown(e) {
+//     if (e.key === 'ArrowRight') {
+//         next();
+//     }
+//     if (e.key === 'ArrowLeft') {
+//         prev();
+//     }
+// }
 
-onUnmounted(() => {
-    window.removeEventListener('keydown', handleKeydown);
-});
+// onMounted(() => {
+//     window.addEventListener('keydown', handleKeydown);
+// });
+
+// onUnmounted(() => {
+//     window.removeEventListener('keydown', handleKeydown);
+// });
 </script>
 
 <template>
     <section class="title-hero-card-carousel layout-full-contained layout-spacing-top">
-        <Flicking                   
+        <Flicking 
+            ref="flicking"
             :options="{
                 bounce: '33%',
                 renderOnlyVisible: false,
@@ -50,9 +51,11 @@ onUnmounted(() => {
             }"
         >
             <TitleHeroCard
-                v-for="(title) in heroCards.titles"
+                v-for="(title, index) in heroCards.titles"
                 :key="title.title_id"
                 :title="title"
+                :index="index"
+                :index-progress="indexProgress"
             />
         </Flicking>
     </section>
