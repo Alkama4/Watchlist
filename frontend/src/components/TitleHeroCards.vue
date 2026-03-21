@@ -159,7 +159,7 @@ onUnmounted(() => {
                                         :loading="waitingfor?.favourite"
                                         @click.prevent="toggleFavourite(title, waitingfor)" 
                                     >
-                                        <Heart pack="filled"/>
+                                        <Heart pack="filled" size="sm"/>
                                     </LoadingButton>
                                 </div>
                                 
@@ -173,7 +173,7 @@ onUnmounted(() => {
                                         :loading="waitingfor?.watchlist"
                                         @click.prevent="toggleWatchlist(title, waitingfor)" 
                                     >
-                                        <Clock pack="filled"/>
+                                        <Clock pack="filled" size="sm"/>
                                     </LoadingButton>
                                 </div>
                             </div>
@@ -210,18 +210,19 @@ onUnmounted(() => {
 }
 
 .hero-cards-wrapper {
+    --max-height: min(calc(90vw / 2), 700px);
+    height: clamp(450px, 55vh, var(--max-height));
+
     position: relative;
-    height: 100%;
-    min-height: 500px;
-    max-width: 100%;
-    aspect-ratio: 2/1;
-    overflow: hidden; /* Prevent horizontal scrollbars during animations */
+    width: 100%;
+    overflow: hidden;
 }
 
 .hero-cards-stack {
     position: relative;
     width: 100%;
     height: 100%;
+    container-type: inline-size;
 }
 
 .hero-card {
@@ -252,31 +253,28 @@ onUnmounted(() => {
 }
 
 .hero-card.left {
-    transform: translateX(-13%) scale(0.85);
+    /* Moves the card left by 20% of the PARENT's width */
+    transform: translateX(-10cqw) scale(0.85); 
     opacity: 0.5;
     z-index: 2;
-    pointer-events: none;
 }
 
 .hero-card.right {
-    transform: translateX(13%) scale(0.85);
+    transform: translateX(10cqw) scale(0.85);
     opacity: 0.5;
     z-index: 2;
-    pointer-events: none;
 }
 
 .hero-card.hidden-left {
-    transform: translateX(-23%) scale(0.7);
+    transform: translateX(-20cqw) scale(0.7);
     opacity: 0;
     z-index: 1;
-    pointer-events: none;
 }
 
 .hero-card.hidden-right {
-    transform: translateX(23%) scale(0.7);
+    transform: translateX(20cqw) scale(0.7);
     opacity: 0;
     z-index: 1;
-    pointer-events: none;
 }
 
 /* ========================== */
@@ -307,7 +305,7 @@ img.logo {
     bottom: calc(115px + var(--spacing-sm-md));
     left: 50%;
     transform: translateX(-50%);
-    height: 30%;
+    height: 20%;
     width: 500px;
     max-width: 100%;
     padding-inline: var(--spacing-lg);
@@ -351,6 +349,7 @@ img.logo {
             margin-top: var(--spacing-sm);
             color: var(--c-text-white-soft);
             font-size: var(--fs-neg-1);
+            white-space: nowrap;
         
             span::after {
                 content: ", ";
@@ -378,8 +377,8 @@ img.logo {
                 flex-direction: row;
                 justify-content: start;
                 padding: 0;
-                width: 40px;
-                height: 40px;
+                width: 36px;
+                height: 36px;
                 overflow: hidden;
                 transition: width 0.2s var(--transition-ease-out);
 
@@ -387,7 +386,7 @@ img.logo {
                     background-color: var(--c-neutral);
 
                     &:hover {
-                        width: calc(40px * 2 + var(--spacing-xs));
+                        width: calc(36px * 2 + var(--spacing-xs));
                     }
                 }
 
@@ -395,7 +394,7 @@ img.logo {
                     box-sizing: border-box;
                     aspect-ratio: 1;
                     height: 100%;
-                    font-size: var(--fs-0);
+                    font-size: var(--fs-neg-1);
                     font-weight: 500;
                 }
             }
