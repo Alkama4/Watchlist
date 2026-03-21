@@ -1,12 +1,12 @@
 import math
 from datetime import datetime, timezone
-from sqlalchemy import select, func, and_, exists, or_, not_, case
+from sqlalchemy import select, func, and_, exists, or_, not_, case, inspect
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Type
 from app.config import DEFAULT_MAX_QUERY_LIMIT
 from app.settings.config import DEFAULT_SETTINGS
-from app.services.languages import get_best_translation, get_user_language_context, get_users_global_preferred_locale
+from app.services.languages import fill_translated_fields_dynamically, get_user_language_context, get_users_global_preferred_locale
 from app.models import (
     SortBy,
     SortDirection,
@@ -394,8 +394,6 @@ def _build_title_list_out(
         episode_count = row["show_episode_count"]
         sim_score = row.get("similarity_score")
 
-        translation = get_best_translation(title.translations, preferred_isos)
-
         # Base data from Title
         title_data = {
             f: getattr(title, f)
@@ -403,14 +401,17 @@ def _build_title_list_out(
             if hasattr(title, f) and f not in {"genres", "user_details"}
         }
 
-        if translation:
-            title_data.update({
-                k: v for k, v in vars(translation).items() 
-                if k in title_schema.model_fields and v is not None
-            })
-        else:
-            if "name" in title_data and not title_data["name"]:
-                title_data["name"] = title.original_title
+        # Apply Dynamic Field-Level Fallback
+        fill_translated_fields_dynamically(
+            title_data, 
+            title.translations, 
+            preferred_isos, 
+            TitleTranslation
+        )
+
+        # Absolute fallback for Name (use Original Title if still empty)
+        if not title_data.get("name"):
+            title_data["name"] = title.original_title
 
         title_data.update({
             "show_season_count": season_count,

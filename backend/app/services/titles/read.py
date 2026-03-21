@@ -1,9 +1,9 @@
 from fastapi import HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, inspect
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from datetime import datetime, timezone
-from app.services.languages import LanguageContext, get_best_translation, check_translation_availability, get_user_language_context
+from app.services.languages import LanguageContext, check_translation_availability, fill_translated_fields_dynamically, get_user_language_context
 from app.services.titles.store import coordinate_title_fetching
 from app.schemas import (
     EpisodeOut,
@@ -123,13 +123,17 @@ def _build_title_out(title: Title, locale_ctx: LanguageContext) -> TitleOut:
         if hasattr(title, field) and field not in {"genres", "user_details", "seasons", "age_ratings", "video_assets"}
     }
     
-    # Best Title Translation
-    translation = get_best_translation(title.translations, locale_ctx.languages_list)
-    if translation:
-        title_dict.update({
-            k: v for k, v in vars(translation).items() 
-            if k in TitleOut.model_fields and v is not None
-        })
+    # Field-Level Fallback for Title
+    fill_translated_fields_dynamically(
+        title_dict, 
+        title.translations, 
+        locale_ctx.languages_list, 
+        TitleTranslation
+    )
+    
+    # Absolute fallback for Name
+    if not title_dict.get("name"):
+        title_dict["name"] = title.original_title
 
     # Apply Title User Details
     user_detail = title.user_details[0] if title.user_details else None
@@ -155,14 +159,9 @@ def _build_title_out(title: Title, locale_ctx: LanguageContext) -> TitleOut:
             for field in SeasonOut.model_fields
             if hasattr(s, field) and field not in {"user_details", "episodes"}
         }
-        
-        s_trans = get_best_translation(s.translations, locale_ctx.languages_list)
-        s_dict["season_name"] = s_trans.name if s_trans else f"Season {s.season_number}"
-        s_dict["overview"] = s_trans.overview if s_trans else None
 
-        s_dict["default_poster_image_path"] = (
-            s_trans.default_poster_image_path if s_trans else None
-        )
+        fill_translated_fields_dynamically(s_dict, s.translations, locale_ctx.languages_list, SeasonTranslation)
+        s_dict["season_name"] = s_dict.pop("name", None) or f"Season {s.season_number}"
         
         s_user = s.user_details[0] if s.user_details else None
         s_dict["user_details"] = UserSeasonDetailsOut.model_validate(s_user) if s_user else None
@@ -170,7 +169,7 @@ def _build_title_out(title: Title, locale_ctx: LanguageContext) -> TitleOut:
         # Sort the episodes
         s.episodes.sort(key=lambda e: (e.episode_number or 0))
         
-        # Map episodes
+        # 4. Map episodes
         episodes_out = []
         for e in s.episodes:
             e_dict = {
@@ -178,15 +177,13 @@ def _build_title_out(title: Title, locale_ctx: LanguageContext) -> TitleOut:
                 for field in EpisodeOut.model_fields
                 if hasattr(e, field) and field not in {"user_details", "video_assets"}
             }
-            
-            e_trans = get_best_translation(e.translations, locale_ctx.languages_list)
-            e_dict["episode_name"] = e_trans.name if e_trans else f"Episode {e.episode_number}"
-            e_dict["overview"] = e_trans.overview if e_trans else None
-            
+
+            fill_translated_fields_dynamically(e_dict, e.translations, locale_ctx.languages_list, EpisodeTranslation)
+            e_dict["episode_name"] = e_dict.pop("name", None) or f"Episode {e.episode_number}"
+
             e_user = e.user_details[0] if e.user_details else None
             e_dict["user_details"] = UserEpisodeDetailsOut.model_validate(e_user) if e_user else None
-
-            # Map Episode-level Video Assets
+            
             e_dict["video_assets"] = [
                 VideoAssetOut.model_validate(va, from_attributes=True) for va in e.video_assets
             ] if e.video_assets else None
@@ -197,5 +194,5 @@ def _build_title_out(title: Title, locale_ctx: LanguageContext) -> TitleOut:
         seasons_out.append(SeasonOut(**s_dict))
     
     title_dict["seasons"] = seasons_out
-
+    
     return TitleOut(**title_dict)

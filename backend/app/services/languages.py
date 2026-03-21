@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import inspect, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import Title, TitleTranslation, UserTitleDetails, UserSetting
 from app.settings.config import DEFAULT_SETTINGS
@@ -108,3 +108,33 @@ def get_best_translation(translations, preferred_isos: list[str]):
                 return trans
     return None
 
+
+def fill_translated_fields_dynamically(target_dict: dict, translations: list, preferred_isos: list[str], model_class):
+    """
+    Dynamically discovers columns from the Translation Model (TitleTranslation, etc.)
+    and applies fallback logic to target_dict.
+    """
+    mapper = inspect(model_class)
+    all_columns = [column.key for column in mapper.attrs if hasattr(column, 'columns')]
+    excluded = {"title_id", "season_id", "episode_id", "iso_639_1"}
+    fields = [f for f in all_columns if f not in excluded]
+
+    # Initialize all discovered fields to None in target_dict if missing
+    for field in fields:
+        if field not in target_dict:
+            target_dict[field] = None
+
+    for iso in preferred_isos:
+        trans = next((t for t in translations if t.iso_639_1 == iso), None)
+        if not trans:
+            continue
+            
+        for field in fields:
+            val = getattr(trans, field, None)
+            current_val = target_dict.get(field)
+            
+            # Fill if current is None or empty string
+            if (current_val is None or (isinstance(current_val, str) and not current_val.strip())):
+                if val is not None and (not isinstance(val, str) or val.strip()):
+                    target_dict[field] = val
+    
