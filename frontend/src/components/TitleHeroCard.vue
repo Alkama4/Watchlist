@@ -38,12 +38,12 @@ const backdropStyle = computed(() => ({
 }));
 
 const logoStyle = computed(() => ({
-    transform: `translateX(calc(-50% + ${cardProgress.value * 20}cqw))`, 
+    transform: `translateX(calc(-50% + ${cardProgress.value * -10}cqw))`, 
     opacity: cardVisibility.value
 }));
 
 const detailsStyle = computed(() => ({
-    transform: `translateX(${cardProgress.value * 20}cqw)`,
+    transform: `translateX(${cardProgress.value * -10}cqw)`,
     opacity: cardVisibility.value
 }));
 </script>
