@@ -98,3 +98,13 @@ async def get_users_global_preferred_locale(db: AsyncSession, user_id: int) -> s
 
     # Fallback to system default
     return DEFAULT_SETTINGS.locales[0]
+
+
+def get_best_translation(translations, preferred_isos: list[str]):
+    """Picks the first translation that matches the prioritized ISO list."""
+    for iso in preferred_isos:
+        for trans in translations:
+            if trans.iso_639_1 == iso:
+                return trans
+    return None
+

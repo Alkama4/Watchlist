@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.dependencies import get_db
 from app.routers.auth import get_current_user
 from app.services.titles.search_internal import run_title_search
-from app.services.languages import get_users_global_preferred_locale
+from app.services.languages import get_user_language_context, get_users_global_preferred_locale
 from app.services.genres import update_genres
 from app.schemas import (
     TitleQueryIn,
@@ -30,7 +30,8 @@ async def get_home_overview(
     """
 
     # Fetch the fallback iso here so we don't have to do it for each query
-    fallback_locale = await get_users_global_preferred_locale(db, user.user_id)
+    locale_ctx = await get_user_language_context(db=db, user_id=user.user_id)
+    preferred_isos = locale_ctx.languages_list
 
     # ------ Hero cards ------
     hero_cards_options = {
@@ -47,7 +48,7 @@ async def get_home_overview(
         TitleQueryIn(**hero_cards_options["filters"]),
         HeroTitleOut,
         HeroUserTitleDetailsOut,
-        fallback_locale
+        preferred_isos
     )
     hero_cards.header = hero_cards_options["header"]
 
@@ -163,7 +164,7 @@ async def get_home_overview(
             TitleQueryIn(**normal_card_list["filters"]),
             CardTitleOut,
             CardUserTitleDetailsOut,
-            fallback_locale
+            preferred_isos
         )
         title_list.header = normal_card_list["header"]
 

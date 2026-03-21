@@ -3,7 +3,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from datetime import datetime, timezone
-from app.services.languages import get_user_language_context
+from app.services.languages import LanguageContext, get_best_translation, check_translation_availability, get_user_language_context
+from app.services.titles.store import coordinate_title_fetching
 from app.schemas import (
     EpisodeOut,
     GenreElement,
@@ -32,14 +33,22 @@ from app.models import (
 async def fetch_title_with_user_details(db: AsyncSession, title_id: int, user_id: int) -> TitleOut:
     locale_ctx = await get_user_language_context(db=db, user_id=user_id, title_id=title_id)
 
-    # Execute the "Mega Query"
+    # Use the helper to "warm up" the database
+    await _ensure_primary_translation(
+        db=db, 
+        title_id=title_id, 
+        user_id=user_id, 
+        primary_iso=locale_ctx.preferred_iso_639_1
+    )
+
+    # Execute the "Mega Query" 
     stmt = (
         select(Title)
         .where(Title.title_id == title_id)
         .options(
             # Load Title Translation & User Details
             selectinload(Title.translations.and_(
-                TitleTranslation.iso_639_1 == locale_ctx.preferred_iso_639_1
+                TitleTranslation.iso_639_1.in_(locale_ctx.languages_list)
             )),
             selectinload(Title.user_details.and_(UserTitleDetails.user_id == user_id)),
             selectinload(Title.genres).selectinload(TitleGenre.genre),
@@ -49,14 +58,14 @@ async def fetch_title_with_user_details(db: AsyncSession, title_id: int, user_id
             # Load Seasons + filtered children
             selectinload(Title.seasons.and_(Season.season_number != 0)).options(
                 selectinload(Season.translations.and_(
-                    SeasonTranslation.iso_639_1 == locale_ctx.preferred_iso_639_1
+                    SeasonTranslation.iso_639_1.in_(locale_ctx.languages_list)
                 )),
                 selectinload(Season.user_details.and_(UserSeasonDetails.user_id == user_id)),
                 
                 # Load Episodes + filtered children
                 selectinload(Season.episodes).options(
                     selectinload(Episode.translations.and_(
-                        EpisodeTranslation.iso_639_1 == locale_ctx.preferred_iso_639_1
+                        EpisodeTranslation.iso_639_1.in_(locale_ctx.languages_list)
                     )),
                     selectinload(Episode.user_details.and_(UserEpisodeDetails.user_id == user_id)),
                     selectinload(Episode.video_assets)
@@ -71,7 +80,7 @@ async def fetch_title_with_user_details(db: AsyncSession, title_id: int, user_id
     if not title:
         raise HTTPException(status_code=404, detail="Title not found")
 
-    # Handle User Title Logic
+    # Handle User Title Logic & Commit
     user_title = title.user_details[0] if title.user_details else None
     if not user_title:
         user_title = UserTitleDetails(user_id=user_id, title_id=title_id)
@@ -83,20 +92,44 @@ async def fetch_title_with_user_details(db: AsyncSession, title_id: int, user_id
     return _build_title_out(title, locale_ctx)
 
 
-def _build_title_out(title: Title, locale_ctx) -> TitleOut:
-    # Map Title Base Fields
+async def _ensure_primary_translation(db: AsyncSession, title_id: int, user_id: int, primary_iso: str):
+    """
+    Checks if a translation exists for the primary ISO. 
+    If not, fetches title info and triggers the coordinator.
+    """
+    exists = await check_translation_availability(db, title_id, primary_iso)
+    
+    if not exists:
+        # Get the bare minimum info needed for the coordinator
+        stmt = select(Title.title_type, Title.tmdb_id).where(Title.title_id == title_id)
+        res = await db.execute(stmt)
+        info = res.one_or_none()
+        
+        if info:
+            # This is the synchronous wait for external data
+            await coordinate_title_fetching(
+                db=db, 
+                title_type=info.title_type, 
+                tmdb_id=info.tmdb_id, 
+                user_id=user_id
+            )
+
+
+def _build_title_out(title: Title, locale_ctx: LanguageContext) -> TitleOut:
+    # Base Fields
     title_dict = {
         field: getattr(title, field)
         for field in TitleOut.model_fields
         if hasattr(title, field) and field not in {"genres", "user_details", "seasons", "age_ratings", "video_assets"}
     }
     
-    # Apply Title Translation fields
-    translation = title.translations[0] if title.translations else None
-    title_dict.update({
-        k: v for k, v in vars(translation).items() 
-        if k in TitleOut.model_fields and v is not None
-    })
+    # Best Title Translation
+    translation = get_best_translation(title.translations, locale_ctx.languages_list)
+    if translation:
+        title_dict.update({
+            k: v for k, v in vars(translation).items() 
+            if k in TitleOut.model_fields and v is not None
+        })
 
     # Apply Title User Details
     user_detail = title.user_details[0] if title.user_details else None
@@ -123,7 +156,7 @@ def _build_title_out(title: Title, locale_ctx) -> TitleOut:
             if hasattr(s, field) and field not in {"user_details", "episodes"}
         }
         
-        s_trans = s.translations[0] if s.translations else None
+        s_trans = get_best_translation(s.translations, locale_ctx.languages_list)
         s_dict["season_name"] = s_trans.name if s_trans else f"Season {s.season_number}"
         s_dict["overview"] = s_trans.overview if s_trans else None
 
@@ -140,14 +173,13 @@ def _build_title_out(title: Title, locale_ctx) -> TitleOut:
         # Map episodes
         episodes_out = []
         for e in s.episodes:
-            # Added "video_assets" to the exclusion set here too
             e_dict = {
                 field: getattr(e, field)
                 for field in EpisodeOut.model_fields
                 if hasattr(e, field) and field not in {"user_details", "video_assets"}
             }
             
-            e_trans = e.translations[0] if e.translations else None
+            e_trans = get_best_translation(e.translations, locale_ctx.languages_list)
             e_dict["episode_name"] = e_trans.name if e_trans else f"Episode {e.episode_number}"
             e_dict["overview"] = e_trans.overview if e_trans else None
             
