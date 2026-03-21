@@ -189,8 +189,7 @@ async def _fetch_and_store_tv_seasons_and_episodes(
             db=db,
             season_id=season_id,
             season_data=season_data,
-            iso_639_1=locale_ctx.preferred_iso_639_1,
-            languages=locale_ctx.languages_list
+            iso_639_1=locale_ctx.preferred_iso_639_1
         )
         episode_images = []
 
@@ -266,9 +265,9 @@ async def _store_title_translation(
 ):
     # Pick the best images for the language
     chosen_images = {
-        "poster": select_best_image(tmdb_data.get("images", {}).get("posters") or [], locale_ctx.languages_list + [None]),
-        "backdrop": select_best_image(tmdb_data.get("images", {}).get("backdrops") or [], [None] + locale_ctx.languages_list),
-        "logo": select_best_image(tmdb_data.get("images", {}).get("logos") or [], locale_ctx.languages_list + [None])
+        "poster": select_best_image(tmdb_data.get("images", {}).get("posters") or [], [locale_ctx.preferred_iso_639_1, None]),
+        "backdrop": select_best_image(tmdb_data.get("images", {}).get("backdrops") or [], [None, locale_ctx.preferred_iso_639_1]),
+        "logo": select_best_image(tmdb_data.get("images", {}).get("logos") or [], [locale_ctx.preferred_iso_639_1, None])
     }
 
     stmt = insert(TitleTranslation).values(
@@ -298,13 +297,9 @@ async def _store_season_translation(
     db: AsyncSession,
     season_id: int,
     season_data: dict,
-    iso_639_1: str,
-    languages: list[str]
+    iso_639_1: str
 ):
-    default_poster_image_path = select_best_image(
-        season_data.get("images", {}).get("posters"),
-        languages + [None]
-    )
+    default_poster_image_path = select_best_image(season_data.get("images", {}).get("posters") or [], [iso_639_1, None])
 
     stmt = insert(SeasonTranslation).values(
         season_id=season_id,
