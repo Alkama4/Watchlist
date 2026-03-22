@@ -1,5 +1,4 @@
 <script setup>
-import TitleHeroCards from '@/components/title_cards/TitleHeroCards.vue';
 import TitleCardCarousel from '@/components/title_cards/TitleCardCarousel.vue';
 import { fastApi } from '@/utils/fastApi';
 import { onMounted, ref } from 'vue';

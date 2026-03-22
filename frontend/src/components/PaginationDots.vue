@@ -1,20 +1,19 @@
 <script setup>
 const props = defineProps({
-    modelValue: {
+    progress: {
         type: Number,
-        required: true
+        default: 0
     },
     count: {
         type: Number,
-        required: true
+        default: 0
     }
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['select']);
 
 function select(index) {
-    if (index === props.modelValue) return;
-    emit('update:modelValue', index);
+    emit('select', index);
 }
 </script>
 
@@ -27,10 +26,10 @@ function select(index) {
             @click="select(index - 1)"
             aria-label="Go to slide"
         >
-        <div
-            class="dot"
-            :class="{ active: index - 1 === modelValue }"
-        ></div>
+            <div
+                class="dot"
+                :style="{ '--intensity': Math.max(0, 1 - Math.abs((index - 1) - (progress || 0))) }"
+            ></div>
         </button>
     </div>
 </template>
@@ -40,30 +39,35 @@ function select(index) {
     display: flex;
 }
 
-
 .dot-wrapper {
     padding: 2px 4px;
     border-radius: 0;
     background-color: transparent !important;
+    border: none;
+    cursor: pointer;
 }
 
 .dot {
-    width: var(--spacing-sm-md);
+    width: calc(var(--spacing-sm-md) + (var(--spacing-md-lg) - var(--spacing-sm-md)) * var(--intensity, 0));
     height: var(--spacing-sm-md);
     border-radius: 100px;
     background-color: var(--c-text-subtle);
-
-    transition: background-color 0.1s var(--transition-ease-out),
-                width 0.2s var(--transition-ease-out);
+    position: relative;
+    overflow: hidden;
 }
 
-.dot.active {
+.dot::after {
+    content: '';
+    position: absolute;
+    inset: 0;
     background-color: var(--c-text);
-    width: var(--spacing-md-lg);
+    opacity: var(--intensity, 0);
+    transition: opacity 0.1s var(--transition-ease-out);
 }
 
-.dot-wrapper:hover .dot,
-.dot-wrapper:active .dot{
+.dot-wrapper:hover .dot::after,
+.dot-wrapper:active .dot::after {
     background-color: var(--c-text-strong);
+    opacity: 1;
 }
 </style>
