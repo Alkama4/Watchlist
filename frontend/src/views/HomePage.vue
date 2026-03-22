@@ -69,7 +69,7 @@ const scatteredIcons = iconList.map((icon, index) => {
 
 <template>
     <div v-if="homeData?.normal_cards?.length > 0" class="home-page layout-spacing-bottom layout-spacing-top">
-        <div class="mobile-header layout-contained">
+        <div class="mobile-only layout-contained">
             <h1>Watchlist</h1>
         </div>
         <TitleHeroCardCarousel :heroCards="homeData?.hero_cards" />
@@ -108,16 +108,6 @@ const scatteredIcons = iconList.map((icon, index) => {
 </template>
 
 <style scoped>
-.mobile-header {
-    display: none;
-}
-@media(max-width: 768px) {
-    .mobile-header {
-        display: block;
-    }
-}
-
-
 .home-page-initial {
     position: relative;
     min-height: 80vh;

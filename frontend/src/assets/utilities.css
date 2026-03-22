@@ -85,3 +85,13 @@
         transform: rotate(360deg);
     }
 }
+
+
+.mobile-only {
+    display: none;
+}
+@media(max-width: 768px) {
+    .mobile-only {
+        display: block;
+    }
+}

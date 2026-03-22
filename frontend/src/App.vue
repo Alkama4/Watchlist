@@ -106,6 +106,11 @@ nav.mobile-nav {
     color: var(--c-text);
 }
 
+.search-bar {
+    margin-left: var(--spacing-lg);
+    margin-right: var(--spacing-md);
+}
+
 ul {
     list-style-type: none;
     display: flex;

@@ -8,6 +8,7 @@ import OptionPicker from '@/components/OptionPicker.vue';
 import Imdb from '@/assets/icons/imdb.svg'
 import Tmdb from '@/assets/icons/tmdb.svg'
 import { ArrowDownNarrowWide, ArrowDownUp, ArrowDownWideNarrow, Calendar, Capitalize, ChartTrend, Check, Circle, CircleHalf, Clock, Film, Heart, History, ListPlus, RotateCcwDot, Shuffle, Timer, Tv, X } from '@boxicons/vue';
+import SearchBar from '@/components/SearchBar.vue';
 
 // Search parameters/filters
 const searchStore = useSearchStore();
@@ -234,6 +235,10 @@ onUnmounted(() => {
                 Add titles
             </div>
         </h1>
+        <SearchBar 
+            class="mobile-only"
+            placeholder="Search for titles" 
+        />
         <div class="filters">
             <div>
                 <LabelDropDown
@@ -426,6 +431,12 @@ onUnmounted(() => {
         }
         
     }
+}
+
+.search-bar {
+    width: 100%;
+    max-width: unset;
+    margin-bottom: var(--spacing-sm);
 }
 
 .filters {
