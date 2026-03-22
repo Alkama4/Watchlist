@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.dependencies import get_db
 from app.integrations.jellyfin import fetch_jellyfin_titles
@@ -13,47 +13,51 @@ async def sync_jellyfin_links(db: AsyncSession = Depends(get_db)):
         jellyfin_data = await fetch_jellyfin_titles()
     except RuntimeError as e:
         raise HTTPException(status_code=400, detail=str(e))
+        
     items = jellyfin_data.get("Items", [])
     
-    # Map Jellyfin TMDB IDs to their Internal IDs
     jellyfin_map = {}
     for item in items:
         p_ids = item.get("ProviderIds", {})
-        tmdb_id = p_ids.get("Tmdb")
-        if tmdb_id:
+        tmdb_id_str = p_ids.get("Tmdb")
+        if tmdb_id_str:
             try:
-                jellyfin_map[int(tmdb_id)] = item.get("Id")
+                jellyfin_map[int(tmdb_id_str)] = item.get("Id")
             except ValueError:
                 continue
 
-    # Find local titles that exist in the Jellyfin map
-    stmt = select(Title).where(Title.tmdb_id.in_(jellyfin_map.keys()))
+    stmt = select(Title).where(
+        or_(
+            Title.tmdb_id.in_(jellyfin_map.keys()),
+            Title.jellyfin_id.is_not(None)
+        )
+    )
     result = await db.execute(stmt)
-    local_titles = result.scalars().all()
+    titles_to_check = result.scalars().all()
 
-    # Perform the update and track changes
     updated_count = 0
-    for title in local_titles:
+    removed_count = 0
+    
+    for title in titles_to_check:
         new_jf_id = jellyfin_map.get(title.tmdb_id)
         
         if title.jellyfin_id != new_jf_id:
+            if new_jf_id is None:
+                removed_count += 1
+            else:
+                updated_count += 1
+                
             title.jellyfin_id = new_jf_id
-            updated_count += 1
 
-    # Prepare statistics
-    total_in_jellyfin = jellyfin_data.get('TotalRecordCount', 0)
-    total_matched_locally = len(local_titles)
-    already_linked_count = total_matched_locally - updated_count
-
-    if updated_count > 0:
+    if updated_count > 0 or removed_count > 0:
         await db.commit()
 
     return {
         "message": "Sync completed successfully.",
         "details": {
-            "newly_linked": updated_count,
-            "already_linked": already_linked_count,
-            "total_matched_in_library": total_matched_locally,
-            "jellyfin_library_size": total_in_jellyfin
+            "newly_linked_or_updated": updated_count,
+            "removed_links": removed_count,
+            "total_titles_processed": len(titles_to_check),
+            "jellyfin_library_size": jellyfin_data.get('TotalRecordCount', 0)
         }
     }
