@@ -7,7 +7,7 @@ import LabelDropDown from '@/components/LabelDropDown.vue';
 import OptionPicker from '@/components/OptionPicker.vue';
 import Imdb from '@/assets/icons/imdb.svg'
 import Tmdb from '@/assets/icons/tmdb.svg'
-import { ArrowDownNarrowWide, ArrowDownUp, ArrowDownWideNarrow, Calendar, Capitalize, ChartTrend, Check, Circle, CircleHalf, Clock, Film, Heart, History, RefreshCcwAltDot, Shuffle, Timer, Tv, X } from '@boxicons/vue';
+import { ArrowDownNarrowWide, ArrowDownUp, ArrowDownWideNarrow, Calendar, Capitalize, ChartTrend, Check, Circle, CircleHalf, Clock, Film, Heart, History, ListPlus, RotateCcwDot, Shuffle, Timer, Tv, X } from '@boxicons/vue';
 
 // Search parameters/filters
 const searchStore = useSearchStore();
@@ -73,6 +73,7 @@ const sortByOptions = [
     { icon: Timer, label: 'Runtime', value: 'runtime', type: 'primary' },
     { icon: Calendar, label: 'Release date', value: 'release_date', type: 'primary' },
     { icon: History, label: 'Last viewed', value: 'last_viewed_at', type: 'primary' },
+    { icon: ListPlus, label: 'Date Added', value: 'added_at', type: 'primary' },
     { icon: Shuffle, label: 'Random', value: 'random', type: 'primary' },
 ];
 
@@ -314,7 +315,7 @@ onUnmounted(() => {
                         @click="resetFilters"
                         :disabled="searchStore.tmdbFallback"
                     >
-                        <RefreshCcwAltDot size="sm"/>
+                        <RotateCcwDot size="sm"/>
                     </button>
                 </div>
             </div>

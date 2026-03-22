@@ -338,6 +338,7 @@ async def _apply_sorting_with_user_settings(
         SortBy.runtime: Title.movie_runtime,
         SortBy.release_date: Title.release_date,
         SortBy.last_viewed_at: UserTitleDetails.last_viewed_at,
+        SortBy.added_at: UserTitleDetails.added_at,
         SortBy.random: func.random()
     }
 
