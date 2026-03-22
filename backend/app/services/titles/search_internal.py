@@ -342,6 +342,10 @@ async def _apply_sorting_with_user_settings(
         SortBy.random: func.random()
     }
 
+    # TODO: Fix title_name sorting with the current translation search setup
+    # TODO: Fix pagination with random sorting
+    # TODO: Maybe have null runtimes be sorted behind valid runtimes?
+
     col = sort_map.get(sort_by, Title.tmdb_vote_average)
     if sort_dir is SortDirection.desc:
         stmt = stmt.order_by(col.desc().nulls_last())
