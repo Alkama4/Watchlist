@@ -71,10 +71,11 @@ const handleAction = (action) => {
     width: 220px;
 
     button:first-child {
-        flex: 1;
+        flex: 2;
     }
     button:last-child {
-        width: 52px;
+        flex: 1;
+        min-width: 52px;
     }
     button:first-child:not(:last-child) {
         border-top-right-radius: 0;

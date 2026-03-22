@@ -14,13 +14,12 @@ import SeasonsListing from '@/components/SeasonsListing.vue';
 import EpisodeMap from '@/components/EpisodeMap.vue';
 import ModalImages from '@/components/modal/ModalImages.vue';
 import KebabMenu from '@/components/KebabMenu.vue';
-import { AlbumCovers, AlertCircle, AlertTriangle, CheckCircle, Clock, Heart, Images, InfoCircle, Link, ListMinus, ListPlus, MapIcon, Play, RefreshCw, Star, Translate } from '@boxicons/vue';
+import { AlbumCovers, AlertCircle, AlertTriangle, CheckCircle, Clock, Heart, Images, InfoCircle, Link, ListMinus, ListPlus, MapIcon, RefreshCw, Star, Translate } from '@boxicons/vue';
 import ModalLocale from '@/components/modal/ModalLocale.vue';
-import { buildVideoAssetUrl, resolveAgeRating } from '@/utils/titleUtils';
+import { resolveAgeRating } from '@/utils/titleUtils';
 import { useSettingsStore } from '@/stores/settings';
 import Tooltip from '@/components/Tooltip.vue';
 import WatchCountButtons from '@/components/WatchCountButtons.vue';
-import LabelDropDown from '@/components/LabelDropDown.vue';
 import VideoAssetListing from '@/components/VideoAssetListing.vue';
 
 const props = defineProps({
@@ -161,7 +160,7 @@ const lastAirDate = computed(() => {
 
 <template>
     <div class="title-details-page">
-        <div class="layout-contained layout-spacing-top" :class="{'layout-spacing-bottom': titleDetails?.title_type === 'movie'}">
+        <div class="layout-contained layout-spacing-top">
             <img 
                 :src="getTitleImageUrl(titleDetails, 'original', 'backdrop')"
                 :alt="`${titleDetails?.title_type} backdrop: ${titleDetails?.name}`"
@@ -178,67 +177,69 @@ const lastAirDate = computed(() => {
             </div>
     
             <div class="main-info">
-                <div class="left-side">
+                <div class="poster-section">
                     <img 
                         :src="getTitleImageUrl(titleDetails, '800', 'poster')"
                         :alt="`${titleDetails?.title_type} poster: ${titleDetails?.name}`"
                         class="poster"
                     >
 
-                    <h4>External Resources</h4>
-                    <div class="links-wrapper">
-                        <a
-                            :href="tmdbBaseUrl"
-                            target="_blank"
-                            class="btn btn-even-padding btn-text"
-                            title="View on TMDB"
-                        >
-                            <Tmdb class="four-letter"/>
-                        </a>
-                        <a
-                            v-if="titleDetails?.imdb_id"
-                            :href="`https://www.imdb.com/title/${titleDetails?.imdb_id}`"
-                            target="_blank"
-                            class="btn btn-even-padding btn-text"
-                            title="View on IMDB"
-                        >
-                            <Imdb class="four-letter"/>
-                        </a>
-                        <a
-                            v-if="titleDetails?.homepage"
-                            :href="titleDetails?.homepage"
-                            target="_blank"
-                            class="btn btn-even-padding btn-text"
-                            title="Visit Official Website"
-                        >
-                            <Link/>
-                        </a>
-                        
-                        <hr>
-                        
-                        <div class="flex-row">
+                    <div class="external-resources">
+                        <h4>External Resources</h4>
+                        <div class="links-wrapper">
                             <a
-                                :href="`https://www.justwatch.com/${settings.primaryCountry}/search?q=${titleDetails?.name_original}`"
+                                :href="tmdbBaseUrl"
                                 target="_blank"
                                 class="btn btn-even-padding btn-text"
-                                title="Check Availability on JustWatch"
+                                title="View on TMDB"
                             >
-                                <JustWatch/>
+                                <Tmdb class="four-letter"/>
                             </a>
-                            <a  
-                                v-if="titleDetails?.jellyfin_id && jellyfinConfig?.base_url"
-                                :href="jellyfinLink"
+                            <a
+                                v-if="titleDetails?.imdb_id"
+                                :href="`https://www.imdb.com/title/${titleDetails?.imdb_id}`"
                                 target="_blank"
                                 class="btn btn-even-padding btn-text"
-                                title="Open in Jellyfin"
+                                title="View on IMDB"
                             >
-                                <Jellyfin/>
+                                <Imdb class="four-letter"/>
                             </a>
+                            <a
+                                v-if="titleDetails?.homepage"
+                                :href="titleDetails?.homepage"
+                                target="_blank"
+                                class="btn btn-even-padding btn-text"
+                                title="Visit Official Website"
+                            >
+                                <Link/>
+                            </a>
+                            
+                            <hr>
+                            
+                            <div class="flex-row">
+                                <a
+                                    :href="`https://www.justwatch.com/${settings.primaryCountry}/search?q=${titleDetails?.name_original}`"
+                                    target="_blank"
+                                    class="btn btn-even-padding btn-text"
+                                    title="Check Availability on JustWatch"
+                                >
+                                    <JustWatch/>
+                                </a>
+                                <a  
+                                    v-if="titleDetails?.jellyfin_id && jellyfinConfig?.base_url"
+                                    :href="jellyfinLink"
+                                    target="_blank"
+                                    class="btn btn-even-padding btn-text"
+                                    title="Open in Jellyfin"
+                                >
+                                    <Jellyfin/>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
-                <div class="right-side">
+                <div class="details-section">
                     <NoticeBlock
                         v-if="titleDetails?.user_details?.in_library === false"
                         type="warning"
@@ -297,9 +298,12 @@ const lastAirDate = computed(() => {
                             |
                             <div class="stat">
                                 {{ titleDetails?.seasons?.length }}
-                                Season{{ titleDetails?.seasons?.length == 1 ? '': 's' }},
+                                <span class="full">Season{{ titleDetails?.seasons?.length == 1 ? '': 's' }}</span>
+                                <span class="short">S</span>,
+                                
                                 {{ titleDetails?.seasons?.reduce((sum, s) => sum + s.episodes.length, 0) }}
-                                Episode{{ titleDetails?.seasons?.reduce((sum, s) => sum + s.episodes.length, 0) == 1 ? '': 's' }}
+                                <span class="full">Episode{{ titleDetails?.seasons?.reduce((sum, s) => sum + s.episodes.length, 0) == 1 ? '': 's' }}</span>
+                                <span class="short">E</span>
                             </div>
                         </template>
     
@@ -346,12 +350,12 @@ const lastAirDate = computed(() => {
                     <p>{{ titleDetails?.overview }}</p>
 
                     <div class="actions">
-                        <div class="primary-actions">
-                            <WatchCountButtons
-                                :watchCount="titleDetails?.user_details?.watch_count"
-                                :title="titleDetails"
-                            />
-                            
+                        <WatchCountButtons
+                            :watchCount="titleDetails?.user_details?.watch_count"
+                            :title="titleDetails"
+                        />
+
+                        <div class="icon-actions">
                             <Heart
                                 pack="filled"
                                 class="btn btn-text btn-even-padding"
@@ -500,7 +504,7 @@ const lastAirDate = computed(() => {
     gap: var(--spacing-md);
 }
 
-.left-side {
+.poster-section {
     display: flex;
     flex-direction: column;
     min-width: 225px;
@@ -533,17 +537,18 @@ img.backdrop {
     height: 50vh;
     max-height: 800px;
     min-height: 500px;
-}
-img.logo {
-    object-fit: contain;
-    object-position: left center;
-
-    width: 100%;
-    max-width: 600px;
-    max-height: 300px;
-    box-sizing: border-box;
-
-    z-index: 5;
+    
+    img.logo {
+        object-fit: contain;
+        object-position: left center;
+    
+        width: 100%;
+        max-width: 600px;
+        max-height: 300px;
+        box-sizing: border-box;
+    
+        z-index: 5;
+    }
 }
 
 .notice {
@@ -560,7 +565,7 @@ img.logo {
     }
 }
 
-/* .right-side {
+/* .details-section {
     background-color: rgba(0, 0, 0, 0.226);
     backdrop-filter: blur(8px);
     padding: var(--spacing-md-lg);
@@ -606,6 +611,14 @@ img.poster {
     .stat {
         display: flex;
         white-space: nowrap;
+
+        /* Compact and expand for mobile/desktop */
+        .short {
+            display: none;
+        }
+        .full {
+            margin-left: 0.5ch;
+        }
     }
 
     .tmdb {
@@ -631,17 +644,17 @@ img.poster {
 .actions {
     display: flex;
     gap: var(--spacing-sm);
-    justify-content: space-between;
 
-    .primary-actions {
+    .icon-actions {
         display: flex;
         gap: var(--spacing-sm);
     }
+
+    .kebab-menu {
+        margin-left: auto;
+    }
 }
 
-/* .links h4 {
-    margin-top: 0;
-} */
 .links-wrapper {
     display: flex;
     flex-wrap: wrap;
@@ -701,5 +714,102 @@ img.poster {
     text-align: center;
     margin-top: var(--spacing-md-lg);
     font-size: var(--fs-neg-1);
+}
+
+
+@media(max-width: 768px) {
+    img.backdrop {
+        width: 100%;
+        height: 55vh;
+        /* min-height: 400px; */
+        max-height: 1200px;
+        top: 0;
+        left: 0;
+        position: absolute;
+        object-fit: cover;
+
+        filter: brightness(calc(var(--details-backdrop-min-brightness) + var(--details-backdrop-fade-intensity) * (1 - var(--details-backdrop-min-brightness))));
+        mask-image: linear-gradient(
+            to top,
+            rgba(0, 0, 0, 0) 0%,
+            rgba(0, 0, 0, calc(1 - var(--details-backdrop-fade-intensity))) 50%
+        );
+    }
+
+    .logo-wrapper {
+        align-items: end;
+        justify-content: center;
+        padding-bottom: var(--spacing-lg);
+        box-sizing: border-box;
+        min-height: 0px;
+        height: 40vh;
+
+        /* display: none; */
+
+        img.logo {
+            object-position: center;
+            width: 80%;
+            max-height: 60%;
+        }
+    }
+
+    .main-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .poster-section {
+        display: none;
+    }
+
+    .details-section {
+        .name-part,
+        .general-stats,
+        p {
+            justify-content: center;
+            text-align: center;
+        }
+        .tagline {
+            margin-top: var(--spacing-xs);
+        }
+        .stat {
+            .short {
+                display: unset;
+            }
+            .full {
+                display: none;
+            }
+        }
+        p {
+            text-align: justify;
+        }
+
+        .actions {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: var(--spacing-sm);
+            width: 100%;
+
+            .watch-count-buttons {
+                width: 100%; 
+            }
+            .icon-actions {
+                flex: 1;
+                display: flex;
+                justify-content: space-evenly;
+                align-items: center;
+            }
+        }
+
+        .kebab-menu {
+            position: absolute;
+            top: 80px;
+            /* top: var(--spacing-md); */
+            /* TODO: Swap when nav is moved to the bottom for mobile. */
+            right: var(--spacing-md);
+        }
+    }
 }
 </style>
