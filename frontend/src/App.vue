@@ -1,7 +1,7 @@
 <script setup>
 import { useRoute } from 'vue-router';
 import SearchBar from './components/SearchBar.vue';
-import { AlbumCovers, Compass, User } from '@boxicons/vue';
+import { AlbumCovers, Compass, Home, Search, User } from '@boxicons/vue';
 
 const route = useRoute();
 </script>
@@ -20,19 +20,19 @@ const route = useRoute();
                     <li>
                         <router-link 
                             class="btn btn-text no-deco" 
-                            to="/"
+                            to="/collections"
                         >
-                            <Compass pack="filled" size="sm"/>
-                            Discover
+                            <AlbumCovers pack="filled" size="sm"/>
+                            Collections
                         </router-link>
                     </li>
                     <li>
                         <router-link 
                             class="btn btn-text no-deco" 
-                            to="/collections"
+                            to="/discover"
                         >
-                            <AlbumCovers pack="filled" size="sm"/>
-                            Collections
+                            <Compass pack="filled" size="sm"/>
+                            Discover
                         </router-link>
                     </li>
                 </ul>
@@ -46,11 +46,34 @@ const route = useRoute();
         </nav>
     </header>
 
-    <main :class="{'header-visible': route.meta.requiresAuth && !route.meta.disableHeaderPadding}">
+    <nav class="mobile-nav" :class="{'nav-visible': route.meta.requiresAuth && !route.meta.disableHeaderPadding}">
+        <router-link class="btn btn-text no-deco" to="/">
+            <Home pack="filled"/>
+            <span>Home</span>
+        </router-link>
+        <router-link class="btn btn-text no-deco" to="/collections">
+            <AlbumCovers pack="filled"/>
+            <span>Collections</span>
+        </router-link>
+        <router-link class="btn btn-text no-deco" to="/search">
+            <Search pack="basic"/>
+            <span>Search</span>
+        </router-link>
+        <router-link class="btn btn-text no-deco" to="/discover">
+            <Compass pack="filled"/>
+            <span>Discover</span>
+        </router-link>
+        <router-link class="btn btn-text no-deco" to="/account">
+            <User pack="filled"/>
+            <span>Account</span>
+        </router-link>
+    </nav>
+
+    <main :class="{'nav-visible': route.meta.requiresAuth && !route.meta.disableHeaderPadding}">
         <router-view/>
     </main>
 
-    <footer>
+    <footer :class="{'nav-visible': route.meta.requiresAuth && !route.meta.disableHeaderPadding}">
         <router-link to="/debug" class="no-deco">© Aleksi Malkki 2026. All Rights Reserved.</router-link>
     </footer>
 </template>
@@ -66,19 +89,22 @@ header {
     backdrop-filter: blur(var(--blur-heavy));
     background: var(--c-bg-opaque-base);
     z-index: var(--z-nav);
+
+    nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
 }
 
-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+nav.mobile-nav {
+    display: none;
 }
 
 .name {
     margin: 0;
     color: var(--c-text);
 }
-
 
 ul {
     list-style-type: none;
@@ -102,7 +128,7 @@ header .btn {
     padding: var(--spacing-sm);
 }
 
-main.header-visible {
+main.nav-visible {
     margin-top: 64px;
 }
 
@@ -117,4 +143,52 @@ footer {
 footer a {
     color: var(--c-text-subtle);
 }
+
+
+@media(max-width: 768px) {
+    header {
+        display: none;
+    }
+
+    main.nav-visible {
+        margin-top: 0;
+        margin-bottom: 64px;
+    }
+
+    footer {
+        display: none;
+    }
+
+    nav.mobile-nav.nav-visible {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-top: 1px solid var(--c-border);
+        backdrop-filter: blur(var(--blur-heavy));
+        background: var(--c-bg-opaque-base);
+
+        z-index: var(--z-nav);
+
+        .btn {
+            flex: 1;
+            padding-inline: 0;
+            /* border-radius: 100px; */
+            flex-direction: column;
+
+            span {
+                font-size: var(--fs-neg-2);
+                font-weight: 500;
+                opacity: 0.5;
+            }
+        }
+    }
+}
+
 </style>

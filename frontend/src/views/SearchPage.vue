@@ -430,9 +430,11 @@ onUnmounted(() => {
 .filters {
     display: flex;
     justify-content: space-between;
+    flex-wrap: wrap;
 
     > div {
         display: flex;
+        flex-wrap: wrap;
         /* gap: var(--spacing-sm); */
     }
 }
