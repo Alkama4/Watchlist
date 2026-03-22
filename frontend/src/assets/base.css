@@ -55,7 +55,7 @@ body {
     margin-inline: auto;
 }
 .layout-spacing-top {
-    margin-top: var(--spacing-md);
+    margin-top: var(--spacing-md-lg);
 }
 .layout-spacing-bottom {
     margin-bottom: var(--spacing-lg);

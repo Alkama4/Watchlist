@@ -68,7 +68,7 @@ const scatteredIcons = iconList.map((icon, index) => {
 </script>
 
 <template>
-    <div v-if="homeData?.normal_cards?.length > 0" class="home-page layout-spacing-bottom">
+    <div v-if="homeData?.normal_cards?.length > 0" class="home-page layout-spacing-bottom layout-spacing-top">
         <TitleHeroCardCarousel :heroCards="homeData?.hero_cards" />
         <TitleCardCarousel v-for="list in homeData?.normal_cards" :carouselData="list"/>
     </div>

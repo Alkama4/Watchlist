@@ -185,7 +185,7 @@ const detailsStyle = computed(() => ({
     /* Natural ratio for in between/smaller screens */
     aspect-ratio: 1.25;
 
-    margin-right: var(--spacing-md);
+    margin-right: var(--spacing-md-lg);
     border-radius: var(--border-radius-lg);
     overflow: hidden;
     user-select: none;

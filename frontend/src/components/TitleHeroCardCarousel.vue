@@ -32,7 +32,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <section class="title-hero-card-carousel layout-full-contained layout-spacing-top">
+    <section class="title-hero-card-carousel layout-full-contained">
         <Flicking 
             ref="flicking"
             :options="{
