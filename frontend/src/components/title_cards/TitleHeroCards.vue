@@ -3,9 +3,9 @@ import { getTitleImageUrl } from '@/utils/imagePath';
 import { numberFormatters, timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg'
 import { ref, onMounted, onUnmounted } from 'vue';
-import PaginationDots from './PaginationDots.vue';
+import PaginationDots from '../PaginationDots.vue';
 import { adjustWatchCount, toggleFavourite, toggleWatchlist } from '@/utils/titleActions';
-import LoadingButton from './LoadingButton.vue';
+import LoadingButton from '../LoadingButton.vue';
 import { Check, ChevronLeft, ChevronRight, Clock, Heart, Minus } from '@boxicons/vue';
 import { resolveAgeRating } from '@/utils/titleUtils';
 

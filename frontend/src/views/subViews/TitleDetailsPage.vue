@@ -1,5 +1,5 @@
 <script setup>
-import TitleCardCarousel from '@/components/TitleCardCarousel.vue';
+import TitleCardCarousel from '@/components/title_cards/TitleCardCarousel.vue';
 import { fastApi } from '@/utils/fastApi';
 import { isoFormatters, numberFormatters, timeFormatters } from '@/utils/formatters';
 import { getTitleImageUrl } from '@/utils/imagePath';

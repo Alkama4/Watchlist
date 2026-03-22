@@ -1,11 +1,11 @@
 <script setup>
-import TitleHeroCards from '@/components/TitleHeroCards.vue';
-import TitleCardCarousel from '@/components/TitleCardCarousel.vue';
+import TitleHeroCards from '@/components/title_cards/TitleHeroCards.vue';
+import TitleCardCarousel from '@/components/title_cards/TitleCardCarousel.vue';
 import { fastApi } from '@/utils/fastApi';
 import { onMounted, ref } from 'vue';
 import { Captions, Disc, Film, FilmRollAlt, Happy, HappyBeaming, ListPlay, Movie, Pause, Play, PlayCircle, Popcorn, StopCircle, Tv, Video, VideoCinema } from '@boxicons/vue';
 import LoadingIndicator from '@/components/LoadingIndicator.vue';
-import TitleHeroCardCarousel from '@/components/TitleHeroCardCarousel.vue';
+import TitleHeroCardCarousel from '@/components/title_cards/TitleHeroCardCarousel.vue';
 
 const homeData = ref({});
 const waiting = ref(true);

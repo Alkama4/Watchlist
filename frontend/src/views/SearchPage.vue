@@ -2,7 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useSearchStore } from '@/stores/search';
 import { fastApi } from '@/utils/fastApi';
-import TitleCard from '@/components/TitleCard.vue';
+import TitleCard from '@/components/title_cards/TitleCard.vue';
 import LabelDropDown from '@/components/LabelDropDown.vue';
 import OptionPicker from '@/components/OptionPicker.vue';
 import Imdb from '@/assets/icons/imdb.svg'

@@ -4,7 +4,7 @@ import { numberFormatters, timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg'
 import { computed, ref } from 'vue';
 import { adjustWatchCount, toggleFavourite, toggleWatchlist } from '@/utils/titleActions';
-import LoadingButton from './LoadingButton.vue';
+import LoadingButton from '../LoadingButton.vue';
 import { Check, Clock, Heart, Minus } from '@boxicons/vue';
 import { resolveAgeRating } from '@/utils/titleUtils';
 

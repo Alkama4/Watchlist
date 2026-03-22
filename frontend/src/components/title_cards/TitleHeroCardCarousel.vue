@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import Flicking from '@egjs/vue3-flicking';
 import { useFlickingReactiveAPI } from "@egjs/vue3-flicking";
-import TitleHeroCard from './TitleHeroCard.vue';
+import TitleHeroCard from '@/components/title_cards/TitleHeroCard.vue';
 
 const flicking = ref(null);
 const { indexProgress } = useFlickingReactiveAPI(flicking);
