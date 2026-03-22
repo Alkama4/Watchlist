@@ -5,9 +5,6 @@ import { isoFormatters, numberFormatters, timeFormatters } from '@/utils/formatt
 import { getTitleImageUrl } from '@/utils/imagePath';
 import { ref, computed } from 'vue';
 import Tmdb from '@/assets/icons/tmdb.svg'
-import Imdb from '@/assets/icons/imdb.svg'
-import JustWatch from '@/assets/icons/justWatch.svg'
-import Jellyfin from '@/assets/icons/jellyfin.svg'
 import NoticeBlock from '@/components/NoticeBlock.vue';
 import ModalBase from '@/components/modal/ModalBase.vue';
 import SeasonsListing from '@/components/SeasonsListing.vue';
@@ -21,6 +18,7 @@ import { useSettingsStore } from '@/stores/settings';
 import Tooltip from '@/components/Tooltip.vue';
 import WatchCountButtons from '@/components/WatchCountButtons.vue';
 import VideoAssetListing from '@/components/VideoAssetListing.vue';
+import ExternalResources from '@/components/ExternalResources.vue';
 
 const props = defineProps({
     titleDetails: {
@@ -184,59 +182,11 @@ const lastAirDate = computed(() => {
                         class="poster"
                     >
 
-                    <div class="external-resources">
-                        <h4>External Resources</h4>
-                        <div class="links-wrapper">
-                            <a
-                                :href="tmdbBaseUrl"
-                                target="_blank"
-                                class="btn btn-even-padding btn-text"
-                                title="View on TMDB"
-                            >
-                                <Tmdb class="four-letter"/>
-                            </a>
-                            <a
-                                v-if="titleDetails?.imdb_id"
-                                :href="`https://www.imdb.com/title/${titleDetails?.imdb_id}`"
-                                target="_blank"
-                                class="btn btn-even-padding btn-text"
-                                title="View on IMDB"
-                            >
-                                <Imdb class="four-letter"/>
-                            </a>
-                            <a
-                                v-if="titleDetails?.homepage"
-                                :href="titleDetails?.homepage"
-                                target="_blank"
-                                class="btn btn-even-padding btn-text"
-                                title="Visit Official Website"
-                            >
-                                <Link/>
-                            </a>
-                            
-                            <hr>
-                            
-                            <div class="flex-row">
-                                <a
-                                    :href="`https://www.justwatch.com/${settings.primaryCountry}/search?q=${titleDetails?.name_original}`"
-                                    target="_blank"
-                                    class="btn btn-even-padding btn-text"
-                                    title="Check Availability on JustWatch"
-                                >
-                                    <JustWatch/>
-                                </a>
-                                <a  
-                                    v-if="titleDetails?.jellyfin_id && jellyfinConfig?.base_url"
-                                    :href="jellyfinLink"
-                                    target="_blank"
-                                    class="btn btn-even-padding btn-text"
-                                    title="Open in Jellyfin"
-                                >
-                                    <Jellyfin/>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                    <ExternalResources 
+                        :titleDetails="titleDetails"
+                        :jellyfinConfig="jellyfinConfig"
+                        :tmdbBaseUrl="tmdbBaseUrl"
+                    />
                 </div>
                 
                 <div class="details-section">
@@ -406,6 +356,12 @@ const lastAirDate = computed(() => {
                         :titleDetails="titleDetails"
                         :class="{'layout-spacing-bottom': !similarTitles?.titles?.length > 0}"
                     />
+
+                    <ExternalResources 
+                        :titleDetails="titleDetails"
+                        :jellyfinConfig="jellyfinConfig"
+                        :tmdbBaseUrl="tmdbBaseUrl"
+                    />
                 </div>
             </div>
         </div>
@@ -573,6 +529,12 @@ img.backdrop {
     border: 1px solid var(--c-border);
 } */
 
+/* Hidden by default here, shown on mobile */
+/* By default in poster-section */
+.details-section .external-resources {
+    display: none;
+}
+
 
 img.poster {
     width: 100%;
@@ -655,26 +617,6 @@ img.poster {
     }
 }
 
-.links-wrapper {
-    display: flex;
-    flex-wrap: wrap;
-    
-    .btn {
-        font-size: var(--fs-3);
-        display: flex;
-        align-items: center;
-        text-decoration: none;
-
-        svg {
-            width: 27.65px;
-            height: auto;
-        }
-        svg.four-letter {
-            width: 42px;
-            height: auto;
-        }
-    }
-}
 
 .data-actions {
     display: flex;
@@ -809,6 +751,10 @@ img.poster {
             /* top: var(--spacing-md); */
             /* TODO: Swap when nav is moved to the bottom for mobile. */
             right: var(--spacing-md);
+        }
+
+        .external-resources {
+            display: unset;
         }
     }
 }
