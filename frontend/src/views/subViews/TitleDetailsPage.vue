@@ -747,9 +747,7 @@ img.poster {
 
         .kebab-menu {
             position: absolute;
-            top: 80px;
-            /* top: var(--spacing-md); */
-            /* TODO: Swap when nav is moved to the bottom for mobile. */
+            top: var(--spacing-md);
             right: var(--spacing-md);
         }
 
