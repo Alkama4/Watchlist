@@ -283,18 +283,17 @@ const lastAirDate = computed(() => {
                                 - {{ timeFormatters.timestampToYear(lastAirDate) }}
                             </template>
                         </div>
-                        
-                        |
-                        <div class="stat genres">
-                            <router-link
-                                v-for="(genre, index) in titleDetails?.genres"
-                                :to="`/search?genres_include=${genre.tmdb_genre_id}`"
-                                class="hover-line"
-                            >
-                                {{ genre?.genre_name }}{{ index == titleDetails?.genres?.length - 1 ? '' : ',' }}
-                            </router-link>
-                            <span v-if="!titleDetails?.genres?.length >= 1">-</span>
-                        </div>
+                    </div>
+
+                    <div class="genres">
+                        <router-link
+                            v-for="(genre, index) in titleDetails?.genres"
+                            :key="genre.tmdb_genre_id"
+                            :to="`/search?genres_include=${genre.tmdb_genre_id}`"
+                            class="genre-link no-deco btn"
+                        >
+                            {{ genre?.genre_name }}
+                        </router-link>
                     </div>
             
                     <p>{{ titleDetails?.overview }}</p>
@@ -556,7 +555,7 @@ img.poster {
 }
 .tagline {
     display: block;
-    margin-top: var(--spacing-md);
+    margin-top: var(--spacing-xs-sm);
     color: var(--c-text-soft);
     font-style: italic;
 }
@@ -597,11 +596,21 @@ img.poster {
         }
     }
 
-    .genres {
-        gap: var(--spacing-xs);
-    }
 }
 
+.genres {
+    display: flex;
+    margin-top: var(--spacing-sm-md);
+    gap: var(--spacing-sm);
+
+    .genre-link {
+        /* border: 1px solid var(--c-border); */
+        padding: 4px 12px;
+        border-radius: 100px;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+}
 
 .actions {
     display: flex;
@@ -708,14 +717,13 @@ img.poster {
     .details-section {
         .name-part,
         .general-stats,
+        .genres,
         p {
             justify-content: center;
             text-align: center;
         }
-        .tagline {
-            margin-top: var(--spacing-xs);
-        }
-        .stat {
+
+        .general-stats .stat {
             .short {
                 display: unset;
             }
@@ -723,6 +731,7 @@ img.poster {
                 display: none;
             }
         }
+
         p {
             text-align: justify;
         }
