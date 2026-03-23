@@ -2,6 +2,37 @@ import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
 import { fastApi } from '@/utils/fastApi';
 
+const PARAM_MAP = {
+    // internal_key: [url_key, type]
+    title_type:       ['type',      'string'],
+    watch_status:     ['status',    'string'],
+    is_favourite:     ['fav',       'boolean'],
+    in_watchlist:     ['watchlist', 'boolean'],
+    jellyfin_link:    ['jellyfin',  'boolean'],
+    has_video_assets: ['video',     'boolean'],
+    sort_by:          ['sort',      'string'],
+    sort_direction:   ['dir',       'string'],
+};
+
+const initialSearchParams = {
+    title_type: null,
+    watch_status: null,
+    is_favourite: null,
+    in_watchlist: null,
+    jellyfin_link: null,
+    has_video_assets: null,
+    sort_by: 'default',
+    sort_direction: 'default',
+};
+
+const initialSearchResults = {
+    titles: [],
+    page_number: 1,
+    page_size: 0,
+    total_items: 0,
+    total_pages: 1
+};
+
 export const useSearchStore = defineStore('search', () => {
     // --- State ---
     const query = ref('');
@@ -9,79 +40,58 @@ export const useSearchStore = defineStore('search', () => {
     const pageNumber = ref(1);
     const waitingFor = ref({ firstPage: false, additionalPage: false });
 
-    const initialSearchParams = {
-        title_type: null,
-        watch_status: null,
-        is_favourite: null,
-        in_watchlist: null,
-        jellyfin_link: null,
-        has_video_assets: null,
-        sort_by: 'default',
-        sort_direction: 'default',
-    };
     const searchParams = ref({ ...initialSearchParams });
-
-    const initialSearchResults = {
-        titles: [],
-        page_number: 1,
-        page_size: 0,
-        total_items: 0,
-        total_pages: 1
-    };
     const searchResults = ref({ ...initialSearchResults });
 
-    // --- URL Sync Utilities ---
     
-    // Reads from URL and sets store state
+    // --- URL Sync Utilities ---
     function hydrateFromQuery(routeQuery) {
-        // Helper to convert URL strings back to correct types
-        const parseBool = (val) => {
-            if (val === 'true') return true;
-            if (val === 'false') return false;
-            return null;
-        };
-
         query.value = routeQuery.q || '';
         tmdbFallback.value = routeQuery.tmdb === 'true';
 
-        searchParams.value = {
-            title_type: routeQuery.type || initialSearchParams.title_type,
-            watch_status: routeQuery.status || initialSearchParams.watch_status,
-            is_favourite: parseBool(routeQuery.fav),
-            in_watchlist: parseBool(routeQuery.watchlist),
-            jellyfin_link: parseBool(routeQuery.jellyfin),
-            has_video_assets: parseBool(routeQuery.video),
-            sort_by: routeQuery.sort || initialSearchParams.sort_by,
-            sort_direction: routeQuery.dir || initialSearchParams.sort_direction,
-        };
+        const newParams = { ...initialSearchParams };
+
+        Object.entries(PARAM_MAP).forEach(([internalKey, [urlKey, type]]) => {
+            const rawValue = routeQuery[urlKey];
+            if (rawValue === undefined) return;
+
+            if (type === 'boolean') {
+                newParams[internalKey] = rawValue === 'true' ? true : rawValue === 'false' ? false : null;
+            } else {
+                newParams[internalKey] = rawValue;
+            }
+        });
+
+        searchParams.value = newParams;
     }
 
-    // Creates a clean object to push to the URL
     const queryForUrl = computed(() => {
         const params = {};
-        
-        // Only add to URL if they differ from the defaults
+
         if (query.value) params.q = query.value;
         if (tmdbFallback.value) params.tmdb = 'true';
-        
-        if (searchParams.value.title_type !== initialSearchParams.title_type) params.type = searchParams.value.title_type;
-        if (searchParams.value.watch_status !== initialSearchParams.watch_status) params.status = searchParams.value.watch_status;
-        if (searchParams.value.is_favourite !== initialSearchParams.is_favourite) params.fav = searchParams.value.is_favourite;
-        if (searchParams.value.in_watchlist !== initialSearchParams.in_watchlist) params.watchlist = searchParams.value.in_watchlist;
-        if (searchParams.value.jellyfin_link !== initialSearchParams.jellyfin_link) params.jellyfin = searchParams.value.jellyfin_link;
-        if (searchParams.value.has_video_assets !== initialSearchParams.has_video_assets) params.video = searchParams.value.has_video_assets;
-        if (searchParams.value.sort_by !== initialSearchParams.sort_by) params.sort = searchParams.value.sort_by;
-        if (searchParams.value.sort_direction !== initialSearchParams.sort_direction) params.dir = searchParams.value.sort_direction;
+
+        Object.entries(PARAM_MAP).forEach(([internalKey, [urlKey, type]]) => {
+            const value = searchParams.value[internalKey];
+            const defaultValue = initialSearchParams[internalKey];
+
+            // Only add to URL if value is not default and not null/undefined
+            if (value !== defaultValue && value !== null) {
+                params[urlKey] = String(value);
+            }
+        });
 
         return params;
     });
 
-    // --- Getters / Computed ---
+
+    // --- Computed ---
     const searchParamsIsDirty = computed(() => {
         return Object.keys(initialSearchParams).some(
             key => searchParams.value[key] !== initialSearchParams[key]
         );
     });
+
 
     // --- Actions ---
     function resetResults() {
@@ -151,6 +161,7 @@ export const useSearchStore = defineStore('search', () => {
         }
     }
 
+    
     // --- Watchers ---
     watch(
         [query, searchParams],
@@ -174,6 +185,7 @@ export const useSearchStore = defineStore('search', () => {
         { immediate: true }
     );
 
+    
     return {
         // State
         query,
