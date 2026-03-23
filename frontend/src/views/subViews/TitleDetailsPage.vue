@@ -239,13 +239,13 @@ const lastAirDate = computed(() => {
                         </div>
     
                         <template v-if="titleDetails?.title_type == 'movie'">
-                            |
+                            <span class="sep">|</span>
                             <div class="stat">
                                 {{ timeFormatters.minutesToHrAndMin(titleDetails?.movie_runtime) }}
                             </div>
                         </template>
                         <template v-else>
-                            |
+                            <span class="sep">|</span>
                             <div class="stat">
                                 {{ titleDetails?.seasons?.length }}
                                 <span class="full">Season{{ titleDetails?.seasons?.length == 1 ? '': 's' }}</span>
@@ -257,7 +257,7 @@ const lastAirDate = computed(() => {
                             </div>
                         </template>
     
-                        |
+                        <span class="sep">|</span>
                         <div class="stat btn-underline" @click="AgeRatingsModal.open()">
                             {{ chosenAgeRating?.rating || '-'  }}
                             <template v-if="chosenAgeRating?.descriptors">
@@ -265,7 +265,7 @@ const lastAirDate = computed(() => {
                             </template>
                         </div>
     
-                        |
+                        <span class="sep">|</span>
                         <div
                             class="stat"
                             :title="
@@ -457,6 +457,11 @@ const lastAirDate = computed(() => {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-md);
+
+    --img-area-height: 50vh;
+    --img-area-max-height: 800px;
+    --img-area-min-height: 500px;
+    --backdrop-overlap-ratio: 1.4;
 }
 
 .poster-section {
@@ -470,8 +475,9 @@ const lastAirDate = computed(() => {
 
 img.backdrop {
     width: 100%;
-    height: 100vh;
-    max-height: 1200px;
+    height: calc(var(--img-area-height) * var(--backdrop-overlap-ratio));
+    max-height: calc(var(--img-area-max-height) * var(--backdrop-overlap-ratio));
+    min-height: calc(var(--img-area-min-height) * var(--backdrop-overlap-ratio));
     top: 0;
     left: 0;
     position: absolute;
@@ -489,9 +495,9 @@ img.backdrop {
     display: flex;
     align-items: center;
     justify-content: left;
-    height: 50vh;
-    max-height: 800px;
-    min-height: 500px;
+    height: var(--img-area-height);
+    max-height: var(--img-area-max-height);
+    min-height: var(--img-area-min-height);
     
     img.logo {
         object-fit: contain;
@@ -582,6 +588,11 @@ img.poster {
         }
     }
 
+    .sep {
+        color: var(--c-text-subtle);
+        /* font-size: var(--fs-neg-1); */
+    }
+
     .tmdb {
         flex-direction: column;
         align-items: center;
@@ -669,11 +680,18 @@ img.poster {
 
 
 @media(max-width: 768px) {
+    .title-details-page {
+        --img-area-height: 40vh;
+        --img-area-max-height: 450px;
+        --img-area-min-height: 200px;
+        --backdrop-overlap-ratio: 1.4;
+    }
+
     img.backdrop {
         width: 100%;
-        height: 55vh;
+        /* height: 55vh; */
         /* min-height: 400px; */
-        max-height: 1200px;
+        /* max-height: 1200px; */
         top: 0;
         left: 0;
         position: absolute;
@@ -692,8 +710,8 @@ img.poster {
         justify-content: center;
         padding-bottom: var(--spacing-lg);
         box-sizing: border-box;
-        min-height: 0px;
-        height: 40vh;
+        /* min-height: 0px; */
+        /* height: 40vh; */
 
         /* display: none; */
 

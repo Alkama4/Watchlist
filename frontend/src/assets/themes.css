@@ -27,8 +27,8 @@
     --c-border: oklch(40% 0.01 230 / 66%);
 
     --hero-backdrop-opacity: 0.3;
-    --details-backdrop-fade-intensity: 0.66;
-    --details-backdrop-min-brightness: 0;
+    --details-backdrop-fade-intensity: 0.5;
+    --details-backdrop-min-brightness: 1;
 }
 
 [data-theme='amethyst'] {
@@ -54,8 +54,8 @@
     --c-border: oklch(45% 0.06 300 / 50%);
 
     --hero-backdrop-opacity: 0.25;
-    --details-backdrop-fade-intensity: 0.66;
-    --details-backdrop-min-brightness: 0;
+    --details-backdrop-fade-intensity: 0.5;
+    --details-backdrop-min-brightness: 1;
 }
 
 [data-theme='flashbang'] {
@@ -88,8 +88,8 @@
 
     --hero-backdrop-opacity: 0.3;
     --hero-backdrop-color: hsl(0, 0%, 5%);
-    --details-backdrop-fade-intensity: 0.6;
-    --details-backdrop-min-brightness: 1;
+    --details-backdrop-fade-intensity: 0.15;
+    --details-backdrop-min-brightness: 0.5;
 
     .btn-negative,
     .btn-positive,
@@ -136,7 +136,7 @@
     --hero-backdrop-opacity: 0.175;
     --hero-backdrop-color: hsl(0, 0%, 20%);
     --details-backdrop-fade-intensity: 0.5;
-    --details-backdrop-min-brightness: 0.2;
+    --details-backdrop-min-brightness: 1;
 
     /* .btn-text:not(.theme-picker-fix) {
         border-radius: 100px;
