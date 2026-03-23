@@ -1,18 +1,24 @@
 <script setup>
 import { ref, useAttrs } from 'vue'
 import { useSearchStore } from '@/stores/search';
-import router from '@/router';
+import { useRoute, useRouter } from 'vue-router'; // Use the hooks
 import { Search, X } from '@boxicons/vue';
 
 const attrs = useAttrs()
 const searchStore = useSearchStore();
+const route = useRoute();
+const router = useRouter();
 const inputSearch = ref(null);
 
 function onSearchFocus() {
-    if (router.currentRoute.value.name !== 'search') {
-        router.push({ name: 'Search' });
+    if (route.name !== 'Search') {
+        router.push({ 
+            name: 'Search', 
+            query: searchStore.queryForUrl
+        });
     }
 }
+
 function onSearchSubmit() {
     searchStore.submit();
 }

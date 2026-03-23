@@ -1,7 +1,6 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { useSearchStore } from '@/stores/search';
-import { fastApi } from '@/utils/fastApi';
 import TitleCard from '@/components/title_cards/TitleCard.vue';
 import LabelDropDown from '@/components/LabelDropDown.vue';
 import OptionPicker from '@/components/OptionPicker.vue';
@@ -9,38 +8,30 @@ import Imdb from '@/assets/icons/imdb.svg'
 import Tmdb from '@/assets/icons/tmdb.svg'
 import { ArrowDownNarrowWide, ArrowDownUp, ArrowDownWideNarrow, Calendar, Capitalize, ChartTrend, Check, Circle, CircleHalf, Clock, Film, Heart, History, ListPlus, RotateCcwDot, Shuffle, Timer, Tv, X } from '@boxicons/vue';
 import SearchBar from '@/components/SearchBar.vue';
+import { useRoute, useRouter } from 'vue-router';
 
-// Search parameters/filters
+
 const searchStore = useSearchStore();
-const initialSearchParams = {
-    title_type: null,
-    watch_status: null,
-    is_favourite: null,
-    in_watchlist: null,
-    jellyfin_link: null,
-    has_video_assets: null,
-    sort_by: 'default',
-    sort_direction: 'default',
-}
-const searchParams = ref({...initialSearchParams});
-const pageNumber = ref(1);
-
-// Search results and statuses
-const waitingFor = ref({})
-const initialSearchResults = {
-    titles: [],
-    page_number: 1,
-    page_size: 0,
-    total_items: 0,
-    total_pages: 1
-}
-const searchResults = ref({...initialSearchResults});
-
-// Infinite scroll
-const loadMoreTrigger = ref(null);
-let observer = null;
 
 
+//////////// URL AND STORE SYNCING ////////////
+const route = useRoute();
+const router = useRouter();
+
+// Hydrate the store from the URL before doing anything else
+searchStore.hydrateFromQuery(route.query);
+
+// Watch the store's clean URL object and update the browser URL silently
+watch(
+    () => searchStore.queryForUrl,
+    (newQuery) => {
+        router.replace({ query: newQuery });
+    },
+    { deep: true }
+);
+
+
+//////////// SEARRCH PARAM OPTIONS ////////////
 const typeOptions = [
     { icon: Film, label: 'Movie', value: 'movie', type: 'primary' },
     { icon: Tv, label: 'TV-show', value: 'tv', type: 'primary' },
@@ -78,136 +69,27 @@ const sortByOptions = [
     { icon: Shuffle, label: 'Random', value: 'random', type: 'primary' },
 ];
 
-async function runSearch(append = false) {
-    if (append && (waitingFor.value.additionalPage || searchResults.value.page_number >= searchResults.value.total_pages)) {
-        return;
-    }
 
-    try {
-        if (!append) {
-            waitingFor.value.firstPage = true;
-            pageNumber.value = 1;
-            resetResults();
-        } else {
-            waitingFor.value.additionalPage = true;
-            pageNumber.value += 1;
-        }
-
-        const params = {
-            query: searchStore.query,
-            page_number: pageNumber.value,
-            ...(searchStore.tmdbFallback ? {} : searchParams.value)
-        };
-
-        const response = await (searchStore.tmdbFallback 
-            ? fastApi.titles.searchTmdb(params) 
-            : fastApi.titles.search(params));
-
-        response.titles.forEach((item, i) => item.batchIndex = i);
-
-        if (append) {
-            searchResults.value = {
-                ...response,
-                titles: [...searchResults.value.titles, ...response.titles]
-            };
-        } else {
-            searchResults.value = response;
-        }
-    } catch (error) {
-        console.error("Search failed", error);
-    } finally {
-        waitingFor.value.additionalPage = false;
-        waitingFor.value.firstPage = false;
-    }
-}
-
-function resetResults() {
-    pageNumber.value = 1;
-    searchResults.value = {
-        titles: [],
-        page_number: 1,
-        page_size: 0,
-        total_items: 0,
-        total_pages: 1
-    };
-}
-
-function resetFilters() {
-    searchParams.value = {...initialSearchParams};
-}
-
-const searchParamsIsDirty = computed(() => {
-    return Object.keys(initialSearchParams).some(
-        key => searchParams.value[key] !== initialSearchParams[key]
-    );
-});
-
-
-const cycleSort = () => {
-    const mapping = {
-        'default': 'asc',
-        'asc': 'desc',
-        'desc': 'default'
-    };
-    
-    searchParams.value.sort_direction = mapping[searchParams.value.sort_direction] || 'default';
-};
-
-
-// On search parameter change auto search if not in tmdb mode
-watch(
-    [() => searchStore.query, searchParams],
-    () => {
-        if (!searchStore.tmdbFallback) {
-            runSearch(false);
-        }
-    },
-    { deep: true }
-);
-
-// On manual submit prevent empty TMDB searches, but keep results
-watch(
-    () => searchStore.submitTick,
-    () => {
-        if (searchStore.query || !searchStore.tmdbFallback) {
-            runSearch();
-        }
-    }
-);
-
-// On mode change prevent empty TMDB searches, but wipe results
-watch(
-    () => searchStore.tmdbFallback,
-    () => {
-        if (searchStore.query || !searchStore.tmdbFallback) {
-            runSearch();
-        } else {
-            resetResults();
-        }
-    },
-    { immediate: true }
-)
-
+//////////// INFINITE SCROLL ////////////
+const loadMoreTrigger = ref(null);
+let observer = null;
 
 onMounted(() => {
     observer = new IntersectionObserver((entries) => {
         const trigger = entries[0];
-        // If the trigger is visible, we aren't currently loading, and there are more pages
         if (
             trigger.isIntersecting
-            && !waitingFor.value.additionalPage
-            && searchResults.value.page_number < searchResults.value.total_pages
+            && !searchStore.waitingFor.additionalPage
+            && searchStore.searchResults.page_number < searchStore.searchResults.total_pages
             && !searchStore.tmdbFallback
         ) {
-            runSearch(true);
+            searchStore.runSearch(true);
         }
     }, {
         rootMargin: '800px' 
     });
 });
 
-// Since the trigger element uses v-if, it will mount and unmount itself. 
-// We just watch for when the element appears/disappears in the DOM to attach to it.
 watch(loadMoreTrigger, (newTrigger, oldTrigger) => {
     if (oldTrigger) observer.unobserve(oldTrigger);
     if (newTrigger) observer.observe(newTrigger);
@@ -215,6 +97,7 @@ watch(loadMoreTrigger, (newTrigger, oldTrigger) => {
 
 onUnmounted(() => {
     if (observer) observer.disconnect();
+    // Optional: Decide if you want to keep TMDB mode sticky or reset it when leaving
     searchStore.tmdbFallback = false;
 });
 </script>
@@ -244,10 +127,10 @@ onUnmounted(() => {
                 <LabelDropDown
                     label="Type"
                     :disabled="searchStore.tmdbFallback"
-                    :modified="searchParams.title_type != initialSearchParams.title_type"
+                    :modified="searchStore.searchParams.title_type != searchStore.initialSearchParams.title_type"
                 >
                     <OptionPicker
-                        v-model="searchParams.title_type"
+                        v-model="searchStore.searchParams.title_type"
                         :options="typeOptions"
                     />
                 </LabelDropDown>
@@ -257,10 +140,10 @@ onUnmounted(() => {
                 <LabelDropDown 
                     label="Watch status" 
                     :disabled="searchStore.tmdbFallback"
-                    :modified="searchParams.watch_status != initialSearchParams.watch_status"
+                    :modified="searchStore.searchParams.watch_status != searchStore.initialSearchParams.watch_status"
                 >
                     <OptionPicker
-                        v-model="searchParams.watch_status"
+                        v-model="searchStore.searchParams.watch_status"
                         :options="watchStatusOptions"
                     />
                 </LabelDropDown>
@@ -268,10 +151,10 @@ onUnmounted(() => {
                 <LabelDropDown 
                     label="Favourite" 
                     :disabled="searchStore.tmdbFallback"
-                    :modified="searchParams.is_favourite != initialSearchParams.is_favourite"
+                    :modified="searchStore.searchParams.is_favourite != searchStore.initialSearchParams.is_favourite"
                 >
                     <OptionPicker
-                        v-model="searchParams.is_favourite"
+                        v-model="searchStore.searchParams.is_favourite"
                         :options="favouriteOptions"
                     />
                 </LabelDropDown>
@@ -279,10 +162,10 @@ onUnmounted(() => {
                 <LabelDropDown 
                     label="Watchlist" 
                     :disabled="searchStore.tmdbFallback"
-                    :modified="searchParams.in_watchlist != initialSearchParams.in_watchlist"
+                    :modified="searchStore.searchParams.in_watchlist != searchStore.initialSearchParams.in_watchlist"
                 >
                     <OptionPicker
-                        v-model="searchParams.in_watchlist"
+                        v-model="searchStore.searchParams.in_watchlist"
                         :options="watchlistOptions"
                     />
                 </LabelDropDown>
@@ -292,10 +175,10 @@ onUnmounted(() => {
                 <LabelDropDown 
                     label="Jellyfin" 
                     :disabled="searchStore.tmdbFallback"
-                    :modified="searchParams.jellyfin_link != initialSearchParams.jellyfin_link"
+                    :modified="searchStore.searchParams.jellyfin_link != searchStore.initialSearchParams.jellyfin_link"
                 >
                     <OptionPicker
-                        v-model="searchParams.jellyfin_link"
+                        v-model="searchStore.searchParams.jellyfin_link"
                         :options="jellyfinOptions"
                     />
                 </LabelDropDown>
@@ -303,21 +186,21 @@ onUnmounted(() => {
                 <LabelDropDown 
                     label="Video Assets" 
                     :disabled="searchStore.tmdbFallback"
-                    :modified="searchParams.has_video_assets != initialSearchParams.has_video_assets"
+                    :modified="searchStore.searchParams.has_video_assets != searchStore.initialSearchParams.has_video_assets"
                 >
                     <OptionPicker
-                        v-model="searchParams.has_video_assets"
+                        v-model="searchStore.searchParams.has_video_assets"
                         :options="videoAssetOptions"
                     />
                 </LabelDropDown>
 
-                <div v-if="searchParamsIsDirty" class="flex-row">
+                <div v-if="searchStore.searchParamsIsDirty" class="flex-row">
                     <hr>
 
                     <button
                         class="btn-text btn-even-padding"
                         title="Reset filters"
-                        @click="resetFilters"
+                        @click="searchStore.resetFilters"
                         :disabled="searchStore.tmdbFallback"
                     >
                         <RotateCcwDot size="sm"/>
@@ -329,10 +212,10 @@ onUnmounted(() => {
                 <LabelDropDown 
                     label="Sort by" 
                     :disabled="searchStore.tmdbFallback"
-                    :modified="searchParams.sort_by != initialSearchParams.sort_by"
+                    :modified="searchStore.searchParams.sort_by != searchStore.initialSearchParams.sort_by"
                 >
                     <OptionPicker
-                        v-model="searchParams.sort_by"
+                        v-model="searchStore.searchParams.sort_by"
                         :options="sortByOptions"
                         :defaultValue="'default'"
                     />
@@ -340,12 +223,12 @@ onUnmounted(() => {
 
                 <button
                     class="btn-text btn-even-padding filter-icon-button"
-                    @click="cycleSort"
-                    :title="`Sort direction: ${searchParams.sort_direction}`"
+                    @click="searchStore.cycleSort"
+                    :title="`Sort direction: ${searchStore.searchParams.sort_direction}`"
                     :disabled="searchStore.tmdbFallback"
                 >
-                    <ArrowDownUp v-if="searchParams.sort_direction == 'default'" size="sm"/>
-                    <ArrowDownNarrowWide v-else-if="searchParams.sort_direction == 'asc'" size="sm"/>
+                    <ArrowDownUp v-if="searchStore.searchParams.sort_direction == 'default'" size="sm"/>
+                    <ArrowDownNarrowWide v-else-if="searchStore.searchParams.sort_direction == 'asc'" size="sm"/>
                     <ArrowDownWideNarrow v-else size="sm"/>
                 </button>
             </div>
@@ -353,13 +236,13 @@ onUnmounted(() => {
 
         <h3>
             Results 
-            <template v-if="!waitingFor.firstPage">
-                ({{ searchResults?.total_items }} found)
+            <template v-if="!searchStore.waitingFor.firstPage">
+                ({{ searchStore.searchResults?.total_items }} found)
             </template>
         </h3>
 
         <div
-            v-if="searchResults?.titles?.length == 0 && !waitingFor.firstPage"
+            v-if="searchStore.searchResults?.titles?.length == 0 && !searchStore.waitingFor.firstPage"
             class="card results-not-found" 
         >
             <h2>No results found</h2>
@@ -377,15 +260,15 @@ onUnmounted(() => {
         
         <div v-else class="title-card-grid">
             <TitleCard
-                v-for="title in searchResults?.titles"
+                v-for="title in searchStore.searchResults?.titles"
                 :key="title.id"
                 :title-info="title"
                 :store-image-flag="!searchStore.tmdbFallback"
                 :grid-mode="true"
             />
             
-            <template v-if="waitingFor.firstPage || waitingFor.additionalPage">
-                <div v-for="_ in (waitingFor.firstPage ? 25 : 5)" class="title-card-skeleton">
+            <template v-if="searchStore.waitingFor.firstPage || searchStore.waitingFor.additionalPage">
+                <div v-for="_ in (searchStore.waitingFor.firstPage ? 25 : 5)" class="title-card-skeleton">
                     <div class="img"/>
                     <div class="header"/>
                     <div class="detail"/>
@@ -395,7 +278,7 @@ onUnmounted(() => {
         </div>
 
         <div 
-            v-if="searchResults?.page_number < searchResults?.total_pages && !waitingFor.additionalPage" 
+            v-if="searchStore.searchResults?.page_number < searchStore.searchResults?.total_pages && !searchStore.waitingFor.additionalPage" 
             ref="loadMoreTrigger"
             class="flex-col" 
             style="margin-top: 16px; min-height: 50px;"
