@@ -161,6 +161,7 @@ const lastAirDate = computed(() => {
         <div class="layout-contained layout-spacing-top">
             <img 
                 :src="getTitleImageUrl(titleDetails, 'original', 'backdrop')"
+                :key="getTitleImageUrl(titleDetails, 'original', 'backdrop')"
                 :alt="`${titleDetails?.title_type} backdrop: ${titleDetails?.name}`"
                 class="backdrop"
             >
@@ -169,6 +170,7 @@ const lastAirDate = computed(() => {
                 <img 
                     v-if="getTitleImageUrl(titleDetails, 'original', 'logo')"
                     :src="getTitleImageUrl(titleDetails, 'original', 'logo')"
+                    :key="getTitleImageUrl(titleDetails, 'original', 'logo')"
                     :alt="`${titleDetails?.title_type} logo: ${titleDetails?.name}`"
                     class="logo"
                 >
@@ -178,6 +180,7 @@ const lastAirDate = computed(() => {
                 <div class="poster-section">
                     <img 
                         :src="getTitleImageUrl(titleDetails, '800', 'poster')"
+                        :key="getTitleImageUrl(titleDetails, '800', 'poster')"
                         :alt="`${titleDetails?.title_type} poster: ${titleDetails?.name}`"
                         class="poster"
                     >

@@ -162,6 +162,7 @@ onUnmounted(() => {
             <div class="season-details">
                 <img 
                     :src="getTitleImageUrl(activeSeason, '800', 'poster')"
+                    :key="getTitleImageUrl(activeSeason, '800', 'poster')"
                     :alt="`Season poster: ${activeSeason?.season_name}`"
                     class="season-poster"
                 >
