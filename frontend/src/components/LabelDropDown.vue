@@ -79,6 +79,7 @@ button {
 
     span {
         padding-left: var(--spacing-xs);
+        white-space: nowrap;
     }
 
     .chevron {
