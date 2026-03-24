@@ -90,8 +90,13 @@ const videoAssetUrl = computed(() => {
     >
         <div class="card-header">
             <div class="main-section">
-                <h5 class="video-title">{{ getVideoLabel(video) }}</h5>
-                
+                <h5 
+                    class="video-title" 
+                    :class="{ 'is-expanded': showSpecs }"
+                >
+                    {{ getVideoLabel(video) }}
+                </h5>
+                                
                 <div class="badge-group">
                     <span class="badge res-badge">{{ formatResolution(video?.resolution) }}</span>
                     <span 
@@ -159,7 +164,8 @@ const videoAssetUrl = computed(() => {
 .main-section {
     display: flex;
     flex-direction: column;
-    width: 100%;
+    flex: 1;
+    min-width: 0;
     gap: var(--spacing-sm);
 }
 
@@ -171,13 +177,23 @@ const videoAssetUrl = computed(() => {
     overflow: hidden;
     text-overflow: ellipsis;
     flex: 1;
+    min-width: 0;
+
+    &.is-expanded {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        word-break: break-word;
+    }
 }
+
 
 
 .toggle-specs-wrapper {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
     
     .toggle-specs-btn {
         margin-left: var(--spacing-sm);
