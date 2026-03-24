@@ -75,7 +75,6 @@ const onTouchEnd = () => {
 }
 
 const drawerStyle = computed(() => {
-    console.info(currentY.value)
     if (!isDragging.value && currentY.value === 0) return {}
     return {
         transform: `translateY(${currentY.value}px)`,
