@@ -181,8 +181,7 @@ export const useSearchStore = defineStore('search', () => {
             } else {
                 resetResults();
             }
-        },
-        { immediate: true }
+        }
     );
 
     
