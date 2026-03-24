@@ -69,6 +69,10 @@ const sortByOptions = [
     { icon: Shuffle, label: 'Random', value: 'random', type: 'primary' },
 ];
 
+onMounted(async () => {
+    searchStore.fetchGenres();
+});
+
 
 //////////// INFINITE SCROLL ////////////
 const loadMoreTrigger = ref(null);
@@ -127,7 +131,7 @@ onUnmounted(() => {
                 <LabelDropDown
                     label="Type"
                     :disabled="searchStore.tmdbFallback"
-                    :modified="searchStore.searchParams.title_type != searchStore.initialSearchParams.title_type"
+                    :modified="searchStore.isDirty('title_type')"
                 >
                     <OptionPicker
                         v-model="searchStore.searchParams.title_type"
@@ -140,7 +144,7 @@ onUnmounted(() => {
                 <LabelDropDown 
                     label="Watch status" 
                     :disabled="searchStore.tmdbFallback"
-                    :modified="searchStore.searchParams.watch_status != searchStore.initialSearchParams.watch_status"
+                    :modified="searchStore.isDirty('watch_status')"
                 >
                     <OptionPicker
                         v-model="searchStore.searchParams.watch_status"
@@ -151,7 +155,7 @@ onUnmounted(() => {
                 <LabelDropDown 
                     label="Favourite" 
                     :disabled="searchStore.tmdbFallback"
-                    :modified="searchStore.searchParams.is_favourite != searchStore.initialSearchParams.is_favourite"
+                    :modified="searchStore.isDirty('is_favourite')"
                 >
                     <OptionPicker
                         v-model="searchStore.searchParams.is_favourite"
@@ -162,7 +166,7 @@ onUnmounted(() => {
                 <LabelDropDown 
                     label="Watchlist" 
                     :disabled="searchStore.tmdbFallback"
-                    :modified="searchStore.searchParams.in_watchlist != searchStore.initialSearchParams.in_watchlist"
+                    :modified="searchStore.isDirty('in_watchlist')"
                 >
                     <OptionPicker
                         v-model="searchStore.searchParams.in_watchlist"
@@ -171,11 +175,38 @@ onUnmounted(() => {
                 </LabelDropDown>
                 
                 <hr>
+
+                <LabelDropDown 
+                    label="Genres Include" 
+                    :disabled="searchStore.tmdbFallback"
+                    :modified="searchStore.isDirty('genres_include')"
+                >
+                    <OptionPicker
+                        v-model="searchStore.searchParams.genres_include"
+                        mode="multiple"
+                        :options="searchStore.genres" 
+                    />
+                </LabelDropDown>
+
+                <LabelDropDown 
+                    label="Genres Exclude" 
+                    :disabled="searchStore.tmdbFallback"
+                    :modified="searchStore.isDirty('genres_exclude')"
+                >
+                    <OptionPicker
+                        v-model="searchStore.searchParams.genres_exclude"
+                        mode="multiple"
+                        :options="searchStore.genres" 
+                    />
+                </LabelDropDown>
+
+
+                <hr>
                 
                 <LabelDropDown 
                     label="Jellyfin" 
                     :disabled="searchStore.tmdbFallback"
-                    :modified="searchStore.searchParams.jellyfin_link != searchStore.initialSearchParams.jellyfin_link"
+                    :modified="searchStore.isDirty('jellyfin_link')"
                 >
                     <OptionPicker
                         v-model="searchStore.searchParams.jellyfin_link"
@@ -186,7 +217,7 @@ onUnmounted(() => {
                 <LabelDropDown 
                     label="Video Assets" 
                     :disabled="searchStore.tmdbFallback"
-                    :modified="searchStore.searchParams.has_video_assets != searchStore.initialSearchParams.has_video_assets"
+                    :modified="searchStore.isDirty('has_video_assets')"
                 >
                     <OptionPicker
                         v-model="searchStore.searchParams.has_video_assets"
@@ -212,7 +243,7 @@ onUnmounted(() => {
                 <LabelDropDown 
                     label="Sort by" 
                     :disabled="searchStore.tmdbFallback"
-                    :modified="searchStore.searchParams.sort_by != searchStore.initialSearchParams.sort_by"
+                    :modified="searchStore.isDirty('sort_by')"
                 >
                     <OptionPicker
                         v-model="searchStore.searchParams.sort_by"

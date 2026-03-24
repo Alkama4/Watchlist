@@ -148,6 +148,10 @@ export const fastApi = {
             url: '/titles/library',
             data
         }),
+        genres: async () => fetchData({
+            method: 'get',
+            url: `/titles/genres`
+        }),
         getById: async (titleId) => fetchData({
             method: 'get',
             url: `/titles/${titleId}`

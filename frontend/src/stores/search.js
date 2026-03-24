@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
 import { fastApi } from '@/utils/fastApi';
+import { Circle } from '@boxicons/vue';
 
 const PARAM_MAP = {
     // internal_key: [url_key, type]
@@ -43,9 +44,11 @@ export const useSearchStore = defineStore('search', () => {
     const tmdbFallback = ref(false);
     const pageNumber = ref(1);
     const waitingFor = ref({ firstPage: false, additionalPage: false });
-
+    
     const searchParams = ref({ ...initialSearchParams });
     const searchResults = ref({ ...initialSearchResults });
+
+    const genres = ref([]);
 
     
     // --- URL Sync Utilities ---
@@ -100,11 +103,23 @@ export const useSearchStore = defineStore('search', () => {
     });
 
 
+    // --- Helpers ---
+    const isDirty = (key) => {
+        const current = searchParams.value[key];
+        const initial = initialSearchParams[key];
+
+        if (Array.isArray(current) && Array.isArray(initial)) {
+            return current.length !== initial.length || 
+                !current.every((val, index) => val === initial[index]);
+        }
+
+        return current !== initial;
+    };
+
+
     // --- Computed ---
     const searchParamsIsDirty = computed(() => {
-        return Object.keys(initialSearchParams).some(
-            key => searchParams.value[key] !== initialSearchParams[key]
-        );
+        return Object.keys(initialSearchParams).some(key => isDirty(key));
     });
 
 
@@ -125,6 +140,23 @@ export const useSearchStore = defineStore('search', () => {
             'desc': 'default'
         };
         searchParams.value.sort_direction = mapping[searchParams.value.sort_direction] || 'default';
+    }
+
+    async function fetchGenres() {
+        if (genres.value.length > 0) return;
+
+        try {
+            const response = await fastApi.titles.genres();
+            genres.value = response.genres.map(({ tmdb_genre_id, genre_name }) => ({
+                icon: Circle,
+                iconNotFilled: true,
+                label: genre_name,
+                value: tmdb_genre_id,
+                type: 'primary'
+            }));
+        } catch (error) {
+            console.error("Failed to fetch genres:", error);
+        }
     }
 
     async function runSearch(append = false) {
@@ -209,15 +241,19 @@ export const useSearchStore = defineStore('search', () => {
         pageNumber,
         waitingFor,
         searchResults,
+        genres,
         // Sync
         hydrateFromQuery,
         queryForUrl,
+        // Helpers
+        isDirty,
         // Computed
         searchParamsIsDirty,
         // Actions
         resetResults,
         resetFilters,
         cycleSort,
+        fetchGenres,
         runSearch,
         submit
     };
