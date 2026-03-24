@@ -63,6 +63,10 @@ const filteredImages = computed(() => {
     return images.filter(img => currentFilter === 'all' || img.locale === currentFilter)
 })
 
+function getFileType(image) {
+    const parts = image?.file_path.split(".");
+    return parts[parts.length - 1];
+}
 
 async function open() {
     try {
@@ -193,7 +197,7 @@ function updateDomData(imageType, imagePath) {
     
                         <div class="details">
                             <div class="resolution">{{ image?.width }}px x {{ image?.height }}px</div>
-                            <div class="rest">{{ image?.vote_average.toFixed(1) }} &bull; {{ image?.locale ?? 'No locale' }}</div>
+                            <div class="rest">{{ image?.vote_average.toFixed(1) }} &bull; {{ image?.locale ?? 'No locale' }} &bull; {{ getFileType(image) }}</div>
                         </div>
                     </div>
                 </div>
