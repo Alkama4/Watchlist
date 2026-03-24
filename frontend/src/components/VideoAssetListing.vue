@@ -66,8 +66,6 @@ const formatHeader = (type) => {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xs);
-    max-height: clamp(300px, 50vh, 700px);
-    overflow-y: auto;
 }
 
 .asset-group {
@@ -78,16 +76,9 @@ const formatHeader = (type) => {
 
 .group-header {
     font-weight: 600;
-    /* letter-spacing: 1px; */
-    /* text-transform: uppercase; */
-    /* font-size: var(--fs-neg-2); */
     color: var(--c-text-subtle);
     padding: var(--spacing-sm) var(--spacing-sm-md) var(--spacing-xs);
-    /* position: sticky; */
     top: 0;
-    /* background: var(--c-bg-base); */
-    /* backdrop-filter: blur(var(--blur-subtle)); */
-    /* background-color: var(--c-bg-opaque-base); */
     z-index: 1;
     margin: 0;
 }

@@ -88,8 +88,7 @@ onUnmounted(() => {
     justify-content: center;
     padding: var(--spacing-lg) 2.5vw;
     cursor: pointer;
-    backdrop-filter: blur(var(--blur-subtle));
-    
+    /* backdrop-filter: blur(var(--blur-subtle)); */
     z-index: var(--z-modal);
 }
 
