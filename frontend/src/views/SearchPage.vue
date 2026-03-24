@@ -6,9 +6,10 @@ import LabelDropDown from '@/components/LabelDropDown.vue';
 import OptionPicker from '@/components/OptionPicker.vue';
 import Imdb from '@/assets/icons/imdb.svg'
 import Tmdb from '@/assets/icons/tmdb.svg'
-import { ArrowDownNarrowWide, ArrowDownUp, ArrowDownWideNarrow, Calendar, Capitalize, ChartTrend, Check, Circle, CircleHalf, Clock, Film, Heart, History, ListPlus, RotateCcwDot, Shuffle, Timer, Tv, X } from '@boxicons/vue';
+import { ArrowDownNarrowWide, ArrowDownUp, ArrowDownWideNarrow, Calendar, Capitalize, ChartTrend, CheckCircle, Circle, CircleHalf, Clock, Film, Heart, History, ListPlus, RotateCcwDot, Shuffle, Timer, Tv, X, XCircle } from '@boxicons/vue';
 import SearchBar from '@/components/SearchBar.vue';
 import { useRoute, useRouter } from 'vue-router';
+import TriStatePicker from '@/components/TriStatePicker.vue';
 
 
 const searchStore = useSearchStore();
@@ -49,14 +50,10 @@ const watchlistOptions = [
     { icon: Clock, label: 'In watchlist', value: true,  type: 'positive' },
     { icon: Clock, iconNotFilled: true, label: 'Not in watchlist', value: false, type: 'negative' },
 ]
-const jellyfinOptions = [
-    { icon: Check, label: 'Available', value: true,  type: 'positive' },
-    { icon: X, label: 'Not available', value: false, type: 'negative' },
-]
-const videoAssetOptions = [
-    { icon: Check, label: 'Available', value: true,  type: 'positive' },
-    { icon: X, label: 'Not available', value: false, type: 'negative' },
-]
+const availabilityOptions = [
+    { icon: CheckCircle, label: 'Available', value: true,  type: 'positive' },
+    { icon: XCircle, label: 'Not available', value: false, type: 'negative' },
+];
 const sortByOptions = [
     { icon: Tmdb, label: 'TMDB', value: 'tmdb_score', type: 'primary' },
     { icon: Imdb, label: 'IMDB', value: 'imdb_score', type: 'primary' },
@@ -177,29 +174,16 @@ onUnmounted(() => {
                 <hr>
 
                 <LabelDropDown 
-                    label="Genres Include" 
+                    label="Genres" 
                     :disabled="searchStore.tmdbFallback"
-                    :modified="searchStore.isDirty('genres_include')"
+                    :modified="searchStore.isDirty('genres_include') || searchStore.isDirty('genres_exclude')"
                 >
-                    <OptionPicker
-                        v-model="searchStore.searchParams.genres_include"
-                        mode="multiple"
+                    <TriStatePicker
+                        v-model:include="searchStore.searchParams.genres_include"
+                        v-model:exclude="searchStore.searchParams.genres_exclude"
                         :options="searchStore.genres" 
                     />
                 </LabelDropDown>
-
-                <LabelDropDown 
-                    label="Genres Exclude" 
-                    :disabled="searchStore.tmdbFallback"
-                    :modified="searchStore.isDirty('genres_exclude')"
-                >
-                    <OptionPicker
-                        v-model="searchStore.searchParams.genres_exclude"
-                        mode="multiple"
-                        :options="searchStore.genres" 
-                    />
-                </LabelDropDown>
-
 
                 <hr>
                 
@@ -210,7 +194,7 @@ onUnmounted(() => {
                 >
                     <OptionPicker
                         v-model="searchStore.searchParams.jellyfin_link"
-                        :options="jellyfinOptions"
+                        :options="availabilityOptions"
                     />
                 </LabelDropDown>
 
@@ -221,7 +205,7 @@ onUnmounted(() => {
                 >
                     <OptionPicker
                         v-model="searchStore.searchParams.has_video_assets"
-                        :options="videoAssetOptions"
+                        :options="availabilityOptions"
                     />
                 </LabelDropDown>
 

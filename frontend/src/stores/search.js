@@ -148,11 +148,8 @@ export const useSearchStore = defineStore('search', () => {
         try {
             const response = await fastApi.titles.genres();
             genres.value = response.genres.map(({ tmdb_genre_id, genre_name }) => ({
-                icon: Circle,
-                iconNotFilled: true,
                 label: genre_name,
                 value: tmdb_genre_id,
-                type: 'primary'
             }));
         } catch (error) {
             console.error("Failed to fetch genres:", error);
