@@ -292,7 +292,7 @@ const lastAirDate = computed(() => {
                         <router-link
                             v-for="(genre, index) in titleDetails?.genres"
                             :key="genre.tmdb_genre_id"
-                            :to="`/search?genres_include=${genre.tmdb_genre_id}`"
+                            :to="`/search?genres_inc=${genre.tmdb_genre_id}`"
                             class="genre-link no-deco btn"
                         >
                             {{ genre?.genre_name }}

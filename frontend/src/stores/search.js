@@ -10,6 +10,8 @@ const PARAM_MAP = {
     in_watchlist:     ['watchlist', 'boolean'],
     jellyfin_link:    ['jellyfin',  'boolean'],
     has_video_assets: ['video',     'boolean'],
+    genres_include:   ['genres_inc','array'],
+    genres_exclude:   ['genres_exc','array'],
     sort_by:          ['sort',      'string'],
     sort_direction:   ['dir',       'string'],
 };
@@ -21,6 +23,8 @@ const initialSearchParams = {
     in_watchlist: null,
     jellyfin_link: null,
     has_video_assets: null,
+    genres_include: [],
+    genres_exclude: [],
     sort_by: 'default',
     sort_direction: 'default',
 };
@@ -53,11 +57,17 @@ export const useSearchStore = defineStore('search', () => {
 
         Object.entries(PARAM_MAP).forEach(([internalKey, [urlKey, type]]) => {
             const rawValue = routeQuery[urlKey];
-            if (rawValue === undefined) return;
+            if (rawValue === undefined || rawValue === null) return;
 
             if (type === 'boolean') {
                 newParams[internalKey] = rawValue === 'true' ? true : rawValue === 'false' ? false : null;
-            } else {
+            } 
+            else if (type === 'array') {
+                // Handle both single values and comma-separated strings
+                const val = Array.isArray(rawValue) ? rawValue[0] : rawValue;
+                newParams[internalKey] = val.split(',').map(Number).filter(n => !isNaN(n));
+            } 
+            else {
                 newParams[internalKey] = rawValue;
             }
         });
@@ -73,11 +83,16 @@ export const useSearchStore = defineStore('search', () => {
 
         Object.entries(PARAM_MAP).forEach(([internalKey, [urlKey, type]]) => {
             const value = searchParams.value[internalKey];
-            const defaultValue = initialSearchParams[internalKey];
-
-            // Only add to URL if value is not default and not null/undefined
-            if (value !== defaultValue && value !== null) {
-                params[urlKey] = String(value);
+            
+            // Handle Arrays
+            if (type === 'array' && Array.isArray(value) && value.length > 0) {
+                params[urlKey] = value.join(',');
+            } 
+            // Handle Booleans and Strings (as you were)
+            else if (value !== null && value !== undefined && value !== initialSearchParams[internalKey]) {
+                if (type !== 'array') {
+                    params[urlKey] = String(value);
+                }
             }
         });
 
