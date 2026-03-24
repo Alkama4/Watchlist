@@ -142,6 +142,9 @@ class GenreElement(BaseModel):
     tmdb_genre_id: int
     genre_name: str
 
+class GenresOut(BaseModel):
+    genres: List[GenreElement]
+
 
 class AgeRatingElement(BaseModel):
     iso_3166_1: str

@@ -12,6 +12,7 @@ from app.services.titles.preset_searches import fetch_similar_titles
 from app.services.images import fetch_image_details, set_user_image_choice
 from app.services.languages import check_translation_availability, get_users_global_preferred_locale
 from app.schemas import (
+    GenresOut,
     ImageListsOut,
     ImagePreferenceIn,
     TitleIn,
@@ -28,6 +29,7 @@ from app.schemas import (
     TitleOut
 )
 from app.models import (
+    Genre,
     ImageType,
     User,
     Title
@@ -90,6 +92,15 @@ async def add_new_title_to_library(
     return {
         "title_id": title_id,
         "in_library": True,
+    }
+
+
+@router.get("/genres", response_model=GenresOut)
+async def get_list_of_genres(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Genre).order_by(Genre.genre_name))
+    genres = result.scalars().all()
+    return {
+        "genres": genres
     }
 
 
