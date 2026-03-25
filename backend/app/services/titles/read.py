@@ -48,7 +48,7 @@ async def fetch_title_with_user_details(db: AsyncSession, title_id: int, user_id
         .options(
             # Load Title Translation & User Details
             selectinload(Title.translations.and_(
-                TitleTranslation.iso_639_1.in_(locale_ctx.languages_list)
+                TitleTranslation.iso_639_1.in_(locale_ctx.iso_639_1_list)
             )),
             selectinload(Title.user_details.and_(UserTitleDetails.user_id == user_id)),
             selectinload(Title.genres).selectinload(TitleGenre.genre),
@@ -58,14 +58,14 @@ async def fetch_title_with_user_details(db: AsyncSession, title_id: int, user_id
             # Load Seasons + filtered children
             selectinload(Title.seasons.and_(Season.season_number != 0)).options(
                 selectinload(Season.translations.and_(
-                    SeasonTranslation.iso_639_1.in_(locale_ctx.languages_list)
+                    SeasonTranslation.iso_639_1.in_(locale_ctx.iso_639_1_list)
                 )),
                 selectinload(Season.user_details.and_(UserSeasonDetails.user_id == user_id)),
                 
                 # Load Episodes + filtered children
                 selectinload(Season.episodes).options(
                     selectinload(Episode.translations.and_(
-                        EpisodeTranslation.iso_639_1.in_(locale_ctx.languages_list)
+                        EpisodeTranslation.iso_639_1.in_(locale_ctx.iso_639_1_list)
                     )),
                     selectinload(Episode.user_details.and_(UserEpisodeDetails.user_id == user_id)),
                     selectinload(Episode.video_assets)
@@ -127,7 +127,7 @@ def _build_title_out(title: Title, locale_ctx: LanguageContext) -> TitleOut:
     fill_translated_fields_dynamically(
         title_dict, 
         title.translations, 
-        locale_ctx.languages_list, 
+        locale_ctx.iso_639_1_list, 
         TitleTranslation
     )
     
@@ -160,7 +160,7 @@ def _build_title_out(title: Title, locale_ctx: LanguageContext) -> TitleOut:
             if hasattr(s, field) and field not in {"user_details", "episodes"}
         }
 
-        fill_translated_fields_dynamically(s_dict, s.translations, locale_ctx.languages_list, SeasonTranslation)
+        fill_translated_fields_dynamically(s_dict, s.translations, locale_ctx.iso_639_1_list, SeasonTranslation)
         s_dict["season_name"] = s_dict.pop("name", None) or f"Season {s.season_number}"
         
         s_user = s.user_details[0] if s.user_details else None
@@ -178,7 +178,7 @@ def _build_title_out(title: Title, locale_ctx: LanguageContext) -> TitleOut:
                 if hasattr(e, field) and field not in {"user_details", "video_assets"}
             }
 
-            fill_translated_fields_dynamically(e_dict, e.translations, locale_ctx.languages_list, EpisodeTranslation)
+            fill_translated_fields_dynamically(e_dict, e.translations, locale_ctx.iso_639_1_list, EpisodeTranslation)
             e_dict["episode_name"] = e_dict.pop("name", None) or f"Episode {e.episode_number}"
 
             e_user = e.user_details[0] if e.user_details else None

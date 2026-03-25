@@ -25,10 +25,10 @@ async def coordinate_title_fetching(db: AsyncSession, title_type: str, tmdb_id: 
     locale_ctx = await get_user_language_context(db=db, user_id=user_id, tmdb_id=tmdb_id, title_type=title_type)
 
     if title_type is TitleType.movie:
-        tmdb_data = await tmdb.fetch_movie(tmdb_id, locale_ctx.preferred_iso_639_1, locale_ctx.languages_str)
+        tmdb_data = await tmdb.fetch_movie(tmdb_id, locale_ctx.preferred_iso_639_1, locale_ctx.iso_639_1_comma_str)
         return await _store_movie(db, tmdb_data, locale_ctx)
     elif title_type is TitleType.tv:
-        tmdb_data = await tmdb.fetch_tv(tmdb_id, locale_ctx.preferred_iso_639_1, locale_ctx.languages_str)
+        tmdb_data = await tmdb.fetch_tv(tmdb_id, locale_ctx.preferred_iso_639_1, locale_ctx.iso_639_1_comma_str)
         return await _store_tv(db, tmdb_data, locale_ctx)
     
     raise ValueError("Invalid title type")
@@ -161,7 +161,7 @@ async def _fetch_and_store_tv_seasons_and_episodes(
             tmdb_data["id"],
             season["season_number"],
             locale_ctx.preferred_iso_639_1,
-            locale_ctx.languages_str
+            locale_ctx.iso_639_1_comma_str
         )
 
         stmt = insert(Season).values(

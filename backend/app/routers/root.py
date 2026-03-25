@@ -31,7 +31,6 @@ async def get_home_overview(
 
     # Fetch the fallback iso here so we don't have to do it for each query
     locale_ctx = await get_user_language_context(db=db, user_id=user.user_id)
-    preferred_isos = locale_ctx.languages_list
 
     # ------ Hero cards ------
     hero_cards_options = {
@@ -49,7 +48,7 @@ async def get_home_overview(
         TitleQueryIn(**hero_cards_options["filters"]),
         HeroTitleOut,
         HeroUserTitleDetailsOut,
-        preferred_isos
+        locale_ctx
     )
     hero_cards.header = hero_cards_options["header"]
 
@@ -165,7 +164,7 @@ async def get_home_overview(
             TitleQueryIn(**normal_card_list["filters"]),
             CardTitleOut,
             CardUserTitleDetailsOut,
-            preferred_isos
+            locale_ctx
         )
         title_list.header = normal_card_list["header"]
 

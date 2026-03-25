@@ -6,10 +6,12 @@ from dataclasses import dataclass
 
 @dataclass
 class LanguageContext:
-    preferred_locale: str          # e.g., "en-US"
-    preferred_iso_639_1: str       # e.g., "en"
-    languages_list: list[str]      # e.g., ["en", "fi"]
-    languages_str: str             # e.g., "en,fi,null"
+    preferred_locale: str              # e.g., "en-US"
+    preferred_iso_639_1: str           # e.g., "en"
+    preferred_iso_3166_1: str          # e.g., "US"
+    iso_639_1_list: list[str]          # e.g., ["en", "fi"]
+    iso_3166_1_list: list[str]         # e.g., ["US", "FI"]
+    iso_639_1_comma_str: str           # e.g., "en,fi,null"
 
 async def get_user_language_context(
     db: AsyncSession, 
@@ -47,25 +49,35 @@ async def get_user_language_context(
         specific_locale = res.scalar_one_or_none()
 
     # 3. Build Logic
-    # The 'active' list has the specific locale at the front if it exists
     full_locales = ([specific_locale] + base_locales) if specific_locale else base_locales
     
-    # Determine the single primary locale (First one in the prioritized list)
+    # Determine the single primary locale
     primary_locale = full_locales[0]
-    primary_iso = primary_locale.split("-")[0].lower()
+    primary_parts = primary_locale.split("-")
+    primary_iso_639_1 = primary_parts[0].lower()
+    primary_iso_3166_1 = primary_parts[1].upper() if len(primary_parts) > 1 else ""
 
-    # Generate unique ISO list for image fetching
-    languages = []
+    # Generate unique ISO lists
+    iso_639_1_list = []
+    iso_3166_1_list = []
+    
     for loc in full_locales:
-        lang = loc.split("-")[0].lower()
-        if lang not in languages:
-            languages.append(lang)
+        parts = loc.split("-")
+        lang = parts[0].lower()
+        region = parts[1].upper() if len(parts) > 1 else None
+        
+        if lang not in iso_639_1_list:
+            iso_639_1_list.append(lang)
+        if region and region not in iso_3166_1_list:
+            iso_3166_1_list.append(region)
 
     return LanguageContext(
         preferred_locale=primary_locale,
-        preferred_iso_639_1=primary_iso,
-        languages_list=languages,
-        languages_str=",".join(languages + ["null"])
+        preferred_iso_639_1=primary_iso_639_1,
+        preferred_iso_3166_1=primary_iso_3166_1,
+        iso_639_1_list=iso_639_1_list,
+        iso_3166_1_list=iso_3166_1_list,
+        iso_639_1_comma_str=",".join(iso_639_1_list + ["null"])
     )
 
 
