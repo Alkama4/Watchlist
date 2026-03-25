@@ -6,7 +6,6 @@ import { computed, ref } from 'vue';
 import { adjustWatchCount, toggleFavourite, toggleWatchlist } from '@/utils/titleActions';
 import LoadingButton from '../LoadingButton.vue';
 import { Check, Clock, Heart, Minus } from '@boxicons/vue';
-import { resolveAgeRating } from '@/utils/titleUtils';
 
 const waitingfor = ref({});
 
@@ -89,8 +88,8 @@ const detailsStyle = computed(() => ({
                         Episode{{ title.show_episode_count == 1 ? '': 's' }}
                     </span>
 
-                    <template v-if="resolveAgeRating(title?.age_ratings)?.rating">
-                        <span>{{ resolveAgeRating(title?.age_ratings)?.rating }}</span>
+                    <template v-if="title?.age_rating?.rating">
+                        <span>{{ title?.age_rating?.rating }}</span>
                     </template>
 
                     <span>

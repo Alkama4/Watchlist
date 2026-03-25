@@ -1,12 +1,11 @@
-import math
 from datetime import datetime, timezone
-from sqlalchemy import select, func, and_, exists, or_, not_, case, inspect
+from sqlalchemy import select, func, and_, exists, or_, not_, case
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Type
 from app.config import DEFAULT_MAX_QUERY_LIMIT
 from app.settings.config import DEFAULT_SETTINGS
-from app.services.languages import fill_translated_fields_dynamically, get_user_language_context, get_users_global_preferred_locale
+from app.services.languages import LanguageContext, fill_translated_fields_dynamically, get_user_language_context
 from app.models import (
     SortBy,
     SortDirection,
@@ -32,7 +31,7 @@ from app.schemas import (
 )
 
 
-def _base_title_query(user_id: int, title_schema, preferred_isos: list[str]):
+def _base_title_query(user_id: int, title_schema, locale_ctx: LanguageContext):
     stmt = (
         select(Title, UserTitleDetails)
         .outerjoin(
@@ -45,15 +44,15 @@ def _base_title_query(user_id: int, title_schema, preferred_isos: list[str]):
         .where(UserTitleDetails.in_library == True)
         .options(
             selectinload(Title.translations.and_(
-                TitleTranslation.iso_639_1.in_(preferred_isos)
-            ))
+                TitleTranslation.iso_639_1.in_(locale_ctx.iso_639_1_list)
+            )),
         )
     )
 
     if title_schema is HeroTitleOut:
         stmt = stmt.options(
-            selectinload(Title.genres).selectinload(TitleGenre.genre),
             selectinload(Title.age_ratings),
+            selectinload(Title.genres).selectinload(TitleGenre.genre)
         )
 
     return stmt
@@ -387,12 +386,11 @@ def _build_title_list_out(
     rows, total, page, size,
     title_schema: Type[CardTitleOut | HeroTitleOut],
     user_title_details_schema: Type[CardUserTitleDetailsOut | HeroUserTitleDetailsOut],
-    preferred_isos: list[str]
+    locale_ctx
 ) -> TitleListOut:
     titles = []
 
     for row in rows:
-        # Access by mapping keys
         title = row["Title"]
         user_details = row["UserTitleDetails"]
         season_count = row["show_season_count"]
@@ -406,28 +404,33 @@ def _build_title_list_out(
             if hasattr(title, f) and f not in {"genres", "user_details"}
         }
 
-        # Apply Dynamic Field-Level Fallback
+        # Apply Dynamic Field-Level Fallback (using the new iso_639_1_list)
         fill_translated_fields_dynamically(
             title_data, 
             title.translations, 
-            preferred_isos, 
+            locale_ctx.iso_639_1_list, 
             TitleTranslation
         )
 
-        # Absolute fallback for Name (use Original Title if still empty)
+        # Absolute fallback for Name
         if not title_data.get("name"):
             title_data["name"] = title.original_title
 
         title_data.update({
             "show_season_count": season_count,
             "show_episode_count": episode_count,
-            "similarity_score": sim_score,  # Not actually returned due to being commented out of the pydantic schema
+            "similarity_score": sim_score,
             "user_details": user_title_details_schema.model_validate(user_details, from_attributes=True) if user_details else None
         })
         
         if title_schema is HeroTitleOut:
             title_data["genres"] = [GenreElement.model_validate(tg.genre, from_attributes=True) for tg in title.genres]
-            title_data["age_ratings"] = [AgeRatingElement.model_validate(r, from_attributes=True) for r in title.age_ratings]
+
+            rating_map = {r.iso_3166_1: r for r in title.age_ratings}
+            title_data["age_rating"] = next(
+                (rating_map[iso] for iso in locale_ctx.iso_3166_1_list if iso in rating_map), 
+                None
+            )
 
         titles.append(title_schema.model_validate(title_data))
 
@@ -446,15 +449,14 @@ async def run_title_search(
     q: TitleQueryIn,
     title_schema: Type[CardTitleOut | HeroTitleOut],
     user_title_details_schema: Type[CardUserTitleDetailsOut | HeroUserTitleDetailsOut],
-    preferred_isos: list[str] = None
+    locale_ctx: LanguageContext = None
 ) -> TitleListOut:
     
     # Allow providing fallback when running multiple searches in a row to avoid unnescary work
-    if not preferred_isos:
+    if not locale_ctx:
         locale_ctx = await get_user_language_context(db=db, user_id=user_id)
-        preferred_isos = locale_ctx.languages_list
 
-    base_stmt = _base_title_query(user_id, title_schema, preferred_isos)
+    base_stmt = _base_title_query(user_id, title_schema, locale_ctx)
     base_stmt = _apply_filters(base_stmt, q)
 
     count_stmt = select(func.count()).select_from(base_stmt.subquery())
@@ -466,4 +468,4 @@ async def run_title_search(
 
     result = await db.execute(stmt)
     rows = result.mappings().unique().all()
-    return _build_title_list_out(rows, total, page, size, title_schema, user_title_details_schema, preferred_isos)
+    return _build_title_list_out(rows, total, page, size, title_schema, user_title_details_schema, locale_ctx)
