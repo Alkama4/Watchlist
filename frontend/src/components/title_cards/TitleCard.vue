@@ -121,10 +121,10 @@ const { titleInfo, storeImageFlag } = defineProps({
         <div class="details">
             <h5>{{ titleInfo?.name }}</h5>
             <div class="detail-row">
+                {{ timeFormatters.timestampToYear(titleInfo?.release_date) }}
+                &bull;
                 <Tmdb/>
                 {{ numberFormatters.formatNumberToLocale(titleInfo?.tmdb_vote_average, {maximumFractionDigits: 1}) || "-" }}
-                &bull;
-                {{ timeFormatters.timestampToYear(titleInfo?.release_date) }}
             </div>
 
             <div v-if="!searchStore.tmdbFallback" class="detail-row">

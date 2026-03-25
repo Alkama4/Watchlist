@@ -89,14 +89,14 @@ const detailsStyle = computed(() => ({
                         Episode{{ title.show_episode_count == 1 ? '': 's' }}
                     </span>
 
+                    <template v-if="resolveAgeRating(title?.age_ratings)?.rating">
+                        <span>{{ resolveAgeRating(title?.age_ratings)?.rating }}</span>
+                    </template>
+
                     <span>
                         <Tmdb/>
                         {{ numberFormatters.formatNumberToLocale(title.tmdb_vote_average) }}
                     </span>
-
-                    <template v-if="resolveAgeRating(title?.age_ratings)?.rating">
-                        <span>{{ resolveAgeRating(title?.age_ratings)?.rating }}</span>
-                    </template>
                 </div>
 
                 <div v-if="title.genres?.length > 0" class="genres" >

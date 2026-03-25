@@ -231,16 +231,24 @@ const lastAirDate = computed(() => {
                     </div>
     
                     <div class="general-stats">
-                        <div class="stat tmdb">
-                            <div>
-                                <Tmdb/>
-                                {{ numberFormatters.formatNumberToLocale(titleDetails?.tmdb_vote_average) || '-' }}
-                            </div>
-                            <div class="votes" :title="`${numberFormatters.formatNumberToLocale(titleDetails?.tmdb_vote_count)} votes`">
-                                ({{ numberFormatters.formatCompactNumber(titleDetails?.tmdb_vote_count) }} votes)
-                            </div>
+                        <div
+                            class="stat"
+                            :title="
+                                titleDetails?.title_type == 'tv'
+                                ? `${timeFormatters.timestampToFullDate(titleDetails?.release_date)} - ${timeFormatters.timestampToFullDate(lastAirDate)}`
+                                : `${timeFormatters.timestampToFullDate(titleDetails?.release_date)}`
+                            "
+                        >
+                            {{ timeFormatters.timestampToYear(titleDetails?.release_date) }}
+                            <template v-if="
+                                titleDetails?.title_type == 'tv' &&
+                                timeFormatters.timestampToYear(lastAirDate) !=
+                                timeFormatters.timestampToYear(titleDetails?.release_date)
+                            ">
+                                - {{ timeFormatters.timestampToYear(lastAirDate) }}
+                            </template>
                         </div>
-    
+
                         <template v-if="titleDetails?.title_type == 'movie'">
                             <span class="sep">|</span>
                             <div class="stat">
@@ -269,22 +277,14 @@ const lastAirDate = computed(() => {
                         </div>
     
                         <span class="sep">|</span>
-                        <div
-                            class="stat"
-                            :title="
-                                titleDetails?.title_type == 'tv'
-                                ? `${timeFormatters.timestampToFullDate(titleDetails?.release_date)} - ${timeFormatters.timestampToFullDate(lastAirDate)}`
-                                : `${timeFormatters.timestampToFullDate(titleDetails?.release_date)}`
-                            "
-                        >
-                            {{ timeFormatters.timestampToYear(titleDetails?.release_date) }}
-                            <template v-if="
-                                titleDetails?.title_type == 'tv' &&
-                                timeFormatters.timestampToYear(lastAirDate) !=
-                                timeFormatters.timestampToYear(titleDetails?.release_date)
-                            ">
-                                - {{ timeFormatters.timestampToYear(lastAirDate) }}
-                            </template>
+                        <div class="stat tmdb">
+                            <div>
+                                <Tmdb/>
+                                {{ numberFormatters.formatNumberToLocale(titleDetails?.tmdb_vote_average) || '-' }}
+                            </div>
+                            <div class="votes" :title="`${numberFormatters.formatNumberToLocale(titleDetails?.tmdb_vote_count)} votes`">
+                                ({{ numberFormatters.formatCompactNumber(titleDetails?.tmdb_vote_count) }} votes)
+                            </div>
                         </div>
                     </div>
 
