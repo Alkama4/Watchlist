@@ -120,3 +120,12 @@ watch(pageLoading, (newLoading) => {
         />
     </div>
 </template>
+
+
+<style scoped>
+.title-controller {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+</style>

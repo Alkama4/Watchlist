@@ -133,6 +133,11 @@ header .btn {
     padding: var(--spacing-sm);
 }
 
+main {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
 main.nav-visible {
     margin-top: 64px;
 }
