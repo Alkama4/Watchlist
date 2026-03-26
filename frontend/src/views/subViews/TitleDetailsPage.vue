@@ -275,7 +275,7 @@ const lastAirDate = computed(() => {
                                 ({{ chosenAgeRating?.descriptors }})
                             </template>
                         </div>
-    
+
                         <span class="sep">|</span>
                         <div class="stat tmdb">
                             <div>
@@ -481,6 +481,7 @@ img.backdrop {
     height: calc(var(--img-area-height) * var(--backdrop-overlap-ratio));
     max-height: calc(var(--img-area-max-height) * var(--backdrop-overlap-ratio));
     min-height: calc(var(--img-area-min-height) * var(--backdrop-overlap-ratio));
+    /* height: 100vh; */
     top: 0;
     left: 0;
     position: absolute;
@@ -523,6 +524,12 @@ img.backdrop {
     display: grid;
     grid-template-columns: auto 1fr;
     gap: var(--spacing-md-lg);
+    position: relative;
+
+    /* background-color: var(--c-bg-opaque-base);
+    backdrop-filter: blur(var(--blur-subtle));
+    padding: var(--spacing-md-lg) var(--spacing-md-lg) 0;
+    border-radius: var(--border-radius-xl) var(--border-radius-xl) 0 0; */
 
     > * {
         z-index: 5;
@@ -784,6 +791,20 @@ img.poster {
         .external-resources {
             display: unset;
         }
+    }
+}
+
+@media(min-width: calc(1600px + 10vw)) {
+    img.backdrop {
+        height: 100vh;
+        max-height: 2000px;
+    }
+
+    .main-info {
+        background-color: var(--c-bg-opaque-base);
+        padding: var(--spacing-md-lg);
+        border-radius: var(--border-radius-xl);
+        /* backdrop-filter: blur(var(--blur-subtle)); */
     }
 }
 </style>
