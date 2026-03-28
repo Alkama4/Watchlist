@@ -1,6 +1,6 @@
 <script setup>
 import { useSettingsStore } from '@/stores/settings';
-import { CheckCircle, Circle } from '@boxicons/vue';
+import { CheckCircle, Circle, Temple } from '@boxicons/vue';
 import { ref } from 'vue';
 
 const settings = useSettingsStore();
@@ -10,8 +10,8 @@ const themes = ref([
     { id: 'void', name: 'Void', description: 'True black for OLED displays' },
     { id: 'midnight', name: 'Midnight (Default)', description: 'Cool blue dark mode' },
     { id: 'amethyst', name: 'Amethyst', description: 'Rich purple darkness' },
-    { id: 'flashbang', name: 'Flashbang', description: 'Cover your eyes' },
-    { id: '16-bit', name: '16-Bit', description: 'Greyscale retro vibes' },
+    { id: 'flashbang', name: 'Flashbang', description: 'Cover your eyes', beta: true },
+    { id: '16-bit', name: '16-Bit', description: 'Greyscale retro vibes', beta: true },
 ]);
 </script>
 
@@ -23,7 +23,10 @@ const themes = ref([
             :data-theme="theme.id"
             class="theme-card"
         >
-            <h4>{{ theme.name }}</h4>
+            <h4>
+                {{ theme.name }}
+                <span v-if="theme.beta" class="beta-tag">Beta</span>
+            </h4>
 
             <p class="description">{{ theme.description }}</p>
             
@@ -68,6 +71,18 @@ const themes = ref([
 
 h4 {
     margin-top: 0;
+    display: flex;
+    align-items: center;
+}
+
+.beta-tag {
+    border: 2px solid var(--c-border);
+    border-radius: var(--border-radius-sm);
+    font-weight: 600;
+    font-size: var(--fs-neg-1);
+    color: var(--c-text-subtle);
+    padding: 1px var(--spacing-xs);
+    margin-left: var(--spacing-sm);
 }
 
 .choose-button {
