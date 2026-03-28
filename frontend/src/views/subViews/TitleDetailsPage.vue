@@ -800,11 +800,21 @@ img.poster {
         max-height: 2000px;
     }
 
-    .main-info {
-        background-color: var(--c-bg-opaque-base);
-        padding: var(--spacing-md-lg);
-        border-radius: var(--border-radius-xl);
-        /* backdrop-filter: blur(var(--blur-subtle)); */
+    .main-info::after {
+        content: "";
+        position: absolute;
+        top: -10%;
+        left: -5%;
+        height: 120%;
+        width: 110%;
+        /* background: linear-gradient(var(--c-bg-opaque-base), var(--c-bg)); */
+        background-color: var(--c-bg);
+        opacity: 0.66;
+        filter: blur(128px);
+        z-index: 1;
+    }
+    .title-carousel {
+        z-index: 2;
     }
 }
 </style>
