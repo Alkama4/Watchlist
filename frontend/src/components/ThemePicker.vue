@@ -1,6 +1,6 @@
 <script setup>
 import { useSettingsStore } from '@/stores/settings';
-import { CheckCircle, Circle, Temple } from '@boxicons/vue';
+import { CheckCircle, Circle } from '@boxicons/vue';
 import { ref } from 'vue';
 
 const settings = useSettingsStore();
@@ -8,7 +8,7 @@ const settings = useSettingsStore();
 const textField = ref('');
 const themes = ref([
     { id: 'void', name: 'Void', description: 'True black for OLED displays' },
-    { id: 'midnight', name: 'Midnight (Default)', description: 'Cool blue dark mode' },
+    { id: 'midnight', name: 'Midnight', description: 'Cool blue dark mode', default: true },
     { id: 'amethyst', name: 'Amethyst', description: 'Rich purple darkness' },
     { id: 'flashbang', name: 'Flashbang', description: 'Cover your eyes', beta: true },
     { id: '16-bit', name: '16-Bit', description: 'Greyscale retro vibes', beta: true },
@@ -25,7 +25,8 @@ const themes = ref([
         >
             <h4>
                 {{ theme.name }}
-                <span v-if="theme.beta" class="beta-tag">Beta</span>
+                <span v-if="theme.default" class="theme-tag default-tag">Default</span>
+                <span v-if="theme.beta" class="theme-tag beta-tag">Beta</span>
             </h4>
 
             <p class="description">{{ theme.description }}</p>
@@ -75,7 +76,7 @@ h4 {
     align-items: center;
 }
 
-.beta-tag {
+.theme-tag {
     border: 2px solid var(--c-border);
     border-radius: var(--border-radius-sm);
     font-weight: 600;
