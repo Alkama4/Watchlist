@@ -258,7 +258,7 @@ onUnmounted(() => {
 
         <div
             v-if="searchStore.searchResults?.titles?.length == 0 && !searchStore.waitingFor.firstPage"
-            class="card results-not-found" 
+            class="card not-found-section" 
         >
             <h2>No results found</h2>
             <p>{{ searchStore.tmdbFallback 
@@ -400,19 +400,6 @@ onUnmounted(() => {
     }
     100% {
         background-position: -200% 0;
-    }
-}
-
-.results-not-found {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-
-    padding: var(--spacing-xl);
-
-    h2 {
-        margin: 0;
     }
 }
 </style>

@@ -70,6 +70,10 @@ export const fastApi = {
         method: 'get',
         url: '/home'
     }),
+    collections: async () => fetchData({
+        method: 'get',
+        url: '/collections'
+    }),
     auth: {
         register: async (data) => fetchData({
             method: 'post',

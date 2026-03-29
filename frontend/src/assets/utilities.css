@@ -95,3 +95,17 @@
         display: block;
     }
 }
+
+.not-found-section {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 225px;
+
+    padding: var(--spacing-xl);
+
+    h2 {
+        margin: 0;
+    }
+}

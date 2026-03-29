@@ -16,6 +16,12 @@ const routes = [
         meta: { requiresAuth: true }
     },
     {
+        path: '/collections',
+        name: 'Collections',
+        component: () => import('@/views/CollectionsPage.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
         path: `/title/:title_id`,
         name: 'Title details',
         component: () => import('@/views/TitleController.vue'),
