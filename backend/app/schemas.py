@@ -271,6 +271,11 @@ class HomeOverviewOut(BaseModel):
     hero_cards: Optional[TitleListOut] = None  
     normal_cards: List[TitleListOut]
 
+class CollectionsOverViewOut(BaseModel):
+    watchlist: Optional[TitleListOut] = None
+    favourites: Optional[TitleListOut] = None
+    collections: Optional[List[None]] = None
+
 
 #### Title out stack ####
 

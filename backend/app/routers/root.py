@@ -3,9 +3,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.dependencies import get_db
 from app.routers.auth import get_current_user
 from app.services.titles.search_internal import run_title_search
-from app.services.languages import get_user_language_context, get_users_global_preferred_locale
+from app.services.languages import get_user_language_context
 from app.services.genres import update_genres
 from app.schemas import (
+    CollectionsOverViewOut,
     TitleQueryIn,
     CardTitleOut,
     CardUserTitleDetailsOut,
@@ -174,6 +175,60 @@ async def get_home_overview(
     return HomeOverviewOut(
         hero_cards=hero_cards,
         normal_cards=normal_cards
+    )
+
+
+@router.get("/collections", response_model=CollectionsOverViewOut)
+async def get_home_overview(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    locale_ctx = await get_user_language_context(db=db, user_id=user.user_id)
+
+    options = [
+        {
+            "key": "favourites",
+            "filters": {
+                "is_favourite": True,
+                "sort_by": "last_viewed_at",
+                "sort_direction": "desc",
+                "page_size": 25
+            }
+        },
+        {
+            "key": "watchlist",
+            "filters": {
+                "in_watchlist": True,
+                "sort_by": "last_viewed_at",
+                "sort_direction": "desc",
+                "page_size": 25
+            }
+        }
+    ]
+
+    results = {
+        "favourites": None,
+        "watchlist": None,
+        "collections": []
+    }
+
+    for option in options:
+        title_list = await run_title_search(
+            db,
+            user.user_id,
+            TitleQueryIn(**option["filters"]),
+            CardTitleOut,
+            CardUserTitleDetailsOut,
+            locale_ctx
+        )
+        
+        if len(title_list.titles) > 0:
+            results[option["key"]] = title_list
+
+    return CollectionsOverViewOut(
+        favourites=results["favourites"],
+        watchlist=results["watchlist"],
+        collections=results["collections"]
     )
 
 
