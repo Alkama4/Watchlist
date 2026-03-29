@@ -32,8 +32,9 @@ defineProps({
             />
             <router-link 
                 v-if="carouselData?.total_pages > 1"
-                class="fake-card no-deco"
+                class="fake-card no-deco btn"
                 :to="'/search'"
+                draggable="false"
             >
                 <div>Search for more</div>
                 <ArrowRightStroke size="md"/>
@@ -59,15 +60,15 @@ defineProps({
 
 /* Temp solution */
 .fake-card {
-    width: 200px;
-    height: 300px;
-    background-color: var(--c-bg-level-1);
-    border-radius: var(--border-radius-md);
+    width: var(--title-card-width);
+    aspect-ratio: 2/3;
+    font-size: var(--fs-0);
+    font-weight: 500;
+    padding: 0;
     display: inline-flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: var(--spacing-sm);
 }
 .fake-card svg {
     transition: 0.3s transform var(--transition-bounce),
