@@ -69,6 +69,7 @@ async def get_home_overview(
         {
             "header": "Random picks",
             "filters": {
+                "is_released": True,
                 "watch_status": "not_watched",
                 "sort_by": "random",
                 "sort_direction": "desc",
@@ -78,6 +79,7 @@ async def get_home_overview(
         {
             "header": "Highest rated",
             "filters": {
+                "is_released": True,
                 "watch_status": "not_watched",
                 "sort_by": "tmdb_score",
                 "sort_direction": "desc",
@@ -87,6 +89,7 @@ async def get_home_overview(
         {
             "header": "Most popular",
             "filters": {
+                "is_released": True,
                 "watch_status": "not_watched",
                 "sort_by": "popularity",
                 "sort_direction": "desc",
@@ -94,28 +97,84 @@ async def get_home_overview(
             }
         },
         {
-            "header": "Your Favourites",
+            "header": "Quick movies",
             "filters": {
-                "is_favourite": True,
-                "sort_by": "last_viewed_at",
-                "sort_direction": "desc",
-                "page_size": 25
-            }
-        },
-        {
-            "header": "Your Watchlist",
-            "filters": {
-                "in_watchlist": True,
-                "sort_by": "last_viewed_at",
-                "sort_direction": "desc",
-                "page_size": 25
-            }
-        },
-        {
-            "header": "Short movies you have time for",
-            "filters": {
+                "is_released": True,
                 "title_type": "movie",
                 "sort_by": "runtime",
+                "sort_direction": "asc",
+                "page_size": 25
+            }
+        },
+        {
+            "header": "Hidden Gems",
+            "filters": {
+                "is_released": True,
+                "watch_status": "not_watched",
+                "min_tmdb_rating": 7,
+                "sort_by": "popularity",
+                "sort_direction": "asc",
+                "page_size": 25
+            }
+        },
+        {
+            "header": "Classics from 90s & 00s",
+            "filters": {
+                "release_year_min": 1990,
+                "release_year_max": 2009,
+                "min_tmdb_rating": 7,
+                "sort_by": "popularity",
+                "sort_direction": "desc",
+                "page_size": 25
+            }
+        },
+        {
+            "header": "Critically Acclaimed",
+            "filters": {
+                "is_released": True,
+                "watch_status": "not_watched",
+                "min_tmdb_rating": 8,
+                "sort_by": "popularity",
+                "sort_direction": "desc",
+                "page_size": 25
+            }
+        },
+        {
+            "header": "Recently Added",
+            "filters": {
+                "is_released": True,
+                "sort_by": "added_at",
+                "sort_direction": "desc",
+                "page_size": 25
+            }
+        },
+        {
+            "header": "Titles you've forgotten",
+            "filters": {
+                "is_released": True,
+                "watch_status": "not_watched",
+                "sort_by": "last_viewed_at",
+                "sort_direction": "asc",
+                "page_size": 25
+            }
+        },
+        {
+            "header": "Bottom of the barrel",
+            "filters": {
+                "is_released": True,
+                "watch_status": "not_watched",
+                "min_tmdb_rating": 1,
+                "sort_by": "tmdb_score",
+                "sort_direction": "asc",
+                "page_size": 25
+            }
+        },
+        {
+            "header": "Dive back in",
+            "filters": {
+                "is_released": True,
+                "watch_status": "completed",
+                "sort_by": "last_viewed_at",
                 "sort_direction": "asc",
                 "page_size": 25
             }
@@ -134,24 +193,6 @@ async def get_home_overview(
             "filters": {
                 "is_released": False,
                 "sort_by": "release_date",
-                "sort_direction": "asc",
-                "page_size": 25
-            }
-        },
-        {
-            "header": "Titles you've forgotten",
-            "filters": {
-                "watch_status": "not_watched",
-                "sort_by": "last_viewed_at",
-                "sort_direction": "asc",
-                "page_size": 25
-            }
-        },
-        {
-            "header": "Time for a rewatch?",
-            "filters": {
-                "watch_status": "completed",
-                "sort_by": "last_viewed_at",
                 "sort_direction": "asc",
                 "page_size": 25
             }
