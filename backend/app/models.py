@@ -349,6 +349,7 @@ class UserCollection(Base):
     name = Column(String(255))
     description = Column(Text)
     parent_collection_id = Column(Integer, ForeignKey("user_collections.collection_id", ondelete="SET NULL"))
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     user = relationship("User", back_populates="collections")
     titles = relationship("UserCollectionTitle", back_populates="collection", cascade="all, delete-orphan")
@@ -360,6 +361,7 @@ class UserCollectionTitle(Base):
 
     title_id = Column(Integer, ForeignKey("titles.title_id", ondelete="CASCADE"), primary_key=True)
     collection_id = Column(Integer, ForeignKey("user_collections.collection_id", ondelete="CASCADE"), primary_key=True)
+    added_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     title = relationship("Title")
     collection = relationship("UserCollection", back_populates="titles")
