@@ -359,10 +359,10 @@ class TMDBCollectionUserDetails(Base):
 
     user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), primary_key=True)
     tmdb_collection_id = Column(Integer, ForeignKey("tmdb_collections.tmdb_collection_id", ondelete="CASCADE"), primary_key=True)
+
     chosen_poster_image_path = Column(String(255), ForeignKey("images.file_path"))
     chosen_backdrop_image_path = Column(String(255), ForeignKey("images.file_path"))
     chosen_locale = Column(String(16))
-
     last_viewed_at = Column(DateTime(timezone=True))
 
     collection = relationship("TMDBCollection", back_populates="user_details")

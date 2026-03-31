@@ -1,15 +1,26 @@
+from fastapi import HTTPException
+from datetime import datetime, timezone
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
-from app.services.languages import LanguageContext
+from sqlalchemy.orm import selectinload
+from app.services.languages import LanguageContext, fill_translated_fields_dynamically, get_user_language_context
 from app.integrations import tmdb
 from app.services.images import select_best_image, store_image_details
+from app.schemas import (
+    TMDBCollectionOut,
+    TMDBCollectionUserDetailsOut,
+)
 from app.models import(
     TMDBCollection,
     TMDBCollectionTranslation,
+    TMDBCollectionUserDetails,
     Title,
-    TitleType
+    TitleType,
 )
+
+
+######## STORING ########
 
 async def init_tmdb_collection(db: AsyncSession, tmdb_collection_info: dict):
     tmdb_collection_id = tmdb_collection_info.get("id")
@@ -104,3 +115,83 @@ async def _store_tmdb_collection_translation(
         }
     )
     await db.execute(stmt)
+
+
+######## READING ########
+
+async def fetch_collection_with_user_details(
+    db: AsyncSession,
+    tmdb_collection_id: int,
+    user_id: int
+) -> TMDBCollectionOut:
+    locale_ctx = await get_user_language_context(db=db, user_id=user_id)
+
+    stmt = (
+        select(TMDBCollection)
+        .where(TMDBCollection.tmdb_collection_id == tmdb_collection_id)
+        .options(
+            # Load Collection Translation
+            selectinload(TMDBCollection.translations.and_(
+                TMDBCollectionTranslation.iso_639_1.in_(locale_ctx.iso_639_1_list)
+            )),
+            # Load Collection User Details
+            selectinload(TMDBCollection.user_details.and_(
+                TMDBCollectionUserDetails.user_id == user_id
+            ))
+        )
+    )
+
+    result = await db.execute(stmt)
+    collection = result.scalar_one_or_none()
+    
+    if not collection:
+        raise HTTPException(status_code=404, detail="Collection not found")
+
+    user_col = collection.user_details[0] if collection.user_details else None
+    if not user_col:
+        user_col = TMDBCollectionUserDetails(
+            user_id=user_id, 
+            tmdb_collection_id=tmdb_collection_id
+        )
+        db.add(user_col)
+    
+    user_col.last_viewed_at = datetime.now(timezone.utc)
+    await db.commit()
+
+    return _build_collection_out(collection, locale_ctx)
+
+
+def _build_collection_out(collection: TMDBCollection, locale_ctx: LanguageContext) -> TMDBCollectionOut:
+    # Filter out relationships that need custom mapping (titles, user_details, etc.)
+    col_dict = {
+        field: getattr(collection, field)
+        for field in TMDBCollectionOut.model_fields
+        if field not in {"titles", "user_details"} and hasattr(collection, field)
+    }
+    
+    # Fill translated fields (name, overview, default_poster_image_path, etc.)
+    fill_translated_fields_dynamically(
+        col_dict, 
+        collection.translations, 
+        locale_ctx.iso_639_1_list, 
+        TMDBCollectionTranslation
+    )
+    
+    # Absolute fallback for the collection name
+    if not col_dict.get("name"):
+        col_dict["name"] = collection.name_original
+
+    # Map User Details
+    user_detail = collection.user_details[0] if collection.user_details else None
+    col_dict["user_details"] = (
+        TMDBCollectionUserDetailsOut.model_validate(user_detail, from_attributes=True) 
+        if user_detail else None
+    )
+    
+    # Metadata
+    col_dict["display_locale"] = locale_ctx.preferred_locale
+    
+    # Omit titles for now. Use search_internal to implement later
+    col_dict["titles"] = None
+
+    return TMDBCollectionOut(**col_dict)

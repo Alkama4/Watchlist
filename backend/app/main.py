@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi.responses import RedirectResponse
 from app import config
 from app.database import engine, Base, AsyncSessionLocal
-from app.routers import auth, titles, seasons, media, settings, user_settings, root, integrations, config, episodes
+from app.routers import auth, titles, seasons, media, settings, user_settings, root, integrations, config, episodes, collections
 from app.settings.seed import init_settings
 from app.services.genres import update_genres
 
@@ -50,6 +50,7 @@ app.include_router(user_settings.router, prefix="/user_settings", tags=["User Se
 app.include_router(titles.router, prefix="/titles", tags=["Titles"])
 app.include_router(seasons.router, prefix="/seasons", tags=["Seasons"])
 app.include_router(episodes.router, prefix="/episodes", tags=["Episodes"])
+app.include_router(collections.router, prefix="/collections", tags=["Collections"])
 app.include_router(media.router, prefix="/media", tags=["Media"])
 app.include_router(integrations.router, prefix="/integrations", tags=["Integrations"])
 app.include_router(config.router, prefix="/config", tags=["Configurations"])

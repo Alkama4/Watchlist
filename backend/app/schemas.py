@@ -384,6 +384,31 @@ class TitleOut(BaseModel):
         from_attributes = True
 
 
+####### Collections #######
+
+class TMDBCollectionUserDetailsOut(BaseModel):
+    chosen_poster_image_path: Optional[str] = None
+    chosen_backdrop_image_path: Optional[str] = None
+    chosen_locale: Optional[str] = None
+    last_viewed_at: Optional[datetime] = None
+
+
+class TMDBCollectionOut(BaseModel):
+    tmdb_collection_id: int
+    name: Optional[str] = None
+    name_original: Optional[str] = None
+    original_language: Optional[str] = None
+    default_poster_image_path: Optional[str] = None
+    default_backdrop_image_path: Optional[str] = None
+    display_locale: Optional[LocaleString] = None
+
+    titles: Optional[List[CardTitleOut]] = None
+    user_details: Optional[TMDBCollectionUserDetailsOut] = None
+
+    class Config:
+        from_attributes = True
+
+
 ####### Configs #######
 
 class ConfigJellyfinOut(BaseModel):
