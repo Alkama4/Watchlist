@@ -105,6 +105,7 @@ class Title(Base):
     title_id = Column(Integer, primary_key=True, autoincrement=True)
     tmdb_id = Column(Integer, unique=True)
     imdb_id = Column(String(10))
+    tmdb_collection_id = Column(Integer, ForeignKey("tmdb_collections.tmdb_collection_id"), nullable=True)
     jellyfin_id = Column(String(32))
     title_type = Column(Enum(TitleType), nullable=False)
     name_original = Column(String(255))
@@ -134,6 +135,8 @@ class Title(Base):
     
     image_links = relationship("ImageLink", back_populates="title", cascade="all, delete-orphan")
     images = association_proxy("image_links", "image")
+
+    tmdb_collection = relationship("TMDBCollection", back_populates="titles")
 
 
 class Season(Base):
@@ -340,6 +343,36 @@ class TitleAgeRatings(Base):
 
 
 ##### COLLECTIONS #####
+
+class TMDBCollection(Base):
+    __tablename__ = "tmdb_collections"
+
+    tmdb_collection_id = Column(Integer, primary_key=True, autoincrement=True)
+    tmdb_id = Column(Integer, unique=True, nullable=False)
+    
+    name_original = Column(String(255), nullable=False)
+    original_language = Column(String(64))
+
+    titles = relationship("Title", back_populates="tmdb_collection")
+    
+    translations = relationship("TMDBCollectionTranslation", back_populates="collection", cascade="all, delete-orphan")
+
+
+class TMDBCollectionTranslation(Base):
+    __tablename__ = "tmdb_collection_translations"
+
+    tmdb_collection_id = Column(Integer, ForeignKey("tmdb_collections.tmdb_collection_id", ondelete="CASCADE"), primary_key=True)
+    iso_639_1 = Column(String(4), primary_key=True)
+
+    name = Column(String(255), nullable=False)
+    overview = Column(Text, nullable=True)
+    default_poster_image_path = Column(String(64), ForeignKey("images.file_path"), nullable=True)
+    default_backdrop_image_path = Column(String(64), ForeignKey("images.file_path"), nullable=True)
+
+    collection = relationship("TMDBCollection", back_populates="translations")
+    default_poster = relationship("Image", foreign_keys=[default_poster_image_path], viewonly=True)
+    default_backdrop = relationship("Image", foreign_keys=[default_backdrop_image_path], viewonly=True)
+
 
 class UserCollection(Base):
     __tablename__ = "user_collections"
