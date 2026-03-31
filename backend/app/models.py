@@ -105,7 +105,7 @@ class Title(Base):
     title_id = Column(Integer, primary_key=True, autoincrement=True)
     tmdb_id = Column(Integer, unique=True)
     imdb_id = Column(String(10))
-    tmdb_collection_id = Column(Integer, ForeignKey("tmdb_collections.tmdb_collection_id"), nullable=True)
+    tmdb_collection_id = Column(Integer, ForeignKey("tmdb_collections.tmdb_collection_id"), nullable=True, index=True)
     jellyfin_id = Column(String(32))
     title_type = Column(Enum(TitleType), nullable=False)
     name_original = Column(String(255))

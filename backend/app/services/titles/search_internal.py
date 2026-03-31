@@ -25,7 +25,6 @@ from app.schemas import (
     HeroTitleOut,
     HeroUserTitleDetailsOut,
     GenreElement,
-    AgeRatingElement,
     TitleListOut,
     TitleQueryIn,
 )
@@ -214,6 +213,9 @@ def _apply_filters(stmt, q: TitleQueryIn):
 
     if q.exclude_title_ids:
         stmt = stmt.where(Title.title_id.notin_(q.exclude_title_ids))
+
+    if q.tmdb_collection_ids:
+        stmt = stmt.where(Title.tmdb_collection_id.in_(q.tmdb_collection_ids))
 
     return stmt
 
