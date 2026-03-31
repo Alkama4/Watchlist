@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+
+from fastapi.responses import RedirectResponse
 from app import config
 from app.database import engine, Base, AsyncSessionLocal
 from app.routers import auth, titles, seasons, media, settings, user_settings, root, integrations, config, episodes
@@ -51,3 +53,7 @@ app.include_router(episodes.router, prefix="/episodes", tags=["Episodes"])
 app.include_router(media.router, prefix="/media", tags=["Media"])
 app.include_router(integrations.router, prefix="/integrations", tags=["Integrations"])
 app.include_router(config.router, prefix="/config", tags=["Configurations"])
+
+@app.get("/", include_in_schema=False)
+async def redirect_to_docs():
+    return RedirectResponse(url="/docs")
