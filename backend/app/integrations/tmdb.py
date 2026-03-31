@@ -98,3 +98,14 @@ async def fetch_genres() -> list[dict]:
     }
 
     return list(deduped.values())
+
+
+async def fetch_tmdb_collection(tmdb_collection_id: int, iso_639_1: str, user_image_languages: str) -> dict:
+    return await tmdb_get(
+        f"/collection/{tmdb_collection_id}",
+        params={
+            "append_to_response": "images",
+            "include_image_language": user_image_languages,
+            "language": iso_639_1,
+        },
+    )
