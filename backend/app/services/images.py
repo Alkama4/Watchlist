@@ -49,6 +49,7 @@ async def store_image_details(
     db: AsyncSession, 
     title_id: int = None, 
     season_id: int = None,
+    tmdb_collection_id: int = None,
     images: dict = None
 ):
     if not images:
@@ -81,13 +82,14 @@ async def store_image_details(
                 }
 
             # Create a unique key for the link to prevent duplicates in the batch
-            link_key = (path, title_id, season_id)
+            link_key = (path, title_id, season_id, tmdb_collection_id)
             
             if link_key not in link_data_map:
                 link_data_map[link_key] = {
                     "file_path": path,
                     "title_id": title_id,
-                    "season_id": season_id
+                    "season_id": season_id,
+                    "tmdb_collection_id": tmdb_collection_id
                 }
 
     # Convert maps back to lists for SQLAlchemy
