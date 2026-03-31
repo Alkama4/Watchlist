@@ -7,6 +7,8 @@ from app.services.languages import get_user_language_context
 from app.services.ids import get_title_id_by_season_id
 from app.models import (
     SeasonTranslation,
+    TMDBCollectionTranslation,
+    TMDBCollectionUserDetails,
     TitleTranslation,
     UserEpisodeDetails,
     UserSeasonDetails,
@@ -124,13 +126,17 @@ async def fetch_image_details(
     db: AsyncSession, 
     user_id: int, 
     title_id: int = None, 
-    season_id: int = None
+    season_id: int = None,
+    tmdb_collection_id: int = None
 ) -> ImageListsOut:
     
-    if not title_id:
-        locale_title_id = await get_title_id_by_season_id(db=db, season_id=season_id)
-    else:
+    if title_id:
         locale_title_id = title_id
+    elif season_id:
+        locale_title_id = await get_title_id_by_season_id(db=db, season_id=season_id)
+    else: # If collection
+        locale_title_id = None 
+
     locale_ctx = await get_user_language_context(db=db, user_id=user_id, title_id=locale_title_id)
     
     # 1. Configuration Mapping
@@ -152,6 +158,15 @@ async def fetch_image_details(
             "user_pk": UserSeasonDetails.season_id,
             "path_fields": ["default_poster_image_path"],
             "user_fields": ["chosen_poster_image_path"]
+        },
+        "tmdb_collection_id": {
+            "val": tmdb_collection_id,
+            "model": TMDBCollectionTranslation,
+            "user_model": TMDBCollectionUserDetails,
+            "pk": TMDBCollectionTranslation.tmdb_collection_id,
+            "user_pk": TMDBCollectionUserDetails.tmdb_collection_id,
+            "path_fields": ["default_poster_image_path", "default_backdrop_image_path"],
+            "user_fields": ["chosen_poster_image_path", "chosen_backdrop_image_path"]
         }
     }
 

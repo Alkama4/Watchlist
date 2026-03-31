@@ -356,6 +356,25 @@ class TMDBCollection(Base):
     titles = relationship("Title", back_populates="tmdb_collection")
     
     translations = relationship("TMDBCollectionTranslation", back_populates="collection", cascade="all, delete-orphan")
+    image_links = relationship("ImageLink", back_populates="tmdb_collection", cascade="all, delete-orphan")
+    images = association_proxy("image_links", "image")
+    user_details = relationship("TMDBCollectionUserDetails", back_populates="collection", cascade="all, delete-orphan")
+    
+
+class TMDBCollectionUserDetails(Base):
+    __tablename__ = "tmdb_collection_user_details"
+
+    user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), primary_key=True)
+    tmdb_collection_id = Column(Integer, ForeignKey("tmdb_collections.tmdb_collection_id", ondelete="CASCADE"), primary_key=True)
+    chosen_poster_image_path = Column(String(255), ForeignKey("images.file_path"))
+    chosen_backdrop_image_path = Column(String(255), ForeignKey("images.file_path"))
+    chosen_locale = Column(String(16))
+
+    last_viewed_at = Column(DateTime(timezone=True))
+
+    collection = relationship("TMDBCollection", back_populates="user_details")
+    chosen_poster = relationship("Image", foreign_keys=[chosen_poster_image_path], viewonly=True)
+    chosen_backdrop = relationship("Image", foreign_keys=[chosen_backdrop_image_path], viewonly=True)
 
 
 class TMDBCollectionTranslation(Base):
@@ -425,21 +444,25 @@ class ImageLink(Base):
     file_path = Column(String(64), ForeignKey("images.file_path", ondelete="CASCADE"), nullable=False)
     title_id = Column(Integer, ForeignKey("titles.title_id", ondelete="CASCADE"), nullable=True)
     season_id = Column(Integer, ForeignKey("seasons.season_id", ondelete="CASCADE"), nullable=True)
-    episode_id = Column(Integer, ForeignKey("episodes.episode_id", ondelete="CASCADE"), nullable=True)
+    tmdb_collection_id = Column(Integer, ForeignKey("tmdb_collections.tmdb_collection_id", ondelete="CASCADE"), nullable=True)
 
     # Unique Constraint to prevent duplicate links
     __table_args__ = (
         UniqueConstraint(
-            'file_path', 'title_id', 'season_id', 'episode_id', 
+            'file_path', 'title_id', 'season_id', 'tmdb_collection_id',
             name='uix_image_link_identity',
             postgresql_nulls_not_distinct=True
         ),
+        CheckConstraint(
+            "title_id IS NOT NULL OR season_id IS NOT NULL OR tmdb_collection_id IS NOT NULL",
+            name="chk_link_has_target"
+        )
     )
 
     image = relationship("Image", back_populates="links")
     title = relationship("Title", back_populates="image_links")
     season = relationship("Season", back_populates="image_links")
-    episode = relationship("Episode", back_populates="image_links")
+    tmdb_collection = relationship("TMDBCollection", back_populates="image_links")
 
 
 class VideoAsset(Base):
