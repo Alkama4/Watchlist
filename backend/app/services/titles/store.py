@@ -7,7 +7,7 @@ from app.integrations.jellyfin import JELLYFIN_API_KEY, JELLYFIN_URL, fetch_jell
 from app.services.images import select_best_image, store_image_details
 from app.services.genres import store_title_genres
 from app.services.languages import LanguageContext, get_user_language_context
-from app.services.tmdb_collections import init_tmdb_collection
+from app.services.tmdb_collections import coordinate_tmdb_collection_fetching, init_tmdb_collection
 from app.models import (
     EpisodeTranslation,
     SeasonTranslation,
@@ -92,7 +92,8 @@ async def _store_movie(db: AsyncSession, tmdb_data: dict, locale_ctx: LanguageCo
     await _store_title_translation(db=db, title_id=title_id, tmdb_data=tmdb_data, locale_ctx=locale_ctx)
     await store_title_genres(db=db, title_id=title_id, genres=tmdb_data.get("genres", []))
     await _store_movie_age_ratings(db=db, title_id=title_id, ratings=tmdb_data.get("releases", {}).get("countries", []))
-    # await create_collection or smth would go here
+    if tmdb_collection_id:
+        await coordinate_tmdb_collection_fetching(db, tmdb_collection_id, locale_ctx)
 
     await db.commit()
     return title_id
