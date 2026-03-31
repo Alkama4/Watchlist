@@ -341,8 +341,7 @@ class TitleAgeRatings(Base):
 class TMDBCollection(Base):
     __tablename__ = "tmdb_collections"
 
-    tmdb_collection_id = Column(Integer, primary_key=True, autoincrement=True)
-    tmdb_id = Column(Integer, unique=True, nullable=False)
+    tmdb_collection_id = Column(Integer, primary_key=True)
     
     name_original = Column(String(255), nullable=False)
     original_language = Column(String(64))
