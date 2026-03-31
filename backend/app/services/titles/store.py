@@ -2,6 +2,7 @@ from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
 from datetime import datetime
+from typing import Optional
 from app.integrations import tmdb
 from app.integrations.jellyfin import JELLYFIN_API_KEY, JELLYFIN_URL, fetch_jellyfin_id_by_imdb
 from app.services.images import select_best_image, store_image_details
@@ -20,21 +21,51 @@ from app.models import (
 )
 
 
-async def coordinate_title_fetching(db: AsyncSession, title_type: str, tmdb_id: int, user_id: int):
-    # Fetch everything in one go
-    locale_ctx = await get_user_language_context(db=db, user_id=user_id, tmdb_id=tmdb_id, title_type=title_type)
+async def coordinate_title_fetching(
+    db: AsyncSession, 
+    title_type: str, 
+    tmdb_id: int, 
+    user_id: Optional[int] = None, 
+    locale_ctx: Optional[LanguageContext] = None,
+    fetch_collection: bool = True
+):
+    # Use provided context or fetch it if missing
+    if locale_ctx is None:
+        if user_id is None:
+            raise ValueError("user_id is required if locale_ctx is not provided.")
+            
+        locale_ctx = await get_user_language_context(
+            db=db, 
+            user_id=user_id, 
+            tmdb_id=tmdb_id, 
+            title_type=title_type
+        )
 
-    if title_type is TitleType.movie:
-        tmdb_data = await tmdb.fetch_movie(tmdb_id, locale_ctx.preferred_iso_639_1, locale_ctx.iso_639_1_comma_str)
-        return await _store_movie(db, tmdb_data, locale_ctx)
-    elif title_type is TitleType.tv:
-        tmdb_data = await tmdb.fetch_tv(tmdb_id, locale_ctx.preferred_iso_639_1, locale_ctx.iso_639_1_comma_str)
+    if title_type == TitleType.movie:
+        tmdb_data = await tmdb.fetch_movie(
+            tmdb_id, 
+            locale_ctx.preferred_iso_639_1, 
+            locale_ctx.iso_639_1_comma_str
+        )
+        return await _store_movie(db, tmdb_data, locale_ctx, fetch_collection)
+        
+    elif title_type == TitleType.tv:
+        tmdb_data = await tmdb.fetch_tv(
+            tmdb_id, 
+            locale_ctx.preferred_iso_639_1, 
+            locale_ctx.iso_639_1_comma_str
+        )
         return await _store_tv(db, tmdb_data, locale_ctx)
     
-    raise ValueError("Invalid title type")
+    raise ValueError(f"Invalid title type: {title_type}")
 
 
-async def _store_movie(db: AsyncSession, tmdb_data: dict, locale_ctx: LanguageContext) -> int:
+async def _store_movie(
+    db: AsyncSession,
+    tmdb_data: dict,
+    locale_ctx: LanguageContext,
+    fetch_collection: bool = True
+) -> int:
     release_date_str = tmdb_data.get("release_date")
     release_date = datetime.strptime(release_date_str, "%Y-%m-%d").date() if release_date_str else None
 
@@ -92,8 +123,8 @@ async def _store_movie(db: AsyncSession, tmdb_data: dict, locale_ctx: LanguageCo
     await _store_title_translation(db=db, title_id=title_id, tmdb_data=tmdb_data, locale_ctx=locale_ctx)
     await store_title_genres(db=db, title_id=title_id, genres=tmdb_data.get("genres", []))
     await _store_movie_age_ratings(db=db, title_id=title_id, ratings=tmdb_data.get("releases", {}).get("countries", []))
-    if tmdb_collection_id:
-        await coordinate_tmdb_collection_fetching(db, tmdb_collection_id, locale_ctx)
+    if tmdb_collection_id and fetch_collection:
+        await coordinate_tmdb_collection_fetching(db, tmdb_collection_id, locale_ctx, tmdb_data["id"])
 
     await db.commit()
     return title_id

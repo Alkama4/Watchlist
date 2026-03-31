@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
 from app.services.languages import LanguageContext
@@ -5,7 +6,9 @@ from app.integrations import tmdb
 from app.services.images import select_best_image, store_image_details
 from app.models import(
     TMDBCollection,
-    TMDBCollectionTranslation
+    TMDBCollectionTranslation,
+    Title,
+    TitleType
 )
 
 async def init_tmdb_collection(db: AsyncSession, tmdb_collection_info: dict):
@@ -22,15 +25,37 @@ async def init_tmdb_collection(db: AsyncSession, tmdb_collection_info: dict):
 async def coordinate_tmdb_collection_fetching(
     db: AsyncSession,
     tmdb_collection_id: int,
-    locale_ctx: LanguageContext
+    locale_ctx: LanguageContext,
+    original_tmdb_id: int
 ):
-    tmdb_data = await tmdb.fetch_tmdb_collection(tmdb_collection_id, locale_ctx.preferred_iso_639_1, locale_ctx.iso_639_1_comma_str)
-    print(tmdb_data)
+    from app.services.titles.store import coordinate_title_fetching
+
+    tmdb_data = await tmdb.fetch_tmdb_collection(
+        tmdb_collection_id,
+        locale_ctx.preferred_iso_639_1,
+        locale_ctx.iso_639_1_comma_str
+    )
+
     await _store_tmdb_collection(db=db, tmdb_data=tmdb_data)
     await store_image_details(db=db, tmdb_collection_id=tmdb_collection_id, images=tmdb_data.get("images", {}))
     await _store_tmdb_collection_translation(db=db, tmdb_data=tmdb_data, locale_ctx=locale_ctx)
 
-    # Loop through 'parts' (movies) and store
+    # Fetch missing movies from the collection, but don't add to users library
+    for movie in tmdb_data.get("parts"):
+        if movie["id"] != original_tmdb_id:
+            result = await db.execute(
+                select(Title).where(Title.tmdb_id == movie["id"])
+            )
+            existing_title = result.scalar_one_or_none()
+            if not existing_title:
+                await coordinate_title_fetching(
+                    db=db,
+                    title_type=TitleType.movie,
+                    tmdb_id=movie["id"],
+                    locale_ctx=locale_ctx,
+                    fetch_collection=False # IMPORTANT, DO NOT REMOVE
+                                           # Prevents recursion from happening
+                )
 
 
 async def _store_tmdb_collection(
