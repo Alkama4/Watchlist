@@ -14,7 +14,7 @@
   "dependencies": {
     "@boxicons/vue": "^1.0.1",
     "@egjs/vue3-flicking": "^4.15.0",
-    "axios": "^1.13.2",
+    "axios": "1.14.0",
     "pinia": "^3.0.4",
     "vue": "^3.5.26",
     "vue-router": "^4.6.4"
