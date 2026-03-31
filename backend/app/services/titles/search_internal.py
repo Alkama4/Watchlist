@@ -380,7 +380,11 @@ def _add_subqueries(stmt):
 
 def _apply_pagination(stmt, q: TitleQueryIn):
     page = q.page_number or 1
-    size = q.page_size or DEFAULT_MAX_QUERY_LIMIT
+    size = q.page_size if q.page_size is not None else DEFAULT_MAX_QUERY_LIMIT
+
+    if size == 0:   # Treat 0 as a bypass
+        return stmt, page, size
+
     return stmt.limit(size).offset((page - 1) * size), page, size
 
 

@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field, computed_field, AfterValidator, model_val
 from datetime import datetime, date
 from babel import Locale, UnknownLocaleError
 from app.models import ImageType, TitleType, SortBy, SortDirection, VideoType
-from app.config import DEFAULT_MAX_QUERY_LIMIT, ABSOLUTE_MAX_QUERY_LIMIT
+from app.config import DEFAULT_MAX_QUERY_LIMIT
 
 
 ####### Custom Types #######
@@ -204,11 +204,7 @@ class TitleQueryIn(BaseModel):
     sort_by: Optional[SortBy] = SortBy.default
     sort_direction: Optional[SortDirection] = SortDirection.default
     page_number: Optional[int] = Field(1, ge=1)
-    page_size: Optional[int] = Field(
-        DEFAULT_MAX_QUERY_LIMIT, 
-        ge=1, 
-        le=ABSOLUTE_MAX_QUERY_LIMIT
-    )
+    page_size: Optional[int] = Field(DEFAULT_MAX_QUERY_LIMIT, ge=0)
 
     @model_validator(mode='after')
     def check_similarity_logic(self) -> 'TitleQueryIn':
@@ -403,7 +399,7 @@ class TMDBCollectionOut(BaseModel):
     default_backdrop_image_path: Optional[str] = None
     display_locale: Optional[LocaleString] = None
 
-    titles: Optional[List[CardTitleOut]] = None
+    titles: Optional[TitleListOut] = None
     user_details: Optional[TMDBCollectionUserDetailsOut] = None
 
     class Config:
