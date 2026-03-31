@@ -10,7 +10,6 @@ from app.models import (
     TMDBCollectionTranslation,
     TMDBCollectionUserDetails,
     TitleTranslation,
-    UserEpisodeDetails,
     UserSeasonDetails,
     UserTitleDetails,
     ImageLink,
@@ -49,8 +48,7 @@ def select_best_image(images: List[Dict], iso_639_1_list: List[Optional[str]]) -
 async def store_image_details(
     db: AsyncSession, 
     title_id: int = None, 
-    season_id: int = None, 
-    episode_id: int = None, 
+    season_id: int = None,
     images: dict = None
 ):
     if not images:
@@ -82,17 +80,14 @@ async def store_image_details(
                     "vote_count": img.get("vote_count")
                 }
 
-            episode_id = img.get("episode_id")
-            
             # Create a unique key for the link to prevent duplicates in the batch
-            link_key = (path, title_id, season_id, episode_id)
+            link_key = (path, title_id, season_id)
             
             if link_key not in link_data_map:
                 link_data_map[link_key] = {
                     "file_path": path,
                     "title_id": title_id,
-                    "season_id": season_id,
-                    "episode_id": episode_id
+                    "season_id": season_id
                 }
 
     # Convert maps back to lists for SQLAlchemy
@@ -172,7 +167,7 @@ async def fetch_image_details(
 
     active_key = next((k for k, v in CONFIG.items() if v["val"] is not None), None)
     if not active_key:
-        raise ValueError("One of title_id, season_id, or episode_id must be provided.")
+        raise ValueError("One of title_id or season_id must be provided.")
     
     cfg = CONFIG[active_key]
     val = cfg["val"]
@@ -268,11 +263,10 @@ async def set_user_image_choice(
     image_type: ImageType, 
     image_path: Optional[str], 
     title_id: Optional[int] = None, 
-    season_id: Optional[int] = None, 
-    episode_id: Optional[int] = None
+    season_id: Optional[int] = None
 ):
     """
-    Set the chosen image paths in user title/season/episode details tables
+    Set the chosen image paths in user title/season details tables
     after running validation checks on if the request is coherent.
     """
     
@@ -292,8 +286,6 @@ async def set_user_image_choice(
             validation_stmt = validation_stmt.where(ImageLink.title_id == title_id)
         elif season_id:
             validation_stmt = validation_stmt.where(ImageLink.season_id == season_id)
-        elif episode_id:
-            validation_stmt = validation_stmt.where(ImageLink.episode_id == episode_id)
 
         result = await db.execute(validation_stmt)
         valid_image = result.scalar_one_or_none()
@@ -302,7 +294,7 @@ async def set_user_image_choice(
             raise HTTPException(
                 status_code=400, 
                 detail="Invalid image choice. The image must exist, match the requested type, "
-                       "and be linked to this specific title/season/episode."
+                       "and be linked to this specific title/season."
             )
 
     if title_id:
@@ -325,17 +317,8 @@ async def set_user_image_choice(
                 ImageType.poster: "chosen_poster_image_path"
             }
         }
-    elif episode_id:
-        target_config = {
-            "model": UserEpisodeDetails,
-            "id_field": "episode_id",
-            "id_val": episode_id,
-            "col_map": {
-                ImageType.backdrop: "chosen_backdrop_image_path"
-            }
-        }
     else:
-        raise HTTPException(status_code=400, detail="Must provide title_id, season_id, or episode_id")
+        raise HTTPException(status_code=400, detail="Must provide title_id or season_id")
 
     # Determine target column
     target_col = target_config["col_map"].get(image_type)

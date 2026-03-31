@@ -164,96 +164,66 @@ async def _fetch_and_store_tv_seasons_and_episodes(
             locale_ctx.iso_639_1_comma_str
         )
 
+        # Store Season
         stmt = insert(Season).values(
             title_id=title_id,
             season_number=season["season_number"],
             tmdb_vote_average=season.get("vote_average"),
         ).on_conflict_do_update(
             index_elements=["title_id", "season_number"],
-            set_={
-                "tmdb_vote_average": season.get("vote_average"),
-            }
+            set_={"tmdb_vote_average": season.get("vote_average")}
         ).returning(Season.season_id)
 
         result = await db.execute(stmt)
         season_id = result.scalar_one()
         await db.flush()
 
-        await store_image_details(
-            db=db,
-            season_id=season_id,
-            images=season_data.get("images", {})
-        )
-
+        # Store Season Images & Translations (The "heavy" assets)
+        await store_image_details(db=db, season_id=season_id, images=season_data.get("images", {}))
         await _store_season_translation(
-            db=db,
-            season_id=season_id,
-            season_data=season_data,
+            db=db, 
+            season_id=season_id, 
+            season_data=season_data, 
             iso_639_1=locale_ctx.preferred_iso_639_1
         )
-        episode_images = []
 
+        # Store Episodes
         for ep in season_data.get("episodes", []):
             air_date_str = ep.get("air_date")
-            air_date = (
-                datetime.strptime(air_date_str, "%Y-%m-%d").date()
-                if air_date_str else None
-            )
+            air_date = datetime.strptime(air_date_str, "%Y-%m-%d").date() if air_date_str else None
 
-            stmt = insert(Episode).values(
+            # Upsert episode and get ID for translation helper
+            ep_stmt = insert(Episode).values(
                 season_id=season_id,
                 title_id=title_id,
                 episode_number=ep["episode_number"],
                 tmdb_vote_average=ep.get("vote_average"),
                 tmdb_vote_count=ep.get("vote_count"),
                 air_date=air_date,
-                runtime=ep.get("runtime")
+                runtime=ep.get("runtime"),
+                default_backdrop_image_path=ep.get("still_path") # Simple string storage
             ).on_conflict_do_update(
                 index_elements=["season_id", "episode_number"],
                 set_={
                     "tmdb_vote_average": ep.get("vote_average"),
                     "tmdb_vote_count": ep.get("vote_count"),
                     "air_date": air_date,
-                    "runtime": ep.get("runtime")
+                    "runtime": ep.get("runtime"),
+                    "default_backdrop_image_path": ep.get("still_path")
                 }
             ).returning(Episode.episode_id)
 
-            result = await db.execute(stmt)
-            episode_id = result.scalar_one()
+            ep_result = await db.execute(ep_stmt)
+            episode_id = ep_result.scalar_one()
 
-            # Store episode translation (current locale only)
+            # Store Episode Translation
             await _store_episode_translation(
                 db=db,
                 episode_id=episode_id,
                 episode_data=ep,
                 iso_639_1=locale_ctx.preferred_iso_639_1
             )
-
-            still_path = ep.get("still_path")
-            if still_path:
-                episode_images.append({
-                    "file_path": still_path,
-                    "episode_id": episode_id,
-                    "type": ImageType.backdrop
-                })
-
-        if episode_images:
-            await store_image_details(
-                db=db,
-                images={"backdrops": episode_images}
-            )
-
-        for ep in season_data.get("episodes", []):
-            if ep.get("still_path"):
-                await db.execute(
-                    update(Episode)
-                    .where(
-                        Episode.season_id == season_id,
-                        Episode.episode_number == ep["episode_number"]
-                    )
-                    .values(default_backdrop_image_path=ep["still_path"])
-                )
-
+            
     await db.commit()
 
 

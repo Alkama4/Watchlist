@@ -178,7 +178,7 @@ class Episode(Base):
     tmdb_vote_count = Column(Integer)
     air_date = Column(Date)
     runtime = Column(Integer)
-    default_backdrop_image_path = Column(String(64), ForeignKey("images.file_path"))
+    default_backdrop_image_path = Column(String(64))
     last_updated = Column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -189,10 +189,6 @@ class Episode(Base):
     user_details = relationship("UserEpisodeDetails", back_populates="episode", lazy="noload")
     season = relationship("Season", back_populates="episodes")
     title = relationship("Title")
-
-    image_links = relationship("ImageLink", back_populates="episode", cascade="all, delete-orphan")
-    images = association_proxy("image_links", "image")
-    default_backdrop = relationship("Image", foreign_keys=[default_backdrop_image_path], viewonly=True)
 
 
 ##### USER TITLE DETAILS #####
@@ -241,11 +237,9 @@ class UserEpisodeDetails(Base):
     episode_id = Column(Integer, ForeignKey("episodes.episode_id", ondelete="CASCADE"), primary_key=True)
     watch_count = Column(Integer, default=0)
     notes = Column(Text)
-    chosen_backdrop_image_path = Column(String(255), ForeignKey("images.file_path"))
     last_watched_at = Column(DateTime(timezone=True))
 
     episode = relationship("Episode", back_populates="user_details")
-    chosen_backdrop = relationship("Image", foreign_keys=[chosen_backdrop_image_path], viewonly=True)
 
 
 ##### TITLE TRANSLATIONS #####
