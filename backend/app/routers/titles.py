@@ -23,8 +23,8 @@ from app.schemas import (
     TitleNotesIn,
     TMDBTitleQueryIn,
     TitleQueryIn,
-    CardTitleOut,
-    CardUserTitleDetailsOut,
+    TitleCardOut,
+    TitleCardUserDetailsOut,
     TitleListOut,
     TitleOut
 )
@@ -47,7 +47,7 @@ async def search_for_titles(
     db: AsyncSession = Depends(get_db),
 ):
     return await run_title_search(
-        db, user.user_id, data, CardTitleOut, CardUserTitleDetailsOut
+        db, user.user_id, data, TitleCardOut, TitleCardUserDetailsOut
     )
 
 

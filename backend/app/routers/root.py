@@ -8,10 +8,10 @@ from app.services.genres import update_genres
 from app.schemas import (
     CollectionsOverViewOut,
     TitleQueryIn,
-    CardTitleOut,
-    CardUserTitleDetailsOut,
-    HeroTitleOut,
-    HeroUserTitleDetailsOut,
+    TitleCardOut,
+    TitleCardUserDetailsOut,
+    TitleHeroOut,
+    TitleHeroUserDetailsOut,
     HomeOverviewOut
 )
 from app.models import (
@@ -47,8 +47,8 @@ async def get_home_overview(
         db,
         user.user_id,
         TitleQueryIn(**hero_cards_options["filters"]),
-        HeroTitleOut,
-        HeroUserTitleDetailsOut,
+        TitleHeroOut,
+        TitleHeroUserDetailsOut,
         locale_ctx
     )
     hero_cards.header = hero_cards_options["header"]
@@ -204,8 +204,8 @@ async def get_home_overview(
             db,
             user.user_id,
             TitleQueryIn(**normal_card_list["filters"]),
-            CardTitleOut,
-            CardUserTitleDetailsOut,
+            TitleCardOut,
+            TitleCardUserDetailsOut,
             locale_ctx
         )
         title_list.header = normal_card_list["header"]
@@ -258,8 +258,8 @@ async def get_home_overview(
             db,
             user.user_id,
             TitleQueryIn(**option["filters"]),
-            CardTitleOut,
-            CardUserTitleDetailsOut,
+            TitleCardOut,
+            TitleCardUserDetailsOut,
             locale_ctx
         )
         

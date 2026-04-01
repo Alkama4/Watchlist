@@ -4,13 +4,13 @@ from sqlalchemy.orm import aliased
 from app.integrations import tmdb
 from app.schemas import (
     TMDBTitleQueryIn,
-    CardUserTitleDetailsOut,
+    TitleCardUserDetailsOut,
     TitleListOut
 )
 from app.models import (
     TitleType,
     Title,
-    UserTitleDetails
+    TitleUserDetails
 )
 
 
@@ -19,7 +19,7 @@ async def _fetch_existing_titles_with_user(
     user_id: int,
     tmdb_items: list[tuple[int, TitleType]],
 ):
-    utd = aliased(UserTitleDetails)
+    utd = aliased(TitleUserDetails)
 
     stmt = (
         select(Title, utd)
@@ -86,7 +86,7 @@ async def run_and_process_tmdb_search(
             "default_poster_image_path": r.get("poster_path"),
             "default_backdrop_image_path": r.get("backdrop_path"),
             "user_details": (
-                CardUserTitleDetailsOut.model_validate(
+                TitleCardUserDetailsOut.model_validate(
                     utd, from_attributes=True
                 )
                 if utd else None

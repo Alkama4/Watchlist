@@ -14,16 +14,16 @@ from app.models import (
     Episode,
     TitleTranslation,
     UserSetting,
-    UserTitleDetails,
-    UserEpisodeDetails,
+    TitleUserDetails,
+    EpisodeUserDetails,
     TitleGenre,
     VideoAsset
 )
 from app.schemas import (
-    CardTitleOut,
-    CardUserTitleDetailsOut,
-    HeroTitleOut,
-    HeroUserTitleDetailsOut,
+    TitleCardOut,
+    TitleCardUserDetailsOut,
+    TitleHeroOut,
+    TitleHeroUserDetailsOut,
     GenreElement,
     TitleListOut,
     TitleQueryIn,
@@ -32,12 +32,12 @@ from app.schemas import (
 
 def _base_title_query(user_id: int, title_schema, locale_ctx: LanguageContext):
     stmt = (
-        select(Title, UserTitleDetails)
+        select(Title, TitleUserDetails)
         .outerjoin(
-            UserTitleDetails,
+            TitleUserDetails,
             and_(
-                UserTitleDetails.title_id == Title.title_id,
-                UserTitleDetails.user_id == user_id,
+                TitleUserDetails.title_id == Title.title_id,
+                TitleUserDetails.user_id == user_id,
             )
         )
         .options(
@@ -47,7 +47,7 @@ def _base_title_query(user_id: int, title_schema, locale_ctx: LanguageContext):
         )
     )
 
-    if title_schema is HeroTitleOut:
+    if title_schema is TitleHeroOut:
         stmt = stmt.options(
             selectinload(Title.age_ratings),
             selectinload(Title.genres).selectinload(TitleGenre.genre)
@@ -69,47 +69,47 @@ def _apply_filters(stmt, q: TitleQueryIn):
         stmt = stmt.where(Title.title_type == q.title_type)
 
     if q.is_favourite is not None:
-        stmt = stmt.where(UserTitleDetails.is_favourite == q.is_favourite)
+        stmt = stmt.where(TitleUserDetails.is_favourite == q.is_favourite)
 
     if q.in_watchlist is not None:
-        stmt = stmt.where(UserTitleDetails.in_watchlist == q.in_watchlist)
+        stmt = stmt.where(TitleUserDetails.in_watchlist == q.in_watchlist)
 
     if q.in_library is not None:
-        stmt = stmt.where(UserTitleDetails.in_library == q.in_library)
+        stmt = stmt.where(TitleUserDetails.in_library == q.in_library)
 
     if q.watch_status is not None:
         if q.watch_status == "not_watched":
             # watch_count is 0 AND all episodes either have 0 or no entry
             episode_subq = (
-                select(UserEpisodeDetails.episode_id)
-                .join(Episode, Episode.episode_id == UserEpisodeDetails.episode_id)
+                select(EpisodeUserDetails.episode_id)
+                .join(Episode, Episode.episode_id == EpisodeUserDetails.episode_id)
                 .join(Season, Season.season_id == Episode.season_id)
                 .where(
                     Season.title_id == Title.title_id,
-                    UserEpisodeDetails.user_id == UserTitleDetails.user_id,
-                    UserEpisodeDetails.watch_count > 0
+                    EpisodeUserDetails.user_id == TitleUserDetails.user_id,
+                    EpisodeUserDetails.watch_count > 0
                 )
             )
             stmt = stmt.where(
-                UserTitleDetails.watch_count == 0,
+                TitleUserDetails.watch_count == 0,
                 ~exists(episode_subq)
             )
 
         elif q.watch_status == "partial":
             # watch_count is 0 but at least one episode has > 0
             episode_subq = (
-                select(UserEpisodeDetails.episode_id)
-                .join(Episode, Episode.episode_id == UserEpisodeDetails.episode_id)
+                select(EpisodeUserDetails.episode_id)
+                .join(Episode, Episode.episode_id == EpisodeUserDetails.episode_id)
                 .join(Season, Season.season_id == Episode.season_id)
                 .where(
                     Season.title_id == Title.title_id,
                     Season.season_number > 0,
-                    UserEpisodeDetails.user_id == UserTitleDetails.user_id,
-                    UserEpisodeDetails.watch_count > 0
+                    EpisodeUserDetails.user_id == TitleUserDetails.user_id,
+                    EpisodeUserDetails.watch_count > 0
                 )
             )
             stmt = stmt.where(
-                UserTitleDetails.watch_count == 0,
+                TitleUserDetails.watch_count == 0,
                 exists(episode_subq)
             )
 
@@ -124,20 +124,20 @@ def _apply_filters(stmt, q: TitleQueryIn):
                 )
             ).subquery()
 
-            # Subquery: any released episode not watched (including missing UserEpisodeDetails)
+            # Subquery: any released episode not watched (including missing EpisodeUserDetails)
             unwatched_episodes_subq = (
                 select(released_episodes_subq.c.episode_id)
                 .outerjoin(
-                    UserEpisodeDetails,
+                    EpisodeUserDetails,
                     and_(
-                        UserEpisodeDetails.episode_id == released_episodes_subq.c.episode_id,
-                        UserEpisodeDetails.user_id == UserTitleDetails.user_id
+                        EpisodeUserDetails.episode_id == released_episodes_subq.c.episode_id,
+                        EpisodeUserDetails.user_id == TitleUserDetails.user_id
                     )
                 )
                 .where(
                     or_(
-                        UserEpisodeDetails.watch_count == 0,
-                        UserEpisodeDetails.watch_count.is_(None)
+                        EpisodeUserDetails.watch_count == 0,
+                        EpisodeUserDetails.watch_count.is_(None)
                     )
                 )
             )
@@ -145,7 +145,7 @@ def _apply_filters(stmt, q: TitleQueryIn):
             # Completed if either movie watched or no unwatched released episodes exist
             stmt = stmt.where(
                 or_(
-                    UserTitleDetails.watch_count > 0,
+                    TitleUserDetails.watch_count > 0,
                     ~exists(unwatched_episodes_subq)
                 )
             )
@@ -340,8 +340,8 @@ async def _apply_sorting_with_user_settings(
         SortBy.title_name: TitleTranslation.name,
         SortBy.runtime: Title.movie_runtime,
         SortBy.release_date: Title.release_date,
-        SortBy.last_viewed_at: UserTitleDetails.last_viewed_at,
-        SortBy.added_at: UserTitleDetails.added_at,
+        SortBy.last_viewed_at: TitleUserDetails.last_viewed_at,
+        SortBy.added_at: TitleUserDetails.added_at,
         SortBy.random: func.random()
     }
 
@@ -392,15 +392,15 @@ def _apply_pagination(stmt, q: TitleQueryIn):
 
 def _build_title_list_out(
     rows, total, page, size,
-    title_schema: Type[CardTitleOut | HeroTitleOut],
-    user_title_details_schema: Type[CardUserTitleDetailsOut | HeroUserTitleDetailsOut],
+    title_schema: Type[TitleCardOut | TitleHeroOut],
+    user_title_details_schema: Type[TitleCardUserDetailsOut | TitleHeroUserDetailsOut],
     locale_ctx
 ) -> TitleListOut:
     titles = []
 
     for row in rows:
         title = row["Title"]
-        user_details = row["UserTitleDetails"]
+        user_details = row["TitleUserDetails"]
         season_count = row["show_season_count"]
         episode_count = row["show_episode_count"]
         sim_score = row.get("similarity_score")
@@ -435,7 +435,7 @@ def _build_title_list_out(
             )
         })
         
-        if title_schema is HeroTitleOut:
+        if title_schema is TitleHeroOut:
             title_data["genres"] = [GenreElement.model_validate(tg.genre, from_attributes=True) for tg in title.genres]
 
             rating_map = {r.iso_3166_1: r for r in title.age_ratings}
@@ -459,8 +459,8 @@ async def run_title_search(
     db: AsyncSession,
     user_id: int,
     q: TitleQueryIn,
-    title_schema: Type[CardTitleOut | HeroTitleOut] = CardTitleOut,
-    user_title_details_schema: Type[CardUserTitleDetailsOut | HeroUserTitleDetailsOut] = CardUserTitleDetailsOut,
+    title_schema: Type[TitleCardOut | TitleHeroOut] = TitleCardOut,
+    user_title_details_schema: Type[TitleCardUserDetailsOut | TitleHeroUserDetailsOut] = TitleCardUserDetailsOut,
     locale_ctx: LanguageContext = None
 ) -> TitleListOut:
     

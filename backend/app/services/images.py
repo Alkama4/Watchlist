@@ -10,8 +10,8 @@ from app.models import (
     TMDBCollectionTranslation,
     TMDBCollectionUserDetails,
     TitleTranslation,
-    UserSeasonDetails,
-    UserTitleDetails,
+    SeasonUserDetails,
+    TitleUserDetails,
     ImageLink,
     ImageType,
     Image
@@ -141,18 +141,18 @@ async def fetch_image_details(
         "title_id": {
             "val": title_id,
             "model": TitleTranslation,
-            "user_model": UserTitleDetails,
+            "user_model": TitleUserDetails,
             "pk": TitleTranslation.title_id,
-            "user_pk": UserTitleDetails.title_id,
+            "user_pk": TitleUserDetails.title_id,
             "path_fields": ["default_poster_image_path", "default_backdrop_image_path", "default_logo_image_path"],
             "user_fields": ["chosen_poster_image_path", "chosen_backdrop_image_path", "chosen_logo_image_path"]
         },
         "season_id": {
             "val": season_id,
             "model": SeasonTranslation,
-            "user_model": UserSeasonDetails,
+            "user_model": SeasonUserDetails,
             "pk": SeasonTranslation.season_id,
-            "user_pk": UserSeasonDetails.season_id,
+            "user_pk": SeasonUserDetails.season_id,
             "path_fields": ["default_poster_image_path"],
             "user_fields": ["chosen_poster_image_path"]
         },
@@ -301,7 +301,7 @@ async def set_user_image_choice(
 
     if title_id:
         target_config = {
-            "model": UserTitleDetails,
+            "model": TitleUserDetails,
             "id_field": "title_id",
             "id_val": title_id,
             "col_map": {
@@ -312,7 +312,7 @@ async def set_user_image_choice(
         }
     elif season_id:
         target_config = {
-            "model": UserSeasonDetails,
+            "model": SeasonUserDetails,
             "id_field": "season_id",
             "id_val": season_id,
             "col_map": {

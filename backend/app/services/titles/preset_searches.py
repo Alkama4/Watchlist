@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.services.titles.search_internal import run_title_search
-from app.schemas import TitleListOut, TitleQueryIn, CardTitleOut, CardUserTitleDetailsOut
+from app.schemas import TitleListOut, TitleQueryIn, TitleCardOut, TitleCardUserDetailsOut
 from app.models import SortBy
 
 
@@ -22,8 +22,8 @@ async def fetch_similar_titles(
         db,
         user_id,
         TitleQueryIn(**search_options["filters"]),
-        CardTitleOut,
-        CardUserTitleDetailsOut
+        TitleCardOut,
+        TitleCardUserDetailsOut
     )
     similar_titles.header = search_options["header"]
 

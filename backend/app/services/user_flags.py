@@ -9,8 +9,8 @@ from app.models import (
     TitleType,
     Title,
     Episode,
-    UserTitleDetails,
-    UserEpisodeDetails
+    TitleUserDetails,
+    EpisodeUserDetails
 )
 
 
@@ -22,7 +22,7 @@ async def set_user_title_value(
     title_id: int,
     **kwargs: Any
 ):
-    stmt = insert(UserTitleDetails).values(
+    stmt = insert(TitleUserDetails).values(
         user_id=user_id,
         title_id=title_id,
         **kwargs
@@ -43,13 +43,13 @@ async def _sync_tv_title_watch_count(db: AsyncSession, user_id: int, title_id: i
     """
     # Use an Outer Join to catch episodes the user hasn't watched yet (watch_count = NULL -> 0)
     min_watch_stmt = (
-        select(func.min(func.coalesce(UserEpisodeDetails.watch_count, 0)))
+        select(func.min(func.coalesce(EpisodeUserDetails.watch_count, 0)))
         .select_from(Episode)
         .join(Season, Episode.season_id == Season.season_id)
         .outerjoin(
-            UserEpisodeDetails,
-            (Episode.episode_id == UserEpisodeDetails.episode_id) &
-            (UserEpisodeDetails.user_id == user_id)
+            EpisodeUserDetails,
+            (Episode.episode_id == EpisodeUserDetails.episode_id) &
+            (EpisodeUserDetails.user_id == user_id)
         )
         .where(
             Episode.title_id == title_id,
@@ -62,10 +62,10 @@ async def _sync_tv_title_watch_count(db: AsyncSession, user_id: int, title_id: i
     min_count = min_count or 0  # Fallback to 0 if there are no valid episodes at all
 
     update_stmt = (
-        update(UserTitleDetails)
+        update(TitleUserDetails)
         .where(
-            UserTitleDetails.user_id == user_id,
-            UserTitleDetails.title_id == title_id
+            TitleUserDetails.user_id == user_id,
+            TitleUserDetails.title_id == title_id
         )
         .values(watch_count=min_count)
     )
@@ -122,7 +122,7 @@ async def set_title_watch_count(
                 }
                 for ep_id in episode_ids
             ]
-            ep_upsert_stmt = insert(UserEpisodeDetails).values(episodes_data).on_conflict_do_update(
+            ep_upsert_stmt = insert(EpisodeUserDetails).values(episodes_data).on_conflict_do_update(
                 index_elements=["user_id", "episode_id"],
                 set_={
                     "watch_count": watch_count,
@@ -174,7 +174,7 @@ async def set_season_watch_count(
             }
             for ep_id in episode_ids
         ]
-        ep_upsert_stmt = insert(UserEpisodeDetails).values(episodes_data).on_conflict_do_update(
+        ep_upsert_stmt = insert(EpisodeUserDetails).values(episodes_data).on_conflict_do_update(
             index_elements=["user_id", "episode_id"],
             set_={"watch_count": watch_count, "last_watched_at": now}
         )
@@ -206,7 +206,7 @@ async def set_episode_watch_count(
         in_library=True
     )
 
-    ep_upsert_stmt = insert(UserEpisodeDetails).values(
+    ep_upsert_stmt = insert(EpisodeUserDetails).values(
         user_id=user_id,
         episode_id=episode_id,
         watch_count=watch_count,

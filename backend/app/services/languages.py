@@ -1,6 +1,6 @@
 from sqlalchemy import inspect, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models import Title, TitleTranslation, UserTitleDetails, UserSetting
+from app.models import Title, TitleTranslation, TitleUserDetails, UserSetting
 from app.settings.config import DEFAULT_SETTINGS
 from dataclasses import dataclass
 
@@ -34,17 +34,17 @@ async def get_user_language_context(
     # 2. Fetch Title Specific Preference
     specific_locale = None
     if title_id or (tmdb_id and title_type):
-        stmt = select(UserTitleDetails.chosen_locale).join(
-            Title, UserTitleDetails.title_id == Title.title_id
+        stmt = select(TitleUserDetails.chosen_locale).join(
+            Title, TitleUserDetails.title_id == Title.title_id
         )
-        filters = [UserTitleDetails.user_id == user_id]
+        filters = [TitleUserDetails.user_id == user_id]
         if title_id:
-            filters.append(UserTitleDetails.title_id == title_id)
+            filters.append(TitleUserDetails.title_id == title_id)
         else:
             filters.append(Title.tmdb_id == tmdb_id)
             filters.append(Title.title_type == title_type)
         
-        stmt = stmt.where(*filters, UserTitleDetails.chosen_locale.is_not(None))
+        stmt = stmt.where(*filters, TitleUserDetails.chosen_locale.is_not(None))
         res = await db.execute(stmt)
         specific_locale = res.scalar_one_or_none()
 

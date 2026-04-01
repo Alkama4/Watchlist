@@ -128,7 +128,7 @@ class Title(Base):
     )
 
     translations = relationship("TitleTranslation", back_populates="title", lazy="noload")
-    user_details = relationship("UserTitleDetails", back_populates="title", lazy="noload")
+    user_details = relationship("TitleUserDetails", back_populates="title", lazy="noload")
     seasons = relationship("Season", back_populates="title", cascade="all, delete-orphan")
     genres = relationship("TitleGenre", back_populates="title", cascade="all, delete-orphan")
     age_ratings = relationship("TitleAgeRatings", cascade="all, delete-orphan")
@@ -156,7 +156,7 @@ class Season(Base):
     )
 
     translations = relationship("SeasonTranslation", back_populates="season", lazy="noload")
-    user_details = relationship("UserSeasonDetails", back_populates="season", lazy="noload")
+    user_details = relationship("SeasonUserDetails", back_populates="season", lazy="noload")
     title = relationship("Title", back_populates="seasons")
     episodes = relationship("Episode", back_populates="season", cascade="all, delete-orphan")
 
@@ -186,15 +186,15 @@ class Episode(Base):
     )
 
     translations = relationship("EpisodeTranslation", back_populates="episode", lazy="noload")
-    user_details = relationship("UserEpisodeDetails", back_populates="episode", lazy="noload")
+    user_details = relationship("EpisodeUserDetails", back_populates="episode", lazy="noload")
     season = relationship("Season", back_populates="episodes")
     title = relationship("Title")
 
 
-##### USER TITLE DETAILS #####
+##### TITLE USER DETAILS #####
 
-class UserTitleDetails(Base):
-    __tablename__ = "user_title_details"
+class TitleUserDetails(Base):
+    __tablename__ = "title_user_details"
 
     user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), primary_key=True)
     title_id = Column(Integer, ForeignKey("titles.title_id", ondelete="CASCADE"), primary_key=True)
@@ -218,8 +218,8 @@ class UserTitleDetails(Base):
     chosen_logo = relationship("Image", foreign_keys=[chosen_logo_image_path], viewonly=True)
 
 
-class UserSeasonDetails(Base):
-    __tablename__ = "user_season_details"
+class SeasonUserDetails(Base):
+    __tablename__ = "season_user_details"
 
     user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), primary_key=True)
     season_id = Column(Integer, ForeignKey("seasons.season_id", ondelete="CASCADE"), primary_key=True)
@@ -230,8 +230,8 @@ class UserSeasonDetails(Base):
     chosen_poster = relationship("Image", foreign_keys=[chosen_poster_image_path], viewonly=True)
 
 
-class UserEpisodeDetails(Base):
-    __tablename__ = "user_episode_details"
+class EpisodeUserDetails(Base):
+    __tablename__ = "episode_user_details"
 
     user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), primary_key=True)
     episode_id = Column(Integer, ForeignKey("episodes.episode_id", ondelete="CASCADE"), primary_key=True)

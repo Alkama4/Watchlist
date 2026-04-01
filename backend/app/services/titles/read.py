@@ -10,9 +10,9 @@ from app.schemas import (
     GenreElement,
     AgeRatingElement,
     SeasonOut,
-    UserEpisodeDetailsOut,
-    UserSeasonDetailsOut,
-    UserTitleDetailsOut,
+    EpisodeUserDetailsOut,
+    SeasonUserDetailsOut,
+    TitleUserDetailsOut,
     TitleOut,
     VideoAssetOut
 )
@@ -23,9 +23,9 @@ from app.models import (
     TitleTranslation,
     SeasonTranslation,
     EpisodeTranslation,
-    UserTitleDetails,
-    UserSeasonDetails,
-    UserEpisodeDetails,
+    TitleUserDetails,
+    SeasonUserDetails,
+    EpisodeUserDetails,
     TitleGenre
 )
 
@@ -50,7 +50,7 @@ async def fetch_title_with_user_details(db: AsyncSession, title_id: int, user_id
             selectinload(Title.translations.and_(
                 TitleTranslation.iso_639_1.in_(locale_ctx.iso_639_1_list)
             )),
-            selectinload(Title.user_details.and_(UserTitleDetails.user_id == user_id)),
+            selectinload(Title.user_details.and_(TitleUserDetails.user_id == user_id)),
             selectinload(Title.genres).selectinload(TitleGenre.genre),
             selectinload(Title.age_ratings),
             selectinload(Title.video_assets),
@@ -60,14 +60,14 @@ async def fetch_title_with_user_details(db: AsyncSession, title_id: int, user_id
                 selectinload(Season.translations.and_(
                     SeasonTranslation.iso_639_1.in_(locale_ctx.iso_639_1_list)
                 )),
-                selectinload(Season.user_details.and_(UserSeasonDetails.user_id == user_id)),
+                selectinload(Season.user_details.and_(SeasonUserDetails.user_id == user_id)),
                 
                 # Load Episodes + filtered children
                 selectinload(Season.episodes).options(
                     selectinload(Episode.translations.and_(
                         EpisodeTranslation.iso_639_1.in_(locale_ctx.iso_639_1_list)
                     )),
-                    selectinload(Episode.user_details.and_(UserEpisodeDetails.user_id == user_id)),
+                    selectinload(Episode.user_details.and_(EpisodeUserDetails.user_id == user_id)),
                     selectinload(Episode.video_assets)
                 )
             )
@@ -83,7 +83,7 @@ async def fetch_title_with_user_details(db: AsyncSession, title_id: int, user_id
     # Handle User Title Logic & Commit
     user_title = title.user_details[0] if title.user_details else None
     if not user_title:
-        user_title = UserTitleDetails(user_id=user_id, title_id=title_id)
+        user_title = TitleUserDetails(user_id=user_id, title_id=title_id)
         db.add(user_title)
     
     user_title.last_viewed_at = datetime.now(timezone.utc)
@@ -138,9 +138,9 @@ def _build_title_out(title: Title, locale_ctx: LanguageContext) -> TitleOut:
     # Apply Title User Details
     user_detail = title.user_details[0] if title.user_details else None
     title_dict["user_details"] = (
-        UserTitleDetailsOut.model_validate(user_detail)
+        TitleUserDetailsOut.model_validate(user_detail)
         if user_detail
-        else UserTitleDetailsOut
+        else TitleUserDetailsOut
     )
 
     # Map Genres, Ratings & Video Assets
@@ -169,9 +169,9 @@ def _build_title_out(title: Title, locale_ctx: LanguageContext) -> TitleOut:
         
         s_user = s.user_details[0] if s.user_details else None
         s_dict["user_details"] = (
-            UserSeasonDetailsOut.model_validate(s_user)
+            SeasonUserDetailsOut.model_validate(s_user)
             if s_user
-            else UserSeasonDetailsOut
+            else SeasonUserDetailsOut
         )
         
         # Sort the episodes
@@ -191,9 +191,9 @@ def _build_title_out(title: Title, locale_ctx: LanguageContext) -> TitleOut:
 
             e_user = e.user_details[0] if e.user_details else None
             e_dict["user_details"] = (
-                UserEpisodeDetailsOut.model_validate(e_user)
+                EpisodeUserDetailsOut.model_validate(e_user)
                 if e_user
-                else UserEpisodeDetailsOut
+                else EpisodeUserDetailsOut
             )
             
             e_dict["video_assets"] = [

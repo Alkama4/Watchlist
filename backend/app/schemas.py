@@ -215,7 +215,7 @@ class TitleQueryIn(BaseModel):
 
 
 # Card title out
-class CardUserTitleDetailsOut(BaseModel):
+class TitleCardUserDetailsOut(BaseModel):
     in_library: bool = False
     is_favourite: bool = False
     in_watchlist: bool = False
@@ -225,7 +225,7 @@ class CardUserTitleDetailsOut(BaseModel):
     chosen_backdrop_image_path: Optional[str] = None
     chosen_logo_image_path: Optional[str] = None
 
-class CardTitleOut(BaseModel):
+class TitleCardOut(BaseModel):
     title_id: Optional[int] = None
     tmdb_id: Optional[int] = None
     title_type: TitleType
@@ -242,24 +242,24 @@ class CardTitleOut(BaseModel):
     default_backdrop_image_path: Optional[str] = None
     default_logo_image_path: Optional[str] = None
 
-    user_details: Optional[CardUserTitleDetailsOut] = None
+    user_details: Optional[TitleCardUserDetailsOut] = None
 
 
 # Hero title out
-class HeroUserTitleDetailsOut(CardUserTitleDetailsOut):
+class TitleHeroUserDetailsOut(TitleCardUserDetailsOut):
     pass
 
-class HeroTitleOut(CardTitleOut):
+class TitleHeroOut(TitleCardOut):
     genres: Optional[List[GenreElement]] = None
     age_rating: Optional[AgeRatingElement] = None
     overview: Optional[str] = None
 
-    user_details: Optional[HeroUserTitleDetailsOut] = None
+    user_details: Optional[TitleHeroUserDetailsOut] = None
 
 
 class TitleListOut(BaseModel):
     header: Optional[str] = None
-    titles: List[CardTitleOut | HeroTitleOut]
+    titles: List[TitleCardOut | TitleHeroOut]
     page_number: int
     page_size: int
     total_items: int
@@ -277,7 +277,7 @@ class CollectionsOverViewOut(BaseModel):
 
 #### Title out stack ####
 
-class UserEpisodeDetailsOut(BaseModel):
+class EpisodeUserDetailsOut(BaseModel):
     watch_count: int = 0
     notes: Optional[str] = None
     last_watched_at: datetime = None
@@ -286,14 +286,14 @@ class UserEpisodeDetailsOut(BaseModel):
     class Config:
         from_attributes = True
 
-class UserSeasonDetailsOut(BaseModel):
+class SeasonUserDetailsOut(BaseModel):
     notes: Optional[str] = None
     chosen_poster_image_path: Optional[str] = None
 
     class Config:
         from_attributes = True
 
-class UserTitleDetailsOut(BaseModel):
+class TitleUserDetailsOut(BaseModel):
     in_library: bool = False
     is_favourite: bool = False
     in_watchlist: bool = False
@@ -323,7 +323,7 @@ class EpisodeOut(BaseModel):
     default_backdrop_image_path: Optional[str]
     last_updated: datetime
 
-    user_details: Optional[UserEpisodeDetailsOut] = None  
+    user_details: Optional[EpisodeUserDetailsOut] = None  
     video_assets: Optional[List[VideoAssetOut]] = None
 
     class Config:
@@ -339,7 +339,7 @@ class SeasonOut(BaseModel):
     last_updated: datetime
 
     episodes: List[EpisodeOut]
-    user_details: Optional[UserSeasonDetailsOut] = None
+    user_details: Optional[SeasonUserDetailsOut] = None
 
     class Config:
         from_attributes = True
@@ -375,7 +375,7 @@ class TitleOut(BaseModel):
     display_locale: Optional[LocaleString] = None
 
     seasons: List[SeasonOut] = Field(default_factory=list)
-    user_details: Optional[UserTitleDetailsOut] = None
+    user_details: Optional[TitleUserDetailsOut] = None
     video_assets: Optional[List[VideoAssetOut]] = None
 
     class Config:
@@ -401,7 +401,7 @@ class TMDBCollectionOut(BaseModel):
     default_backdrop_image_path: Optional[str] = None
     display_locale: Optional[LocaleString] = None
 
-    titles: Optional[List[HeroTitleOut]] = None
+    titles: Optional[List[TitleHeroOut]] = None
     user_details: Optional[TMDBCollectionUserDetailsOut] = None
 
     class Config:
