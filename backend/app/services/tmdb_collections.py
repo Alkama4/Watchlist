@@ -7,11 +7,16 @@ from sqlalchemy.orm import selectinload
 from app.services.languages import LanguageContext, fill_translated_fields_dynamically, get_user_language_context
 from app.integrations import tmdb
 from app.services.images import select_best_image, store_image_details
+from app.services.titles.search_internal import run_title_search
 from app.schemas import (
     TMDBCollectionOut,
     TMDBCollectionUserDetailsOut,
+    TitleListOut,
+    TitleQueryIn,
 )
 from app.models import(
+    SortBy,
+    SortDirection,
     TMDBCollection,
     TMDBCollectionTranslation,
     TMDBCollectionUserDetails,
@@ -158,10 +163,26 @@ async def fetch_collection_with_user_details(
     user_col.last_viewed_at = datetime.now(timezone.utc)
     await db.commit()
 
-    return _build_collection_out(collection, locale_ctx)
+    title_list = await run_title_search(
+        db=db,
+        user_id=user_id,
+        locale_ctx=locale_ctx,
+        q=TitleQueryIn(
+            tmdb_collection_ids=[tmdb_collection_id],
+            sort_by=SortBy.release_date,
+            sort_direction=SortDirection.asc,
+            page_size=0
+        )
+    )
+
+    return _build_collection_out(collection, locale_ctx, title_list)
 
 
-def _build_collection_out(collection: TMDBCollection, locale_ctx: LanguageContext) -> TMDBCollectionOut:
+def _build_collection_out(
+    collection: TMDBCollection,
+    locale_ctx: LanguageContext,
+    title_list: TitleListOut
+) -> TMDBCollectionOut:
     # Filter out relationships that need custom mapping (titles, user_details, etc.)
     col_dict = {
         field: getattr(collection, field)
@@ -188,10 +209,8 @@ def _build_collection_out(collection: TMDBCollection, locale_ctx: LanguageContex
         if user_detail else None
     )
     
-    # Metadata
+    col_dict["titles"] = title_list.titles
+
     col_dict["display_locale"] = locale_ctx.preferred_locale
-    
-    # Omit titles for now. Use search_internal to implement later
-    col_dict["titles"] = None
 
     return TMDBCollectionOut(**col_dict)
