@@ -445,7 +445,7 @@ def _build_title_list_out(
         page_number=page,
         page_size=size,
         total_items=total,
-        total_pages=(total + size - 1) // size
+        total_pages=(1 if size == 0 else (total + size - 1) // size)
     )
 
 
@@ -453,8 +453,8 @@ async def run_title_search(
     db: AsyncSession,
     user_id: int,
     q: TitleQueryIn,
-    title_schema: Type[CardTitleOut | HeroTitleOut],
-    user_title_details_schema: Type[CardUserTitleDetailsOut | HeroUserTitleDetailsOut],
+    title_schema: Type[CardTitleOut | HeroTitleOut] = CardTitleOut,
+    user_title_details_schema: Type[CardUserTitleDetailsOut | HeroUserTitleDetailsOut] = CardUserTitleDetailsOut,
     locale_ctx: LanguageContext = None
 ) -> TitleListOut:
     
