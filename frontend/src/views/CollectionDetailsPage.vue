@@ -37,6 +37,22 @@ const combinedRunTime = computed(() => {
     return timeFormatters.minutesToHrAndMin(count);
 });
 
+const combinedGenres = computed(() => {
+    const titles = collectionDetails.value?.titles;
+    if (!titles) return [];
+
+    const genreMap = new Map();
+    titles.forEach(title => {
+        title.genres?.forEach(genre => {
+            if (!genreMap.has(genre.tmdb_genre_id)) {
+                genreMap.set(genre.tmdb_genre_id, genre);
+            }
+        });
+    });
+
+    return Array.from(genreMap.values());
+});
+
 onMounted(async () => {
     await fetchCollectionDetails();
 })
@@ -77,6 +93,16 @@ onMounted(async () => {
                     <span class="sep">|</span>
                     <div class="stat">{{ collectionDetails?.titles?.length }} Movies</div>
                 </div>
+                <div class="genres">
+                    <router-link
+                        v-for="genre in combinedGenres"
+                        :key="genre.tmdb_genre_id"
+                        :to="`/search?genres_inc=${genre.tmdb_genre_id}`"
+                        class="btn btn-pill no-deco"
+                    >
+                        {{ genre?.genre_name }}
+                    </router-link>
+                </div>
                 <p>{{ collectionDetails?.overview }}</p>
             </div>
         </div>
@@ -93,6 +119,7 @@ onMounted(async () => {
                 :grid-mode="true"
             />
         </div>
+
     </div>
 </template>
 
@@ -114,6 +141,8 @@ img.backdrop {
 }
 
 .collection-details {
+    margin-top: var(--spacing-xl);
+    margin-bottom: var(--spacing-xl);
     display: flex;
     flex-direction: row;
     gap: var(--spacing-md-lg);
@@ -149,6 +178,13 @@ img.backdrop {
                 color: var(--c-text-subtle);
             }
         }
+
+        .genres {
+            display: flex;
+            margin-top: var(--spacing-sm-md);
+            gap: var(--spacing-sm);
+        }
+
     }
 }
 
