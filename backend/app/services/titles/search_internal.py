@@ -40,7 +40,6 @@ def _base_title_query(user_id: int, title_schema, locale_ctx: LanguageContext):
                 UserTitleDetails.user_id == user_id,
             )
         )
-        .where(UserTitleDetails.in_library == True)
         .options(
             selectinload(Title.translations.and_(
                 TitleTranslation.iso_639_1.in_(locale_ctx.iso_639_1_list)
@@ -74,6 +73,9 @@ def _apply_filters(stmt, q: TitleQueryIn):
 
     if q.in_watchlist is not None:
         stmt = stmt.where(UserTitleDetails.in_watchlist == q.in_watchlist)
+
+    if q.in_library is not None:
+        stmt = stmt.where(UserTitleDetails.in_library == q.in_library)
 
     if q.watch_status is not None:
         if q.watch_status == "not_watched":
@@ -426,7 +428,11 @@ def _build_title_list_out(
             "show_season_count": season_count,
             "show_episode_count": episode_count,
             "similarity_score": sim_score,
-            "user_details": user_title_details_schema.model_validate(user_details, from_attributes=True) if user_details else None
+            "user_details": (
+                user_title_details_schema.model_validate(user_details, from_attributes=True) 
+                if user_details 
+                else CardUserTitleDetailsOut(in_library=False)
+            )
         })
         
         if title_schema is HeroTitleOut:

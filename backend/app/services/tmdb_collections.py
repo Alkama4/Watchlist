@@ -124,7 +124,7 @@ async def _store_tmdb_collection_translation(
 
 ######## READING ########
 
-async def fetch_collection_with_user_details(
+async def fetch_tmdb_collection_with_user_details(
     db: AsyncSession,
     tmdb_collection_id: int,
     user_id: int
@@ -169,16 +169,17 @@ async def fetch_collection_with_user_details(
         locale_ctx=locale_ctx,
         q=TitleQueryIn(
             tmdb_collection_ids=[tmdb_collection_id],
+            in_library=None,
             sort_by=SortBy.release_date,
             sort_direction=SortDirection.asc,
             page_size=0
         )
     )
 
-    return _build_collection_out(collection, locale_ctx, title_list)
+    return _build_tmdb_collection_out(collection, locale_ctx, title_list)
 
 
-def _build_collection_out(
+def _build_tmdb_collection_out(
     collection: TMDBCollection,
     locale_ctx: LanguageContext,
     title_list: TitleListOut

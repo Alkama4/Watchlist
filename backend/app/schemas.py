@@ -185,6 +185,7 @@ class TitleQueryIn(BaseModel):
     title_type: Optional[TitleType] = None
     is_favourite: Optional[bool] = None
     in_watchlist: Optional[bool] = None
+    in_library: Optional[bool] = True
     watch_status: Optional[str] = Field(
         None,
         pattern="^(not_watched|partial|completed)$"
@@ -215,10 +216,10 @@ class TitleQueryIn(BaseModel):
 
 # Card title out
 class CardUserTitleDetailsOut(BaseModel):
-    in_library: bool
-    is_favourite: bool
-    in_watchlist: bool
-    watch_count: int
+    in_library: bool = True
+    is_favourite: bool = False
+    in_watchlist: bool = False
+    watch_count: int = 0
 
     chosen_poster_image_path: Optional[str] = None
     chosen_backdrop_image_path: Optional[str] = None
