@@ -431,7 +431,7 @@ def _build_title_list_out(
             "user_details": (
                 user_title_details_schema.model_validate(user_details, from_attributes=True) 
                 if user_details 
-                else CardUserTitleDetailsOut(in_library=False)
+                else user_title_details_schema(in_library=False)
             )
         })
         

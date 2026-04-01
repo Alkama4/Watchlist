@@ -9,6 +9,8 @@ from app.integrations import tmdb
 from app.services.images import select_best_image, store_image_details
 from app.services.titles.search_internal import run_title_search
 from app.schemas import (
+    HeroTitleOut,
+    HeroUserTitleDetailsOut,
     TMDBCollectionOut,
     TMDBCollectionUserDetailsOut,
     TitleListOut,
@@ -167,6 +169,8 @@ async def fetch_tmdb_collection_with_user_details(
         db=db,
         user_id=user_id,
         locale_ctx=locale_ctx,
+        title_schema=HeroTitleOut,
+        user_title_details_schema=HeroUserTitleDetailsOut,
         q=TitleQueryIn(
             tmdb_collection_ids=[tmdb_collection_id],
             in_library=None,

@@ -401,7 +401,7 @@ class TMDBCollectionOut(BaseModel):
     default_backdrop_image_path: Optional[str] = None
     display_locale: Optional[LocaleString] = None
 
-    titles: Optional[List[CardTitleOut]] = None
+    titles: Optional[List[HeroTitleOut]] = None
     user_details: Optional[TMDBCollectionUserDetailsOut] = None
 
     class Config:
