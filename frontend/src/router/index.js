@@ -28,6 +28,12 @@ const routes = [
         meta: { requiresAuth: true }
     },
     {
+        path: `/collection/:tmdb_collection_id`,
+        name: 'Collection details',
+        component: () => import('@/views/CollectionDetailsPage.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
         path: '/account',
         name: 'Account',
         component: () => import('@/views/AccountPage.vue'),

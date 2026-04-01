@@ -236,6 +236,14 @@ export const fastApi = {
             data: { watch_count: watchCount }
         })
     },
+    collections: {
+        tmdb: {
+            getById: async (tmdbCollectionId) => fetchData({
+                method: 'get',
+                url: `/collections/tmdb/${tmdbCollectionId}`
+            }),
+        }
+    },
     media: {
         syncVideoAssets: async () => fetchData({
             method: 'post',
