@@ -395,6 +395,7 @@ class TMDBCollectionOut(BaseModel):
     tmdb_collection_id: int
     name: Optional[str] = None
     name_original: Optional[str] = None
+    overview: Optional[str] = None
     original_language: Optional[str] = None
     default_poster_image_path: Optional[str] = None
     default_backdrop_image_path: Optional[str] = None
