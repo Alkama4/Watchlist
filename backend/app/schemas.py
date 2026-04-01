@@ -216,7 +216,7 @@ class TitleQueryIn(BaseModel):
 
 # Card title out
 class CardUserTitleDetailsOut(BaseModel):
-    in_library: bool = True
+    in_library: bool = False
     is_favourite: bool = False
     in_watchlist: bool = False
     watch_count: int = 0
