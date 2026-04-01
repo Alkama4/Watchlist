@@ -1,5 +1,5 @@
 <script setup>
-import TitleCardCarousel from '@/components/title_cards/TitleCardCarousel.vue';
+import TitleCard from '@/components/title_cards/TitleCard.vue';
 import { fastApi } from '@/utils/fastApi';
 import { timeFormatters } from '@/utils/formatters';
 import { getTitleImageUrl } from '@/utils/imagePath';
@@ -49,6 +49,7 @@ onMounted(async () => {
             alt="Collection backdrop"
             class="backdrop"
         >
+
         <div class="collection-details layout-contained">
             <div>
                 <img
@@ -57,7 +58,7 @@ onMounted(async () => {
                     class="poster"
                 >
             </div>
-            <div>
+            <div class="collection-info">
                 <div class="collection-name">
                     <h1>{{ collectionDetails?.name }}</h1>
                     <h4 v-if="collectionDetails?.name != collectionDetails?.name_original">
@@ -72,21 +73,35 @@ onMounted(async () => {
                         </template>
                     </div>
                     <span class="sep">|</span>
-                    <div class="stat">
-                        {{ combinedRunTime }}
-                    </div>
+                    <div class="stat">{{ combinedRunTime }}</div>
+                    <span class="sep">|</span>
+                    <div class="stat">{{ collectionDetails?.titles?.length }} Movies</div>
                 </div>
                 <p>{{ collectionDetails?.overview }}</p>
             </div>
         </div>
 
-        <TitleCardCarousel
-            :carouselData="collectionDetails"
-        />
+        <div class="collection-titles layout-contained">
+            <h3>Titles</h3>
+        </div>
+
+        <div class="title-card-grid layout-contained">
+            <TitleCard
+                v-for="title in collectionDetails?.titles"
+                :key="title?.title_id"
+                :title-info="title"
+                :grid-mode="true"
+            />
+        </div>
     </div>
 </template>
 
 <style scoped>
+.collection-details-page > * {
+    position: relative;
+    z-index: 10;
+}
+
 img.backdrop {
     position: absolute;
     top: 0;
@@ -100,35 +115,50 @@ img.backdrop {
 
 .collection-details {
     display: flex;
-    position: relative;
     flex-direction: row;
-    gap: var(--spacing-md);
-    z-index: 10;
+    gap: var(--spacing-md-lg);
 
     img.poster {
         width: 300px;
+        /* margin-inline: var(--spacing-md); */
         border-radius: var(--border-radius-lg);
     }
 
-    .collection-name {
-        margin-bottom: var(--spacing-md);
-        display: flex;
-        flex-direction: column;
-        gap: var(--spacing-xs);
+    .collection-info {
+        margin-top: var(--spacing-md);
+        /* display: flex;
+        flex-direction: column; */
 
-        h1, h4 {
-            margin: 0
+        .collection-name {
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+    
+            h1, h4 {
+                margin: 0
+            }
+        }
+    
+        .general-stats {
+            display: flex;
+            gap: var(--spacing-sm-md);
+            font-weight: 600;
+    
+            .sep {
+                color: var(--c-text-subtle);
+            }
         }
     }
+}
 
-    .general-stats {
-        display: flex;
-        gap: var(--spacing-sm);
-        font-weight: 600;
+.title-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--title-card-width), 1fr));
+    gap: var(--spacing-lg) var(--spacing-md);
 
-        .sep {
-            color: var(--c-text-subtle);
-        }
+    .title-card {
+        width: unset;
     }
 }
 </style>
