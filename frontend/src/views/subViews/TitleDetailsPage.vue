@@ -293,7 +293,7 @@ const lastAirDate = computed(() => {
                             v-for="(genre, index) in titleDetails?.genres"
                             :key="genre.tmdb_genre_id"
                             :to="`/search?genres_inc=${genre.tmdb_genre_id}`"
-                            class="genre-link no-deco btn"
+                            class="btn btn-pill no-deco"
                         >
                             {{ genre?.genre_name }}
                         </router-link>
@@ -623,14 +623,6 @@ img.poster {
     display: flex;
     margin-top: var(--spacing-sm-md);
     gap: var(--spacing-sm);
-
-    .genre-link {
-        /* border: 1px solid var(--c-border); */
-        padding: 4px 12px;
-        border-radius: 100px;
-        font-weight: 500;
-        white-space: nowrap;
-    }
 }
 
 .actions {
