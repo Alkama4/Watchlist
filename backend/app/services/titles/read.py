@@ -140,7 +140,7 @@ def _build_title_out(title: Title, locale_ctx: LanguageContext) -> TitleOut:
     title_dict["user_details"] = (
         TitleUserDetailsOut.model_validate(user_detail)
         if user_detail
-        else TitleUserDetailsOut
+        else TitleUserDetailsOut()
     )
 
     # Map Genres, Ratings & Video Assets
@@ -171,7 +171,7 @@ def _build_title_out(title: Title, locale_ctx: LanguageContext) -> TitleOut:
         s_dict["user_details"] = (
             SeasonUserDetailsOut.model_validate(s_user)
             if s_user
-            else SeasonUserDetailsOut
+            else SeasonUserDetailsOut()
         )
         
         # Sort the episodes
@@ -193,7 +193,7 @@ def _build_title_out(title: Title, locale_ctx: LanguageContext) -> TitleOut:
             e_dict["user_details"] = (
                 EpisodeUserDetailsOut.model_validate(e_user)
                 if e_user
-                else EpisodeUserDetailsOut
+                else EpisodeUserDetailsOut()
             )
             
             e_dict["video_assets"] = [

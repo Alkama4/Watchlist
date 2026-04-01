@@ -212,7 +212,7 @@ def _build_tmdb_collection_out(
     col_dict["user_details"] = (
         TMDBCollectionUserDetailsOut.model_validate(user_detail, from_attributes=True) 
         if user_detail
-        else TMDBCollectionUserDetailsOut
+        else TMDBCollectionUserDetailsOut()
     )
     
     col_dict["titles"] = title_list.titles
