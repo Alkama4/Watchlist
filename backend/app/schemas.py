@@ -278,35 +278,35 @@ class CollectionsOverViewOut(BaseModel):
 #### Title out stack ####
 
 class UserEpisodeDetailsOut(BaseModel):
-    watch_count: int
+    watch_count: int = 0
     notes: Optional[str] = None
-    last_watched_at: datetime
+    last_watched_at: datetime = None
     chosen_backdrop_image_path: Optional[str] = None
 
     class Config:
         from_attributes = True
 
 class UserSeasonDetailsOut(BaseModel):
-    notes: Optional[str]
-    chosen_poster_image_path: Optional[str]
+    notes: Optional[str] = None
+    chosen_poster_image_path: Optional[str] = None
 
     class Config:
         from_attributes = True
 
 class UserTitleDetailsOut(BaseModel):
-    in_library: bool
-    is_favourite: bool
-    in_watchlist: bool
-    watch_count: int
-    notes: Optional[str]
-    chosen_poster_image_path: Optional[str]
-    chosen_backdrop_image_path: Optional[str]
-    chosen_logo_image_path: Optional[str]
-    chosen_locale: Optional[str]
+    in_library: bool = False
+    is_favourite: bool = False
+    in_watchlist: bool = False
+    watch_count: int = 0
+    notes: Optional[str] = None
+    chosen_poster_image_path: Optional[str] = None
+    chosen_backdrop_image_path: Optional[str] = None
+    chosen_logo_image_path: Optional[str] = None
+    chosen_locale: Optional[str] = None
 
-    added_at: Optional[datetime]
-    last_watched_at: Optional[datetime]
-    last_viewed_at: Optional[datetime]
+    added_at: Optional[datetime] = None
+    last_watched_at: Optional[datetime] = None
+    last_viewed_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

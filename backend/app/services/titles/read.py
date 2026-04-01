@@ -137,8 +137,12 @@ def _build_title_out(title: Title, locale_ctx: LanguageContext) -> TitleOut:
 
     # Apply Title User Details
     user_detail = title.user_details[0] if title.user_details else None
-    title_dict["user_details"] = UserTitleDetailsOut.model_validate(user_detail) if user_detail else None
-    
+    title_dict["user_details"] = (
+        UserTitleDetailsOut.model_validate(user_detail)
+        if user_detail
+        else UserTitleDetailsOut
+    )
+
     # Map Genres, Ratings & Video Assets
     title_dict["genres"] = [GenreElement.model_validate(tg.genre, from_attributes=True) for tg in title.genres]
     title_dict["age_ratings"] = [AgeRatingElement.model_validate(r, from_attributes=True) for r in title.age_ratings]
@@ -164,7 +168,11 @@ def _build_title_out(title: Title, locale_ctx: LanguageContext) -> TitleOut:
         s_dict["season_name"] = s_dict.pop("name", None) or f"Season {s.season_number}"
         
         s_user = s.user_details[0] if s.user_details else None
-        s_dict["user_details"] = UserSeasonDetailsOut.model_validate(s_user) if s_user else None
+        s_dict["user_details"] = (
+            UserSeasonDetailsOut.model_validate(s_user)
+            if s_user
+            else UserSeasonDetailsOut
+        )
         
         # Sort the episodes
         s.episodes.sort(key=lambda e: (e.episode_number or 0))
@@ -182,7 +190,11 @@ def _build_title_out(title: Title, locale_ctx: LanguageContext) -> TitleOut:
             e_dict["episode_name"] = e_dict.pop("name", None) or f"Episode {e.episode_number}"
 
             e_user = e.user_details[0] if e.user_details else None
-            e_dict["user_details"] = UserEpisodeDetailsOut.model_validate(e_user) if e_user else None
+            e_dict["user_details"] = (
+                UserEpisodeDetailsOut.model_validate(e_user)
+                if e_user
+                else UserEpisodeDetailsOut
+            )
             
             e_dict["video_assets"] = [
                 VideoAssetOut.model_validate(va, from_attributes=True) for va in e.video_assets
