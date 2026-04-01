@@ -42,7 +42,6 @@ button:disabled, .btn:disabled {
 }
 
 
-
 /* Button text */
 .btn-text {
     background-color: transparent;
@@ -65,13 +64,23 @@ i.btn-text {
     font-size: var(--fs-2);
 }
 
+
+/* Special buttons */
 .btn-underline {
     cursor: pointer;
     text-decoration: none;
     color: currentColor !important;
+    
+    &:hover {
+        text-decoration: underline;
+    }
 }
-.btn-underline:hover {
-    text-decoration: underline;
+
+.btn-pill {
+    padding: var(--spacing-xs) var(--spacing-sm-md);
+    border-radius: 100px;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
 
