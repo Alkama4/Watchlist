@@ -1,8 +1,9 @@
 <script setup>
 import TitleCardCarousel from '@/components/title_cards/TitleCardCarousel.vue';
 import { fastApi } from '@/utils/fastApi';
+import { timeFormatters } from '@/utils/formatters';
 import { getTitleImageUrl } from '@/utils/imagePath';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 const collectionDetails = ref({});
@@ -12,6 +13,29 @@ async function fetchCollectionDetails() {
     const tmdb_collection_id = route.params.tmdb_collection_id;
     collectionDetails.value = await fastApi.collections.tmdb.getById(tmdb_collection_id);
 }
+
+const firstYear = computed(() => {
+    const releaseDate = collectionDetails.value?.titles?.[0]?.release_date;
+    return releaseDate ? timeFormatters.timestampToYear(releaseDate) : null;
+});
+
+const lastYear = computed(() => {
+    const titles = collectionDetails.value?.titles;
+    const releaseDate = titles?.[titles?.length - 1]?.release_date;
+    return releaseDate ? timeFormatters.timestampToYear(releaseDate) : null;
+});
+
+const combinedRunTime = computed(() => {
+    const titles = collectionDetails.value?.titles;
+    if (!titles) return 0;
+    let count = 0;
+    
+    for (const title of titles) {
+        count += title?.movie_runtime;
+    }
+    
+    return timeFormatters.minutesToHrAndMin(count);
+});
 
 onMounted(async () => {
     await fetchCollectionDetails();
@@ -40,8 +64,19 @@ onMounted(async () => {
                         {{ collectionDetails?.name_original }}
                     </h4>
                 </div>
+                <div class="general-stats">
+                    <div class="stat">
+                        {{ firstYear }}
+                        <template v-if="firstYear != lastYear">
+                            - {{ lastYear }}
+                        </template>
+                    </div>
+                    <span class="sep">|</span>
+                    <div class="stat">
+                        {{ combinedRunTime }}
+                    </div>
+                </div>
                 <p>{{ collectionDetails?.overview }}</p>
-                {{ collectionDetails }}
             </div>
         </div>
 
@@ -83,6 +118,16 @@ img.backdrop {
 
         h1, h4 {
             margin: 0
+        }
+    }
+
+    .general-stats {
+        display: flex;
+        gap: var(--spacing-sm);
+        font-weight: 600;
+
+        .sep {
+            color: var(--c-text-subtle);
         }
     }
 }
