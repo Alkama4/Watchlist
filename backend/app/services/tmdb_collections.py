@@ -1,6 +1,8 @@
+from typing import List, Optional
+
 from fastapi import HTTPException
 from datetime import datetime, timezone
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import selectinload
@@ -9,6 +11,8 @@ from app.integrations import tmdb
 from app.services.images import select_best_image, store_image_details
 from app.services.titles.search_internal import run_title_search
 from app.schemas import (
+    TMDBCollectionCardOut,
+    TMDBCollectionCardUserDetailsOut,
     TitleHeroOut,
     TitleHeroUserDetailsOut,
     TMDBCollectionOut,
@@ -220,3 +224,90 @@ def _build_tmdb_collection_out(
     col_dict["display_locale"] = locale_ctx.preferred_locale
 
     return TMDBCollectionOut(**col_dict)
+
+
+######## READING CARDS ########
+
+async def fetch_tmdb_collection_cards(
+    db: AsyncSession,
+    user_id: int,
+    tmdb_collection_ids: Optional[List[int]] = None
+) -> List[TMDBCollectionCardOut]:
+    """
+    Fetches all collection cards for a user, or a specific subset if IDs are provided.
+    """
+    locale_ctx = await get_user_language_context(db=db, user_id=user_id)
+
+    stmt = (
+        select(TMDBCollection)
+        .options(
+            selectinload(TMDBCollection.translations.and_(
+                TMDBCollectionTranslation.iso_639_1.in_(locale_ctx.iso_639_1_list)
+            )),
+            selectinload(TMDBCollection.user_details.and_(
+                TMDBCollectionUserDetails.user_id == user_id
+            ))
+        )
+    )
+
+    if tmdb_collection_ids:
+        stmt = stmt.where(TMDBCollection.tmdb_collection_id.in_(tmdb_collection_ids))
+
+    count_stmt = (
+        select(Title.tmdb_collection_id, func.count(Title.title_id).label("total"))
+        .group_by(Title.tmdb_collection_id)
+    )
+    if tmdb_collection_ids:
+        count_stmt = count_stmt.where(Title.tmdb_collection_id.in_(tmdb_collection_ids))
+
+    result = await db.execute(stmt)
+    collections = result.scalars().all()
+    
+    counts_result = await db.execute(count_stmt)
+    counts_map = {row.tmdb_collection_id: row.total for row in counts_result}
+
+    return [
+        _build_tmdb_collection_card_out(
+            col, 
+            locale_ctx, 
+            counts_map.get(col.tmdb_collection_id, 0)
+        )
+        for col in collections
+    ]
+
+
+def _build_tmdb_collection_card_out(
+    collection: TMDBCollection,
+    locale_ctx: LanguageContext,
+    title_count: int
+) -> TMDBCollectionCardOut:
+    # Extract basic fields
+    col_dict = {
+        field: getattr(collection, field)
+        for field in TMDBCollectionCardOut.model_fields
+        if field not in {"user_details", "title_count"} and hasattr(collection, field)
+    }
+
+    # Fill translations (name, overview, etc)
+    fill_translated_fields_dynamically(
+        col_dict,
+        collection.translations,
+        locale_ctx.iso_639_1_list,
+        TMDBCollectionTranslation
+    )
+
+    # Fallback for name
+    if not col_dict.get("name"):
+        col_dict["name"] = collection.name_original
+
+    # Map User Details
+    user_detail = collection.user_details[0] if collection.user_details else None
+    col_dict["user_details"] = (
+        TMDBCollectionCardUserDetailsOut.model_validate(user_detail, from_attributes=True)
+        if user_detail
+        else TMDBCollectionCardUserDetailsOut()
+    )
+
+    col_dict["title_count"] = title_count
+
+    return TMDBCollectionCardOut(**col_dict)
