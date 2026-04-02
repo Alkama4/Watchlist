@@ -98,6 +98,8 @@ async function removeTitle() {
                     v-if="!titleInfo?.user_details?.in_library" 
                     class="overlay-btn btn-primary"
                     :loading="waiting?.library"
+                    size="20px"
+                    thickness="3.5px"
                     @click.prevent.stop="addTitle"
                 >
                     <ListPlus size="md"/>

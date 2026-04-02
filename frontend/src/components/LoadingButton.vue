@@ -3,10 +3,18 @@ import { useAttrs } from 'vue'
 
 const attrs = useAttrs()
 
-const { loading } = defineProps({
+defineProps({
     loading: {
         type: Boolean,
         default: false
+    },
+    size: {
+        type: String,
+        default: '12px'
+    },
+    thickness: {
+        type: String,
+        default: '2px'
     }
 })
 </script>
@@ -24,15 +32,25 @@ const { loading } = defineProps({
 
 <style scoped>
 .loader {
-    --size: 12px;
-    --thickness: 2px;
+    --size: v-bind(size);
+    --thickness: v-bind(thickness);
+    
     width: var(--size);
     height: var(--size);
     border: var(--thickness) solid currentColor;
     border-top-color: transparent;
-    border-radius: 100px;
+    border-radius: 50%; /* standard for circular loaders */
 }
+
 .loading {
     cursor: wait;
+}
+
+.spin {
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 </style>
