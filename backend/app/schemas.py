@@ -408,6 +408,24 @@ class TMDBCollectionOut(BaseModel):
         from_attributes = True
 
 
+class TMDBCollectionCardUserDetailsOut(BaseModel):
+    chosen_poster_image_path: Optional[str] = None
+    chosen_backdrop_image_path: Optional[str] = None
+
+
+class TMDBCollectionCardOut(BaseModel):
+    tmdb_collection_id: int
+    name: Optional[str] = None
+    overview: Optional[str] = None
+    default_poster_image_path: Optional[str] = None
+    default_backdrop_image_path: Optional[str] = None
+    title_count: Optional[int] = None
+    user_details: Optional[TMDBCollectionCardUserDetailsOut] = None
+
+    class Config:
+        from_attributes = True
+
+
 ####### Configs #######
 
 class ConfigJellyfinOut(BaseModel):
