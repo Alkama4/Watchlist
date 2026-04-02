@@ -82,6 +82,7 @@ async function removeTitle() {
             'is-search-mode': searchStore.tmdbFallback
         }"
         :draggable="gridMode"
+        :title="titleInfo?.name"
     >
         <div class="poster-wrapper">
             <img 
@@ -101,6 +102,7 @@ async function removeTitle() {
                     size="20px"
                     thickness="3.5px"
                     @click.prevent.stop="addTitle"
+                    title="Add to library"
                 >
                     <ListPlus size="md"/>
                 </LoadingButton>
@@ -110,6 +112,7 @@ async function removeTitle() {
                     class="overlay-btn btn-danger"
                     :loading="waiting?.library"
                     @click.prevent.stop="removeTitle"
+                    title="Remove from library"
                 >
                     <ListMinus size="md"/>
                 </LoadingButton>
@@ -121,12 +124,17 @@ async function removeTitle() {
                 :href="`https://www.themoviedb.org/${titleInfo?.title_type}/${titleInfo?.tmdb_id}`"
                 target="_blank"
                 @click.stop
+                title="Open TMDB page in a new tab"
             >
                 <ArrowOutUpRightSquare size="xs"/>
             </a>
 
             <div v-if="!searchStore.tmdbFallback && titleInfo?.user_details?.in_library" class="indicator-wrapper">
-                <div :class="{'active': titleInfo?.user_details?.watch_count}" class="indicator-circle watch-count">
+                <div
+                    :class="{'active': titleInfo?.user_details?.watch_count}"
+                    class="indicator-circle watch-count"
+                    title="Watch count"
+                >
                     <LoadingButton
                         class="inner-action"
                         :class="{'btn-positive': titleInfo?.user_details?.watch_count}"
@@ -152,7 +160,8 @@ async function removeTitle() {
                     :class="{ 'active': titleInfo?.user_details?.is_favourite, 'btn-favourite': titleInfo?.user_details?.is_favourite }"
                     class="indicator-circle favourite"
                     :loading="waiting?.toggleFavourite"
-                    @click.prevent.stop="toggleFavourite(titleInfo, waiting)" 
+                    @click.prevent.stop="toggleFavourite(titleInfo, waiting)"
+                    title="Favourite"
                 >
                     <Heart size="sm" pack="filled"/>
                 </LoadingButton>
@@ -162,6 +171,7 @@ async function removeTitle() {
                     class="indicator-circle watchlist"
                     :loading="waiting?.toggleWatchlist"
                     @click.prevent.stop="toggleWatchlist(titleInfo, waiting)" 
+                    title="Watchlist"
                 >
                     <Clock size="sm" pack="filled"/>
                 </LoadingButton>
