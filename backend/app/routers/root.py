@@ -265,7 +265,7 @@ async def get_home_overview(
         )
         
         if len(title_list.titles) > 0:
-            title_searches[option["key"]] = title_list
+            title_searches[option["key"]] = title_list.titles
 
     # Collection searches
     tmdb_collections = await fetch_tmdb_collection_cards(

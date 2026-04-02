@@ -185,5 +185,6 @@
 /* ----------- Specials ----------- */
 :root {
     --title-card-width: 185px;
+    --collection-card-width: 500px;
 }
 
