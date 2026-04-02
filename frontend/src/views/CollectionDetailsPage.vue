@@ -134,10 +134,15 @@ img.backdrop {
     top: 0;
     left: 0;
     width: 100vw;
-    height: 100vh;
+    height: 66vh;
     object-fit: cover;
-    opacity: 0.25;
+    /* opacity: 0.25; */
     z-index: 0;
+    mask-image: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, calc(1 - var(--details-backdrop-fade-intensity))) 50%
+    );
 }
 
 .collection-details {
