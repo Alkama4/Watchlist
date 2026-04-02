@@ -7,57 +7,11 @@ import { fastApi } from '@/utils/fastApi';
 import { ref } from 'vue';
 import LoadingButton from '@/components/LoadingButton.vue';
 import { adjustWatchCount, toggleFavourite, toggleWatchlist } from '@/utils/titleActions';
-import { ArrowOutUpRightSquare, Check, Clock, Heart, ListMinus, ListPlus, Minus, Plus } from '@boxicons/vue';
+import { ArrowOutUpRightSquare, Check, Clock, Heart, ListMinus, ListPlus, Minus } from '@boxicons/vue';
 
 const searchStore = useSearchStore();
 
-const waiting = ref({})
-
-async function addTitle() {
-    waiting.value.library = true;
-    try {
-        if (titleInfo.title_id) {
-            await fastApi.titles.library.add(titleInfo.title_id)
-        } else {
-            // Brand new title so need to use tmdb_id
-            const response = await fastApi.titles.addToLibrary({
-                tmdb_id: titleInfo.tmdb_id,
-                title_type: titleInfo.title_type
-            })
-    
-            // Need to init some data
-            titleInfo.title_id = response.title_id;
-        }
-        
-        // The user_details might not exist regardless if title_id exists.
-        // Based on if its falsy fill in the data that this component uses
-        // and set to be in library
-        if (!titleInfo.user_details) {
-            titleInfo.user_details = {
-                in_library: true,
-                is_favourite: false,
-                in_watchlist: false,
-                watch_count: 0,
-            }
-        } else {
-            titleInfo.user_details.in_library = true
-        }
-    } finally {
-        waiting.value.library = false;
-    }
-}
-
-async function removeTitle() {
-    waiting.value.library = true;
-    try {
-        await fastApi.titles.library.remove(titleInfo.title_id)
-        titleInfo.user_details.in_library = false;
-    } finally {
-        waiting.value.library = false;
-    }
-}
-
-const { titleInfo, storeImageFlag } = defineProps({
+const props = defineProps({
     titleInfo: {
         type: Object,
         required: true,
@@ -75,6 +29,45 @@ const { titleInfo, storeImageFlag } = defineProps({
     }
 })
 
+const waiting = ref({})
+
+async function addTitle() {
+    waiting.value.library = true;
+    try {
+        if (props.titleInfo.title_id) {
+            await fastApi.titles.library.add(props.titleInfo.title_id)
+        } else {
+            const response = await fastApi.titles.addToLibrary({
+                tmdb_id: props.titleInfo.tmdb_id,
+                title_type: props.titleInfo.title_type
+            })
+            props.titleInfo.title_id = response.title_id;
+        }
+        
+        if (!props.titleInfo.user_details) {
+            props.titleInfo.user_details = {
+                in_library: true,
+                is_favourite: false,
+                in_watchlist: false,
+                watch_count: 0,
+            }
+        } else {
+            props.titleInfo.user_details.in_library = true
+        }
+    } finally {
+        waiting.value.library = false;
+    }
+}
+
+async function removeTitle() {
+    waiting.value.library = true;
+    try {
+        await fastApi.titles.library.remove(props.titleInfo.title_id)
+        props.titleInfo.user_details.in_library = false;
+    } finally {
+        waiting.value.library = false;
+    }
+}
 </script>
 
 <template>
@@ -83,39 +76,94 @@ const { titleInfo, storeImageFlag } = defineProps({
         :to="titleInfo.title_id ? `/title/${titleInfo.title_id}` : null"
         :style="`animation-delay: ${(index ?? titleInfo?.batchIndex ?? 0) * 0.01}s`"
         class="title-card"
-        :class="{'grid-mode': gridMode}"
+        :class="{
+            'grid-mode': gridMode, 
+            'in-library': titleInfo?.user_details?.in_library,
+            'is-search-mode': searchStore.tmdbFallback
+        }"
         :draggable="gridMode"
     >
-        <img 
-            :src="getTitleImageUrl(titleInfo, '800', 'poster', storeImageFlag)"
-            :alt="`${titleInfo?.title_type === 'tv' ? 'TV show' : 'Movie'} poster: ${titleInfo?.name}`"
-            :draggable="gridMode"
-        >
-    
-        <div class="button-row" v-if="searchStore.tmdbFallback" @click.prevent>
-            <LoadingButton 
-                v-if="!titleInfo?.user_details?.in_library" 
-                class="btn-primary"
-                :loading="waiting?.library"
-                @click="addTitle(titleInfo.title_id, titleInfo.tmdb_id, titleInfo.title_type)"
+        <div class="poster-wrapper">
+            <img 
+                :src="getTitleImageUrl(titleInfo, '800', 'poster', storeImageFlag)"
+                :alt="`${titleInfo?.title_type === 'tv' ? 'TV show' : 'Movie'} poster: ${titleInfo?.name}`"
+                :draggable="gridMode"
             >
-                <ListPlus size="xs"/>
-                Add
-            </LoadingButton>
-    
-            <LoadingButton v-else :loading="waiting?.library" @click="removeTitle(titleInfo.title_id)">
-                <ListMinus size="xs"/>
-                Remove
-            </LoadingButton>
+
+            <div 
+                v-if="searchStore.tmdbFallback || !titleInfo?.user_details?.in_library"
+                class="action-overlay"
+            >
+                <LoadingButton 
+                    v-if="!titleInfo?.user_details?.in_library" 
+                    class="overlay-btn btn-primary"
+                    :loading="waiting?.library"
+                    @click.prevent.stop="addTitle"
+                >
+                    <ListPlus size="md"/>
+                </LoadingButton>
+
+                <LoadingButton 
+                    v-else 
+                    class="overlay-btn btn-danger"
+                    :loading="waiting?.library"
+                    @click.prevent.stop="removeTitle"
+                >
+                    <ListMinus size="md"/>
+                </LoadingButton>
+            </div>
 
             <a 
-                class="btn no-deco"
+                v-if="searchStore.tmdbFallback"
+                class="tmdb-external-link btn btn-even-padding"
                 :href="`https://www.themoviedb.org/${titleInfo?.title_type}/${titleInfo?.tmdb_id}`"
                 target="_blank"
                 @click.stop
             >
                 <ArrowOutUpRightSquare size="xs"/>
             </a>
+
+            <div v-if="!searchStore.tmdbFallback && titleInfo?.user_details?.in_library" class="indicator-wrapper">
+                <div :class="{'active': titleInfo?.user_details?.watch_count}" class="indicator-circle watch-count">
+                    <LoadingButton
+                        class="inner-action"
+                        :class="{'btn-positive': titleInfo?.user_details?.watch_count}"
+                        :loading="waiting[`titleWcAdd_${titleInfo?.title_id}`]"
+                        @click.prevent.stop="adjustWatchCount.title.add(titleInfo, waiting)"
+                    >
+                        <template v-if="titleInfo?.user_details?.watch_count >= 2">
+                            {{ titleInfo?.user_details?.watch_count }}
+                        </template>
+                        <Check v-else size="sm"/>
+                    </LoadingButton>
+
+                    <LoadingButton
+                        class="inner-action"
+                        :loading="waiting[`titleWcSub_${titleInfo?.title_id}`]"
+                        @click.prevent.stop="adjustWatchCount.title.subtract(titleInfo, waiting)"
+                    >
+                        <Minus size="sm"/>
+                    </LoadingButton>
+                </div>
+        
+                <LoadingButton
+                    :class="{ 'active': titleInfo?.user_details?.is_favourite, 'btn-favourite': titleInfo?.user_details?.is_favourite }"
+                    class="indicator-circle favourite"
+                    :loading="waiting?.toggleFavourite"
+                    @click.prevent.stop="toggleFavourite(titleInfo, waiting)" 
+                >
+                    <Heart size="sm" pack="filled"/>
+                </LoadingButton>
+        
+                <LoadingButton
+                    :class="{ 'active': titleInfo?.user_details?.in_watchlist, 'btn-accent': titleInfo?.user_details?.in_watchlist }"
+                    class="indicator-circle watchlist"
+                    :loading="waiting?.toggleWatchlist"
+                    @click.prevent.stop="toggleWatchlist(titleInfo, waiting)" 
+                >
+                    <Clock size="sm" pack="filled"/>
+                </LoadingButton>
+            </div>
         </div>
 
         <div class="details">
@@ -138,62 +186,8 @@ const { titleInfo, storeImageFlag } = defineProps({
                 {{ titleInfo?.title_type == 'tv' ? 'TV' : 'Movie' }}
             </div>
         </div>
-
-        <div v-if="!searchStore.tmdbFallback" class="indicator-wrapper">
-            <div
-                :class="{
-                    'active': titleInfo?.user_details?.watch_count
-                }"
-                class="indicator-circle watch-count"
-            >
-                <LoadingButton
-                    class="inner-action"
-                    :class="{'btn-positive': titleInfo?.user_details?.watch_count}"
-                    :loading="waiting[`titleWcAdd_${titleInfo?.title_id}`]"
-                    @click.prevent="adjustWatchCount.title.add(titleInfo, waiting)"
-                >
-                    <template v-if="titleInfo?.user_details?.watch_count >= 2">
-                        {{ titleInfo?.user_details?.watch_count }}
-                    </template>
-                    <Check v-else size="sm"/>
-                </LoadingButton>
-
-                <LoadingButton
-                    class="inner-action"
-                    :loading="waiting[`titleWcSub_${titleInfo?.title_id}`]"
-                    @click.prevent="adjustWatchCount.title.subtract(titleInfo, waiting)"
-                >
-                    <Minus size="sm"/>
-                </LoadingButton>
-            </div>
-    
-            <LoadingButton
-                :class="{
-                    'active': titleInfo?.user_details?.is_favourite,
-                    'btn-favourite': titleInfo?.user_details?.is_favourite
-                }"
-                class="indicator-circle favourite"
-                :loading="waiting?.toggleFavourite"
-                @click.prevent="toggleFavourite(titleInfo, waiting)" 
-            >
-                <Heart size="sm" pack="filled"/>
-            </LoadingButton>
-    
-            <LoadingButton
-                :class="{
-                    'active': titleInfo?.user_details?.in_watchlist,
-                    'btn-accent': titleInfo?.user_details?.in_watchlist
-                }"
-                class="indicator-circle watchlist"
-                :loading="waiting?.toggleWatchlist"
-                @click.prevent="toggleWatchlist(titleInfo, waiting)" 
-            >
-                <Clock size="sm" pack="filled"/>
-            </LoadingButton>
-        </div>
     </component>
 </template>
-
 
 <style scoped>
 .title-card {
@@ -203,39 +197,89 @@ const { titleInfo, storeImageFlag } = defineProps({
     text-decoration: none;
     position: relative;
     margin-right: var(--spacing-md);
-
     animation: fadeIn 0.5s var(--transition-ease-out) forwards;
     opacity: 0;
-}
-.title-card:last-of-type,
-.title-card.grid-mode {
-    margin-right: 0;
-}
 
-@keyframes fadeIn {
-    to {
-        opacity: 1;
+    &:last-of-type,
+    &.grid-mode {
+        margin-right: 0;
     }
 }
 
-img {
-    border-radius: var(--border-radius-md);
+@keyframes fadeIn {
+    to { opacity: 1; }
+}
+
+/* ----- Poster Wrapper ----- */
+.poster-wrapper {
+    position: relative;
     aspect-ratio: 2/3;
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+}
+
+.poster-wrapper img {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
+    transition: filter 0.2s var(--transition-ease-out);
 }
 
-.button-row {
-    margin-top: var(--spacing-sm);
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: var(--spacing-sm);
+/* Grayscale only applies if NOT in library AND NOT in search mode (e.g. Collections) */
+.title-card:not(.in-library) img {
+    filter: brightness(0.5) grayscale(1);
 }
-.button-row a {
+
+/* ----- Unified Action Overlay ----- */
+.action-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    transition: opacity 0.2s var(--transition-ease-out);
+}
+
+/* Persistently show the overlay icon slightly faded for missing collection items so they know they can click */
+.title-card:not(.in-library) .action-overlay {
+    opacity: 0.7;
+}
+
+.title-card:hover .action-overlay {
+    opacity: 1;
+}
+
+.overlay-btn {
+    border-radius: 100px;
+    width: 42px;
+    aspect-ratio: 1;
     padding: var(--spacing-sm);
-    width: 32px;
-    box-sizing: border-box;
+    transform: scale(0.8);
+    transition: transform 0.2s var(--transition-ease-out);
 }
 
+.title-card:hover .overlay-btn {
+    transform: scale(1);
+}
+
+/* ----- TMDB External Link ----- */
+.tmdb-external-link {
+    position: absolute;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+    opacity: 0;
+    transition: opacity 0.2s var(--transition-ease-out),
+                background-color 0.1s var(--transition-ease-out);
+    z-index: 60;
+}
+
+.title-card:hover .tmdb-external-link {
+    opacity: 1;
+}
+
+/* ----- Details ----- */
 .details {
     display: flex;
     flex-direction: column;
@@ -258,15 +302,14 @@ h5 {
     font-size: var(--fs-neg-1);
 }
 
-
 /* ----- Indicator circles ----- */
-
 .indicator-wrapper {
     position: absolute;
     padding: var(--spacing-sm);
     top: 0;
     left: 0;
     --spacing-amount: 8px;
+    z-index: 50;
 }
 
 .indicator-circle {
@@ -330,7 +373,6 @@ h5 {
         left: calc(var(--spacing-amount) * 2 + var(--spacing-sm)) !important;
     }
 }
-
 
 .title-card:hover .indicator-wrapper {
     --spacing-amount: calc(var(--spacing-lg) + var(--spacing-xs));
