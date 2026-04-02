@@ -5,6 +5,7 @@ from app.routers.auth import get_current_user
 from app.services.titles.search_internal import run_title_search
 from app.services.languages import get_user_language_context
 from app.services.genres import update_genres
+from app.services.tmdb_collections import fetch_tmdb_collection_cards
 from app.schemas import (
     CollectionsOverViewOut,
     TitleQueryIn,
@@ -247,10 +248,10 @@ async def get_home_overview(
         }
     ]
 
-    results = {
+    # Title searches
+    title_searches = {
         "favourites": None,
         "watchlist": None,
-        "collections": []
     }
 
     for option in options:
@@ -264,12 +265,22 @@ async def get_home_overview(
         )
         
         if len(title_list.titles) > 0:
-            results[option["key"]] = title_list
+            title_searches[option["key"]] = title_list
+
+    # Collection searches
+    tmdb_collections = await fetch_tmdb_collection_cards(
+        db=db,
+        user_id=user.user_id,
+        locale_ctx=locale_ctx
+    )
+
+    collections = None
 
     return CollectionsOverViewOut(
-        favourites=results["favourites"],
-        watchlist=results["watchlist"],
-        collections=results["collections"]
+        favourites=title_searches["favourites"],
+        watchlist=title_searches["watchlist"],
+        tmdb_collections=tmdb_collections,
+        collections=collections
     )
 
 

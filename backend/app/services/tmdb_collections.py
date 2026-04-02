@@ -231,12 +231,14 @@ def _build_tmdb_collection_out(
 async def fetch_tmdb_collection_cards(
     db: AsyncSession,
     user_id: int,
+    locale_ctx: LanguageContext,
     tmdb_collection_ids: Optional[List[int]] = None
 ) -> List[TMDBCollectionCardOut]:
     """
     Fetches all collection cards for a user, or a specific subset if IDs are provided.
     """
-    locale_ctx = await get_user_language_context(db=db, user_id=user_id)
+    if not locale_ctx:
+        locale_ctx = await get_user_language_context(db=db, user_id=user_id)
 
     stmt = (
         select(TMDBCollection)

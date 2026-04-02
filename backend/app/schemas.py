@@ -265,15 +265,6 @@ class TitleListOut(BaseModel):
     total_items: int
     total_pages: int
 
-class HomeOverviewOut(BaseModel):
-    hero_cards: Optional[TitleListOut] = None  
-    normal_cards: List[TitleListOut]
-
-class CollectionsOverViewOut(BaseModel):
-    watchlist: Optional[TitleListOut] = None
-    favourites: Optional[TitleListOut] = None
-    collections: Optional[List[None]] = None
-
 
 #### Title out stack ####
 
@@ -424,6 +415,19 @@ class TMDBCollectionCardOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+####### Pages and views #######
+
+class HomeOverviewOut(BaseModel):
+    hero_cards: Optional[TitleListOut] = None  
+    normal_cards: List[TitleListOut]
+
+class CollectionsOverViewOut(BaseModel):
+    watchlist: Optional[List[TitleCardOut]] = None
+    favourites: Optional[List[TitleCardOut]] = None
+    tmdb_collections: Optional[List[TMDBCollectionCardOut]] = None
+    collections: Optional[List[None]] = None
 
 
 ####### Configs #######
