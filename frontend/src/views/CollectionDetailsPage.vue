@@ -15,26 +15,19 @@ async function fetchCollectionDetails() {
 }
 
 const firstYear = computed(() => {
-    const releaseDate = collectionDetails.value?.titles?.[0]?.release_date;
-    return releaseDate ? timeFormatters.timestampToYear(releaseDate) : null;
+    return timeFormatters.timestampToYear(
+        collectionDetails.value?.first_release_date
+    );
 });
 
 const lastYear = computed(() => {
-    const titles = collectionDetails.value?.titles;
-    const releaseDate = titles?.[titles?.length - 1]?.release_date;
-    return releaseDate ? timeFormatters.timestampToYear(releaseDate) : null;
+    return timeFormatters.timestampToYear(
+        collectionDetails.value?.last_release_date
+    );
 });
 
-const combinedRunTime = computed(() => {
-    const titles = collectionDetails.value?.titles;
-    if (!titles) return 0;
-    let count = 0;
-    
-    for (const title of titles) {
-        count += title?.movie_runtime;
-    }
-    
-    return timeFormatters.minutesToHrAndMin(count);
+const formattedRunTime = computed(() => {
+    return timeFormatters.minutesToHrAndMin(collectionDetails.value?.total_runtime);
 });
 
 const combinedGenres = computed(() => {
@@ -89,9 +82,9 @@ onMounted(async () => {
                         </template>
                     </div>
                     <span class="sep">|</span>
-                    <div class="stat">{{ combinedRunTime }}</div>
+                    <div class="stat">{{ formattedRunTime }}</div>
                     <span class="sep">|</span>
-                    <div class="stat">{{ collectionDetails?.titles?.length }} Movies</div>
+                    <div class="stat">{{ collectionDetails?.title_count }} Titles</div>
                 </div>
                 <div class="genres">
                     <router-link
