@@ -112,7 +112,6 @@ onMounted(async () => {
                 :grid-mode="true"
             />
         </div>
-
     </div>
 </template>
 
@@ -127,9 +126,8 @@ img.backdrop {
     top: 0;
     left: 0;
     width: 100vw;
-    height: 66vh;
+    height: calc(582px * 1.5);
     object-fit: cover;
-    /* opacity: 0.25; */
     z-index: 0;
     mask-image: linear-gradient(
         to top,
@@ -193,6 +191,31 @@ img.backdrop {
 
     .title-card {
         width: unset;
+    }
+}
+
+@media(min-width: calc(1600px + 10vw)) {
+    img.backdrop {
+        --cont-width: 1600px;
+        --overlap: 15%;
+
+        height: 100vh;
+        max-height: 2000px;
+        mask-image: 
+            linear-gradient(
+                to right,
+                rgba(0, 0, 0, 1) 0%,
+                rgba(0, 0, 0, 0.25) calc((100% - var(--cont-width) + var(--overlap)) / 2),
+                rgba(0, 0, 0, 0.25) calc((100% - var(--cont-width) - var(--overlap)) / 2 + var(--cont-width)),
+                rgba(0, 0, 0, 1) 100%
+            ),
+            linear-gradient(
+                to top,
+                rgba(0, 0, 0, 0) 0%,
+                rgba(0, 0, 0, 1) 50%
+            );
+        mask-composite: intersect;
+        -webkit-mask-composite: source-in; /* For Safari/Chrome support */
     }
 }
 </style>
