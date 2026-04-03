@@ -21,6 +21,7 @@ defineProps({
             alt="Collection backdrop"
             class="backdrop"
         />
+
         <img
             :src="getTitleImageUrl(tmdbCollection, 400, 'poster')"
             alt="Collection poster"
@@ -40,11 +41,11 @@ defineProps({
                     </template>
                 </div>
                 &bull;
+                <div>{{ tmdbCollection?.title_count }} Titles</div>
+                &bull;
                 <div>{{ timeFormatters.minutesToHrAndMin(tmdbCollection?.total_runtime) }}</div>
                 &bull;
                 <div><Tmdb/> {{ tmdbCollection?.tmdb_vote_average }}</div>
-                &bull;
-                <div>{{ tmdbCollection?.title_count }} Titles</div>
             </div>
             <p>{{ tmdbCollection?.overview }}</p>
         </div>
@@ -56,9 +57,11 @@ defineProps({
     display: flex;
     position: relative;
     min-width: var(--collection-card-width);
-    /* padding: var(--spacing-sm-md); */
+    padding: var(--spacing-sm-md);
     gap: var(--spacing-md);
     box-sizing: border-box;
+    height: 277.5px;
+    align-items: end;
 
     overflow: hidden;
     border-radius: var(--border-radius-md-lg);
@@ -67,12 +70,11 @@ defineProps({
 img.backdrop {
     position: absolute;
     top: 0;
-    left: 150px;
+    left: 0;
     width: 100%;
     height: 100%;
     z-index: 0;
     object-fit: cover;
-    /* filter: brightness(0.33); */
     mask-image: linear-gradient(
         to top,
         rgba(0, 0, 0, 0.05) 25%,
@@ -81,9 +83,9 @@ img.backdrop {
 }
 
 img.poster {
-    width: 150px;
+    height: 150px;
     aspect-ratio: 2 / 3;
-    /* border-radius: var(--border-radius-md); */
+    border-radius: var(--border-radius-md);
     z-index: 1;
     object-fit: cover;
 }
@@ -92,9 +94,6 @@ img.poster {
     z-index: 1;
     display: flex;
     flex-direction: column;
-    justify-content: end;
-    margin-bottom: var(--spacing-md);
-    margin-right: var(--spacing-md);
     gap: var(--spacing-sm);
 
     h4 {
