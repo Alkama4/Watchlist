@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from fastapi import HTTPException
 from datetime import datetime, timezone
@@ -234,9 +234,6 @@ async def fetch_tmdb_collection_cards(
     locale_ctx: LanguageContext,
     tmdb_collection_ids: Optional[List[int]] = None
 ) -> List[TMDBCollectionCardOut]:
-    """
-    Fetches all collection cards for a user, or a specific subset if IDs are provided.
-    """
     if not locale_ctx:
         locale_ctx = await get_user_language_context(db=db, user_id=user_id)
 
@@ -255,24 +252,34 @@ async def fetch_tmdb_collection_cards(
     if tmdb_collection_ids:
         stmt = stmt.where(TMDBCollection.tmdb_collection_id.in_(tmdb_collection_ids))
 
-    count_stmt = (
-        select(Title.tmdb_collection_id, func.count(Title.title_id).label("total"))
+    # Expanded aggregate query for all missing fields
+    stats_stmt = (
+        select(
+            Title.tmdb_collection_id,
+            func.count(Title.title_id).label("total"),
+            func.min(Title.release_date).label("first_release"),
+            func.max(Title.release_date).label("last_release"),
+            func.sum(Title.movie_runtime).label("runtime"),
+            func.avg(Title.tmdb_vote_average).filter(Title.tmdb_vote_average > 0).label("vote_avg")
+        )
         .group_by(Title.tmdb_collection_id)
     )
+    
     if tmdb_collection_ids:
-        count_stmt = count_stmt.where(Title.tmdb_collection_id.in_(tmdb_collection_ids))
+        stats_stmt = stats_stmt.where(Title.tmdb_collection_id.in_(tmdb_collection_ids))
 
     result = await db.execute(stmt)
     collections = result.scalars().all()
     
-    counts_result = await db.execute(count_stmt)
-    counts_map = {row.tmdb_collection_id: row.total for row in counts_result}
+    stats_result = await db.execute(stats_stmt)
+    # Map the collection ID to the full stats row
+    stats_map = {row.tmdb_collection_id: row for row in stats_result}
 
     return [
         _build_tmdb_collection_card_out(
             col, 
             locale_ctx, 
-            counts_map.get(col.tmdb_collection_id, 0)
+            stats_map.get(col.tmdb_collection_id)
         )
         for col in collections
     ]
@@ -281,16 +288,21 @@ async def fetch_tmdb_collection_cards(
 def _build_tmdb_collection_card_out(
     collection: TMDBCollection,
     locale_ctx: LanguageContext,
-    title_count: int
+    stats: Optional[Any] = None  # Receives the result row from stats_stmt
 ) -> TMDBCollectionCardOut:
-    # Extract basic fields
+    # Fields to exclude from direct attribute copying (handled manually or via translation)
+    excluded_fields = {
+        "user_details", "title_count", "first_release_date", 
+        "last_release_date", "total_runtime", "tmdb_vote_average"
+    }
+
     col_dict = {
         field: getattr(collection, field)
         for field in TMDBCollectionCardOut.model_fields
-        if field not in {"user_details", "title_count"} and hasattr(collection, field)
+        if field not in excluded_fields and hasattr(collection, field)
     }
 
-    # Fill translations (name, overview, etc)
+    # Fill translations (name, overview, default_poster_image_path, etc.)
     fill_translated_fields_dynamically(
         col_dict,
         collection.translations,
@@ -310,6 +322,15 @@ def _build_tmdb_collection_card_out(
         else TMDBCollectionCardUserDetailsOut()
     )
 
-    col_dict["title_count"] = title_count
+    # Map Aggregate Statistics
+    if stats:
+        col_dict["title_count"] = stats.total
+        col_dict["first_release_date"] = stats.first_release
+        col_dict["last_release_date"] = stats.last_release
+        col_dict["total_runtime"] = stats.runtime
+        # Round the average to 1 decimal place if it exists
+        col_dict["tmdb_vote_average"] = round(float(stats.vote_avg), 1) if stats.vote_avg else None
+    else:
+        col_dict["title_count"] = 0
 
     return TMDBCollectionCardOut(**col_dict)

@@ -1,6 +1,7 @@
 <script setup>
 import { getTitleImageUrl } from '@/utils/imagePath';
 import Tmdb from '@/assets/icons/tmdb.svg';
+import { timeFormatters } from '@/utils/formatters';
 
 defineProps({
     tmdbCollection: {
@@ -29,12 +30,19 @@ defineProps({
         <div class="details">
             <h4>{{ tmdbCollection?.name }}</h4>
             <div class="stats">
-                <!-- Most values placeholders for now -->
-                <div>2019 - 2020</div>
+                <div>
+                    {{ timeFormatters.timestampToYear(tmdbCollection?.first_release_date) }}
+                    <template v-if="
+                        timeFormatters.timestampToYear(tmdbCollection?.first_release_date)
+                        != timeFormatters.timestampToYear(tmdbCollection?.last_release_date)
+                    ">
+                        - {{ timeFormatters.timestampToYear(tmdbCollection?.last_release_date) }}
+                    </template>
+                </div>
                 &bull;
-                <div>3h 42min</div>
+                <div>{{ timeFormatters.minutesToHrAndMin(tmdbCollection?.total_runtime) }}</div>
                 &bull;
-                <div><Tmdb/> 7.8</div>
+                <div><Tmdb/> {{ tmdbCollection?.tmdb_vote_average }}</div>
                 &bull;
                 <div>{{ tmdbCollection?.title_count }} Titles</div>
             </div>
