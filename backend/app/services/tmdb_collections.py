@@ -141,15 +141,24 @@ async def fetch_tmdb_collection_with_user_details(
         select(TMDBCollection)
         .where(TMDBCollection.tmdb_collection_id == tmdb_collection_id)
         .options(
-            # Load Collection Translation
             selectinload(TMDBCollection.translations.and_(
                 TMDBCollectionTranslation.iso_639_1.in_(locale_ctx.iso_639_1_list)
             )),
-            # Load Collection User Details
             selectinload(TMDBCollection.user_details.and_(
                 TMDBCollectionUserDetails.user_id == user_id
             ))
         )
+    )
+
+    stats_stmt = (
+        select(
+            func.count(Title.title_id).label("total"),
+            func.min(Title.release_date).label("first_release"),
+            func.max(Title.release_date).label("last_release"),
+            func.sum(Title.movie_runtime).label("runtime"),
+            func.avg(Title.tmdb_vote_average).filter(Title.tmdb_vote_average > 0).label("vote_avg")
+        )
+        .where(Title.tmdb_collection_id == tmdb_collection_id)
     )
 
     result = await db.execute(stmt)
@@ -157,6 +166,9 @@ async def fetch_tmdb_collection_with_user_details(
     
     if not collection:
         raise HTTPException(status_code=404, detail="Collection not found")
+
+    stats_result = await db.execute(stats_stmt)
+    stats = stats_result.first()
 
     user_col = collection.user_details[0] if collection.user_details else None
     if not user_col:
@@ -184,22 +196,28 @@ async def fetch_tmdb_collection_with_user_details(
         )
     )
 
-    return _build_tmdb_collection_out(collection, locale_ctx, title_list)
+    return _build_tmdb_collection_out(collection, locale_ctx, title_list, stats)
 
 
 def _build_tmdb_collection_out(
     collection: TMDBCollection,
     locale_ctx: LanguageContext,
-    title_list: TitleListOut
+    title_list: TitleListOut,
+    stats: Optional[Any] = None
 ) -> TMDBCollectionOut:
-    # Filter out relationships that need custom mapping (titles, user_details, etc.)
+    # Explicitly exclude fields that aren't on the DB model or need custom mapping
+    excluded_fields = {
+        "titles", "user_details", "title_count", "first_release_date", 
+        "last_release_date", "total_runtime", "tmdb_vote_average", "display_locale"
+    }
+
     col_dict = {
         field: getattr(collection, field)
         for field in TMDBCollectionOut.model_fields
-        if field not in {"titles", "user_details"} and hasattr(collection, field)
+        if field not in excluded_fields and hasattr(collection, field)
     }
     
-    # Fill translated fields (name, overview, default_poster_image_path, etc.)
+    # Fill translated fields
     fill_translated_fields_dynamically(
         col_dict, 
         collection.translations, 
@@ -207,7 +225,6 @@ def _build_tmdb_collection_out(
         TMDBCollectionTranslation
     )
     
-    # Absolute fallback for the collection name
     if not col_dict.get("name"):
         col_dict["name"] = collection.name_original
 
@@ -219,8 +236,17 @@ def _build_tmdb_collection_out(
         else TMDBCollectionUserDetailsOut()
     )
     
-    col_dict["titles"] = title_list.titles
+    # Map Aggregate Statistics
+    if stats and stats.total > 0:
+        col_dict["title_count"] = stats.total
+        col_dict["first_release_date"] = stats.first_release
+        col_dict["last_release_date"] = stats.last_release
+        col_dict["total_runtime"] = stats.runtime
+        col_dict["tmdb_vote_average"] = round(float(stats.vote_avg), 1) if stats.vote_avg else None
+    else:
+        col_dict["title_count"] = 0
 
+    col_dict["titles"] = title_list.titles
     col_dict["display_locale"] = locale_ctx.preferred_locale
 
     return TMDBCollectionOut(**col_dict)

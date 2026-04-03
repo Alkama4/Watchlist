@@ -388,6 +388,13 @@ class TMDBCollectionOut(BaseModel):
     name_original: Optional[str] = None
     overview: Optional[str] = None
     original_language: Optional[str] = None
+    
+    title_count: Optional[int] = None
+    first_release_date: Optional[date] = None
+    last_release_date: Optional[date] = None
+    total_runtime: Optional[int] = None
+    tmdb_vote_average: Optional[float] = None
+
     default_poster_image_path: Optional[str] = None
     default_backdrop_image_path: Optional[str] = None
     display_locale: Optional[LocaleString] = None
@@ -408,14 +415,15 @@ class TMDBCollectionCardOut(BaseModel):
     tmdb_collection_id: int
     name: Optional[str] = None
     overview: Optional[str] = None
-    default_poster_image_path: Optional[str] = None
-    default_backdrop_image_path: Optional[str] = None
-
+    
     title_count: Optional[int] = None
     first_release_date: Optional[date] = None
     last_release_date: Optional[date] = None
     total_runtime: Optional[int] = None
     tmdb_vote_average: Optional[float] = None
+    
+    default_poster_image_path: Optional[str] = None
+    default_backdrop_image_path: Optional[str] = None
 
     user_details: Optional[TMDBCollectionCardUserDetailsOut] = None
 
