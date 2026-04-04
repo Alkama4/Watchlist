@@ -19,6 +19,7 @@ import Tooltip from '@/components/Tooltip.vue';
 import WatchCountButtons from '@/components/WatchCountButtons.vue';
 import VideoAssetListing from '@/components/VideoAssetListing.vue';
 import ExternalResources from '@/components/ExternalResources.vue';
+import CollectionCard from '@/components/CollectionCard.vue';
 
 const props = defineProps({
     titleDetails: {
@@ -366,6 +367,11 @@ const lastAirDate = computed(() => {
                     />
                 </div>
             </div>
+        </div>
+
+        <div v-if="titleDetails?.tmdb_collection_card" class="layout-contained">
+            <h3>Included in Collection</h3>
+            <CollectionCard :tmdbCollection="titleDetails?.tmdb_collection_card"/>
         </div>
 
         <TitleCardCarousel 
