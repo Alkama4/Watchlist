@@ -159,7 +159,7 @@ const lastAirDate = computed(() => {
 
 <template>
     <div class="title-details-page">
-        <div class="layout-contained layout-spacing-top">
+        <div class="main-area layout-contained layout-spacing-top">
             <img 
                 :src="getTitleImageUrl(titleDetails, 'original', 'backdrop')"
                 :key="getTitleImageUrl(titleDetails, 'original', 'backdrop')"
@@ -811,7 +811,9 @@ img.poster {
         filter: blur(128px);
         z-index: 1;
     }
-    .title-carousel {
+
+    .title-details-page > *:not(.main-area) {
+        /* Raise everything else above the main-info::after blur */
         z-index: 2;
     }
 }
