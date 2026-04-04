@@ -118,7 +118,7 @@ img.poster {
         display: flex;
         gap: var(--spacing-xs) var(--spacing-sm);
         flex-wrap: wrap;
-        align-items: center; /* Ensures bullets and text align */
+        align-items: center;
         font-weight: 600;
 
         .stats-group {
@@ -144,15 +144,12 @@ img.poster {
 
 @media(max-width: 768px) {
     .stats {
-        /* This hides the bullets directly inside .stats (the ones flanking the group) */
         & > .separator {
             display: none;
         }
 
         .stats-group {
-            /* Forces the group to take its own line */
             flex-basis: 100%;
-            /* Optional: adjust order if you want it specifically below everything */
             order: 2; 
         }
     }

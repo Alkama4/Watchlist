@@ -29,7 +29,7 @@ defineProps({
         />
 
         <div class="details">
-            <h4>{{ tmdbCollection?.name }}</h4>
+            <h3>{{ tmdbCollection?.name }}</h3>
             <div class="stats">
                 <div>
                     {{ timeFormatters.timestampToYear(tmdbCollection?.first_release_date) }}
@@ -83,7 +83,7 @@ img.backdrop {
 }
 
 img.poster {
-    height: 150px;
+    height: 75%;
     aspect-ratio: 2 / 3;
     border-radius: var(--border-radius-md);
     z-index: 1;
@@ -96,7 +96,7 @@ img.poster {
     flex-direction: column;
     gap: var(--spacing-sm);
 
-    h4 {
+    h3 {
         margin: 0;
     }
 
@@ -108,7 +108,10 @@ img.poster {
 
     .stats {
         display: flex;
-        gap: var(--spacing-sm);
+        gap: var(--spacing-xs) var(--spacing-sm);
+        flex-wrap: wrap;
+        align-items: center;
+        font-weight: 600;
 
         div {
             flex-wrap: nowrap;
@@ -118,6 +121,7 @@ img.poster {
 
     p {
         margin: 0;
+        margin-bottom: var(--spacing-xs);
         display: -webkit-box;
         -webkit-line-clamp: 3;
         line-clamp: 3;
