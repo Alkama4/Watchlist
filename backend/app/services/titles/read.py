@@ -5,6 +5,7 @@ from sqlalchemy.orm import selectinload
 from datetime import datetime, timezone
 from app.services.languages import LanguageContext, check_translation_availability, fill_translated_fields_dynamically, get_user_language_context
 from app.services.titles.store import coordinate_title_fetching
+from app.services.tmdb_collections import fetch_tmdb_collection_cards
 from app.schemas import (
     EpisodeOut,
     GenreElement,
@@ -12,6 +13,7 @@ from app.schemas import (
     SeasonOut,
     EpisodeUserDetailsOut,
     SeasonUserDetailsOut,
+    TMDBCollectionCardOut,
     TitleUserDetailsOut,
     TitleOut,
     VideoAssetOut
@@ -23,6 +25,7 @@ from app.models import (
     TitleTranslation,
     SeasonTranslation,
     EpisodeTranslation,
+    TitleType,
     TitleUserDetails,
     SeasonUserDetails,
     EpisodeUserDetails,
@@ -89,7 +92,17 @@ async def fetch_title_with_user_details(db: AsyncSession, title_id: int, user_id
     user_title.last_viewed_at = datetime.now(timezone.utc)
     await db.commit()
 
-    return _build_title_out(title, locale_ctx)
+    tmdb_collection_card = None
+    if title.title_type == TitleType.movie:
+        cards = await fetch_tmdb_collection_cards(
+            db=db,
+            user_id=user_id,
+            locale_ctx=locale_ctx,
+            tmdb_collection_ids=[title.tmdb_collection_id]
+        )
+        tmdb_collection_card = cards[0] if cards else None
+
+    return _build_title_out(title, locale_ctx, tmdb_collection_card)
 
 
 async def _ensure_primary_translation(db: AsyncSession, title_id: int, user_id: int, primary_iso: str):
@@ -115,7 +128,7 @@ async def _ensure_primary_translation(db: AsyncSession, title_id: int, user_id: 
             )
 
 
-def _build_title_out(title: Title, locale_ctx: LanguageContext) -> TitleOut:
+def _build_title_out(title: Title, locale_ctx: LanguageContext, tmdb_collection_card: TMDBCollectionCardOut) -> TitleOut:
     # Base Fields
     title_dict = {
         field: getattr(title, field)
@@ -150,12 +163,12 @@ def _build_title_out(title: Title, locale_ctx: LanguageContext) -> TitleOut:
         VideoAssetOut.model_validate(va, from_attributes=True) for va in title.video_assets
     ] if title.video_assets else None
 
+    # Other simple fields
     title_dict["display_locale"] = locale_ctx.preferred_locale
-
-    # Sort the seasons
-    title.seasons.sort(key=lambda s: s.season_number)
+    title_dict["tmdb_collection_card"] = tmdb_collection_card
 
     # Map Seasons
+    title.seasons.sort(key=lambda s: s.season_number)
     seasons_out = []
     for s in title.seasons:
         s_dict = {

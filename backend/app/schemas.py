@@ -266,6 +266,77 @@ class TitleListOut(BaseModel):
     total_pages: int
 
 
+####### Collections #######
+
+class TMDBCollectionUserDetailsOut(BaseModel):
+    chosen_poster_image_path: Optional[str] = None
+    chosen_backdrop_image_path: Optional[str] = None
+    chosen_locale: Optional[str] = None
+    last_viewed_at: Optional[datetime] = None
+
+
+class TMDBCollectionOut(BaseModel):
+    tmdb_collection_id: int
+    name: Optional[str] = None
+    name_original: Optional[str] = None
+    overview: Optional[str] = None
+    original_language: Optional[str] = None
+    
+    title_count: Optional[int] = None
+    first_release_date: Optional[date] = None
+    last_release_date: Optional[date] = None
+    total_runtime: Optional[int] = None
+    tmdb_vote_average: Optional[float] = None
+
+    default_poster_image_path: Optional[str] = None
+    default_backdrop_image_path: Optional[str] = None
+    display_locale: Optional[LocaleString] = None
+
+    titles: Optional[List[TitleHeroOut]] = None
+    user_details: Optional[TMDBCollectionUserDetailsOut] = None
+
+    class Config:
+        from_attributes = True
+
+
+class TMDBCollectionCardUserDetailsOut(BaseModel):
+    chosen_poster_image_path: Optional[str] = None
+    chosen_backdrop_image_path: Optional[str] = None
+
+
+class TMDBCollectionCardOut(BaseModel):
+    tmdb_collection_id: int
+    name: Optional[str] = None
+    overview: Optional[str] = None
+    
+    title_count: Optional[int] = None
+    first_release_date: Optional[date] = None
+    last_release_date: Optional[date] = None
+    total_runtime: Optional[int] = None
+    tmdb_vote_average: Optional[float] = None
+    
+    default_poster_image_path: Optional[str] = None
+    default_backdrop_image_path: Optional[str] = None
+
+    user_details: Optional[TMDBCollectionCardUserDetailsOut] = None
+
+    class Config:
+        from_attributes = True
+
+
+####### Pages and views #######
+
+class HomeOverviewOut(BaseModel):
+    hero_cards: Optional[TitleListOut] = None  
+    normal_cards: List[TitleListOut]
+
+class CollectionsOverViewOut(BaseModel):
+    watchlist: Optional[List[TitleCardOut]] = None
+    favourites: Optional[List[TitleCardOut]] = None
+    tmdb_collections: Optional[List[TMDBCollectionCardOut]] = None
+    collections: Optional[List[None]] = None
+
+
 #### Title out stack ####
 
 class EpisodeUserDetailsOut(BaseModel):
@@ -366,82 +437,12 @@ class TitleOut(BaseModel):
     display_locale: Optional[LocaleString] = None
 
     seasons: List[SeasonOut] = Field(default_factory=list)
+    tmdb_collection_card: Optional[TMDBCollectionCardOut] = None
     user_details: Optional[TitleUserDetailsOut] = None
     video_assets: Optional[List[VideoAssetOut]] = None
 
     class Config:
         from_attributes = True
-
-
-####### Collections #######
-
-class TMDBCollectionUserDetailsOut(BaseModel):
-    chosen_poster_image_path: Optional[str] = None
-    chosen_backdrop_image_path: Optional[str] = None
-    chosen_locale: Optional[str] = None
-    last_viewed_at: Optional[datetime] = None
-
-
-class TMDBCollectionOut(BaseModel):
-    tmdb_collection_id: int
-    name: Optional[str] = None
-    name_original: Optional[str] = None
-    overview: Optional[str] = None
-    original_language: Optional[str] = None
-    
-    title_count: Optional[int] = None
-    first_release_date: Optional[date] = None
-    last_release_date: Optional[date] = None
-    total_runtime: Optional[int] = None
-    tmdb_vote_average: Optional[float] = None
-
-    default_poster_image_path: Optional[str] = None
-    default_backdrop_image_path: Optional[str] = None
-    display_locale: Optional[LocaleString] = None
-
-    titles: Optional[List[TitleHeroOut]] = None
-    user_details: Optional[TMDBCollectionUserDetailsOut] = None
-
-    class Config:
-        from_attributes = True
-
-
-class TMDBCollectionCardUserDetailsOut(BaseModel):
-    chosen_poster_image_path: Optional[str] = None
-    chosen_backdrop_image_path: Optional[str] = None
-
-
-class TMDBCollectionCardOut(BaseModel):
-    tmdb_collection_id: int
-    name: Optional[str] = None
-    overview: Optional[str] = None
-    
-    title_count: Optional[int] = None
-    first_release_date: Optional[date] = None
-    last_release_date: Optional[date] = None
-    total_runtime: Optional[int] = None
-    tmdb_vote_average: Optional[float] = None
-    
-    default_poster_image_path: Optional[str] = None
-    default_backdrop_image_path: Optional[str] = None
-
-    user_details: Optional[TMDBCollectionCardUserDetailsOut] = None
-
-    class Config:
-        from_attributes = True
-
-
-####### Pages and views #######
-
-class HomeOverviewOut(BaseModel):
-    hero_cards: Optional[TitleListOut] = None  
-    normal_cards: List[TitleListOut]
-
-class CollectionsOverViewOut(BaseModel):
-    watchlist: Optional[List[TitleCardOut]] = None
-    favourites: Optional[List[TitleCardOut]] = None
-    tmdb_collections: Optional[List[TMDBCollectionCardOut]] = None
-    collections: Optional[List[None]] = None
 
 
 ####### Configs #######
