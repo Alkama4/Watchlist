@@ -370,7 +370,7 @@ const lastAirDate = computed(() => {
         </div>
 
         <div v-if="titleDetails?.tmdb_collection_card" class="layout-contained">
-            <h3>Included in Collection</h3>
+            <h3>Part of Collection</h3>
             <CollectionBannerCard :tmdbCollection="titleDetails?.tmdb_collection_card"/>
         </div>
 

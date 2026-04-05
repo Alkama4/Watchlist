@@ -132,7 +132,7 @@ img.backdrop {
     mask-image: linear-gradient(
         to top,
         rgba(0, 0, 0, 0) 0%,
-        rgba(0, 0, 0, calc(1 - var(--details-backdrop-fade-intensity))) 50%
+        rgba(0, 0, 0, 0.25) 50%
     );
 }
 
@@ -204,10 +204,10 @@ img.backdrop {
         mask-image: 
             linear-gradient(
                 to right,
-                rgba(0, 0, 0, 1) 0%,
+                rgba(0, 0, 0, 0.66) 0%,
                 rgba(0, 0, 0, 0.25) calc((100% - var(--cont-width) + var(--overlap)) / 2),
                 rgba(0, 0, 0, 0.25) calc((100% - var(--cont-width) - var(--overlap)) / 2 + var(--cont-width)),
-                rgba(0, 0, 0, 1) 100%
+                rgba(0, 0, 0, 0.66) 100%
             ),
             linear-gradient(
                 to top,
