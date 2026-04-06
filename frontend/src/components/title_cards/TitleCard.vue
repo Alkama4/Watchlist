@@ -234,12 +234,16 @@ async function removeTitle() {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: filter 0.2s var(--transition-ease-out);
+    transition: filter 0.1s var(--transition-ease-out);
 }
-
-/* Grayscale only applies if NOT in library AND NOT in search mode (e.g. Collections) */
+a.title-card:hover img {
+    filter: brightness(0.75);
+}
 .title-card:not(.in-library) img {
     filter: brightness(0.5) grayscale(1);
+}
+a.title-card:not(.in-library):hover img {
+    filter: brightness(0.4) grayscale(1);
 }
 
 /* ----- Unified Action Overlay ----- */
@@ -249,31 +253,18 @@ async function removeTitle() {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: rgba(0, 0, 0, 0.4);
     opacity: 0;
-    transition: opacity 0.2s var(--transition-ease-out);
+    transition: opacity 0.1s var(--transition-ease-out);
 }
-
-/* Persistently show the overlay icon slightly faded for missing collection items so they know they can click */
-.title-card:not(.in-library) .action-overlay {
-    opacity: 0.7;
-}
-
 .title-card:hover .action-overlay {
     opacity: 1;
 }
 
 .overlay-btn {
     border-radius: 100px;
-    width: 42px;
+    width: 32px;
     aspect-ratio: 1;
     padding: var(--spacing-sm);
-    transform: scale(0.8);
-    transition: transform 0.2s var(--transition-ease-out);
-}
-
-.title-card:hover .overlay-btn {
-    transform: scale(1);
 }
 
 /* ----- TMDB External Link ----- */
