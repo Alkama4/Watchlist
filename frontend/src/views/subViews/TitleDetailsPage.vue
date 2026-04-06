@@ -370,7 +370,7 @@ const lastAirDate = computed(() => {
         </div>
 
         <div v-if="titleDetails?.tmdb_collection_card" class="layout-contained">
-            <h3>Part of Collection</h3>
+            <h3>Part of a Collection</h3>
             <CollectionBannerCard :tmdbCollection="titleDetails?.tmdb_collection_card"/>
         </div>
 
@@ -530,7 +530,6 @@ img.backdrop {
     display: grid;
     grid-template-columns: auto 1fr;
     gap: var(--spacing-md-lg);
-    position: relative;
 
     /* background-color: var(--c-bg-opaque-base);
     backdrop-filter: blur(var(--blur-subtle));
@@ -796,6 +795,10 @@ img.poster {
     img.backdrop {
         height: 100vh;
         max-height: 2000px;
+    }
+
+    .main-info {
+        position: relative;
     }
 
     .main-info::after {
