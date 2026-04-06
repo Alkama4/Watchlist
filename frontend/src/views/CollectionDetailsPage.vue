@@ -116,6 +116,10 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.collection-details-page {
+    --details-height: 700px;
+}
+
 .collection-details-page > * {
     position: relative;
     z-index: 10;
@@ -126,7 +130,7 @@ img.backdrop {
     top: 0;
     left: 0;
     width: 100vw;
-    height: calc(582px * 1.5);
+    height: calc(var(--details-height) * 1.5);
     object-fit: cover;
     z-index: 0;
     mask-image: linear-gradient(
@@ -141,18 +145,20 @@ img.backdrop {
     margin-bottom: var(--spacing-xl);
     display: flex;
     flex-direction: row;
+    align-items: end;
     gap: var(--spacing-md-lg);
+    height: var(--details-height);
 
     img.poster {
         width: 300px;
-        /* margin-inline: var(--spacing-md); */
         border-radius: var(--border-radius-lg);
     }
 
     .collection-info {
         margin-top: var(--spacing-md);
-        /* display: flex;
-        flex-direction: column; */
+        display: flex;
+        flex-direction: column;
+        justify-content: end;
 
         .collection-name {
             margin-bottom: var(--spacing-md);
@@ -195,6 +201,10 @@ img.backdrop {
 }
 
 @media(min-width: calc(1600px + 10vw)) {
+    .collection-details-page {
+        --details-height: fit-content;
+    }
+
     img.backdrop {
         --cont-width: 1600px;
         --overlap: 15%;
@@ -204,10 +214,10 @@ img.backdrop {
         mask-image: 
             linear-gradient(
                 to right,
-                rgba(0, 0, 0, 0.66) 0%,
+                rgba(0, 0, 0, 0.5) 0%,
                 rgba(0, 0, 0, 0.25) calc((100% - var(--cont-width) + var(--overlap)) / 2),
                 rgba(0, 0, 0, 0.25) calc((100% - var(--cont-width) - var(--overlap)) / 2 + var(--cont-width)),
-                rgba(0, 0, 0, 0.66) 100%
+                rgba(0, 0, 0, 0.5) 100%
             ),
             linear-gradient(
                 to top,
