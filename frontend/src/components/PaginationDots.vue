@@ -1,4 +1,6 @@
 <script setup>
+import { computed } from 'vue';
+
 const props = defineProps({
     progress: {
         type: Number,
@@ -12,6 +14,25 @@ const props = defineProps({
 
 const emit = defineEmits(['select']);
 
+const normalizedProgress = computed(() => {
+    if (props.count <= 0) return 0;
+    return ((props.progress % props.count) + props.count) % props.count;
+});
+
+function getIntensity(dotIndex) {
+    if (props.count <= 0) return 0;
+    
+    let diff = Math.abs(dotIndex - normalizedProgress.value);
+    
+    // If the distance is more than half the total dots, 
+    // it's actually closer via the "wrap-around" path.
+    if (diff > props.count / 2) {
+        diff = props.count - diff;
+    }
+
+    return Math.max(0, 1 - diff);
+}
+
 function select(index) {
     emit('select', index);
 }
@@ -20,15 +41,15 @@ function select(index) {
 <template>
     <div class="pagination-dots">
         <button
-            v-for="index in count"
+            v-for="(_, index) in count"
             :key="index"
             class="dot-wrapper"
-            @click="select(index - 1)"
+            @click="select(index)"
             aria-label="Go to slide"
         >
             <div
                 class="dot"
-                :style="{ '--intensity': Math.max(0, 1 - Math.abs((index - 1) - (progress || 0))) }"
+                :style="{ '--intensity': getIntensity(index) }"
             ></div>
         </button>
     </div>

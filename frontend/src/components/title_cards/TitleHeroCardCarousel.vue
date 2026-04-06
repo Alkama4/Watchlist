@@ -40,7 +40,7 @@ onUnmounted(() => {
             :options="{
                 bounce: '33%',
                 renderOnlyVisible: false,
-                circular: false
+                circular: true
             }"
         >
             <TitleHeroCard
@@ -49,6 +49,7 @@ onUnmounted(() => {
                 :title="title"
                 :index="index"
                 :index-progress="indexProgress"
+                :total="heroCards.titles.length" 
             />
         </Flicking>
 

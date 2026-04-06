@@ -21,19 +21,30 @@ const props = defineProps({
     indexProgress: {
         type: Number,
         default: 0
+    },
+    total: {
+        type: Number,
+        required: true
     }
 });
 
 
-const cardProgress = computed(() => props.index - props.indexProgress);
+const cardProgress = computed(() => {
+    let diff = props.index - props.indexProgress;
+    const half = props.total / 2;
+
+    if (diff > half) diff -= props.total;
+    if (diff < -half) diff += props.total;
+
+    return diff;
+});
 const cardVisibility = computed(() => {
-    const distance = Math.abs(props.index - props.indexProgress);
+    const distance = Math.abs(cardProgress.value);
     return Math.max(0, 1 - distance);
 });
 
-
 const backdropStyle = computed(() => ({
-    opacity: cardVisibility.value * 0.7 + 0.3
+    opacity: cardVisibility.value * 0.5 + 0.5
 }));
 
 const logoStyle = computed(() => ({
@@ -191,9 +202,9 @@ const detailsStyle = computed(() => ({
     position: relative;
     container-type: inline-size
 }
-.title-hero-card:last-of-type {
+/* .title-hero-card:last-of-type {
     margin-right: 0;
-}
+} */
 
 .backdrop-wrapper {
     background-color: var(--hero-backdrop-color);
