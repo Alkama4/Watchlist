@@ -264,7 +264,7 @@ img.logo {
             font-weight: 500;
             margin-top: var(--spacing-sm);
             color: var(--c-text-white-soft);
-            font-size: var(--fs-neg-1);
+            font-size: var(--fs-neg-2);
             white-space: nowrap;
         
             span::after {
@@ -310,7 +310,6 @@ img.logo {
                     box-sizing: border-box;
                     aspect-ratio: 1;
                     height: 100%;
-                    font-size: var(--fs-neg-1);
                     font-weight: 500;
                 }
             }

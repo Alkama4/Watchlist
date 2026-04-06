@@ -35,7 +35,7 @@ const visible = ref(false)
     color: var(--c-text);
     padding: var(--spacing-sm) var(--spacing-sm-md);
     border-radius: var(--border-radius-md);
-    font-size: var(--fs-neg-1);
+    font-size: var(--fs-neg-2);
     text-align: left;
     box-shadow: 0 4px 12px hsla(0, 0%, 0%, 0.2);
 }

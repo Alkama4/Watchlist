@@ -118,7 +118,7 @@ async function logIn() {
     
             <button type="submit" class="btn-primary">Login</button>
         </form>
-        <span class="subtle" style="font-size: var(--fs-neg-1);">
+        <span class="subtle" style="font-size: var(--fs-neg-2);">
             Don't have an account?
             <router-link class="subtle" to="/register">
                 Register here.

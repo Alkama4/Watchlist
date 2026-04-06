@@ -102,7 +102,7 @@ async function register() {
     
             <button type="submit" class="btn-primary">Create account</button>
         </form>
-        <span class="subtle" style="font-size: var(--fs-neg-1);">
+        <span class="subtle" style="font-size: var(--fs-neg-2);">
             Already have an account?
             <router-link class="subtle" to="/login">
                 Login.

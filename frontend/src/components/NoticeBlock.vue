@@ -116,14 +116,6 @@ defineProps({
     }
 }
 
-.dismiss {
-    margin-left: auto;
-    background: none;
-    border: none;
-    font-size: 1.2em;
-    cursor: pointer;
-}
-
 h5 {
     display: flex;
     align-items: center;
@@ -138,7 +130,7 @@ h5 div {
     gap: var(--spacing-xs-sm);
 }
 p {
-    font-size: var(--fs-neg-1);
+    font-size: var(--fs-neg-2);
     margin: 0;
 }
 button {

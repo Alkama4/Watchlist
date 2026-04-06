@@ -1,7 +1,7 @@
 button, .btn {
     font-family: 'Inter';
     font-weight: 600;
-    font-size: var(--fs-neg-1);
+    font-size: var(--fs-neg-2);
     display: inline-flex;
     justify-content: center;
     align-items: center;
@@ -58,10 +58,6 @@ button:disabled, .btn:disabled {
 .btn-text:not(:disabled):active {
     background-color: var(--c-neutral);
     color: var(--c-text-strong);
-}
-
-i.btn-text {
-    font-size: var(--fs-2);
 }
 
 

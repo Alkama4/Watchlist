@@ -614,7 +614,7 @@ img.poster {
         gap: var(--spacing-xs);
         
         .votes {
-            font-size: var(--fs-neg-2);
+            font-size: var(--fs-neg-4);
             font-weight: 500;
             color: var(--c-text-subtle);
             margin-bottom: 0px;
@@ -682,7 +682,7 @@ img.poster {
 .details-missing-note {
     text-align: center;
     margin-top: var(--spacing-md-lg);
-    font-size: var(--fs-neg-1);
+    font-size: var(--fs-neg-2);
 }
 
 

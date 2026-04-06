@@ -80,7 +80,7 @@ h4 {
     border: 2px solid var(--c-border);
     border-radius: var(--border-radius-sm);
     font-weight: 600;
-    font-size: var(--fs-neg-1);
+    font-size: var(--fs-neg-3);
     color: var(--c-text-subtle);
     padding: 1px var(--spacing-xs);
     margin-left: var(--spacing-sm);

@@ -217,7 +217,7 @@ const videoAssetUrl = computed(() => {
 }
 
 .badge {
-    font-size: 0.66rem;
+    font-size: var(--fs-neg-4);
     font-weight: 700;
     padding: 2px 6px;
     border-radius: 4px;
@@ -277,7 +277,7 @@ const videoAssetUrl = computed(() => {
     display: flex;
     align-items: center;
     gap: var(--spacing-xs);
-    font-size: var(--fs-neg-1);
+    font-size: var(--fs-neg-2);
     color: var(--c-text-soft);
 }
 

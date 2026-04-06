@@ -161,7 +161,7 @@ img.poster {
         align-items: center;
         
         font-weight: 600;
-        font-size: var(--fs-neg-1);
+        font-size: var(--fs-neg-2);
         width: var(--spacing-md-lg);
         height: var(--spacing-md-lg);
     }
@@ -171,7 +171,7 @@ img.poster {
         flex-wrap: wrap;
         align-items: center;
         gap: var(--spacing-xs);
-        font-size: var(--fs-neg-1);
+        font-size: var(--fs-neg-2);
         color: var(--c-text-soft);
     
         .meta-item {
@@ -183,7 +183,7 @@ img.poster {
     
     .overview {
         margin: 0;
-        font-size: var(--fs-neg-1);
+        font-size: var(--fs-neg-2);
         color: var(--c-text-soft);
         display: -webkit-box;
         -webkit-line-clamp: 2;

@@ -149,16 +149,22 @@
 :root {
     --font-size-base: 1rem;
 
-    --fs-multiplier: 1.2;
+    --fs-ratio: 1.25;
+    --fs-ratio-neg: 1.1;
+ 
+    --fs-neg-4:     calc(var(--fs-neg-3) / var(--fs-ratio-neg));
+    --fs-neg-3:     calc(var(--fs-neg-2) / var(--fs-ratio-neg));
+    --fs-neg-2:     calc(var(--fs-neg-1) / var(--fs-ratio-neg));
+    --fs-neg-1:     calc(var(--fs-0) / var(--fs-ratio-neg));
+    --fs-0:     var(--font-size-base);
+    --fs-1:     calc(var(--fs-0) * var(--fs-ratio));
+    --fs-2:     calc(var(--fs-1) * var(--fs-ratio));
+    --fs-3:     calc(var(--fs-2) * var(--fs-ratio));
+    --fs-4:     calc(var(--fs-3) * var(--fs-ratio));
 
-    --fs-neg-3: calc(var(--fs-neg-2) / var(--fs-multiplier));
-    --fs-neg-2: calc(var(--fs-neg-1) / var(--fs-multiplier));
-    --fs-neg-1: calc(var(--fs-0) / var(--fs-multiplier));
-    --fs-0   : var(--font-size-base);
-    --fs-1   : calc(var(--fs-0) * var(--fs-multiplier));
-    --fs-2   : calc(var(--fs-1) * var(--fs-multiplier));
-    --fs-3   : calc(var(--fs-2) * var(--fs-multiplier));
-    --fs-4   : calc(var(--fs-3) * var(--fs-multiplier));
+    /* @media(max-width: 768px) {
+        --font-size-base: 0.9rem;
+    } */
 }
 
 

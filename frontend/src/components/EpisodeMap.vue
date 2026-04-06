@@ -78,13 +78,6 @@ const maxEpisodeCount = computed(() => {
     gap: var(--spacing-xs);
 }
 
-.season-label {
-    font-size: var(--fs-neg-1);
-    font-weight: bold;
-    min-width: 30px;
-    color: var(--text-muted); /* Assuming you have a muted text var */
-}
-
 .episodes-container {
     display: flex;
     flex-wrap: wrap; 

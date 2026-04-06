@@ -109,7 +109,7 @@ form select,
 }
 form label,
 .settings-list label {
-    font-size: var(--fs-neg-1);
+    font-size: var(--fs-neg-2);
     color: var(--c-text);
 }
 form h1,

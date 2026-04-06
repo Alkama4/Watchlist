@@ -302,7 +302,7 @@ h5 {
     align-items: center;
     gap: var(--spacing-xs);
     color: var(--c-text-soft);
-    font-size: var(--fs-neg-1);
+    font-size: var(--fs-neg-2);
 }
 
 /* ----- Indicator circles ----- */

@@ -304,7 +304,7 @@ hr {
         }
 
         .details {
-            font-size: var(--fs-neg-1);
+            font-size: var(--fs-neg-2);
             display: flex;
             flex-direction: column;
             gap: var(--spacing-xs);
@@ -332,7 +332,7 @@ hr {
             border-top-left-radius: var(--border-radius-sm);
             border-top-right-radius: var(--border-radius-sm);
 
-            font-size: var(--fs-neg-2);
+            font-size: var(--fs-neg-3);
             font-weight: 600;
             color: var(--c-text-soft);
             background-color: var(--c-border);
@@ -360,6 +360,6 @@ hr {
 
 .bottom-text {
     text-align: center;
-    font-size: var(--fs-neg-1);
+    font-size: var(--fs-neg-2);
 }
 </style>

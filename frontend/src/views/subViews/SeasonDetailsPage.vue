@@ -438,7 +438,7 @@ onUnmounted(() => {
 
         p, .meta-row {
             color: var(--c-text-soft);
-            font-size: 0.95rem;
+            font-size: var(--fs-neg-1);
         }
 
         .controls {

@@ -193,7 +193,7 @@ footer a {
             flex-direction: column;
 
             span {
-                font-size: var(--fs-neg-2);
+                font-size: var(--fs-neg-4);
                 font-weight: 500;
                 opacity: 0.5;
             }

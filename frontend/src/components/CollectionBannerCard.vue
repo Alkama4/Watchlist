@@ -110,7 +110,7 @@ img.poster {
 
     .stats,
     p {
-        font-size: 0.9rem;
+        font-size: var(--fs-neg-1);
         color: var(--c-text-soft);
     }
 

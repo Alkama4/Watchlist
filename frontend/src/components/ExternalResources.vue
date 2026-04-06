@@ -97,7 +97,6 @@ const jellyfinLink = computed(() => {
     flex-wrap: wrap;
     
     .btn {
-        font-size: var(--fs-3);
         display: flex;
         align-items: center;
         text-decoration: none;
