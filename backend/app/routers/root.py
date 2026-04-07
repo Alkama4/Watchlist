@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from sqlalchemy import func, case, select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.dependencies import get_db
 from app.routers.auth import get_current_user
@@ -16,6 +17,8 @@ from app.schemas import (
     HomeOverviewOut
 )
 from app.models import (
+    Title,
+    TitleUserDetails,
     User
 )
 
@@ -227,60 +230,42 @@ async def get_home_overview(
 ):
     locale_ctx = await get_user_language_context(db=db, user_id=user.user_id)
 
-    options = [
-        {
-            "key": "favourites",
-            "filters": {
-                "is_favourite": True,
-                "sort_by": "last_viewed_at",
-                "sort_direction": "desc",
-                "page_size": 25
-            }
-        },
-        {
-            "key": "watchlist",
-            "filters": {
-                "in_watchlist": True,
-                "sort_by": "last_viewed_at",
-                "sort_direction": "desc",
-                "page_size": 25
-            }
-        }
-    ]
+    # ------- Search counts -------
+    stats_stmt = (
+        select(
+            func.count(case((TitleUserDetails.is_favourite == True, 1))).label("is_favourite"),
+            func.count(case((TitleUserDetails.in_watchlist == True, 1))).label("in_watchlist"),
+            func.count(Title.jellyfin_id).label("jellyfin_link"),
+            func.count(case((Title.jellyfin_id != None, 1))).label("has_video_assets") 
+        )
+        .join(TitleUserDetails, Title.title_id == TitleUserDetails.title_id)
+        .where(TitleUserDetails.user_id == user.user_id)
+    )
 
-    # Title searches
-    title_searches = {
-        "favourites": None,
-        "watchlist": None,
+    stats_result = await db.execute(stats_stmt)
+    stats_row = stats_result.one()
+
+    smart_collection_sizes = {
+        "is_favourite": stats_row.is_favourite,
+        "in_watchlist": stats_row.in_watchlist,
+        "jellyfin_link": stats_row.jellyfin_link,
+        "has_video_assets": stats_row.has_video_assets
     }
 
-    for option in options:
-        title_list = await run_title_search(
-            db,
-            user.user_id,
-            TitleQueryIn(**option["filters"]),
-            TitleCardOut,
-            TitleCardUserDetailsOut,
-            locale_ctx
-        )
-        
-        if len(title_list.titles) > 0:
-            title_searches[option["key"]] = title_list.titles
+    # ------- User collections -------
+    user_collections = None
 
-    # Collection searches
+    # ------- TMDB collections -------
     tmdb_collections = await fetch_tmdb_collection_cards(
         db=db,
         user_id=user.user_id,
         locale_ctx=locale_ctx
     )
 
-    collections = None
-
     return CollectionsOverViewOut(
-        favourites=title_searches["favourites"],
-        watchlist=title_searches["watchlist"],
+        smart_collection_sizes=smart_collection_sizes,
         tmdb_collections=tmdb_collections,
-        collections=collections
+        user_collections=user_collections
     )
 
 

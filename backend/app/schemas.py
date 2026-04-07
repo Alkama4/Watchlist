@@ -330,11 +330,17 @@ class HomeOverviewOut(BaseModel):
     hero_cards: Optional[TitleListOut] = None  
     normal_cards: List[TitleListOut]
 
+
+class SmartCollectionCounts(BaseModel):
+    is_favourite: Optional[int] = 0
+    in_watchlist: Optional[int] = 0
+    jellyfin_link: Optional[int] = 0
+    has_video_assets: Optional[int] = 0
+
 class CollectionsOverViewOut(BaseModel):
-    watchlist: Optional[List[TitleCardOut]] = None
-    favourites: Optional[List[TitleCardOut]] = None
+    smart_collection_sizes: Optional[SmartCollectionCounts] = None
+    user_collections: Optional[List[None]] = None
     tmdb_collections: Optional[List[TMDBCollectionCardOut]] = None
-    collections: Optional[List[None]] = None
 
 
 #### Title out stack ####
