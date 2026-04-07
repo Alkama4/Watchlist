@@ -25,7 +25,6 @@ onMounted(async () => {
 <template>
     <div class="collections-page layout-spacing-top layout-spacing-bottom">
         <div class="layout-contained">
-            <h1>Collections</h1>
             <h3 class="icon-header"><Clock pack="filled" /> Watchlist</h3>
         </div>
         <TitleCardCarousel :carouselData="{titles: pageData?.watchlist}" />

@@ -135,7 +135,7 @@ onMounted(async () => {
                     <button @click="deleteAccountInit" class="btn-negative">Delete Account</button>
                 </div>
             </div>
-            <h1 style="margin-top: var(--spacing-lg);">Actions</h1>
+            <h3 style="margin-top: var(--spacing-lg);">Actions</h3>
             <div class="actions">
                 <LoadingButton
                     :loading="waitingFor?.jellyfinSync"
@@ -153,8 +153,9 @@ onMounted(async () => {
         </div>
 
         <div class="settings-column settings-list">
-            <h1>Settings</h1>
+            <h2>Settings</h2>
             
+            <h4>General settings</h4>
             <template v-for="setting in settingsStore.schema.filter(s => s.key !== 'theme')" :key="setting.key">
                 <label>{{ setting.label }}</label>
 
@@ -181,7 +182,7 @@ onMounted(async () => {
                 />
             </template>
 
-            <h3>Themes</h3>
+            <h4>Themes</h4>
             <ThemePicker/>
         </div>
 
@@ -261,6 +262,10 @@ onMounted(async () => {
 /* Settings column */
 .settings-column {
     flex: 2 1 400px;
+
+    h4 {
+        margin-top: var(--spacing-md);
+    }
 }
 
 .actions {
