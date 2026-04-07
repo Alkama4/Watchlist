@@ -2,7 +2,7 @@ from typing import Any, List, Optional
 
 from fastapi import HTTPException
 from datetime import datetime, timezone
-from sqlalchemy import select, func
+from sqlalchemy import and_, select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import selectinload
@@ -263,8 +263,17 @@ async def fetch_tmdb_collection_cards(
     if not locale_ctx:
         locale_ctx = await get_user_language_context(db=db, user_id=user_id)
 
+    primary_lang = locale_ctx.iso_639_1_list[0] if locale_ctx.iso_639_1_list else 'en'
+
     stmt = (
         select(TMDBCollection)
+        .outerjoin(
+            TMDBCollectionTranslation,
+            and_(
+                TMDBCollectionTranslation.tmdb_collection_id == TMDBCollection.tmdb_collection_id,
+                TMDBCollectionTranslation.iso_639_1 == primary_lang
+            )
+        )
         .options(
             selectinload(TMDBCollection.translations.and_(
                 TMDBCollectionTranslation.iso_639_1.in_(locale_ctx.iso_639_1_list)
@@ -277,6 +286,10 @@ async def fetch_tmdb_collection_cards(
 
     if tmdb_collection_ids:
         stmt = stmt.where(TMDBCollection.tmdb_collection_id.in_(tmdb_collection_ids))
+
+    stmt = stmt.order_by(
+        func.coalesce(TMDBCollectionTranslation.name, TMDBCollection.name_original).asc()
+    )
 
     # Expanded aggregate query for all missing fields
     stats_stmt = (
