@@ -37,7 +37,8 @@ const jellyfinLink = computed(() => {
 
 <template>
     <div class="external-resources">
-        <h4>External Resources</h4>
+        <h3 class="mobile-only">External Resources</h3>
+        <h4 class="desktop-only">External Resources</h4>
         <div class="links-wrapper">
             <a
                 :href="tmdbBaseUrl"

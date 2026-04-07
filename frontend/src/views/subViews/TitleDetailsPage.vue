@@ -359,12 +359,6 @@ const lastAirDate = computed(() => {
                         :titleDetails="titleDetails"
                         :class="{'layout-spacing-bottom': !similarTitles?.titles?.length > 0}"
                     />
-
-                    <ExternalResources 
-                        :titleDetails="titleDetails"
-                        :jellyfinConfig="jellyfinConfig"
-                        :tmdbBaseUrl="tmdbBaseUrl"
-                    />
                 </div>
             </div>
         </div>
@@ -372,6 +366,15 @@ const lastAirDate = computed(() => {
         <div v-if="titleDetails?.tmdb_collection_card" class="layout-contained">
             <h3>Part of a Collection</h3>
             <CollectionBannerCard :tmdbCollection="titleDetails?.tmdb_collection_card"/>
+
+        </div>
+        
+        <div class="layout-contained mobile-only">
+            <ExternalResources 
+                :titleDetails="titleDetails"
+                :jellyfinConfig="jellyfinConfig"
+                :tmdbBaseUrl="tmdbBaseUrl"
+            />
         </div>
 
         <TitleCardCarousel 
@@ -465,7 +468,6 @@ const lastAirDate = computed(() => {
 .title-details-page {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
 
     --img-area-height: 50vh;
     --img-area-max-height: 800px;

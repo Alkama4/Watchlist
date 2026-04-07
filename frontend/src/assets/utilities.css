@@ -96,6 +96,12 @@
     }
 }
 
+@media(max-width: 768px) {
+    .desktop-only {
+        display: none;
+    }
+}
+
 .not-found-section {
     display: flex;
     flex-direction: column;
