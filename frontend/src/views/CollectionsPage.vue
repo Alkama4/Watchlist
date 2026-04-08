@@ -31,28 +31,40 @@ onMounted(async () => {
                 class="btn btn-favourite no-deco"
             >
                 <Heart pack="filled"/>
-                <span>Favourites ({{ pageData?.smart_collection_sizes?.is_favourite }} Titles)</span>
+                <div class="text">
+                    <div>Favourites</div>
+                    <div class="stats">{{ pageData?.smart_collection_sizes?.is_favourite }} Titles</div>
+                </div>
             </router-link>
             <router-link
                 to="/search?watchlist=true"
                 class="btn btn-accent no-deco"
             >
                 <Clock pack="filled"/>
-                <span>Watchlist ({{ pageData?.smart_collection_sizes?.in_watchlist }} Titles)</span>
+                <div class="text">
+                    <div>Watchlist</div>
+                    <div class="stats">{{ pageData?.smart_collection_sizes?.in_watchlist }} Titles</div>
+                </div>
             </router-link>
             <router-link
                 to="/search?jellyfin=true"
                 class="btn no-deco"
             >
-                <Jellyfin width="22px" height="22px"/>
-                <span>Jellyfin ({{ pageData?.smart_collection_sizes?.jellyfin_link }} Titles)</span>
+                <Jellyfin class="custom"/>
+                <div class="text">
+                    <div>Jellyfin</div>
+                    <div class="stats">{{ pageData?.smart_collection_sizes?.jellyfin_link }} Titles</div>
+                </div>
             </router-link>
             <router-link
                 to="/search?video=true"
                 class="btn no-deco"
             >
                 <MoviePlay pack="filled"/>
-                <span>Video Assets ({{ pageData?.smart_collection_sizes?.has_video_assets }} Titles)</span>
+                <div class="text">
+                    <div>Video Assets</div>
+                    <div class="stats">{{ pageData?.smart_collection_sizes?.has_video_assets }} Titles</div>
+                </div>
             </router-link>
         </div>
 
@@ -85,11 +97,37 @@ onMounted(async () => {
 
     .btn {
         flex: 1;
-        padding: var(--spacing-md) var(--spacing-lg-xl);
+        min-width: 240px;
+        justify-content: start;
+        padding: 0;
         font-size: var(--fs-0);
         border-radius: var(--border-radius-md-lg);
-        gap: var(--spacing-xs-sm);
+        gap: 0;
+        
         white-space: nowrap;
+        overflow: hidden;
+
+        svg {
+            height: 28px;
+            width: 28px;
+            min-width: 28px;
+            backdrop-filter: brightness(0.8);
+            padding: var(--spacing-md) var(--spacing-md);
+        }
+
+        .text {
+            padding-left: var(--spacing-md);
+            padding-right: var(--spacing-lg);
+        }
+        
+        .stats {
+            color: var(--c-text-subtle);
+            font-weight: 400;
+            font-size: var(--fs-neg-1);
+        }
+        &:hover .stats {
+            color: var(--c-text-soft);
+        }
     }
 }
 
