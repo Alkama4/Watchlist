@@ -45,4 +45,4 @@ cd backend
 uvicorn app.main:app --reload --host 0.0.0.0
 ```
 
-or by using the github task (`Ctrl + Shift + P` -> `Tasks: Run tasks` -> `Dev Server - FastAPI`).
+or by using the VS Code task (`Ctrl + Shift + P` -> `Tasks: Run tasks` -> `Dev Server - FastAPI`).

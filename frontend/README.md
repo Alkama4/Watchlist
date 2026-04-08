@@ -37,7 +37,7 @@ cd frontend
 npm run dev
 ```
 
-or by using the github task (`Ctrl + Shift + P` -> `Tasks: Run tasks` -> `Dev Server - Vue`).
+or by using the VS Code task (`Ctrl + Shift + P` -> `Tasks: Run tasks` -> `Dev Server - Vue`).
 
 
 ### Production Build
