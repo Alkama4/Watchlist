@@ -70,7 +70,7 @@ const route = useRoute();
     </nav>
 
     <main :class="{'nav-visible': route.meta.requiresAuth && !route.meta.disableHeaderPadding}">
-        <router-view/>
+        <router-view :key="$route.path"/>
     </main>
 
     <footer :class="{'nav-visible': route.meta.requiresAuth && !route.meta.disableHeaderPadding}">

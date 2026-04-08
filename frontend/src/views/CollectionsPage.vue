@@ -27,7 +27,7 @@ onMounted(async () => {
         <h3 class="no-top">Smart Collections</h3>
         <div class="default-collections">
             <router-link
-                to="/search?fav=true"
+                to="/smart_collection?header=Favourites&fav=true"
                 class="btn btn-favourite no-deco"
             >
                 <Heart pack="filled"/>
@@ -37,7 +37,7 @@ onMounted(async () => {
                 </div>
             </router-link>
             <router-link
-                to="/search?watchlist=true"
+                to="/smart_collection?header=Watchlist&watchlist=true"
                 class="btn btn-accent no-deco"
             >
                 <Clock pack="filled"/>
@@ -47,7 +47,7 @@ onMounted(async () => {
                 </div>
             </router-link>
             <router-link
-                to="/search?jellyfin=true"
+                to="/smart_collection?header=Jellyfin&jellyfin=true"
                 class="btn no-deco"
             >
                 <Jellyfin class="custom"/>
@@ -57,7 +57,7 @@ onMounted(async () => {
                 </div>
             </router-link>
             <router-link
-                to="/search?video=true"
+                to="/smart_collection?header=Video+Assets&video=true"
                 class="btn no-deco"
             >
                 <MoviePlay pack="filled"/>

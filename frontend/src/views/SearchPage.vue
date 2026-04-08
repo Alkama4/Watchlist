@@ -20,7 +20,7 @@ const route = useRoute();
 const router = useRouter();
 
 // Hydrate the store from the URL before doing anything else
-searchStore.hydrateFromQuery(route.query);
+searchStore.hydrateFromRoute(route);
 
 // Watch the store's clean URL object and update the browser URL silently
 watch(
@@ -106,24 +106,29 @@ onUnmounted(() => {
 <template>
     <div class="search-page layout-contained layout-spacing-bottom">
         <h1 class="mode-header">
-            <div
-                :class="{'active': !searchStore.tmdbFallback}"
-                @click="searchStore.tmdbFallback = false"
-            >
-                Search Library
-            </div>
-            <div
-                :class="{'active': searchStore.tmdbFallback}"
-                @click="searchStore.tmdbFallback = true"
-            >
-                Add titles
-            </div>
+            <template v-if="route.name === 'Search'">
+                <div
+                    :class="{'active': !searchStore.tmdbFallback}"
+                    @click="searchStore.tmdbFallback = false"
+                >
+                    Search Library
+                </div>
+                <div
+                    :class="{'active': searchStore.tmdbFallback}"
+                    @click="searchStore.tmdbFallback = true"
+                >
+                    Add titles
+                </div>
+            </template>
+            <template v-else>
+                {{ searchStore.headerLabel }}
+            </template>
         </h1>
         <SearchBar 
             class="mobile-only"
             placeholder="Search for titles" 
         />
-        <div class="filters">
+        <div class="filters" :class="{'margin-fix': route.name !== 'Search'}">
             <div>
                 <LabelDropDown
                     label="Type"
@@ -249,7 +254,7 @@ onUnmounted(() => {
             </div>
         </div>
 
-        <h3>
+        <h3 v-if="route.name === 'Search'">
             Results 
             <template v-if="!searchStore.waitingFor.firstPage">
                 ({{ searchStore.searchResults?.total_items }} found)
@@ -341,6 +346,10 @@ onUnmounted(() => {
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
+
+    &.margin-fix {
+        margin-bottom: var(--spacing-md);
+    }
 
     > div {
         display: flex;

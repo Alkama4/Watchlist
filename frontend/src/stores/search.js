@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
 import { fastApi } from '@/utils/fastApi';
-import { Circle } from '@boxicons/vue';
 
 const PARAM_MAP = {
     // internal_key: [url_key, type]
@@ -42,6 +41,7 @@ export const useSearchStore = defineStore('search', () => {
     // --- State ---
     const query = ref('');
     const tmdbFallback = ref(false);
+    const headerLabel = ref('');
     const pageNumber = ref(1);
     const waitingFor = ref({ firstPage: false, additionalPage: false });
     
@@ -52,7 +52,16 @@ export const useSearchStore = defineStore('search', () => {
 
     
     // --- URL Sync Utilities ---
-    function hydrateFromQuery(routeQuery) {
+    function hydrateFromRoute(route) {
+        const routeQuery = route.query;
+        
+        if (route.name !== 'Search') {
+            headerLabel.value = routeQuery.header || route.name;
+        } else {
+            headerLabel.value = '';
+        }
+
+        // 2. Hydrate the rest of the state
         query.value = routeQuery.q || '';
         tmdbFallback.value = routeQuery.tmdb === 'true';
 
@@ -233,6 +242,7 @@ export const useSearchStore = defineStore('search', () => {
         // State
         query,
         tmdbFallback,
+        headerLabel,
         searchParams,
         initialSearchParams,
         pageNumber,
@@ -240,7 +250,7 @@ export const useSearchStore = defineStore('search', () => {
         searchResults,
         genres,
         // Sync
-        hydrateFromQuery,
+        hydrateFromRoute,
         queryForUrl,
         // Helpers
         isDirty,
