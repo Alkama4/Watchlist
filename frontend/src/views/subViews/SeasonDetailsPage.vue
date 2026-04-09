@@ -5,11 +5,10 @@ import { getTitleImageUrl } from '@/utils/imagePath';
 import { numberFormatters, timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg';
 import ModalImages from '@/components/modal/ModalImages.vue';
-import { Bug, ChevronLeft, Copy, Eye, EyeSlash, Images, Play } from '@boxicons/vue';
-import { buildVideoAssetUrl, resolveSeasonWatchCount } from '@/utils/titleUtils';
+import { ChevronLeft, Eye, EyeSlash, Images } from '@boxicons/vue';
+import { resolveSeasonWatchCount } from '@/utils/titleUtils';
 import WatchCountButtons from '@/components/WatchCountButtons.vue';
 import KebabMenu from '@/components/KebabMenu.vue';
-import LabelDropDown from '@/components/LabelDropDown.vue';
 import VideoAssetListing from '@/components/VideoAssetListing.vue';
 
 const props = defineProps({
@@ -169,11 +168,6 @@ onUnmounted(() => {
                 <h3>{{ activeSeason?.season_name }}</h3>
                 <div class="meta-row">
                     <span>
-                        <Tmdb/>
-                        {{ numberFormatters.formatNumberToLocale(activeSeason?.tmdb_vote_average) }}
-                    </span>
-                    |
-                    <span>
                         {{ timeFormatters.timestampToYear(activeSeason?.episodes?.[0]?.air_date) }}
                         <template v-if="
                             activeSeason?.episodes?.length > 1 && 
@@ -183,10 +177,15 @@ onUnmounted(() => {
                             - {{ timeFormatters.timestampToYear(activeSeason?.episodes?.[activeSeason.episodes.length - 1]?.air_date) }}
                         </template>
                     </span>
-                    |
+                    <span class="seperator">|</span>
                     <span>{{ activeSeason?.episodes?.length }} episodes</span>
-                    |
+                    <span class="seperator">|</span>
                     <span>{{ timeFormatters.minutesToHrAndMin(totalRuntime) }}</span>
+                    <span class="seperator">|</span>
+                    <span>
+                        <Tmdb/>
+                        {{ numberFormatters.formatNumberToLocale(activeSeason?.tmdb_vote_average) }}
+                    </span>
                 </div>
                 <p :class="{'unavailable': !activeSeason?.overview}">{{ activeSeason?.overview || 'No overview available.' }}</p>
                 <div class="actions">
@@ -205,7 +204,7 @@ onUnmounted(() => {
                                 ? 'All episodes watched - no spoilers to show.' 
                                 : (areSeasonSpoilersVisible ? 'Hide spoilers' : 'Show spoilers')"
                         >
-                            <component :is="areSeasonSpoilersVisible ? Eye : EyeSlash"/>
+                            <component :is="areSeasonSpoilersVisible ? EyeSlash : Eye"/>
                         </button>
                     </div>
 
@@ -221,36 +220,40 @@ onUnmounted(() => {
                     <div
                         class="episode-backdrop-wrapper"
                         :class="{
-                            'btn-text unwatched': !(episode?.user_details?.watch_count > 0),
+                            'unwatched': !(episode?.user_details?.watch_count > 0),
                             'spoilers-visible': isEpisodeSpoilerVisible(episode)
                         }"
-                        @click="episode.spoilersVisible = !isEpisodeSpoilerVisible(episode)"
                     >
                         <img 
                             :src="getTitleImageUrl(episode, '800', 'backdrop')"
                             :alt="`Episode backdrop: ${episode?.episode_number}. ${episode?.episode_name}`"
                             class="episode-backdrop"
                         >
-                        <Eye v-if="isEpisodeSpoilerVisible(episode)" size="lg" class="eye-icon" />
-                        <EyeSlash v-else size="lg" class="eye-icon" />
+                        <EyeSlash size="lg" class="eye-icon" />
                     </div>
                     <div class="details">
                         <h4>
                             <span class="number">{{ episode?.episode_number }}. </span>
                             <span class="name">
-                                {{ getObfuscatedText(episode?.episode_name, isEpisodeSpoilerVisible(episode)) }}
+                                {{ isEpisodeSpoilerVisible(episode) ? episode?.episode_name : 'Episode' }}
                             </span>
                         </h4>
                         <div class="meta-row">
-                            {{ timeFormatters.minutesToHrAndMin(episode.runtime) }}
-                            &bull;
-                            <Tmdb/>
-                            {{ numberFormatters.formatNumberToLocale(episode.tmdb_vote_average) }}
-                            ({{ numberFormatters.formatCompactNumber(episode.tmdb_vote_count) }} votes)
-                            &bull;
-                            {{ timeFormatters.timestampToFullDate(episode.air_date) }}
+                            <span>
+                                {{ timeFormatters.minutesToHrAndMin(episode.runtime) }}
+                            </span>
+                            <span class="seperator">&bull;</span>
+                            <span>
+                                {{ timeFormatters.timestampToFullDate(episode.air_date) }}
+                            </span>
+                            <span class="seperator">&bull;</span>
+                            <span>
+                                <Tmdb/>
+                                {{ numberFormatters.formatNumberToLocale(episode.tmdb_vote_average) }}
+                                ({{ numberFormatters.formatCompactNumber(episode.tmdb_vote_count) }} votes)
+                            </span>
                         </div>
-                        <p>{{ getObfuscatedText(episode.overview, isEpisodeSpoilerVisible(episode)) }}</p>
+                        <p>{{ isEpisodeSpoilerVisible(episode) ? episode.overview : 'Episode overview hidden.' }}</p>
 
                         <div class="controls">
                             <WatchCountButtons
@@ -258,6 +261,16 @@ onUnmounted(() => {
                                 :title="titleDetails"
                                 :episode="episode"
                             />
+                            <button
+                                class="btn-text btn-even-padding"
+                                @click="episode.spoilersVisible = !isEpisodeSpoilerVisible(episode)"
+                                :disabled="episode?.user_details?.watch_count"
+                                :title="episode?.user_details?.watch_count 
+                                    ? 'Episode watched - no spoilers to show.' 
+                                    : (isEpisodeSpoilerVisible(episode) ? 'Hide spoilers' : 'Show spoilers')"
+                            >
+                                <component :is="isEpisodeSpoilerVisible(episode) ? EyeSlash : Eye"/>
+                            </button>
                             <VideoAssetListing
                                 :videoAssets="episode?.video_assets"
                                 :title="titleDetails"
@@ -328,6 +341,10 @@ onUnmounted(() => {
         row-gap: var(--spacing-xs);
         font-weight: 600;
         flex-wrap: wrap;
+
+        .seperator {
+            color: var(--c-text-subtle);
+        }
     }
     .actions {
         display: flex;
@@ -397,20 +414,14 @@ onUnmounted(() => {
             }
             
             .eye-icon {
-                opacity: 1;
+                opacity: 0.5;
             }
-            &.spoilers-visible:not(:hover) .eye-icon {
+            &.spoilers-visible .eye-icon {
                 opacity: 0;
             }
 
             &.spoilers-visible img.episode-backdrop {
                 filter: blur(0px) opacity(1);
-            }
-            &:hover img.episode-backdrop {
-                filter: blur(var(--blur-heavy)) opacity(0.66);
-            }
-            &.spoilers-visible:hover img.episode-backdrop {
-                filter: blur(0px) opacity(0.66);
             }
         }
     }
@@ -426,8 +437,8 @@ onUnmounted(() => {
             line-clamp: 1;
         }
         p {
-            -webkit-line-clamp: 5;
-            line-clamp: 5;
+            -webkit-line-clamp: 4;
+            line-clamp: 4;
         }
         h4, p {
             margin: 0;
@@ -439,6 +450,18 @@ onUnmounted(() => {
         p, .meta-row {
             color: var(--c-text-soft);
             font-size: var(--fs-neg-1);
+        }
+
+        .meta-row {
+            font-weight: 600;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            column-gap: var(--spacing-xs-sm);
+
+            .seperator {
+                color: var(--c-text-faint)
+            }
         }
 
         .controls {
