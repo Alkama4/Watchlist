@@ -4,16 +4,17 @@ import { fastApi } from '@/utils/fastApi';
 import { Clock, Heart, MoviePlay } from '@boxicons/vue';
 import { onMounted, ref } from 'vue';
 import Jellyfin from '@/assets/icons/jellyfin.svg';
+import LoadingIndicator from '@/components/LoadingIndicator.vue';
 
-const waiting = ref({});
+const pageLoading = ref({});
 const pageData = ref({});
 
 async function fetchCollections() {
-    waiting.value = true;
+    pageLoading.value = true;
     try {
         pageData.value = await fastApi.collectionsView();
     } finally {
-        waiting.value = false;
+        pageLoading.value = false;
     }
 }
 
@@ -23,7 +24,9 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="collections-page layout-contained layout-spacing-top layout-spacing-bottom">
+    <LoadingIndicator v-if="pageLoading" class="page-loading-indicator"/>
+
+    <div v-else class="collections-page layout-contained layout-spacing-top layout-spacing-bottom">
         <h3 class="no-top">Smart Collections</h3>
         <div class="default-collections">
             <router-link
