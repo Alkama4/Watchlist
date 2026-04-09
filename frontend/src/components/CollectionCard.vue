@@ -14,14 +14,8 @@ defineProps({
 <template>
     <router-link
         :to="`/collection/${tmdbCollection?.tmdb_collection_id}`"
-        class="tmdb-collection-card no-deco"
+        class="tmdb-collection-card btn no-deco"
     >
-        <img
-            :src="getTitleImageUrl(tmdbCollection, 800, 'backdrop')"
-            alt="Collection backdrop"
-            class="backdrop"
-        />
-
         <img
             :src="getTitleImageUrl(tmdbCollection, 400, 'poster')"
             alt="Collection poster"
@@ -29,7 +23,7 @@ defineProps({
         />
 
         <div class="details">
-            <h3>{{ tmdbCollection?.name }}</h3>
+            <h4>{{ tmdbCollection?.name }}</h4>
             <div class="stats">
                 <div>
                     {{ timeFormatters.timestampToYear(tmdbCollection?.first_release_date) }}
@@ -43,11 +37,8 @@ defineProps({
                 &bull;
                 <div>{{ tmdbCollection?.title_count }} Titles</div>
                 &bull;
-                <div>{{ timeFormatters.minutesToHrAndMin(tmdbCollection?.total_runtime) }}</div>
-                &bull;
                 <div><Tmdb/> {{ tmdbCollection?.tmdb_vote_average }}</div>
             </div>
-            <p>{{ tmdbCollection?.overview }}</p>
         </div>
     </router-link>
 </template>
@@ -57,35 +48,20 @@ defineProps({
     display: flex;
     position: relative;
     min-width: var(--collection-card-width);
-    padding: var(--spacing-sm-md);
-    gap: var(--spacing-md);
+    padding: 0;
     box-sizing: border-box;
-    height: 277.5px;
-    align-items: end;
+    height: 150px;
+    align-items: center;
+    justify-content: start;
 
     overflow: hidden;
     border-radius: var(--border-radius-md-lg);
 }
 
-img.backdrop {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-    object-fit: cover;
-    mask-image: linear-gradient(
-        to top,
-        rgba(0, 0, 0, 0.05) 25%,
-        rgba(0, 0, 0, 0.5) 100%
-    );
-}
-
 img.poster {
-    height: 75%;
+    height: 100%;
     aspect-ratio: 2 / 3;
-    border-radius: var(--border-radius-md);
+    /* border-radius: var(--border-radius-md); */
     z-index: 1;
     object-fit: cover;
 }
@@ -95,38 +71,30 @@ img.poster {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-sm);
+    padding: var(--spacing-sm-md);
 
-    h3 {
+    h4 {
         margin: 0;
-    }
-
-    .stats,
-    p {
-        font-size: var(--fs-neg-1);
-        color: var(--c-text-soft);
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
     }
 
     .stats {
+        font-size: var(--fs-neg-1);
+        color: var(--c-text-soft);
         display: flex;
         gap: var(--spacing-xs) var(--spacing-sm);
         flex-wrap: wrap;
         align-items: center;
-        font-weight: 600;
+        font-weight: 400;
 
         div {
             flex-wrap: nowrap;
             white-space: nowrap;
         }
-    }
-
-    p {
-        margin: 0;
-        margin-bottom: var(--spacing-xs);
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        line-clamp: 3;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
     }
 }
 </style>
