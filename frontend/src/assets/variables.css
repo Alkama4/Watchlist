@@ -63,18 +63,22 @@
     --c-text-white-strong:  oklch(from var(--c-text-white-base) calc(l + var(--o-text-w-n-b) * 1) c h);
     --c-text-white-soft:    oklch(from var(--c-text-white-base) calc(l - var(--o-text-w-n-b) * 1) c h);
     --c-text-white-subtle:  oklch(from var(--c-text-white-base) calc(l - var(--o-text-w-n-b) * 2) c h);
+    --c-text-white-faint:   oklch(from var(--c-text-white-base) calc(l - var(--o-text-w-n-b) * 3) c h);
 
     --c-text-black-strong:  oklch(from var(--c-text-black-base) calc(l - var(--o-text-w-n-b) * 1) c h);
     --c-text-black-soft:    oklch(from var(--c-text-black-base) calc(l + var(--o-text-w-n-b) * 1) c h);
     --c-text-black-subtle:  oklch(from var(--c-text-black-base) calc(l + var(--o-text-w-n-b) * 2) c h);
+    --c-text-black-faint:   oklch(from var(--c-text-black-base) calc(l + var(--o-text-w-n-b) * 3) c h);
 
     --c-text-strong:        oklch(from var(--c-text) calc(l + var(--o-text-norm-n-inv) * 1) c h);
     --c-text-soft:          oklch(from var(--c-text) calc(l - var(--o-text-norm-n-inv) * 1) c h);
     --c-text-subtle:        oklch(from var(--c-text) calc(l - var(--o-text-norm-n-inv) * 2) c h);
+    --c-text-faint:         oklch(from var(--c-text) calc(l - var(--o-text-norm-n-inv) * 3) c h);
 
     --c-text-inv-strong:    oklch(from var(--c-text-inv) calc(l - var(--o-text-norm-n-inv) * 1) c h);
     --c-text-inv-soft:      oklch(from var(--c-text-inv) calc(l + var(--o-text-norm-n-inv) * 1) c h);
     --c-text-inv-subtle:    oklch(from var(--c-text-inv) calc(l + var(--o-text-norm-n-inv) * 2) c h);
+    --c-text-inv-faint:     oklch(from var(--c-text-inv) calc(l + var(--o-text-norm-n-inv) * 3) c h);
     
     /* Unique color variations */
     --c-primary-soft:           oklch(from var(--c-primary) calc(l + var(--o-colors-1)) c h);
