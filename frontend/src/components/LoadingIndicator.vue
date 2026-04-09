@@ -34,6 +34,7 @@ onUnmounted(() => {
 
 <style scoped>
 div {
+    flex: 1;
     display: flex;
     flex-direction: column;
     gap: var(--spacing-md);
