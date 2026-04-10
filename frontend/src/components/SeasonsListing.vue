@@ -13,13 +13,17 @@ defineProps({
     }
 })
 
-const wrapper = ref(null)
-const expanded = ref(false)
-const visibleSeasons = 2
+const wrapper = ref(null);
+const expanded = ref(false);
+const visibleSeasons = 2;
 
-const limitHeight = (116 + 12) * visibleSeasons + 68
-const scrollHeight = computed(() => wrapper.value?.scrollHeight)
-const limitOverflow = computed(() => scrollHeight.value > limitHeight)
+const cardHeight = 128;
+const gapHeight = 16;
+const fadeOverlayHeight = 68;
+
+const limitHeight = (cardHeight + gapHeight) * visibleSeasons + fadeOverlayHeight;
+const scrollHeight = computed(() => wrapper.value?.scrollHeight);
+const limitOverflow = computed(() => scrollHeight.value > limitHeight);
 
 const computedHeight = computed(() => {
     if (!limitOverflow.value) return scrollHeight.value  // content fits, use natural height
@@ -55,11 +59,6 @@ const computedHeight = computed(() => {
                         
                         <div class="meta-row">
                             <span class="meta-item">
-                                <Tmdb class="tmdb-icon"/>
-                                {{ numberFormatters.formatNumberToLocale(season?.tmdb_vote_average) }}
-                            </span>
-                            <span class="dot">&bull;</span>
-                            <span class="meta-item">
                                 {{ timeFormatters.timestampToYear(season?.episodes?.[0]?.air_date) }}
                                 <template v-if="
                                     season?.episodes?.length > 1 && 
@@ -69,9 +68,18 @@ const computedHeight = computed(() => {
                                     - {{ timeFormatters.timestampToYear(season?.episodes?.[season.episodes.length - 1]?.air_date) }}
                                 </template>
                             </span>
-                            <span class="dot">&bull;</span>
+
+                            <span class="seperator">&bull;</span>
+
                             <span class="meta-item">
                                 {{ season?.episodes?.length }} episodes
+                            </span>
+
+                            <span class="seperator">&bull;</span>
+
+                            <span class="meta-item">
+                                <Tmdb class="tmdb-icon"/>
+                                {{ numberFormatters.formatNumberToLocale(season?.tmdb_vote_average) }}
                             </span>
                         </div>
 
@@ -112,25 +120,27 @@ const computedHeight = computed(() => {
 .seasons-wrapper {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-sm-md);
+    gap: var(--spacing-md);
 }
 
 .season-card {
     position: relative;
     display: flex;
     flex-direction: row;
-    gap: var(--spacing-sm-md);
-    border-radius: var(--border-radius-md);
-    align-items: flex-start;
+    /* gap: var(--spacing-sm-md); */
+    /* border-radius: var(--border-radius-md-lg); */
+    overflow: hidden;
+    padding: 0;
+    /* align-items: flex-start; */
     text-align: left;
     font-weight: 400;
     transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
 img.poster {
-    height: 100px;
-    width: 66px; /* Explicit width enforces the 2/3 aspect ratio strictly in flexbox */
-    border-radius: var(--border-radius-sm);
+    height: 128px;
+    aspect-ratio: 2/3;
+    /* border-radius: var(--border-radius-md-lg); */
     object-fit: cover;
     flex-shrink: 0;
 }
@@ -140,8 +150,9 @@ img.poster {
     flex-direction: column;
     flex-grow: 1;
     min-width: 0; /* Prevents text overflow from pushing flex layout */
-    gap: var(--spacing-xs-sm);
-    padding-top: var(--spacing-xs);
+    gap: var(--spacing-sm);
+    /* padding-top: var(--spacing-xs); */
+    padding-inline: var(--spacing-sm-md);
 
     h4 {
         margin: 0;
@@ -173,6 +184,7 @@ img.poster {
         gap: var(--spacing-xs);
         font-size: var(--fs-neg-2);
         color: var(--c-text-soft);
+        font-weight: 600;
     
         .meta-item {
             display: flex;
