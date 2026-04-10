@@ -35,7 +35,7 @@ button:not(:disabled):active,
 }
 button:disabled, .btn:disabled {
     cursor: not-allowed;
-    filter: opacity(0.75);
+    filter: opacity(0.33);
 }
 
 .btn-even-padding {
