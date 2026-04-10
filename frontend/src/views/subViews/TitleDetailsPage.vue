@@ -278,7 +278,7 @@ const lastAirDate = computed(() => {
                         </div>
 
                         <span class="sep">|</span>
-                        <div class="stat tmdb">
+                        <div class="stat tmdb btn-underline" @click="$refs.EpisodeMapModal.open()">
                             <div>
                                 <Tmdb/>
                                 {{ numberFormatters.formatNumberToLocale(titleDetails?.tmdb_vote_average) || '-' }}
@@ -307,50 +307,36 @@ const lastAirDate = computed(() => {
                             :watchCount="titleDetails?.user_details?.watch_count"
                             :title="titleDetails"
                         />
-
-                        <div class="icon-actions">
-                            <Heart
-                                pack="filled"
-                                class="btn btn-text btn-even-padding"
+                        
+                        <div class="collection-actions">
+                            <button
+                                class=""
                                 :class="{'btn-favourite': titleDetails?.user_details?.is_favourite }"
                                 @click="toggleFavourite"
-                            />
-                            <Clock
-                                pack="filled"
-                                class="btn btn-text btn-even-padding"
+                            >
+                                <Heart pack="filled" size="sm"/>
+                                <span>Favourite</span>
+                            </button>
+                            <button
+                                class=""
                                 :class="{'btn-accent': titleDetails?.user_details?.in_watchlist }"
                                 @click="toggleWatchlist"
-                            />
-                            <AlbumCovers
-                                pack="filled"
-                                class="btn btn-text btn-even-padding"
+                            >
+                                <Clock pack="filled" size="sm"/>
+                                <span>Watchlist</span>
+                            </button>
+                            <button
+                                class=""
                                 @click="adjustCollections"
-                            />
-
-                            <MapIcon
-                                v-if="titleDetails?.title_type == 'tv'"
-                                pack="filled"
-                                class="btn btn-text btn-even-padding"
-                                @click="$refs.EpisodeMapModal.open()"
-                            />
-    
-                            <VideoAssetListing
-                                :videoAssets="titleDetails?.video_assets"
-                                :title="titleDetails"
-                            />
+                            >
+                                <AlbumCovers pack="filled" size="sm"/>
+                                <span>Collections</span>
+                            </button>
                         </div>
 
-                        <KebabMenu
-                            :menuItems="[
-                                { iconComponent: RefreshCw, label: 'Update Details', action: updateTitleDetails },
-                                { iconComponent: Images, label: 'Manage Images', action: ImagesModal?.open },
-                                { iconComponent: Translate, label: 'Change Language', action: LocaleModal?.open },
-                                {
-                                    iconComponent: titleDetails?.user_details?.in_library ? ListMinus : ListPlus,
-                                    label: titleDetails?.user_details?.in_library ? 'Remove from Library' : 'Add to Library',
-                                    action: titleDetails?.user_details?.in_library ? removeFromLibrary : addToLibrary
-                                },
-                            ]"
+                        <VideoAssetListing
+                            :videoAssets="titleDetails?.video_assets"
+                            :title="titleDetails"
                         />
                     </div>
                     
@@ -360,6 +346,19 @@ const lastAirDate = computed(() => {
                         :class="{'layout-spacing-bottom': !similarTitles?.titles?.length > 0}"
                     />
                 </div>
+
+                <KebabMenu
+                    :menuItems="[
+                        { iconComponent: RefreshCw, label: 'Update Details', action: updateTitleDetails },
+                        { iconComponent: Images, label: 'Manage Images', action: ImagesModal?.open },
+                        { iconComponent: Translate, label: 'Change Language', action: LocaleModal?.open },
+                        {
+                            iconComponent: titleDetails?.user_details?.in_library ? ListMinus : ListPlus,
+                            label: titleDetails?.user_details?.in_library ? 'Remove from Library' : 'Add to Library',
+                            action: titleDetails?.user_details?.in_library ? removeFromLibrary : addToLibrary
+                        },
+                    ]"
+                />
             </div>
         </div>
 
@@ -532,6 +531,13 @@ img.backdrop {
     display: grid;
     grid-template-columns: auto 1fr;
     gap: var(--spacing-md-lg);
+    position: relative;
+
+    .kebab-menu {
+        position: absolute;
+        top: var(--spacing-xs-sm);
+        right: var(--spacing-xs-sm);
+    }
 
     /* background-color: var(--c-bg-opaque-base);
     backdrop-filter: blur(var(--blur-subtle));
@@ -568,6 +574,7 @@ img.poster {
 
 .name-part {
     margin-bottom: var(--spacing-md);
+    margin-right: calc(var(--spacing-xs-sm) + 40px + var(--spacing-xs-sm));
 }
 .name {
     margin: 0;
@@ -634,15 +641,13 @@ img.poster {
 
 .actions {
     display: flex;
+    flex-wrap: wrap;
     gap: var(--spacing-sm);
 
-    .icon-actions {
-        display: flex;
+    .collection-actions {
+        display: grid;
         gap: var(--spacing-sm);
-    }
-
-    .kebab-menu {
-        margin-left: auto;
+        grid-template-columns: 1fr 1fr 1fr;
     }
 }
 
@@ -735,6 +740,13 @@ img.poster {
         display: flex;
         flex-direction: column;
         align-items: center;
+        position: static;
+
+        .kebab-menu {
+            position: absolute;
+            top: var(--spacing-md);
+            right: var(--spacing-md);
+        }
     }
 
     .poster-section {
@@ -748,6 +760,10 @@ img.poster {
         p {
             justify-content: center;
             text-align: center;
+        }
+
+        .name-part {
+            margin-right: 0;
         }
 
         .general-stats .stat {
@@ -765,26 +781,41 @@ img.poster {
 
         .actions {
             display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
+            flex-direction: column;
             gap: var(--spacing-sm);
-            width: 100%;
+            overflow: hidden;
 
-            .watch-count-buttons {
-                width: 100%; 
-            }
-            .icon-actions {
+            > * {
                 flex: 1;
-                display: flex;
-                justify-content: space-evenly;
-                align-items: center;
+                width: 100%;
             }
-        }
 
-        .kebab-menu {
-            position: absolute;
-            top: var(--spacing-md);
-            right: var(--spacing-md);
+            .search-filter-mobile {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .collection-actions {
+                overflow: auto;
+                align-items: center;
+
+                button {
+                    flex: 1;
+                }
+
+                @media(max-width: 512px) {
+                    button {
+                        flex-direction: column;
+                        padding-inline: 0;
+
+                        span {
+                            display: none;
+                            /* color: var(--c-text-subtle);
+                            font-size: var(--fs-neg-4); */
+                        }
+                    }
+                }
+            }
         }
 
         .external-resources {

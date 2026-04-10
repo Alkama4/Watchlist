@@ -74,7 +74,7 @@ watch(
 
     <div class="search-filter-mobile">
         <button
-            class="btn-text btn-even-padding" 
+            class="btn-even-padding" 
             @click="drawer?.open()"
             :disabled="disabled"
         >
@@ -165,7 +165,8 @@ button {
         display: none;
     }
     .search-filter-mobile {
-        display: block;
+        display: flex;
+        flex-direction: column;
     }
 
     .search-filter-mobile button .dot {

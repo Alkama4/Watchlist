@@ -127,7 +127,7 @@ const computedHeight = computed(() => {
     position: relative;
     display: flex;
     flex-direction: row;
-    /* gap: var(--spacing-sm-md); */
+    gap: 0;
     /* border-radius: var(--border-radius-md-lg); */
     overflow: hidden;
     padding: 0;
@@ -152,7 +152,7 @@ img.poster {
     min-width: 0; /* Prevents text overflow from pushing flex layout */
     gap: var(--spacing-sm);
     /* padding-top: var(--spacing-xs); */
-    padding-inline: var(--spacing-sm-md);
+    padding-inline: var(--spacing-md);
 
     h4 {
         margin: 0;

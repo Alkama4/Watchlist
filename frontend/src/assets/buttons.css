@@ -7,7 +7,8 @@ button, .btn {
     align-items: center;
     vertical-align: middle; /* Fixes an odd bug where it is sometimes offset */
 
-    gap: var(--spacing-xs);
+    column-gap: var(--spacing-xs-sm);
+    row-gap: var(--spacing-xs);
     padding: var(--spacing-sm) var(--spacing-md-lg);
     min-height: 20px;
     box-sizing: content-box;
