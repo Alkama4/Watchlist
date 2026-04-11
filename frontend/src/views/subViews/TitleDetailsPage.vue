@@ -11,7 +11,7 @@ import SeasonsListing from '@/components/SeasonsListing.vue';
 import EpisodeMap from '@/components/EpisodeMap.vue';
 import ModalImages from '@/components/modal/ModalImages.vue';
 import KebabMenu from '@/components/KebabMenu.vue';
-import { AlbumCovers, AlertCircle, AlertTriangle, CheckCircle, Clock, Heart, Images, InfoCircle, Link, ListMinus, ListPlus, MapIcon, RefreshCw, Star, Translate } from '@boxicons/vue';
+import { AlbumCovers, AlertCircle, AlertTriangle, CheckCircle, ChevronDown, Clock, Heart, Images, InfoCircle, ListMinus, ListPlay, ListPlus, RefreshCw, Star, Translate } from '@boxicons/vue';
 import ModalLocale from '@/components/modal/ModalLocale.vue';
 import { resolveAgeRating } from '@/utils/titleUtils';
 import { useSettingsStore } from '@/stores/settings';
@@ -20,6 +20,7 @@ import WatchCountButtons from '@/components/WatchCountButtons.vue';
 import VideoAssetListing from '@/components/VideoAssetListing.vue';
 import ExternalResources from '@/components/ExternalResources.vue';
 import CollectionBannerCard from '@/components/CollectionBannerCard.vue';
+import ResponsiveOverlay from '@/components/ResponsiveOverlay.vue';
 
 const props = defineProps({
     titleDetails: {
@@ -49,6 +50,7 @@ const settings = useSettingsStore();
 const waitingFor = ref({});
 const updateResponse = ref({});
 const AgeRatingsModal = ref(null);
+const videoAssetOverlay = ref(null);
 const ImagesModal = ref(null);
 const LocaleModal = ref(null);
 
@@ -308,9 +310,8 @@ const lastAirDate = computed(() => {
                             :title="titleDetails"
                         />
                         
-                        <div class="collection-actions">
+                        <!-- <div class="collection-actions"> -->
                             <button
-                                class=""
                                 :class="{'btn-favourite': titleDetails?.user_details?.is_favourite }"
                                 @click="toggleFavourite"
                             >
@@ -318,7 +319,6 @@ const lastAirDate = computed(() => {
                                 <span>Favourite</span>
                             </button>
                             <button
-                                class=""
                                 :class="{'btn-accent': titleDetails?.user_details?.in_watchlist }"
                                 @click="toggleWatchlist"
                             >
@@ -326,20 +326,22 @@ const lastAirDate = computed(() => {
                                 <span>Watchlist</span>
                             </button>
                             <button
-                                class=""
                                 @click="adjustCollections"
                             >
                                 <AlbumCovers pack="filled" size="sm"/>
                                 <span>Collections</span>
                             </button>
-                        </div>
+                        <!-- </div> -->
 
-                        <VideoAssetListing
-                            :videoAssets="titleDetails?.video_assets"
-                            :title="titleDetails"
-                        />
+                        <button
+                            v-if="titleDetails?.video_assets"
+                            @click="videoAssetOverlay.open()"
+                        >
+                            <ListPlay pack="filled" size="sm"/>
+                            <span>Video Assets</span>
+                        </button>
                     </div>
-                    
+
                     <SeasonsListing 
                         v-if="titleDetails?.title_type === 'tv'" 
                         :titleDetails="titleDetails"
@@ -460,6 +462,13 @@ const lastAirDate = computed(() => {
             :fetchTitleDetails="fetchTitleDetails"
             :waitingFor="waitingFor"
         />
+
+        <ResponsiveOverlay ref="videoAssetOverlay" header="Video Assets">
+            <VideoAssetListing
+                :videoAssets="titleDetails?.video_assets"
+                :title="titleDetails"
+            />
+        </ResponsiveOverlay>
     </div>
 </template>
 
@@ -781,12 +790,11 @@ img.poster {
 
         .actions {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             gap: var(--spacing-sm);
             overflow: hidden;
 
-            > * {
-                flex: 1;
+            .watch-count-buttons {
                 width: 100%;
             }
 
@@ -795,7 +803,12 @@ img.poster {
                 flex-direction: column;
             }
 
-            .collection-actions {
+            button {
+                flex: 1;
+                white-space: nowrap;
+            }
+
+            /* .collection-actions {
                 overflow: auto;
                 align-items: center;
 
@@ -809,13 +822,13 @@ img.poster {
                         padding-inline: 0;
 
                         span {
-                            display: none;
+                            display: none; */
                             /* color: var(--c-text-subtle);
                             font-size: var(--fs-neg-4); */
-                        }
+                        /* }
                     }
                 }
-            }
+            } */
         }
 
         .external-resources {

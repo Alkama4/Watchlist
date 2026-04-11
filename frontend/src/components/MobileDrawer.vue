@@ -1,17 +1,28 @@
 <script setup>
-import { X } from '@boxicons/vue'
-import { ref, onUnmounted, onMounted, computed } from 'vue'
+import { useMediaQuery } from '@/utils/useMediaQuery';
+import { ref, onUnmounted, onMounted, computed, watch } from 'vue'
 
 const visible = ref(false)
-const emit = defineEmits(['closed'])
-
-// 1. Create a ref for the scrollable content area
 const contentRef = ref(null)
 
-defineProps({
-    header: {
-        type: String,
-        required: false
+const props = defineProps({
+    modelValue: Boolean,
+    header: String
+});
+
+const emit = defineEmits(['update:modelValue', 'closed']);
+
+watch(() => props.modelValue, (val) => {
+    if (val) open()
+    else close()
+})
+
+
+const isMobile = useMediaQuery('(max-width: 768px)')
+watch(isMobile, (mobile) => {
+    // If the screen grows to desktop while drawer is "open", clean up
+    if (!mobile && visible.value) {
+        close()
     }
 })
 
@@ -20,15 +31,19 @@ const currentY = ref(0)
 const isDragging = ref(false)
 
 function open() {
-    visible.value = true
-    document.body.classList.add('no-scroll')
+    if (!isMobile.value) return
+
+    visible.value = true;
+    document.body.classList.add('no-scroll');
+    emit('update:modelValue', true);
 }
 
 function close() {
-    emit('closed')
-    visible.value = false
-    document.body.classList.remove('no-scroll')
-    setTimeout(() => { currentY.value = 0 }, 300) 
+    visible.value = false;
+    document.body.classList.remove('no-scroll');
+    setTimeout(() => { currentY.value = 0 }, 300) ;
+    emit('update:modelValue', false);
+    emit('closed');
 }
 
 const handleEscape = (event) => {

@@ -5,11 +5,12 @@ import { getTitleImageUrl } from '@/utils/imagePath';
 import { numberFormatters, timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg';
 import ModalImages from '@/components/modal/ModalImages.vue';
-import { ChevronLeft, Eye, EyeSlash, Images } from '@boxicons/vue';
+import { ChevronLeft, Eye, EyeSlash, Images, ListPlay } from '@boxicons/vue';
 import { resolveSeasonWatchCount } from '@/utils/titleUtils';
 import WatchCountButtons from '@/components/WatchCountButtons.vue';
 import KebabMenu from '@/components/KebabMenu.vue';
 import VideoAssetListing from '@/components/VideoAssetListing.vue';
+import ResponsiveOverlay from '@/components/ResponsiveOverlay.vue';
 
 const props = defineProps({
     titleDetails: {
@@ -25,6 +26,8 @@ const props = defineProps({
 const route = useRoute();
 const router = useRouter();
 const ImagesModal = ref(null);
+const videoAssetOverlay = ref(null);
+const videoAssetEpisode = ref({});
 
 const activeSeason = computed(() => {
     const seasonNumber = Number(route.query.season);
@@ -47,7 +50,6 @@ const areSeasonSpoilersVisible = computed(() => {
     return unwatchedEpisodes.some(episode => isEpisodeSpoilerVisible(episode));
 });
 
-// 2. Updated Toggle Logic
 function toggleSeasonSpoilers() {
     if (!activeSeason.value?.episodes) return;
     // If they are currently visible, we want to hide them (false), and vice-versa
@@ -59,30 +61,16 @@ function toggleSeasonSpoilers() {
     });
 }
 
-// 3. Updated Helper Name & Logic
 function isEpisodeSpoilerVisible(episode) {
     return !!(episode?.spoilersVisible || episode?.user_details?.watch_count > 0);
 }
 
-// 4. Updated Obfuscation Parameter
-function getObfuscatedText(text, isVisible) {
-    if (!text) return '';
-    if (isVisible) return text; // Logic flipped: return text if visible
 
-    const charPool = "eeeettttaaaoooinnnsssrrrhhhddllluuuccmmffyywwggppbvkxqjzeeeeettttaaaoooinnnsssrrrhhhddllluuuccmmffyywwggpp";
-    let seed = 0;
-    for (let i = 0; i < text.length; i++) {
-        seed = ((seed << 5) - seed) + text.charCodeAt(i);
-        seed = seed & seed;
-    }
-
-    return text.split('').map((char, index) => {
-        if (/[ \n\t.,!?;:]/.test(char)) return char;
-        const x = Math.sin(seed + index + char.charCodeAt(0)) * 10000;
-        const pseudoRandom = Math.floor(Math.abs(x));
-        return charPool[pseudoRandom % charPool.length];
-    }).join('');
+function openEpisodeVideoAssetListing(episode) {''
+    videoAssetEpisode.value = episode;
+    videoAssetOverlay.value.open();
 }
+
 
 const handleBack = () => {
     // If we came from the overview of the SAME title
@@ -96,13 +84,6 @@ const handleBack = () => {
         router.push({ path: route.path, query: {} });
     }
 };
-
-function copyUrl(url) {
-    if (!url) return;
-    navigator.clipboard.writeText(url)
-        .then(() => console.log('Copied!', url))
-        .catch(err => console.error('Failed to copy', err));
-}
 
 function next() {
     const nextSeason = Number(route.query.season) + 1;
@@ -216,7 +197,12 @@ onUnmounted(() => {
                 </div>
             </div>
             <div class="episodes-wrapper">
-                <div v-for="episode in activeSeason?.episodes" :key="episode.episode_id" class="episode">
+                <div
+                    v-for="episode in activeSeason?.episodes"
+                    :key="episode.episode_id"
+                    class="episode"
+                    :class="{'expanded': episode.videoAssetListingVisible}"
+                >
                     <div
                         class="episode-backdrop-wrapper"
                         :class="{
@@ -271,12 +257,13 @@ onUnmounted(() => {
                             >
                                 <component :is="isEpisodeSpoilerVisible(episode) ? EyeSlash : Eye"/>
                             </button>
-                            <VideoAssetListing
-                                :videoAssets="episode?.video_assets"
-                                :title="titleDetails"
-                                :season="activeSeason"
-                                :episode="episode"
-                            />
+                            <button
+                                v-if="episode?.video_assets"
+                                class="btn-text btn-even-padding"
+                                @click="openEpisodeVideoAssetListing(episode)"
+                            >
+                                <ListPlay/>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -299,6 +286,15 @@ onUnmounted(() => {
             :userDetails="activeSeason?.user_details"
             :tmdbBaseUrl="tmdbBaseUrl"
         />
+
+        <ResponsiveOverlay ref="videoAssetOverlay" header="Video Assets">
+            <VideoAssetListing
+                :videoAssets="videoAssetEpisode?.video_assets"
+                :title="titleDetails"
+                :season="activeSeason"
+                :episode="videoAssetEpisode"
+            />
+        </ResponsiveOverlay>
     </div>
 </template>
 

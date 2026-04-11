@@ -1,6 +1,5 @@
 <script setup>
 import { computed } from 'vue';
-import LabelDropDown from './LabelDropDown.vue';
 import VideoAssetCard from './VideoAssetCard.vue';
 
 const props = defineProps({
@@ -12,9 +11,11 @@ const props = defineProps({
 
 // Group assets by video_type
 const groupedAssets = computed(() => {
-    const assets = Array.isArray(props.videoAssets) 
-        ? props.videoAssets 
-        : Object.values(props.videoAssets);
+    const rawData = props.videoAssets || []; 
+    
+    const assets = Array.isArray(rawData) 
+        ? rawData 
+        : Object.values(rawData);
 
     return assets.reduce((groups, video) => {
         const type = video?.video_type || 'other';
@@ -32,40 +33,37 @@ const formatHeader = (type) => {
 </script>
 
 <template>
-    <LabelDropDown
-        v-if="videoAssets && Object.keys(videoAssets).length"
-        :label="`Video Assets (${videoAssets.length})`"
-    >
-        <div class="video-list">
-            <div 
-                v-for="(videos, type, index) in groupedAssets" 
-                :key="type" 
-                class="asset-group"
-            >
-                <hr v-if="index">
+    <div class="video-asset-listing">
+        <div 
+            v-for="(videos, type, index) in groupedAssets" 
+            :key="type" 
+            class="asset-group"
+        >
+            <hr v-if="index">
 
-                <h6 class="group-header">
-                    {{ formatHeader(type) }} ({{ videos.length }})
-                </h6>
+            <h6 class="group-header">
+                {{ formatHeader(type) }} ({{ videos.length }})
+            </h6>
 
-                <VideoAssetCard 
-                    v-for="video in videos" 
-                    :key="video?.video_asset_id"
-                    :video="video"
-                    :title="title"
-                    :season="season"
-                    :episode="episode"
-                />
-            </div>
+            <VideoAssetCard 
+                v-for="video in videos" 
+                :key="video?.video_asset_id"
+                :video="video"
+                :title="title"
+                :season="season"
+                :episode="episode"
+            />
         </div>
-    </LabelDropDown>
+    </div>
 </template>
 
 <style scoped>
-.video-list {
+.video-asset-listing {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xs);
+    max-height: 40vh;
+    overflow-y: auto;
 }
 
 .asset-group {
@@ -77,7 +75,7 @@ const formatHeader = (type) => {
 .group-header {
     font-weight: 600;
     color: var(--c-text-subtle);
-    padding: var(--spacing-sm) var(--spacing-sm-md) var(--spacing-xs);
+    padding: var(--spacing-sm) 0 var(--spacing-xs);
     top: 0;
     z-index: 1;
     margin: 0;
