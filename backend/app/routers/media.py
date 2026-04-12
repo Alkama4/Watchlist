@@ -7,7 +7,7 @@ from PIL import Image
 from fastapi import APIRouter, HTTPException, Query, Request, Response, Depends
 from fastapi.responses import FileResponse, StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 from app.services.video_assets import sync_all_video_assets
 from app.dependencies import get_db
 from app.models import VideoAsset
@@ -261,3 +261,35 @@ async def synchronize_video_assets_relationships_with_titles(
         "message": "Sync completed successfully.",
         "details": details
     }
+
+
+@router.get("/video_assets/folders")
+async def get_list_of_video_asset_folders(
+    db: AsyncSession = Depends(get_db),
+):
+    stmt = (
+        select(
+            VideoAsset.title_folder_name, 
+            VideoAsset.title_id,
+            func.count(VideoAsset.video_asset_id).label("file_count"),
+            func.count(VideoAsset.episode_id).label("linked_episodes_count")
+        )
+        .group_by(VideoAsset.title_folder_name, VideoAsset.title_id)
+        .order_by(
+            VideoAsset.title_id.is_(None).asc(), 
+            VideoAsset.title_folder_name.asc()
+        )
+    )
+
+    result = await db.execute(stmt)
+    
+    return [
+        {
+            "title_folder_name": row.title_folder_name,
+            "file_count": row.file_count,
+            "title_id": row.title_id,
+            "is_linked": row.title_id is not None,
+            "linked_episodes_count": row.linked_episodes_count
+        }
+        for row in result.all()
+    ]
