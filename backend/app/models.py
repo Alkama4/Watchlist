@@ -46,6 +46,7 @@ class VideoType(enum.Enum):
     movie = "movie"
     episode = "episode"
     featurette = "featurette"
+    unknown = "unknown"
 
 
 ##### USER AND AUTH #####
@@ -464,6 +465,7 @@ class VideoAsset(Base):
     video_asset_id = Column(Integer, primary_key=True, autoincrement=True)
     file_path = Column(String(512), unique=True, nullable=False, index=True)
     file_name = Column(String(256), nullable=False)
+    title_folder_name = Column(String(256), nullable=False)
 
     title_id = Column(Integer, ForeignKey("titles.title_id", ondelete="CASCADE"), nullable=True)
     episode_id = Column(Integer, ForeignKey("episodes.episode_id", ondelete="CASCADE"), nullable=True)
@@ -482,13 +484,6 @@ class VideoAsset(Base):
     
     # Sync Logic
     mtime = Column(Float)
-
-    __table_args__ = (
-        CheckConstraint(
-            '(title_id IS NOT NULL) OR (episode_id IS NOT NULL)', 
-            name='chk_video_has_parent'
-        ),
-    )
 
     title = relationship("Title", backref="video_assets")
     episode = relationship("Episode", backref="video_assets")
