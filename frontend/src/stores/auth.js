@@ -11,9 +11,16 @@ export const useAuthStore = defineStore('auth', {
     actions: {
         async init() {
             if (this.initialized) return this.accessToken;
+
             try {
                 const response = await fastApi.auth.refresh();
                 this.accessToken = response.access_token;
+
+                // Sync user settings like themes etc.
+                if (this.accessToken) {
+                    const settings = useSettingsStore();
+                    await settings.syncSettings();
+                }
             } catch {
                 this.accessToken = null;
             } finally {

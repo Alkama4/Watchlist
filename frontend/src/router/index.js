@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { useSettingsStore } from '@/stores/settings';
 
 const routes = [
     {
@@ -91,12 +90,6 @@ router.beforeEach(async (to, from, next) => {
     // Handles expiry and auth setup.
     if (!auth.initialized) {
         await auth.init();
-
-        // Sync user settings like themes etc.
-        if (auth.accessToken) {
-            const settings = useSettingsStore();
-            await settings.syncSettings();
-        }
     }
 
     // Check special case redirects

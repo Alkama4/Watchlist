@@ -24,7 +24,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <LoadingIndicator v-if="pageLoading" class="page-loading-indicator"/>
+    <LoadingIndicator v-if="pageLoading"/>
 
     <div v-else class="collections-page layout-contained layout-spacing-top layout-spacing-bottom">
         <h3 class="no-top">Smart Collections</h3>

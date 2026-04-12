@@ -25,6 +25,7 @@ onUnmounted(() => {
 
 <template>
     <div :class="{'show': showSpinner}">
+        <slot/>
         <span class="loader spin"></span>
         <span :class="{'show': showHint}" class="hint">
             This is taking longer than expected...

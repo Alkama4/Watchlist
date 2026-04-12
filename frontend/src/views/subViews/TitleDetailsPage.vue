@@ -677,10 +677,6 @@ img.poster {
     }
 }
 
-.page-loading-indicator {
-    min-height: 50vh;
-}
-
 
 .age-ratings-table {
     overflow-y: auto;

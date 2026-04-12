@@ -99,7 +99,7 @@ watch(pageLoading, (newLoading) => {
 
 <template>
     <div class="title-controller">
-        <LoadingIndicator class="page-loading-indicator" v-if="pageLoading"/>
+        <LoadingIndicator v-if="pageLoading"/>
     
         <NotFoundPage v-else-if="titleDetails === false"/>
 

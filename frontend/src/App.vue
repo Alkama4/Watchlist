@@ -2,12 +2,22 @@
 import { useRoute } from 'vue-router';
 import SearchBar from './components/SearchBar.vue';
 import { AlbumCovers, Compass, Home, Search, User } from '@boxicons/vue';
+import { useAuthStore } from './stores/auth';
+import { computed } from 'vue';
+import LoadingIndicator from './components/LoadingIndicator.vue';
 
 const route = useRoute();
+const authStore = useAuthStore();
+
+const displayNav = computed(() => {
+    return route.meta.requiresAuth
+        && !route.meta.disableHeaderPadding
+        && authStore.initialized;
+})
 </script>
 
 <template>
-    <header v-if="route.meta.requiresAuth">
+    <header v-if="displayNav">
         <nav>
             <router-link to="/" class="no-deco">
                 <h2 class="name">Watchlist</h2>
@@ -46,7 +56,7 @@ const route = useRoute();
         </nav>
     </header>
 
-    <nav class="mobile-nav" :class="{'nav-visible': route.meta.requiresAuth && !route.meta.disableHeaderPadding}">
+    <nav class="mobile-nav" :class="{'nav-visible': displayNav}">
         <router-link class="btn btn-text no-deco" to="/">
             <Home pack="filled"/>
             <span>Home</span>
@@ -69,11 +79,14 @@ const route = useRoute();
         </router-link>
     </nav>
 
-    <main :class="{'nav-visible': route.meta.requiresAuth && !route.meta.disableHeaderPadding}">
-        <router-view :key="$route.path"/>
+    <main :class="{'nav-visible': displayNav}">
+        <router-view :key="$route.path" v-if="authStore.initialized"/>
+        <LoadingIndicator v-else>
+            <h1 style="margin: 0;">Watchlist</h1>
+        </LoadingIndicator>
     </main>
 
-    <footer :class="{'nav-visible': route.meta.requiresAuth && !route.meta.disableHeaderPadding}">
+    <footer :class="{'nav-visible': displayNav}">
         <router-link to="/debug" class="no-deco">© Aleksi Malkki 2026. All Rights Reserved.</router-link>
     </footer>
 </template>
