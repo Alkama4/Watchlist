@@ -1,6 +1,6 @@
 <script setup>
-import { onMounted, onUnmounted, ref, watch } from 'vue';
-import { useSearchStore } from '@/stores/search';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { SMART_COLLECTIONS, useSearchStore } from '@/stores/search';
 import TitleCard from '@/components/title_cards/TitleCard.vue';
 import LabelDropDown from '@/components/LabelDropDown.vue';
 import OptionPicker from '@/components/OptionPicker.vue';
@@ -10,6 +10,7 @@ import { ArrowDownNarrowWide, ArrowDownUp, ArrowDownWideNarrow, Calendar, Capita
 import SearchBar from '@/components/SearchBar.vue';
 import { useRoute, useRouter } from 'vue-router';
 import TriStatePicker from '@/components/TriStatePicker.vue';
+import NotFoundPage from './NotFoundPage.vue';
 
 
 const searchStore = useSearchStore();
@@ -38,6 +39,17 @@ watch(
     },
     { deep: true }
 );
+
+const isValidRoute = computed(() => {
+    if (route.name === 'Search') return true;
+
+    if (route.name === 'Smart Collection') {
+        return Object.keys(SMART_COLLECTIONS).includes(route.params.smart_collection_id);
+    }
+
+    return false;
+});
+
 
 //////////// SEARRCH PARAM OPTIONS ////////////
 const typeOptions = [
@@ -111,7 +123,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="search-page layout-contained layout-spacing-bottom">
+    <NotFoundPage v-if="!isValidRoute"/>
+
+    <div v-else class="search-page layout-contained layout-spacing-bottom">
         <h1 class="mode-header">
             <template v-if="route.name === 'Search'">
                 <div
