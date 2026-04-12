@@ -646,6 +646,7 @@ img.poster {
     display: flex;
     margin-top: var(--spacing-sm-md);
     gap: var(--spacing-sm);
+    flex-wrap: wrap;
 }
 
 .actions {
