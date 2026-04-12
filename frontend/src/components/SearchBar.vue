@@ -13,8 +13,7 @@ const inputSearch = ref(null);
 function onSearchFocus() {
     if (route.name !== 'Search') {
         router.push({ 
-            name: 'Search', 
-            query: searchStore.queryForUrl
+            name: 'Search'
         });
     }
 }

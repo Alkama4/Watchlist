@@ -22,6 +22,14 @@ const router = useRouter();
 // Hydrate the store from the URL before doing anything else
 searchStore.hydrateFromRoute(route);
 
+// Rehydrate when navigating between smart collections or back to search.
+watch(
+    () => [route.name, route.params.smart_collection_id],
+    () => {
+        searchStore.hydrateFromRoute(route);
+    }
+);
+
 // Watch the store's clean URL object and update the browser URL silently
 watch(
     () => searchStore.queryForUrl,
@@ -30,7 +38,6 @@ watch(
     },
     { deep: true }
 );
-
 
 //////////// SEARRCH PARAM OPTIONS ////////////
 const typeOptions = [
@@ -125,6 +132,7 @@ onUnmounted(() => {
             </template>
         </h1>
         <SearchBar 
+            v-if="route.name == 'Search'"
             class="mobile-only"
             placeholder="Search for titles" 
         />

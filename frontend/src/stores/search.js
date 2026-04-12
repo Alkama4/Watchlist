@@ -3,7 +3,6 @@ import { ref, computed, watch } from 'vue';
 import { fastApi } from '@/utils/fastApi';
 
 const PARAM_MAP = {
-    // internal_key: [url_key, type]
     title_type:       ['type',      'string'],
     watch_status:     ['status',    'string'],
     is_favourite:     ['fav',       'boolean'],
@@ -16,7 +15,7 @@ const PARAM_MAP = {
     sort_direction:   ['dir',       'string'],
 };
 
-const initialSearchParams = {
+const absoluteInitialSearchParams = {
     title_type: null,
     watch_status: null,
     is_favourite: null,
@@ -37,6 +36,33 @@ const initialSearchResults = {
     total_pages: 1
 };
 
+export const SMART_COLLECTIONS = {
+    favourites: {
+        header: 'Favourites',
+        params: {
+            is_favourite: true
+        }
+    },
+    watchlist: {
+        header: 'Watchlist',
+        params: {
+            in_watchlist: true
+        }
+    },
+    jellyfin: {
+        header: 'Jellyfin',
+        params: {
+            jellyfin_link: true
+        }
+    },
+    video_assets: {
+        header: 'Video Assets',
+        params: {
+            has_video_assets: true
+        }
+    }
+};
+
 export const useSearchStore = defineStore('search', () => {
     // --- State ---
     const query = ref('');
@@ -45,46 +71,73 @@ export const useSearchStore = defineStore('search', () => {
     const pageNumber = ref(1);
     const waitingFor = ref({ firstPage: false, additionalPage: false });
     
-    const searchParams = ref({ ...initialSearchParams });
-    const searchResults = ref({ ...initialSearchResults });
+    // Tracks the current route name so watchers know where we are saving to
+    const currentRouteName = ref('');
 
+    // Dynamic initial params based on current route
+    const activeInitialParams = ref({ ...absoluteInitialSearchParams });
+    
+    const searchParams = ref({ ...absoluteInitialSearchParams });
+    const searchResults = ref({ ...initialSearchResults });
     const genres = ref([]);
 
-    
+    // CACHE: to remember normal searches
+    const cachedMainSearch = ref({
+        query: '',
+        params: { ...absoluteInitialSearchParams }
+    });
+
     // --- URL Sync Utilities ---
     function hydrateFromRoute(route) {
-        const routeQuery = route.query;
+        const isSmart = route.name === 'Smart Collection';
+        const collectionId = route.params.smart_collection_id;
+        currentRouteName.value = route.name;
         
-        if (route.name !== 'Search') {
-            headerLabel.value = routeQuery.header || route.name;
+        let baseParams = { ...absoluteInitialSearchParams };
+
+        // Determine context baseline
+        if (isSmart && SMART_COLLECTIONS[collectionId]) {
+            const config = SMART_COLLECTIONS[collectionId];
+            headerLabel.value = config.header;
+            baseParams = { ...baseParams, ...config.params };
         } else {
             headerLabel.value = '';
         }
 
-        // 2. Hydrate the rest of the state
-        query.value = routeQuery.q || '';
-        tmdbFallback.value = routeQuery.tmdb === 'true';
+        activeInitialParams.value = baseParams;
 
-        const newParams = { ...initialSearchParams };
+        const routeQuery = route.query;
+        const hasQueryParams = Object.keys(routeQuery).length > 0;
 
-        Object.entries(PARAM_MAP).forEach(([internalKey, [urlKey, type]]) => {
-            const rawValue = routeQuery[urlKey];
-            if (rawValue === undefined || rawValue === null) return;
+        // If going back to normal search WITHOUT specific URL overrides, load from cache
+        if (!isSmart && !hasQueryParams) {
+            query.value = cachedMainSearch.value.query;
+            // JSON stringify trick to deep-clone arrays inside the state safely
+            searchParams.value = JSON.parse(JSON.stringify(cachedMainSearch.value.params));
+        } else {
+            // Start with current context baseline, override with URL params if they exist
+            const newParams = { ...baseParams };
+            query.value = routeQuery.q || '';
+            tmdbFallback.value = routeQuery.tmdb === 'true';
 
-            if (type === 'boolean') {
-                newParams[internalKey] = rawValue === 'true' ? true : rawValue === 'false' ? false : null;
-            } 
-            else if (type === 'array') {
-                // Handle both single values and comma-separated strings
-                const val = Array.isArray(rawValue) ? rawValue[0] : rawValue;
-                newParams[internalKey] = val.split(',').map(Number).filter(n => !isNaN(n));
-            } 
-            else {
-                newParams[internalKey] = rawValue;
-            }
-        });
+            Object.entries(PARAM_MAP).forEach(([internalKey, [urlKey, type]]) => {
+                const rawValue = routeQuery[urlKey];
+                if (rawValue === undefined || rawValue === null) return;
 
-        searchParams.value = newParams;
+                if (type === 'boolean') {
+                    newParams[internalKey] = rawValue === 'true' ? true : rawValue === 'false' ? false : null;
+                } 
+                else if (type === 'array') {
+                    const val = Array.isArray(rawValue) ? rawValue[0] : rawValue;
+                    newParams[internalKey] = val.split(',').map(Number).filter(n => !isNaN(n));
+                } 
+                else {
+                    newParams[internalKey] = rawValue;
+                }
+            });
+
+            searchParams.value = newParams;
+        }
     }
 
     const queryForUrl = computed(() => {
@@ -95,42 +148,40 @@ export const useSearchStore = defineStore('search', () => {
 
         Object.entries(PARAM_MAP).forEach(([internalKey, [urlKey, type]]) => {
             const value = searchParams.value[internalKey];
+            const baseValue = activeInitialParams.value[internalKey]; // Diff against the current context
             
-            // Handle Arrays
-            if (type === 'array' && Array.isArray(value) && value.length > 0) {
-                params[urlKey] = value.join(',');
-            } 
-            // Handle Booleans and Strings (as you were)
-            else if (value !== null && value !== undefined && value !== initialSearchParams[internalKey]) {
-                if (type !== 'array') {
-                    params[urlKey] = String(value);
+            if (type === 'array') {
+                const baseArray = Array.isArray(baseValue) ? baseValue : [];
+                if (Array.isArray(value) && value.length > 0) {
+                    if (value.length !== baseArray.length || !value.every((v, i) => v === baseArray[i])) {
+                        params[urlKey] = value.join(',');
+                    }
                 }
+            } 
+            else if (value !== null && value !== undefined && value !== baseValue) {
+                params[urlKey] = String(value);
             }
         });
 
         return params;
     });
 
-
     // --- Helpers ---
     const isDirty = (key) => {
         const current = searchParams.value[key];
-        const initial = initialSearchParams[key];
+        const initial = activeInitialParams.value[key]; // Changed from absolute to active
 
         if (Array.isArray(current) && Array.isArray(initial)) {
             return current.length !== initial.length || 
                 !current.every((val, index) => val === initial[index]);
         }
-
         return current !== initial;
     };
 
-
     // --- Computed ---
     const searchParamsIsDirty = computed(() => {
-        return Object.keys(initialSearchParams).some(key => isDirty(key));
+        return Object.keys(absoluteInitialSearchParams).some(key => isDirty(key));
     });
-
 
     // --- Actions ---
     function resetResults() {
@@ -139,7 +190,8 @@ export const useSearchStore = defineStore('search', () => {
     }
 
     function resetFilters() {
-        searchParams.value = { ...initialSearchParams };
+        // Now resets back to the SMART collection's default, not absolute default
+        searchParams.value = JSON.parse(JSON.stringify(activeInitialParams.value)); 
     }
 
     function cycleSort() {
@@ -219,6 +271,14 @@ export const useSearchStore = defineStore('search', () => {
     watch(
         [query, searchParams],
         () => {
+            // Update cache silently whenever params change on the normal Search page
+            if (currentRouteName.value === 'Search') {
+                cachedMainSearch.value = {
+                    query: query.value,
+                    params: JSON.parse(JSON.stringify(searchParams.value))
+                };
+            }
+
             if (!tmdbFallback.value) {
                 runSearch(false);
             }
@@ -244,7 +304,8 @@ export const useSearchStore = defineStore('search', () => {
         tmdbFallback,
         headerLabel,
         searchParams,
-        initialSearchParams,
+        activeInitialParams,
+        absoluteInitialSearchParams,
         pageNumber,
         waitingFor,
         searchResults,

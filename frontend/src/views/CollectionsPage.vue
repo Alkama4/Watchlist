@@ -29,40 +29,31 @@ onMounted(async () => {
     <div v-else class="collections-page layout-contained layout-spacing-top layout-spacing-bottom">
         <h3 class="no-top">Smart Collections</h3>
         <div class="default-collections">
-            <router-link
-                to="/smart_collection?header=Favourites&fav=true"
-                class="btn btn-favourite no-deco"
-            >
+            <router-link to="/smart_collection/favourites" class="btn btn-favourite no-deco">
                 <Heart pack="filled"/>
                 <div class="text">
                     <div>Favourites</div>
                     <div class="stats">{{ pageData?.smart_collection_sizes?.is_favourite }} Titles</div>
                 </div>
             </router-link>
-            <router-link
-                to="/smart_collection?header=Watchlist&watchlist=true"
-                class="btn btn-accent no-deco"
-            >
+
+            <router-link to="/smart_collection/watchlist" class="btn btn-accent no-deco">
                 <Clock pack="filled"/>
                 <div class="text">
                     <div>Watchlist</div>
                     <div class="stats">{{ pageData?.smart_collection_sizes?.in_watchlist }} Titles</div>
                 </div>
             </router-link>
-            <router-link
-                to="/smart_collection?header=Jellyfin&jellyfin=true"
-                class="btn no-deco"
-            >
+
+            <router-link to="/smart_collection/jellyfin" class="btn no-deco">
                 <Jellyfin class="custom"/>
                 <div class="text">
                     <div>Jellyfin</div>
                     <div class="stats">{{ pageData?.smart_collection_sizes?.jellyfin_link }} Titles</div>
                 </div>
             </router-link>
-            <router-link
-                to="/smart_collection?header=Video+Assets&video=true"
-                class="btn no-deco"
-            >
+
+            <router-link to="/smart_collection/video_assets" class="btn no-deco">
                 <MoviePlay pack="filled"/>
                 <div class="text">
                     <div>Video Assets</div>
