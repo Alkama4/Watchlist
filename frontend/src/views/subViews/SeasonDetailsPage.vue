@@ -196,6 +196,9 @@ onUnmounted(() => {
                     />
                 </div>
             </div>
+
+            <h3 class="mobile-only">Episodes</h3>
+            
             <div class="episodes-wrapper">
                 <div
                     v-for="episode in activeSeason?.episodes"
@@ -312,6 +315,7 @@ onUnmounted(() => {
     display: grid;
     grid-template-columns: auto 1fr;
     gap: var(--spacing-md);
+    padding-bottom: 32px;
 }
 
 .season-details {
@@ -369,7 +373,7 @@ onUnmounted(() => {
 .episode {
     display: grid;
     grid-template-columns: auto 1fr;
-    gap: var(--spacing-md-lg);
+    column-gap: var(--spacing-md-lg);
     max-width: 1400px;
     margin: var(--spacing-sm-md);
     border-radius: var(--border-radius-lg);
@@ -471,7 +475,7 @@ onUnmounted(() => {
 
 .season-buttons {
     position: fixed;
-    bottom: var(--spacing-lg);
+    bottom: 36px;
     left: 50%;
     transform: translateX(-50%);
     max-width: 90vw;
@@ -486,9 +490,66 @@ onUnmounted(() => {
 
     display: flex;
     gap: var(--spacing-sm);
+
+    .btn {
+        white-space: nowrap;
+    }
 }
-.season-buttons .btn {
-    white-space: nowrap;
-    padding: var(--spacing-sm-md) var(--spacing-md-lg);
+
+@media(max-width: 768px) {
+    .season {
+        grid-template-columns: 1fr;
+        padding-bottom: 62px;
+        gap: 0;
+    }
+
+    .season-details {
+        width: unset;
+        padding: 0;
+        background-color: transparent;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        img.season-poster {
+            width: 50%;
+        }
+
+        p {
+            text-align: justify;
+        }
+
+        .actions {
+            width: 100%;
+
+            .watch-count-buttons,
+            .primary-actions {
+                flex: 1;
+            }
+        }
+
+    }
+
+    .episodes-wrapper {
+        gap: var(--spacing-md-lg);
+    }
+
+    .episode {
+        grid-template-columns: 1fr;
+        row-gap: var(--spacing-md);
+        margin: 0;
+
+        .episode-backdrop-wrapper {
+            width: 100%;
+        }
+
+        .watch-count-buttons {
+            flex: 1;
+        }
+    }
+
+    .season-buttons {
+        bottom: calc(75px + var(--spacing-sm-md));
+    }
 }
 </style>
