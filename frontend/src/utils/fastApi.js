@@ -245,10 +245,21 @@ export const fastApi = {
         }
     },
     media: {
-        syncVideoAssets: async () => fetchData({
-            method: 'post',
-            url: `/media/video_assets/sync`
-        })
+        videoAssets: {
+            sync: async () => fetchData({
+                method: 'post',
+                url: `/media/video_assets/sync`
+            }),
+            titleFolders: async () => fetchData({
+                method: 'get',
+                url: `/media/video_assets/title_folders`
+            }),
+            titleFolderAssets: async (titleFolderPath) => fetchData({
+                method: 'post',
+                url: `/media/video_assets/title_folder/assets`,
+                data: { title_folder_path: titleFolderPath }
+            })
+        }
     },
     integrations: {
         syncJellyfin: async () => fetchData({

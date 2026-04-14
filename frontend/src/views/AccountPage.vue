@@ -99,18 +99,6 @@ async function syncJellyfin() {
     }
 }
 
-async function syncVideoAssets() {
-    waitingFor.value.vidoeAssetSync = true;
-    try {
-        const response = await fastApi.media.syncVideoAssets();
-        alert(`${response.message} ${response.details.added_links} links added, ${response.details.removed_links} links removed, ${response.details.total_links} links in total, ${response.details.total_titles_with_links} titles with links.`)
-    } catch(e) {
-        alert(JSON.parse(e.request.response).detail);
-    } finally {
-        waitingFor.value.vidoeAssetSync = false;
-    }
-}
-
 onMounted(async () => {
     // Parallelize for speed
     await Promise.all([
@@ -143,12 +131,12 @@ onMounted(async () => {
                 >
                     Manually sync Jellyfin
                 </LoadingButton>
-                <LoadingButton
-                    :loading="waitingFor?.vidoeAssetSync"
-                    @click="syncVideoAssets"
+                <RouterLink
+                    to="/video_assets"
+                    class="btn no-deco"
                 >
-                    Manually sync video assets
-                </LoadingButton>
+                    Manage Video Assets
+                </RouterLink>
             </div>
         </div>
 

@@ -39,6 +39,12 @@ const routes = [
         meta: { requiresAuth: true }
     },
     {
+        path: '/video_assets',
+        name: 'Video Assets',
+        component: () => import('@/views/VideoAssetsPage.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
         path: '/account',
         name: 'Account',
         component: () => import('@/views/AccountPage.vue'),
