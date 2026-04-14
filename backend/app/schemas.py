@@ -134,7 +134,39 @@ class VideoAssetOut(BaseModel):
     codec: Optional[str] = None
     bit_depth: Optional[int] = None
     frame_rate: Optional[float] = None
-    
+
+
+class VideoAssetExpandedOut(VideoAssetOut):
+    file_path: str
+    title_id: Optional[int] = None
+    episode_id: Optional[int] = None
+
+class FolderPathRequest(BaseModel):
+    title_folder_path: str
+
+
+class VideoAssetTitleFolderCountsOut(BaseModel):
+    file_count: int
+    linked_movie_count: int
+    linked_featurette_count: int
+    linked_episodes_count: int
+    unlinked_count: int
+    title_episode_count: int
+
+class VideoAssetTitleFolderOut(BaseModel):
+    title_folder_path: str  # Acts as the ID
+    title_folder_name: str  # Acts as the label
+    title_id: Optional[int] = None
+    is_linked: bool
+    counts: VideoAssetTitleFolderCountsOut
+
+    class Config:
+        from_attributes = True
+
+class VideoAssetTitleFoldersOut(BaseModel):
+    linked_video_asset_title_folders: Optional[List[VideoAssetTitleFolderOut]] = None
+    unlinked_video_asset_title_folders: Optional[List[VideoAssetTitleFolderOut]] = None
+
 
 ####### Titles #######
 

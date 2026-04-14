@@ -465,6 +465,7 @@ class VideoAsset(Base):
     video_asset_id = Column(Integer, primary_key=True, autoincrement=True)
     file_path = Column(String(512), unique=True, nullable=False, index=True)
     file_name = Column(String(256), nullable=False)
+    title_folder_path = Column(String(512), nullable=False)
     title_folder_name = Column(String(256), nullable=False)
 
     title_id = Column(Integer, ForeignKey("titles.title_id", ondelete="CASCADE"), nullable=True)

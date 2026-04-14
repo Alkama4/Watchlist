@@ -4,13 +4,15 @@ import aiofiles
 import httpx
 import shutil
 from PIL import Image
+from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Query, Request, Response, Depends
 from fastapi.responses import FileResponse, StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from app.services.video_assets import sync_all_video_assets
 from app.dependencies import get_db
-from app.models import VideoAsset
+from app.models import Episode, VideoAsset, VideoType
+from app.schemas import FolderPathRequest, VideoAssetExpandedOut, VideoAssetTitleFolderOut, VideoAssetTitleFoldersOut
 
 router = APIRouter()
 
@@ -263,33 +265,83 @@ async def synchronize_video_assets_relationships_with_titles(
     }
 
 
-@router.get("/video_assets/folders")
-async def get_list_of_video_asset_folders(
+@router.get("/video_assets/title_folders", response_model=VideoAssetTitleFoldersOut)
+async def get_list_of_video_asset_title_folders(
     db: AsyncSession = Depends(get_db),
 ):
+    episodes_per_title = (
+        select(
+            Episode.title_id,
+            func.count(Episode.episode_id).label("total_episode_meta_count")
+        )
+        .group_by(Episode.title_id)
+        .subquery()
+    )
+
     stmt = (
         select(
-            VideoAsset.title_folder_name, 
+            VideoAsset.title_folder_path,
+            VideoAsset.title_folder_name,
             VideoAsset.title_id,
             func.count(VideoAsset.video_asset_id).label("file_count"),
-            func.count(VideoAsset.episode_id).label("linked_episodes_count")
+            func.count(VideoAsset.video_asset_id).filter(VideoAsset.video_type == VideoType.movie).label("linked_movie_count"),
+            func.count(VideoAsset.video_asset_id).filter(VideoAsset.video_type == VideoType.featurette).label("linked_featurette_count"),
+            func.count(VideoAsset.video_asset_id).filter(VideoAsset.video_type == VideoType.episode).label("linked_episodes_count"),
+            func.count(VideoAsset.video_asset_id).filter(VideoAsset.title_id.is_(None)).label("unlinked_count"),
+            func.coalesce(episodes_per_title.c.total_episode_meta_count, 0).label("title_episode_count")
         )
-        .group_by(VideoAsset.title_folder_name, VideoAsset.title_id)
-        .order_by(
-            VideoAsset.title_id.is_(None).asc(), 
-            VideoAsset.title_folder_name.asc()
+        .outerjoin(episodes_per_title, VideoAsset.title_id == episodes_per_title.c.title_id)
+        .group_by(
+            VideoAsset.title_folder_path,
+            VideoAsset.title_folder_name,
+            VideoAsset.title_id,
+            episodes_per_title.c.total_episode_meta_count
         )
+        .order_by(VideoAsset.title_id.is_(None).asc(), VideoAsset.title_folder_name.asc())
     )
 
     result = await db.execute(stmt)
+    rows = result.all()
     
-    return [
-        {
+    linked_folders = []
+    unlinked_folders = []
+
+    for row in rows:
+        folder_data = {
+            "title_folder_path": row.title_folder_path,
             "title_folder_name": row.title_folder_name,
-            "file_count": row.file_count,
             "title_id": row.title_id,
             "is_linked": row.title_id is not None,
-            "linked_episodes_count": row.linked_episodes_count
+            "counts": {
+                "file_count": row.file_count,
+                "linked_movie_count": row.linked_movie_count,
+                "linked_featurette_count": row.linked_featurette_count,
+                "linked_episodes_count": row.linked_episodes_count,
+                "unlinked_count": row.unlinked_count,
+                "title_episode_count": row.title_episode_count
+            }
         }
-        for row in result.all()
-    ]
+
+        if row.title_id is not None:
+            linked_folders.append(folder_data)
+        else:
+            unlinked_folders.append(folder_data)
+
+    return {
+        "linked_video_asset_title_folders": linked_folders,
+        "unlinked_video_asset_title_folders": unlinked_folders
+    }
+
+
+@router.post("/video_assets/title_folder/assets", response_model=List[VideoAssetExpandedOut])
+async def get_folder_assets(
+    request_data: FolderPathRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    stmt = (
+        select(VideoAsset)
+        .where(VideoAsset.title_folder_path == request_data.title_folder_path)
+        .order_by(VideoAsset.file_name.asc())
+    )
+    result = await db.execute(stmt)
+    return result.scalars().all()

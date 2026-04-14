@@ -128,8 +128,6 @@ async def _scan_directory(
     for folder in root.iterdir():
         if not folder.is_dir(): continue
 
-        title_folder_name = folder.name
-
         matched_title = None
         match = TITLE_REGEX.match(folder.name)
         
@@ -184,8 +182,7 @@ async def _scan_directory(
         failed_files, found_paths, added_count = await _process_title_folder(
             db,
             matched_title,
-            folder,
-            title_folder_name
+            folder
         )
         unmapped_items.extend(failed_files)
         seen_file_paths.update(found_paths)
@@ -204,7 +201,6 @@ async def _process_title_folder(
     db: AsyncSession,
     title: Optional[Title],
     folder_path: Path,
-    folder_name: str
 ) -> Tuple[List[Dict[str, Any]], Set[str], int]:
     
     unmapped_files: List[Dict[str, Any]] = []
@@ -275,7 +271,7 @@ async def _process_title_folder(
             episode_id=ep_id, 
             v_type=v_type, 
             file_path=file,
-            folder_name=folder_name,
+            folder_path=folder_path,
             current_mtime=file_mtimes[path_str],
             metadata=metadata
         )
@@ -317,11 +313,12 @@ async def _upsert_media_asset(
     episode_id: Optional[int], 
     v_type: VideoType, 
     file_path: Path,
-    folder_name: str,
+    folder_path: Path,
     current_mtime: float,
     metadata: Optional[Dict[str, Any]]
 ) -> bool:
     str_path = str(file_path.absolute())
+    str_folder_path = str(folder_path.absolute())
     is_new = False
     asset = existing_asset
 
@@ -329,7 +326,8 @@ async def _upsert_media_asset(
         asset = VideoAsset(
             file_path=str_path,
             file_name=file_path.name,
-            title_folder_name=folder_name,
+            title_folder_path=str_folder_path,
+            title_folder_name=folder_path.name,
             title_id=title_id,
             episode_id=episode_id,
             video_type=v_type
@@ -339,7 +337,8 @@ async def _upsert_media_asset(
     else:
         # Sync even if existing, as title_id/episode_id might have been matched since last scan
         asset.file_name = file_path.name 
-        asset.title_folder_name = folder_name 
+        asset.title_folder_path = str_folder_path
+        asset.title_folder_name = folder_path.name 
         asset.title_id = title_id
         asset.episode_id = episode_id
         asset.video_type = v_type
