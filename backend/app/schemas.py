@@ -136,38 +136,6 @@ class VideoAssetOut(BaseModel):
     frame_rate: Optional[float] = None
 
 
-class VideoAssetExpandedOut(VideoAssetOut):
-    file_path: str
-    title_id: Optional[int] = None
-    episode_id: Optional[int] = None
-
-class FolderPathRequest(BaseModel):
-    title_folder_path: str
-
-
-class VideoAssetTitleFolderCountsOut(BaseModel):
-    file_count: int
-    linked_movie_count: int
-    linked_featurette_count: int
-    linked_episodes_count: int
-    unlinked_count: int
-    title_episode_count: int
-
-class VideoAssetTitleFolderOut(BaseModel):
-    title_folder_path: str  # Acts as the ID
-    title_folder_name: str  # Acts as the label
-    title_id: Optional[int] = None
-    is_linked: bool
-    counts: VideoAssetTitleFolderCountsOut
-
-    class Config:
-        from_attributes = True
-
-class VideoAssetTitleFoldersOut(BaseModel):
-    linked_video_asset_title_folders: Optional[List[VideoAssetTitleFolderOut]] = None
-    unlinked_video_asset_title_folders: Optional[List[VideoAssetTitleFolderOut]] = None
-
-
 ####### Titles #######
 
 class GenreElement(BaseModel):
@@ -275,6 +243,20 @@ class TitleCardOut(BaseModel):
     default_logo_image_path: Optional[str] = None
 
     user_details: Optional[TitleCardUserDetailsOut] = None
+
+
+# Minimal title out
+class TitleMinimalOut(BaseModel):
+    title_id: int
+    name: Optional[str] = None
+
+class EpisodeMinimalOut(BaseModel):
+    episode_id: int
+    episode_number: int
+    episode_name: Optional[str] = None
+    season_number: int
+    season_name: Optional[str] = None
+
 
 
 # Hero title out
@@ -481,6 +463,41 @@ class TitleOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+
+####### Video Asset listings and expanded stuff #######
+
+class VideoAssetExpandedOut(VideoAssetOut):
+    file_path: str
+    title: Optional[TitleMinimalOut] = None
+    episode: Optional[EpisodeMinimalOut] = None
+
+class FolderPathRequest(BaseModel):
+    title_folder_path: str
+
+
+class VideoAssetTitleFolderCountsOut(BaseModel):
+    file_count: int
+    linked_movie_count: int
+    linked_featurette_count: int
+    linked_episodes_count: int
+    unlinked_count: int
+    title_episode_count: int
+
+class VideoAssetTitleFolderOut(BaseModel):
+    title_folder_path: str  # Acts as the ID
+    title_folder_name: str  # Acts as the label
+    title_id: Optional[int] = None
+    is_linked: bool
+    counts: VideoAssetTitleFolderCountsOut
+
+    class Config:
+        from_attributes = True
+
+class VideoAssetTitleFoldersOut(BaseModel):
+    linked_video_asset_title_folders: Optional[List[VideoAssetTitleFolderOut]] = None
+    unlinked_video_asset_title_folders: Optional[List[VideoAssetTitleFolderOut]] = None
 
 
 ####### Configs #######

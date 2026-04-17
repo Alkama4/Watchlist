@@ -46,7 +46,6 @@ class VideoType(enum.Enum):
     movie = "movie"
     episode = "episode"
     featurette = "featurette"
-    unknown = "unknown"
 
 
 ##### USER AND AUTH #####

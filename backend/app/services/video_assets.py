@@ -174,7 +174,7 @@ async def _scan_directory(
         if not matched_title:
             unmapped_items.append({
                 "path": str(folder),
-                "failure_reason": "No matching Title found in database. Storing as 'unknown'.",
+                "failure_reason": "No matching Title found in database.",
                 "context": {"folder_name": folder.name}
             })
 
@@ -243,26 +243,25 @@ async def _process_title_folder(
         ep_id = None
         t_id = title.title_id if title else None
         
-        if not title:
-            # If no DB Title, default to unknown, but check for episodes/extras patterns
-            if EPISODE_REGEX.search(file.name):
-                v_type = VideoType.episode
-            elif any(x in path_str.lower() for x in ["extra", "featurette", "bonus"]):
-                v_type = VideoType.featurette
-            else:
-                v_type = VideoType.unknown
+        rel_parts = file.relative_to(folder_path).parts[:-1]
+        has_ep_pattern = EPISODE_REGEX.search(file.name)
+        if has_ep_pattern:
+            # If the file name contains ExxSxx -> episode.
+            v_type = VideoType.episode
+        elif rel_parts:
+            # If its in a subfolder -> featurette.
+            v_type = VideoType.featurette
         else:
-            # Standard logic if Title exists
-            v_type = VideoType.movie if title.title_type == TitleType.movie else VideoType.episode
-            
-            # Check for featurettes based on folder structure
-            rel_parts = file.relative_to(folder_path).parts[:-1]
-            if rel_parts and not any(SEASON_REGEX.search(part) for part in rel_parts):
-                v_type = VideoType.featurette
+            # Else it must be a movie since its in root
+            # directory (and didn't match episode regex).
+            v_type = VideoType.movie
 
-            # Try to link to a specific episode if it's an episode type
-            if v_type == VideoType.episode:
-                ep_id, _ = await _match_episode_to_db(db, title, file)
+        # Handle IDs based on matched Title
+        t_id = title.title_id if title else None
+        ep_id = None
+
+        if v_type == VideoType.episode and title:
+            ep_id, _ = await _match_episode_to_db(db, title, file)
 
         is_new = await _upsert_media_asset(
             db=db, 

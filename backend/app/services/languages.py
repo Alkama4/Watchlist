@@ -1,3 +1,4 @@
+from typing import Optional
 from sqlalchemy import inspect, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import Title, TitleTranslation, TitleUserDetails, UserSetting
@@ -112,12 +113,13 @@ async def get_users_global_preferred_locale(db: AsyncSession, user_id: int) -> s
     return DEFAULT_SETTINGS.locales[0]
 
 
-def get_best_translation(translations, preferred_isos: list[str]):
-    """Picks the first translation that matches the prioritized ISO list."""
-    for iso in preferred_isos:
-        for trans in translations:
-            if trans.iso_639_1 == iso:
-                return trans
+def pick_translation(translations, iso_639_1_list: list[str], attr: str) -> Optional[str]:
+    """Return the first non-null value of `attr` across translations, ranked by iso_639_1_list."""
+    by_lang = {t.iso_639_1: t for t in translations}
+    for iso in iso_639_1_list:
+        t = by_lang.get(iso)
+        if t and getattr(t, attr, None):
+            return getattr(t, attr)
     return None
 
 

@@ -9,10 +9,13 @@ from fastapi import APIRouter, HTTPException, Query, Request, Response, Depends
 from fastapi.responses import FileResponse, StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
+from sqlalchemy.orm import selectinload
 from app.services.video_assets import sync_all_video_assets
+from app.services.languages import LanguageContext, get_user_language_context, pick_translation
 from app.dependencies import get_db
-from app.models import Episode, VideoAsset, VideoType
-from app.schemas import FolderPathRequest, VideoAssetExpandedOut, VideoAssetTitleFolderOut, VideoAssetTitleFoldersOut
+from app.models import Episode, Season, Title, User, VideoAsset, VideoType
+from app.schemas import EpisodeMinimalOut, FolderPathRequest, TitleMinimalOut, VideoAssetExpandedOut, VideoAssetTitleFolderOut, VideoAssetTitleFoldersOut
+from app.routers.auth import get_current_user
 
 router = APIRouter()
 
@@ -336,12 +339,59 @@ async def get_list_of_video_asset_title_folders(
 @router.post("/video_assets/title_folder/assets", response_model=List[VideoAssetExpandedOut])
 async def get_folder_assets(
     request_data: FolderPathRequest,
-    db: AsyncSession = Depends(get_db)
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
+    locale_ctx = await get_user_language_context(db=db, user_id=user.user_id)
+
     stmt = (
         select(VideoAsset)
         .where(VideoAsset.title_folder_path == request_data.title_folder_path)
-        .order_by(VideoAsset.file_name.asc())
+        .options(
+            selectinload(VideoAsset.title).selectinload(Title.translations),
+            selectinload(VideoAsset.episode).selectinload(Episode.translations),
+            selectinload(VideoAsset.episode)
+                .selectinload(Episode.season)
+                .selectinload(Season.translations),
+        )
+        .order_by(
+            VideoAsset.video_type.asc(),
+            VideoAsset.file_name.asc()
+        )
     )
     result = await db.execute(stmt)
-    return result.scalars().all()
+    assets = result.scalars().all()
+
+    return [_build_expanded_out(asset, locale_ctx) for asset in assets]
+
+
+def _build_expanded_out(asset: VideoAsset, locale_ctx: LanguageContext) -> VideoAssetExpandedOut:
+    title_out = None
+    if asset.title:
+        title_out = TitleMinimalOut(
+            title_id=asset.title.title_id,
+            name=pick_translation(asset.title.translations, locale_ctx.iso_639_1_list, "name"),
+        )
+
+    episode_out = None
+    if asset.episode:
+        ep = asset.episode
+        season = ep.season
+        episode_out = EpisodeMinimalOut(
+            episode_id=ep.episode_id,
+            episode_number=ep.episode_number,
+            episode_name=pick_translation(ep.translations, locale_ctx.iso_639_1_list, "name"),
+            season_number=season.season_number,
+            season_name=pick_translation(season.translations, locale_ctx.iso_639_1_list, "name"),
+        )
+
+    asset_data = {
+        k: v for k, v in asset.__dict__.items()
+        if not k.startswith("_sa") and k not in ("title", "episode")
+    }
+
+    return VideoAssetExpandedOut(
+        **asset_data,
+        title=title_out,
+        episode=episode_out,
+    )
