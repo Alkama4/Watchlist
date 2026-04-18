@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'; // Added ref
 import { buildVideoAssetUrl } from '@/utils/titleUtils';
-import { timeFormatters } from '@/utils/formatters';
+import { timeFormatters, videoAssetFormatters } from '@/utils/formatters';
 import { ChevronDown } from '@boxicons/vue';
 
 const props = defineProps({
@@ -23,28 +23,10 @@ const getHdrTags = (hdrString) => {
     return tags.length > 0 ? [...new Set(tags)] : ['SDR'];
 };
 
-const formatSize = (bytes) => {
-    if (!bytes) return '';
-    const gb = bytes / (1024 ** 3);
-    return gb >= 1 ? `${gb.toFixed(2)} GB` : `${(bytes / (1024 ** 2)).toFixed(1)} MB`;
-};
-
-const formatBitrate = (bytes, ms) => {
-    if (!bytes || !ms) return '';
-    const mbps = (bytes * 8) / (ms * 1000);
-    return `${mbps.toFixed(1)} Mbps`;
-};
-
-const formatResolution = (resString) => {
-    if (!resString || !resString.includes('x')) return resString;
-    const [width, height] = resString.split('x').map(Number);
-    const heightFromWidth = Math.round(width * (9 / 16));
-    const effectiveHeight = Math.max(height, heightFromWidth);
-    return `${effectiveHeight}p`;
-};
-
 const getVideoLabel = (video) => {
-    if (video?.video_type === 'episode') {
+    if (!props.title) {
+        return video?.file_name || 'Unknown File';
+    } else if (video?.video_type === 'episode') {
         return `${props.title?.name} (${timeFormatters.timestampToYear(props.title?.release_date)}) - S${props.season?.season_number}E${props.episode?.episode_number}`;
     } else if (video?.video_type === 'movie') {
         return `${props.title?.name} (${timeFormatters.timestampToYear(props.title?.release_date)})`;
@@ -58,7 +40,7 @@ const toggleSpecs = () => {
 };
 
 const msToMin = (ms) => {
-    return Math.floor(ms / 1000 / 60)
+    return 
 }
 
 const getDeviceHandler = () => {
@@ -98,11 +80,11 @@ const videoAssetUrl = computed(() => {
                 </h5>
                                 
                 <div class="badge-group">
-                    <span class="badge res-badge">{{ formatResolution(video?.resolution) }}</span>
+                    <span class="badge badge-sm res-badge">{{ videoAssetFormatters.formatResolution(video?.resolution) }}</span>
                     <span 
                         v-for="tag in getHdrTags(video?.hdr_type)" 
                         :key="tag"
-                        :class="['badge', 'hdr-badge', tag.toLowerCase().replace('+', '-plus').replace(' ', '-')]"
+                        :class="['badge', 'badge-sm', 'hdr-badge', tag.toLowerCase().replace('+', '-plus').replace(' ', '-')]"
                     >
                         {{ tag }}
                     </span>
@@ -124,7 +106,7 @@ const videoAssetUrl = computed(() => {
             <div class="specs-target">
                 <div class="specs-wrapper">
                     <span class="spec-item duration">
-                        {{ timeFormatters.minutesToHrAndMin(msToMin(video?.duration_ms)) }}
+                        {{ timeFormatters.msToHrAndMin(video?.duration_ms) }}
                     </span>
                     <span class="seperator">&bull;</span>
 
@@ -135,9 +117,9 @@ const videoAssetUrl = computed(() => {
                     <span class="spec-item">{{ Math.round(video?.frame_rate) }} fps</span>
                     <span class="seperator">&bull;</span>
 
-                    <span class="spec-item">{{ formatBitrate(video?.filesize_bytes, video?.duration_ms) }}</span>
+                    <span class="spec-item">{{ videoAssetFormatters.formatBitrate(video?.filesize_bytes, video?.duration_ms) }}</span>
                     <span class="seperator">&bull;</span>
-                    <span class="spec-item filesize">{{ formatSize(video?.filesize_bytes) }}</span>
+                    <span class="spec-item filesize">{{ videoAssetFormatters.formatSize(video?.filesize_bytes) }}</span>
                 </div>
             </div>
         </div>
@@ -213,15 +195,6 @@ const videoAssetUrl = computed(() => {
     flex-wrap: nowrap;
     align-items: center;
     gap: var(--spacing-xs);
-    color: var(--c-text-soft);
-}
-
-.badge {
-    font-size: var(--fs-neg-4);
-    font-weight: 700;
-    padding: 2px 6px;
-    border-radius: 4px;
-    white-space: nowrap;
 }
 
 .res-badge {
@@ -283,9 +256,5 @@ const videoAssetUrl = computed(() => {
 
 .spec-item {
     white-space: nowrap;
-}
-
-.seperator {
-    opacity: 0.5;
 }
 </style>

@@ -12,6 +12,9 @@ export const timeFormatters = {
         if (hrs === 0) return `${mins}min`;
         return `${hrs}h ${mins}min`;
     },
+    msToHrAndMin: (ms) => {
+        return timeFormatters.minutesToHrAndMin(Math.floor(ms / 1000 / 60));
+    },
     timestampToYear: (timestamp) => {
         return timestamp ? new Date(timestamp).getFullYear() : '-';
     },
@@ -48,4 +51,26 @@ export const isoFormatters = {
             return locale;
         }
     }
+}
+
+
+export const videoAssetFormatters = {
+    formatSize: (bytes) => {
+        if (!bytes) return '';
+        const gb = bytes / (1024 ** 3);
+        return gb >= 1 ? `${gb.toFixed(2)} GB` : `${(bytes / (1024 ** 2)).toFixed(1)} MB`;
+    },
+    formatBitrate: (bytes, ms) => {
+        if (!bytes || !ms) return '';
+        const mbps = (bytes * 8) / (ms * 1000);
+        return `${mbps.toFixed(1)} Mbps`;
+    },
+    formatResolution: (resString) => {
+        if (!resString || !resString.includes('x')) return resString;
+        const [width, height] = resString.split('x').map(Number);
+        const heightFromWidth = Math.round(width * (9 / 16));
+        const effectiveHeight = Math.max(height, heightFromWidth);
+        return `${effectiveHeight}p`;
+    },
+    
 }

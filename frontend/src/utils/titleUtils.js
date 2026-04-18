@@ -23,13 +23,19 @@ export function buildVideoAssetUrl(video, titleDetails, type = "base", season = 
     const titleName = titleDetails?.name;
     let label = null;
 
-    if (episode?.episode_number !== undefined) {
+    if (!titleName) {
+        // Fallback to file name
+        label = video.file_name.split(".")[0];
+    } else if (episode?.episode_number !== undefined) {
+        // Episodes
         const sNum = season?.season_number;
         const eNum = episode?.episode_number;
         label = `${titleName} - S${sNum}E${eNum}`;
     } else if (video?.video_type === "movie") {
+        // Movies
         label = titleName;
     } else if (video?.file_name) {
+        // Featurettes
         const featuretteName = video.file_name.split(".")[0];
         label = `${titleName} - ${featuretteName}`;
     }

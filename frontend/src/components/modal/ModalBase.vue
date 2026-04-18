@@ -65,7 +65,7 @@ onUnmounted(() => {
                     @click.stop
                 >
                     <div class="header-row">
-                        <h2 class="no-top">{{ header }}</h2>
+                        <h2 class="no-top break-all">{{ header }}</h2>
                         <X class="btn btn-text btn-even-padding subtle" @click="close"/>
                     </div>
                     <slot></slot>
@@ -133,5 +133,11 @@ onUnmounted(() => {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
+    gap: var(--spacing-md);
+
+    .btn {
+        /* To keep the 1:1 aspect ratio when the header has to wrap */
+        min-width: 24px;
+    }
 }
 </style>

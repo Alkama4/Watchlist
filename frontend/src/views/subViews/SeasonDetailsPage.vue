@@ -341,10 +341,6 @@ onUnmounted(() => {
         row-gap: var(--spacing-xs);
         font-weight: 600;
         flex-wrap: wrap;
-
-        .seperator {
-            color: var(--c-text-subtle);
-        }
     }
     .actions {
         display: flex;
@@ -458,10 +454,6 @@ onUnmounted(() => {
             flex-direction: row;
             flex-wrap: wrap;
             column-gap: var(--spacing-xs-sm);
-
-            .seperator {
-                color: var(--c-text-faint)
-            }
         }
 
         .controls {

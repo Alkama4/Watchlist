@@ -183,15 +183,15 @@ p {
 dl {
     display: grid;
     grid-template-columns: auto 1fr;
-    column-gap: var(--spacing-lg);
-    row-gap: var(--spacing-xs);
+    column-gap: var(--spacing-xl);
+    row-gap: var(--spacing-sm);
 }
 dl dt {
-    color: var(--c-text-soft);
+    color: var(--c-text-subtle);
 }
 dl dd {
     margin: 0;
-    /* font-weight: 500; */
+    font-weight: 600;
 }
 
 

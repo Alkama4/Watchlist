@@ -175,7 +175,8 @@
 /* ----------- Transitions ----------- */
 :root {
     --transition-ease-out: cubic-bezier(.23,.52,.4,.95);
-    --transition-ease: cubic-bezier(0.25, 1, 0.5, 1);
+    --transition-ease-out-str: cubic-bezier(0.25, 1, 0.5, 1);
+    --transition-ease-in-out: cubic-bezier(0.5, 0, 0.5, 1);
     --transition-bounce: cubic-bezier(.33,.24,.19,1.45);
 }
 

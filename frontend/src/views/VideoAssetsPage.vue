@@ -1,5 +1,6 @@
 <script setup>
 import LoadingButton from '@/components/LoadingButton.vue';
+import VideoAssetTitleFolder from '@/components/VideoAssetTitleFolder.vue';
 import { fastApi } from '@/utils/fastApi';
 import { onMounted, ref } from 'vue';
 
@@ -7,11 +8,7 @@ const waitingFor = ref({});
 const videoAssetTitleFolders = ref({});
 
 async function fetchVideoAssetTitleFolders() {
-    videoAssetTitleFolders.value = await fastApi.media.videoAssets.titleFolders()
-}
-
-async function fetchTitleFolderAssets(titleFolder) {
-    titleFolder.assets = await fastApi.media.videoAssets.titleFolderAssets(titleFolder.title_folder_path)
+    videoAssetTitleFolders.value = await fastApi.media.videoAssets.titleFolders();
 }
 
 async function syncVideoAssets() {
@@ -23,6 +20,7 @@ async function syncVideoAssets() {
         alert(JSON.parse(e.request.response).detail);
     } finally {
         waitingFor.value.vidoeAssetSync = false;
+        await fetchVideoAssetTitleFolders();
     }
 }
 
@@ -41,28 +39,31 @@ onMounted(async () => {
         >
             Manually sync video assets
         </LoadingButton>
-        
-        <h1>Linked Title Folders</h1>
-        <div>
-            <div
-                v-for="titleFolder in videoAssetTitleFolders?.linked_video_asset_title_folders"
-                style="margin-top: 32px;"
-                @click="fetchTitleFolderAssets(titleFolder)"
-            >
-                {{ titleFolder }}
-            </div>
-        </div>
 
-        <h1>Unlinked Title Folders</h1>
-
-        <div>
-            <div
+        <h2>Unlinked Title Folders</h2>
+        <div class="title-folder-wrapper">
+            <VideoAssetTitleFolder
                 v-for="titleFolder in videoAssetTitleFolders?.unlinked_video_asset_title_folders"
-                style="margin-top: 32px;"
-                @click="fetchTitleFolderAssets(titleFolder)"
-            >
-                {{ titleFolder }}
-            </div>
+                :titleFolder="titleFolder"
+                :key="titleFolder.title_folder_path"
+            />
+        </div>
+        
+        <h2>Linked Title Folders</h2>
+        <div class="title-folder-wrapper">
+            <VideoAssetTitleFolder
+                v-for="titleFolder in videoAssetTitleFolders?.linked_video_asset_title_folders"
+                :titleFolder="titleFolder"
+                :key="titleFolder.title_folder_path"
+            />
         </div>
     </div>
 </template>
+
+<style scoped>
+.title-folder-wrapper {
+    display: flex;
+    flex-direction: column;
+    row-gap: var(--spacing-sm-md);
+}
+</style>
