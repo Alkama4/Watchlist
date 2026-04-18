@@ -4,17 +4,17 @@ import aiofiles
 import httpx
 import shutil
 from PIL import Image
-from typing import List, Optional
+from typing import List
 from fastapi import APIRouter, HTTPException, Query, Request, Response, Depends
 from fastapi.responses import FileResponse, StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func, or_, and_, distinct
 from sqlalchemy.orm import selectinload
 from app.services.video_assets import sync_all_video_assets
 from app.services.languages import LanguageContext, get_user_language_context, pick_translation
 from app.dependencies import get_db
 from app.models import Episode, Season, Title, User, VideoAsset, VideoType
-from app.schemas import EpisodeMinimalOut, FolderPathRequest, TitleMinimalOut, VideoAssetExpandedOut, VideoAssetTitleFolderOut, VideoAssetTitleFoldersOut
+from app.schemas import EpisodeMinimalOut, FolderPathRequest, TitleMinimalOut, VideoAssetExpandedOut, VideoAssetTitleFoldersOut
 from app.routers.auth import get_current_user
 
 router = APIRouter()
@@ -277,6 +277,8 @@ async def get_list_of_video_asset_title_folders(
             Episode.title_id,
             func.count(Episode.episode_id).label("total_episode_meta_count")
         )
+        .join(Season, Episode.season_id == Season.season_id)
+        .where(Season.season_number != 0)
         .group_by(Episode.title_id)
         .subquery()
     )
@@ -287,10 +289,22 @@ async def get_list_of_video_asset_title_folders(
             VideoAsset.title_folder_name,
             VideoAsset.title_id,
             func.count(VideoAsset.video_asset_id).label("file_count"),
-            func.count(VideoAsset.video_asset_id).filter(VideoAsset.video_type == VideoType.movie).label("linked_movie_count"),
-            func.count(VideoAsset.video_asset_id).filter(VideoAsset.video_type == VideoType.featurette).label("linked_featurette_count"),
-            func.count(VideoAsset.video_asset_id).filter(VideoAsset.video_type == VideoType.episode).label("linked_episodes_count"),
-            func.count(VideoAsset.video_asset_id).filter(VideoAsset.title_id.is_(None)).label("unlinked_count"),
+            func.count(VideoAsset.video_asset_id).filter(VideoAsset.video_type == VideoType.movie).label("movie_count"),
+            func.count(VideoAsset.video_asset_id).filter(VideoAsset.video_type == VideoType.featurette).label("featurette_count"),
+            func.count(VideoAsset.video_asset_id).filter(VideoAsset.video_type == VideoType.episode).label("episodes_count"),
+            func.count(distinct(VideoAsset.episode_id)).label("unique_episodes_linked_count"),
+            
+            # Updated unlinked logic
+            func.count(VideoAsset.video_asset_id).filter(
+                or_(
+                    VideoAsset.title_id.is_(None),
+                    and_(
+                        VideoAsset.video_type == VideoType.episode,
+                        VideoAsset.episode_id.is_(None)
+                    )
+                )
+            ).label("unlinked_count"),
+            
             func.coalesce(episodes_per_title.c.total_episode_meta_count, 0).label("title_episode_count")
         )
         .outerjoin(episodes_per_title, VideoAsset.title_id == episodes_per_title.c.title_id)
@@ -317,11 +331,12 @@ async def get_list_of_video_asset_title_folders(
             "is_linked": row.title_id is not None,
             "counts": {
                 "file_count": row.file_count,
-                "linked_movie_count": row.linked_movie_count,
-                "linked_featurette_count": row.linked_featurette_count,
-                "linked_episodes_count": row.linked_episodes_count,
+                "movie_count": row.movie_count,
+                "featurette_count": row.featurette_count,
+                "episodes_count": row.episodes_count,
                 "unlinked_count": row.unlinked_count,
-                "title_episode_count": row.title_episode_count
+                "title_episode_count": row.title_episode_count,
+                "unique_episodes_linked": row.unique_episodes_linked_count,
             }
         }
 
@@ -385,6 +400,11 @@ def _build_expanded_out(asset: VideoAsset, locale_ctx: LanguageContext) -> Video
             season_name=pick_translation(season.translations, locale_ctx.iso_639_1_list, "name"),
         )
 
+    is_linked = bool(
+        asset.episode or 
+        (asset.title and asset.video_type in [VideoType.movie, VideoType.featurette])
+    )
+
     asset_data = {
         k: v for k, v in asset.__dict__.items()
         if not k.startswith("_sa") and k not in ("title", "episode")
@@ -394,4 +414,5 @@ def _build_expanded_out(asset: VideoAsset, locale_ctx: LanguageContext) -> Video
         **asset_data,
         title=title_out,
         episode=episode_out,
+        is_linked=is_linked
     )

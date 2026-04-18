@@ -472,6 +472,7 @@ class VideoAssetExpandedOut(VideoAssetOut):
     file_path: str
     title: Optional[TitleMinimalOut] = None
     episode: Optional[EpisodeMinimalOut] = None
+    is_linked: bool
 
 class FolderPathRequest(BaseModel):
     title_folder_path: str
@@ -479,11 +480,12 @@ class FolderPathRequest(BaseModel):
 
 class VideoAssetTitleFolderCountsOut(BaseModel):
     file_count: int
-    linked_movie_count: int
-    linked_featurette_count: int
-    linked_episodes_count: int
+    movie_count: int
+    featurette_count: int
+    episodes_count: int
     unlinked_count: int
     title_episode_count: int
+    unique_episodes_linked: int
 
 class VideoAssetTitleFolderOut(BaseModel):
     title_folder_path: str  # Acts as the ID
