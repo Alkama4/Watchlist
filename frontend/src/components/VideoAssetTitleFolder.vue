@@ -95,7 +95,7 @@ const assetSummary = computed(() => {
             <Folder v-else color="var(--c-text-subtle)"/>
 
             <div class="main-details">
-                <h5 class="folder-name">/{{ titleFolder?.title_folder_name }}</h5>
+                <h5 class="folder-name break-all">/{{ titleFolder?.title_folder_name }}</h5>
                 <div class="meta-row">
                     <span>
                         {{ titleFolder?.counts?.file_count - titleFolder?.counts?.unlinked_count }}/{{ titleFolder?.counts?.file_count }}
@@ -155,7 +155,7 @@ const assetSummary = computed(() => {
                         <File v-else color="var(--c-text-faint)"/>
 
                         <div class="main-details">
-                            <h5 class="file-name">{{ asset?.file_name }}</h5>
+                            <h5 class="file-name break-all">{{ asset?.file_name }}</h5>
 
                             <div class="meta-row">
                                 <div class="badge badge-sm" :class="asset?.video_type">{{ asset?.video_type }}</div>
