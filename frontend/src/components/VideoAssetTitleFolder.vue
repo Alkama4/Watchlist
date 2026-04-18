@@ -2,10 +2,10 @@
 import { ArrowOutUpRightSquare, Check, ChevronDown, File, Folder, FolderCheck, Play, Search } from '@boxicons/vue';
 import ExpandableWrapper from './ExpandableWrapper.vue';
 import { fastApi } from '@/utils/fastApi';
-import { computed, onMounted, ref } from 'vue';
-import { buildVideoAssetUrl } from '@/utils/titleUtils';
+import { computed, ref } from 'vue';
 import { videoAssetFormatters } from '@/utils/formatters';
 import ModalVideoAssetDetails from './modal/ModalVideoAssetDetails.vue';
+import { buildVideoAssetUrl, getDeviceHandler } from '@/utils/videoAssetUtils';
 
 const props = defineProps({
     titleFolder: {
@@ -14,7 +14,6 @@ const props = defineProps({
     },
 });
 
-const handlerType = ref(null);
 const ModalAssetDetails = ref(null);
 const modalAsset = ref({});
 
@@ -28,25 +27,6 @@ async function fetchTitleFolderAssets() {
         props.titleFolder.loading = false;
     }
 }
-
-const getDeviceHandler = () => {
-    // Check modern User-Agent Client Hints (Chrome, Edge, etc.)
-    if (navigator.userAgentData?.platform) {
-        return navigator.userAgentData.platform === "Android" ? 'mpv-kt' : 'mpv-handler';
-    }
-    
-    // Fallback to the standard userAgent string (Firefox, Safari, older browsers)
-    const ua = navigator.userAgent;
-    if (/android/i.test(ua)) {
-        return 'mpv-kt';
-    }
-
-    return 'mpv-handler';
-};
-onMounted(() => {
-    handlerType.value = getDeviceHandler();
-})
-
 
 async function toggleTitleFolderAsset() {
     if (props.titleFolder?.isOpen) {
@@ -182,7 +162,7 @@ const assetSummary = computed(() => {
     
                         <div class="actions" @click.stop>
                             <a
-                                :href="buildVideoAssetUrl(asset, null, handlerType)"
+                                :href="buildVideoAssetUrl(asset, null, getDeviceHandler())"
                                 class="btn no-deco"
                             >
                                 <Play pack="filled" size="sm"/>

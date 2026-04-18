@@ -1,7 +1,8 @@
 <script setup>
 import ModalBase from '@/components/modal/ModalBase.vue';
 import { timeFormatters, videoAssetFormatters } from '@/utils/formatters';
-import { ArrowRightStroke } from '@boxicons/vue';
+import { buildVideoAssetUrl, getDeviceHandler } from '@/utils/videoAssetUtils';
+import { ArrowRightStroke, Play } from '@boxicons/vue';
 import { computed, ref } from 'vue';
 
 defineExpose({ open })
@@ -31,9 +32,18 @@ const modalHeader = computed(() => {
     <ModalBase :header="modalHeader" ref="modalRef">
         <div class="details-container">
             <section class="first-things">
-                <div class="small-details">
-                    <span class="badge" :class="videoAsset?.video_type">{{ videoAsset?.video_type }}</span>
-                    <span class="id-tag">#{{ videoAsset?.video_asset_id }}</span>
+                <div class="first-row">
+                    <div class="small-details">
+                        <span class="badge" :class="videoAsset?.video_type">{{ videoAsset?.video_type }}</span>
+                        <span class="id-tag">#{{ videoAsset?.video_asset_id }}</span>
+                    </div>
+                    <a
+                        :href="buildVideoAssetUrl(videoAsset, null, getDeviceHandler())"
+                        class="btn btn-primary no-deco"
+                    >
+                        <Play pack="filled" size="sm"/>
+                        <span>Play</span>
+                    </a>
                 </div>
 
                 <div class="code-area code break-all">
@@ -113,6 +123,11 @@ const modalHeader = computed(() => {
     display: flex;
     flex-direction: column;
     row-gap: var(--spacing-md);
+
+    .first-row {
+        display: flex;
+        justify-content: space-between;
+    }
     
     .small-details {
         display: flex;

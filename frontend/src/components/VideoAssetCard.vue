@@ -1,8 +1,8 @@
 <script setup>
-import { ref, computed } from 'vue'; // Added ref
-import { buildVideoAssetUrl } from '@/utils/titleUtils';
+import { ref, computed } from 'vue';
 import { timeFormatters, videoAssetFormatters } from '@/utils/formatters';
 import { ChevronDown } from '@boxicons/vue';
+import { buildVideoAssetUrl, getDeviceHandler } from '@/utils/videoAssetUtils';
 
 const props = defineProps({
     video: { type: Object, required: true },
@@ -42,21 +42,6 @@ const toggleSpecs = () => {
 const msToMin = (ms) => {
     return 
 }
-
-const getDeviceHandler = () => {
-    // Check modern User-Agent Client Hints (Chrome, Edge, etc.)
-    if (navigator.userAgentData?.platform) {
-        return navigator.userAgentData.platform === "Android" ? 'mpv-kt' : 'mpv-handler';
-    }
-    
-    // Fallback to the standard userAgent string (Firefox, Safari, older browsers)
-    const ua = navigator.userAgent;
-    if (/android/i.test(ua)) {
-        return 'mpv-kt';
-    }
-
-    return 'mpv-handler';
-};
 
 const videoAssetUrl = computed(() => {
     const handlerType = getDeviceHandler();
