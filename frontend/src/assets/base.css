@@ -161,6 +161,14 @@ h6 {
     font-size: var(--fs-neg-1);
 }
 
+label {
+    font-weight: 500;
+    color: var(--c-text-subtle);
+    padding-bottom: var(--spacing-xs);
+    display: block;
+    cursor: auto;
+}
+
 /* Link */
 a {
     text-decoration: underline;

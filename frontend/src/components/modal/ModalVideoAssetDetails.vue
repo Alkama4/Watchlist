@@ -220,7 +220,7 @@ const modalHeader = computed(() => {
 }
 
 
-@media (max-width: 678px) {
+@media (max-width: 768px) {
     .specs-lists-wrapper {
         grid-template-columns: 1fr;
     }
