@@ -51,7 +51,8 @@ onMounted(async () => {
                 @click="syncVideoAssets"
             >
                 <RefreshCwAlt size="sm"/>
-                <span>Scan and Sync</span>
+                <span class="desktop-only">Scan and Sync</span>
+                <span class="mobile-only">Scan</span>
             </LoadingButton>
         </h1>
 

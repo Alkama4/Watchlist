@@ -51,22 +51,16 @@ const assetSummary = computed(() => {
     const counts = props.titleFolder?.counts || {};
     const parts = [];
 
-    // 2. Access the .value of the media query
-    const mobile = isMobile.value;
-
     if (counts.movie_count > 0) {
-        const label = mobile ? 'Mov' : 'Movie';
-        parts.push(`${counts.movie_count} ${label}${counts.movie_count > 1 ? 's' : ''}`);
+        parts.push(`${counts.movie_count} Movie${counts.movie_count > 1 ? 's' : ''}`);
     }
     
     if (counts.episodes_count > 0) {
-        const label = mobile ? 'Ep' : 'Episode';
-        parts.push(`${counts.episodes_count} ${label}${counts.episodes_count > 1 ? 's' : ''}`);
+        parts.push(`${counts.episodes_count} Episode${counts.episodes_count > 1 ? 's' : ''}`);
     }
     
     if (counts.featurette_count > 0) {
-        const label = mobile ? 'Feat' : 'Featurette';
-        parts.push(`${counts.featurette_count} ${label}${counts.featurette_count > 1 ? 's' : ''}`);
+        parts.push(`${counts.featurette_count} Feature${counts.featurette_count > 1 ? 's' : ''}`);
     }
     
     return parts.length ? parts : ['0 Assets'];
