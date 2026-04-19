@@ -150,12 +150,13 @@ img.poster {
     flex-direction: column;
     flex-grow: 1;
     min-width: 0; /* Prevents text overflow from pushing flex layout */
-    gap: var(--spacing-sm);
+    gap: var(--spacing-xs);
     /* padding-top: var(--spacing-xs); */
     padding-inline: var(--spacing-md);
 
     h4 {
         margin: 0;
+        margin-bottom: var(--spacing-xs);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
