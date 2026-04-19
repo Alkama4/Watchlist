@@ -294,7 +294,7 @@ async def get_list_of_video_asset_title_folders(
             func.count(VideoAsset.video_asset_id).filter(VideoAsset.video_type == VideoType.episode).label("episodes_count"),
             func.count(distinct(VideoAsset.episode_id)).label("unique_episodes_linked_count"),
             
-            # Updated unlinked logic
+            # Unlinked logic: No title assigned OR (is an episode and no specific episode_id assigned)
             func.count(VideoAsset.video_asset_id).filter(
                 or_(
                     VideoAsset.title_id.is_(None),
@@ -323,7 +323,23 @@ async def get_list_of_video_asset_title_folders(
     linked_folders = []
     unlinked_folders = []
 
+    # Initialize Global Totals
+    total_movie_count = 0
+    total_episode_count = 0
+    total_featurette_count = 0
+    total_linked_assets = 0
+    total_unlinked_assets = 0
+    total_video_assets = 0
+
     for row in rows:
+        # Update Global Totals
+        total_video_assets += row.file_count
+        total_movie_count += row.movie_count
+        total_episode_count += row.episodes_count
+        total_featurette_count += row.featurette_count
+        total_unlinked_assets += row.unlinked_count
+        total_linked_assets += (row.file_count - row.unlinked_count)
+
         folder_data = {
             "title_folder_path": row.title_folder_path,
             "title_folder_name": row.title_folder_name,
@@ -347,7 +363,15 @@ async def get_list_of_video_asset_title_folders(
 
     return {
         "linked_video_asset_title_folders": linked_folders,
-        "unlinked_video_asset_title_folders": unlinked_folders
+        "unlinked_video_asset_title_folders": unlinked_folders,
+        "counts": {
+            "total_video_assets": total_video_assets,
+            "total_movies": total_movie_count,
+            "total_episodes": total_episode_count,
+            "total_featurettes": total_featurette_count,
+            "total_linked_video_assets": total_linked_assets,
+            "total_unlinked_video_assets": total_unlinked_assets,
+        }
     }
 
 

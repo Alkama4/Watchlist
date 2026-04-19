@@ -497,9 +497,18 @@ class VideoAssetTitleFolderOut(BaseModel):
     class Config:
         from_attributes = True
 
+class VideoAssetTitleFolderCountsOut(BaseModel):
+    total_video_assets: int
+    total_movies: int
+    total_episodes: int
+    total_featurettes: int
+    total_linked_video_assets: int
+    total_unlinked_video_assets: int
+
 class VideoAssetTitleFoldersOut(BaseModel):
     linked_video_asset_title_folders: Optional[List[VideoAssetTitleFolderOut]] = None
     unlinked_video_asset_title_folders: Optional[List[VideoAssetTitleFolderOut]] = None
+    counts: VideoAssetTitleFolderCountsOut
 
 
 ####### Configs #######
