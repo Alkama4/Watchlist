@@ -9,16 +9,21 @@ const waitingFor = ref({});
 const videoAssetTitleFolders = ref({});
 
 async function fetchVideoAssetTitleFolders() {
-    videoAssetTitleFolders.value = await fastApi.media.videoAssets.titleFolders();
+    waitingFor.value.pageLoad = true;
+    try {
+        videoAssetTitleFolders.value = await fastApi.media.videoAssets.titleFolders();
+    } finally {
+        waitingFor.value.pageLoad = false;
+    }
 }
 
 async function syncVideoAssets() {
     waitingFor.value.vidoeAssetSync = true;
     try {
         const response = await fastApi.media.videoAssets.sync();
-        alert(`${response.message} ${response.details.added_links} links added, ${response.details.removed_links} links removed, ${response.details.total_links} links in total, ${response.details.total_titles_with_links} titles with links.`)
+        // alert(`${response.message} ${response.details.added_links} links added, ${response.details.removed_links} links removed, ${response.details.total_links} links in total, ${response.details.total_titles_with_links} titles with links.`)
     } catch(e) {
-        alert(JSON.parse(e.request.response).detail);
+        // alert(JSON.parse(e.request.response).detail);
     } finally {
         waitingFor.value.vidoeAssetSync = false;
         await fetchVideoAssetTitleFolders();
@@ -38,7 +43,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="video-assets-page layout-contained">
+    <div class="video-assets-page layout-contained layout-spacing-top layout-spacing-bottom">
         <h1 class="page-header">
             <span>Video Assets</span>
             <LoadingButton
@@ -86,25 +91,36 @@ onMounted(async () => {
 
         <h3>Unlinked Title Folders ({{ videoAssetTitleFolders?.unlinked_video_asset_title_folders?.length }})</h3>
         <div class="title-folder-wrapper">
-            <VideoAssetTitleFolder
-                v-for="titleFolder in videoAssetTitleFolders?.unlinked_video_asset_title_folders"
-                :titleFolder="titleFolder"
-                :key="titleFolder.title_folder_path"
-            />
+            <template v-if="waitingFor?.pageLoad">
+                <div v-for="skeleton in 5" :key="skeleton" class="title-folder-skeleton loading-wave"></div>
+            </template>
+            <template v-else>
+                <VideoAssetTitleFolder
+                    v-for="titleFolder in videoAssetTitleFolders?.unlinked_video_asset_title_folders"
+                    :titleFolder="titleFolder"
+                    :key="titleFolder.title_folder_path"
+                />
+            </template>
         </div>
         
         <h3>Linked Title Folders ({{ videoAssetTitleFolders?.linked_video_asset_title_folders?.length }})</h3>
         <div class="title-folder-wrapper">
-            <VideoAssetTitleFolder
-                v-for="titleFolder in videoAssetTitleFolders?.linked_video_asset_title_folders"
-                :titleFolder="titleFolder"
-                :key="titleFolder.title_folder_path"
-            />
+            <template v-if="waitingFor?.pageLoad">
+                <div v-for="skeleton in 5" :key="skeleton" class="title-folder-skeleton loading-wave"></div>
+            </template>
+            <template v-else>
+                <VideoAssetTitleFolder
+                    v-for="titleFolder in videoAssetTitleFolders?.linked_video_asset_title_folders"
+                    :titleFolder="titleFolder"
+                    :key="titleFolder.title_folder_path"
+                />
+            </template>
         </div>
     </div>
 </template>
 
 <style scoped>
+/* ---------- Overview ---------- */
 .page-header {
     display: flex;
     justify-content: space-between;
@@ -177,9 +193,17 @@ section.overview {
     }
 }
 
+
+/* ---------- Title Folders ---------- */
+
 .title-folder-wrapper {
     display: flex;
     flex-direction: column;
     row-gap: var(--spacing-sm-md);
+}
+
+.title-folder-skeleton {
+    height: 84px;
+    border-radius: var(--border-radius-md);
 }
 </style>
