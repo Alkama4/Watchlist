@@ -50,7 +50,7 @@ defineProps({
     min-width: var(--collection-card-width);
     padding: 0;
     box-sizing: border-box;
-    height: 150px;
+    height: 125px;
     align-items: center;
     justify-content: start;
 
@@ -89,7 +89,7 @@ img.poster {
         gap: var(--spacing-xs) var(--spacing-sm);
         flex-wrap: wrap;
         align-items: center;
-        font-weight: 400;
+        font-weight: 500;
 
         div {
             flex-wrap: nowrap;
