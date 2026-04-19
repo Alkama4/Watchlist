@@ -135,8 +135,8 @@ img.poster {
     p {
         margin: 0;
         display: -webkit-box;
-        -webkit-line-clamp: 6;
-        line-clamp: 6;
+        -webkit-line-clamp: 3;
+        line-clamp: 3;
         -webkit-box-orient: vertical;
         overflow: hidden;
     }
