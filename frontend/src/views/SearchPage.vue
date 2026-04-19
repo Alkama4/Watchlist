@@ -311,10 +311,10 @@ onUnmounted(() => {
             
             <template v-if="searchStore.waitingFor.firstPage || searchStore.waitingFor.additionalPage">
                 <div v-for="_ in (searchStore.waitingFor.firstPage ? 25 : 5)" class="title-card-skeleton">
-                    <div class="img"/>
-                    <div class="header"/>
-                    <div class="detail"/>
-                    <div class="detail"/>
+                    <div class="loading-wave img"/>
+                    <div class="loading-wave header"/>
+                    <div class="loading-wave detail"/>
+                    <div class="loading-wave detail"/>
                 </div>
             </template>
         </div>
@@ -399,14 +399,6 @@ onUnmounted(() => {
 
     * {
         border-radius: var(--border-radius-md);
-        background: linear-gradient(
-            90deg,
-            var(--c-bg-level-1) 40%,
-            var(--c-bg-level-2) 70%,
-            var(--c-bg-level-1) 100%
-        );
-        background-size: 200% 100%;
-        animation: highlight-wave 1.25s infinite linear;
     }
     .img {
         aspect-ratio: 2/3;
@@ -425,12 +417,5 @@ onUnmounted(() => {
     }
 }
 
-@keyframes highlight-wave {
-    0% {
-        background-position: 0% 0;
-    }
-    100% {
-        background-position: -200% 0;
-    }
-}
+
 </style>

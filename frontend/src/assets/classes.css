@@ -73,3 +73,23 @@ svg.inline {
 span.seperator {
     opacity: 0.5;
 }
+
+
+.loading-wave {
+    background: linear-gradient(
+        90deg,
+        var(--c-bg-level-1) 40%,
+        var(--c-bg-level-2) 70%,
+        var(--c-bg-level-1) 100%
+    );
+    background-size: 200% 100%;
+    animation: loading-wave 1.25s infinite linear;
+}
+@keyframes loading-wave {
+    0% {
+        background-position: 0% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
