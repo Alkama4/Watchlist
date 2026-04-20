@@ -207,7 +207,6 @@ const assetSummary = computed(() => {
     padding: var(--spacing-sm-md) var(--spacing-md);
     justify-content: start;
     border-radius: 0;
-    border: 1px solid var(--c-borde);
 
     .chevron {
         transition: transform 0.1s ease-out;

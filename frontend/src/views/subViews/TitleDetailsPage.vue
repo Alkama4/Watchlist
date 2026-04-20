@@ -11,7 +11,7 @@ import SeasonsListing from '@/components/SeasonsListing.vue';
 import EpisodeMap from '@/components/EpisodeMap.vue';
 import ModalImages from '@/components/modal/ModalImages.vue';
 import KebabMenu from '@/components/KebabMenu.vue';
-import { AlbumCovers, AlertCircle, AlertTriangle, CheckCircle, Clock, Heart, Images, InfoCircle, ListMinus, ListPlay, ListPlus, RefreshCw, Star, Translate } from '@boxicons/vue';
+import { AlbumCovers, AlertCircle, AlertTriangle, CheckCircle, Clock, Heart, Images, InfoCircle, ListMinus, ListPlay, ListPlus, Play, RefreshCw, Star, Translate } from '@boxicons/vue';
 import ModalLocale from '@/components/modal/ModalLocale.vue';
 import { resolveAgeRating } from '@/utils/titleUtils';
 import { useSettingsStore } from '@/stores/settings';
@@ -340,13 +340,21 @@ const lastAirDate = computed(() => {
 
                     </div>
                     
-                    <button
-                        v-if="titleDetails?.video_assets"
-                        @click="videoAssetOverlay.open()"
-                    >
-                        <ListPlay pack="filled" size="sm"/>
-                        <span>Video Assets</span>
-                    </button>
+                    <template v-if="titleDetails?.video_assets">
+                        <hr>
+
+                        <button
+                            class="video-assets-button"
+                            @click="videoAssetOverlay.open()"
+                        >
+                            <ListPlay pack="filled"/>
+
+                            <div class="details">
+                                <h5>Video Assets</h5>
+                                <div class="description">The featurettes and movies for a title</div>
+                            </div>
+                        </button>
+                    </template>
 
                     <SeasonsListing 
                         v-if="titleDetails?.title_type === 'tv'" 
@@ -659,6 +667,30 @@ img.poster {
     display: flex;
     /* flex-wrap: wrap; */
     gap: var(--spacing-sm);
+}
+
+
+hr {
+    margin: var(--spacing-md) 0;
+}
+.video-assets-button {
+    gap: var(--spacing-md);
+    padding: var(--spacing-sm-md) var(--spacing-md);
+    justify-content: start;
+    width: 100%;
+    box-sizing: border-box;
+    /* border-radius: 0; */
+
+    h5 {
+        text-align: left;
+        margin: 0;
+    }
+
+    .description {
+        color: var(--c-text-soft);
+        font-weight: 400;
+        padding-top: var(--spacing-xs);
+    }
 }
 
 

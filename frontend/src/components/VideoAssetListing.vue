@@ -62,7 +62,7 @@ const formatHeader = (type) => {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xs);
-    max-height: 40vh;
+    /* max-height: 40vh; */
     overflow-y: auto;
 }
 
