@@ -280,7 +280,11 @@ const lastAirDate = computed(() => {
                         </div>
 
                         <span class="sep">|</span>
-                        <div class="stat tmdb btn-underline" @click="$refs.EpisodeMapModal.open()">
+                        <div
+                            class="stat tmdb"
+                            :class="{'btn-underline': titleDetails?.title_type == 'tv' }"
+                            @click="titleDetails?.title_type == 'tv' ?? $refs.EpisodeMapModal.open()"
+                        >
                             <div>
                                 <Tmdb/>
                                 {{ numberFormatters.formatNumberToLocale(titleDetails?.tmdb_vote_average) || '-' }}
