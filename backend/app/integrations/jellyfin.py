@@ -7,14 +7,20 @@ JELLYFIN_SERVER_ID = os.getenv("JELLYFIN_SERVER_ID")
 
 
 async def jellyfin_get(path: str, params: dict | None = None) -> dict:
-    missing_vars = [name for name, val in {
-        "JELLYFIN_API_KEY": JELLYFIN_API_KEY, 
-        "JELLYFIN_URL": JELLYFIN_URL
-    }.items() if not val]
+    # If we setup a seperate toggle for enable/disable jellyfin raise a
+    # error for incomplete setup, but for now just return None.
 
-    if missing_vars:
-        raise RuntimeError(f"Missing required configuration: {', '.join(missing_vars)}")
-    
+    if not JELLYFIN_URL or not JELLYFIN_API_KEY:
+        return None
+
+    # missing_vars = [name for name, val in {
+    #     "JELLYFIN_API_KEY": JELLYFIN_API_KEY, 
+    #     "JELLYFIN_URL": JELLYFIN_URL
+    # }.items() if not val]
+
+    # if missing_vars:
+    #     raise RuntimeError(f"Missing required configuration: {', '.join(missing_vars)}")
+
     url = f"{JELLYFIN_URL}{path}"
     headers = {
         "Authorization": f'MediaBrowser Token="{JELLYFIN_API_KEY}"',
@@ -40,12 +46,13 @@ async def fetch_jellyfin_titles() -> dict:
         },
     )
 
-async def fetch_jellyfin_id_by_imdb(imdb_id: str) -> str | None:
-    """Returns the Jellyfin internal ID for a given IMDB ID, or None if not found."""
-    data = await fetch_jellyfin_titles()
-    items = data.get("Items", [])
-    for item in items:
-        provider_ids = item.get("ProviderIds", {})
-        if provider_ids.get("Imdb") == imdb_id:
-            return item.get("Id")
-    return None
+def build_jellyfin_map(jellyfin_response: dict) -> dict[str, str]:
+    items = jellyfin_response.get("Items", [])
+    return {
+        item.get("ProviderIds", {}).get("Imdb"): item.get("Id")
+        for item in items
+        if item.get("ProviderIds", {}).get("Imdb")
+    }
+
+def resolve_jellyfin_id(jellyfin_map: dict, imdb_id: str) -> str | None:
+    return jellyfin_map.get(imdb_id)

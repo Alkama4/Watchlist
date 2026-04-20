@@ -48,7 +48,9 @@ async def coordinate_tmdb_collection_fetching(
     db: AsyncSession,
     tmdb_collection_id: int,
     locale_ctx: LanguageContext,
-    original_tmdb_id: int
+    original_tmdb_id: int,
+    jellyfin_map: dict,
+    title_ids_to_link: list[int]
 ):
     from app.services.titles.store import coordinate_title_fetching
 
@@ -75,8 +77,9 @@ async def coordinate_tmdb_collection_fetching(
                     title_type=TitleType.movie,
                     tmdb_id=movie["id"],
                     locale_ctx=locale_ctx,
-                    fetch_collection=False # IMPORTANT, DO NOT REMOVE
-                                           # Prevents recursion from happening
+                    jellyfin_map=jellyfin_map,              # Reuse
+                    title_ids_to_link=title_ids_to_link,    # Reuse
+                    is_root_level_call=False                # Prevents recursion from happening
                 )
 
 

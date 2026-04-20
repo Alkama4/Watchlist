@@ -21,7 +21,10 @@ async function syncVideoAssets() {
     waitingFor.value.vidoeAssetSync = true;
     try {
         const response = await fastApi.media.videoAssets.sync();
-        // alert(`${response.message} ${response.details.added_links} links added, ${response.details.removed_links} links removed, ${response.details.total_links} links in total, ${response.details.total_titles_with_links} titles with links.`)
+        alert(`added_video_assets_count: ${response.details.added_video_assets_count}
+removed_video_assets_count: ${response.details.removed_video_assets_count}
+added_links_count: ${response.details.added_links_count}
+removed_links_count: ${response.details.removed_links_count}`)
     } catch(e) {
         // alert(JSON.parse(e.request.response).detail);
     } finally {

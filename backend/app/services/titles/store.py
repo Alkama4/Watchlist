@@ -1,14 +1,14 @@
-from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
 from datetime import datetime
 from typing import Optional
 from app.integrations import tmdb
-from app.integrations.jellyfin import JELLYFIN_API_KEY, JELLYFIN_URL, fetch_jellyfin_id_by_imdb
+from app.integrations.jellyfin import build_jellyfin_map, fetch_jellyfin_titles, resolve_jellyfin_id
 from app.services.images import select_best_image, store_image_details
 from app.services.genres import store_title_genres
 from app.services.languages import LanguageContext, get_user_language_context
 from app.services.tmdb_collections import coordinate_tmdb_collection_fetching, init_tmdb_collection
+from app.services.video_assets import link_video_assets
 from app.models import (
     EpisodeTranslation,
     SeasonTranslation,
@@ -27,9 +27,18 @@ async def coordinate_title_fetching(
     tmdb_id: int, 
     user_id: Optional[int] = None, 
     locale_ctx: Optional[LanguageContext] = None,
-    fetch_collection: bool = True
+    is_root_level_call: bool = True,
+    jellyfin_map: Optional[dict] = None,
+    title_ids_to_link: Optional[list[int]] = None
 ):
-    # Use provided context or fetch it if missing
+    # Check what was provided and what needs to be setup
+    if title_ids_to_link is None:
+        title_ids_to_link = []
+    
+    if jellyfin_map is None:
+        raw_titles = await fetch_jellyfin_titles()
+        jellyfin_map = build_jellyfin_map(raw_titles) if raw_titles else {}
+
     if locale_ctx is None:
         if user_id is None:
             raise ValueError("user_id is required if locale_ctx is not provided.")
@@ -41,35 +50,59 @@ async def coordinate_title_fetching(
             title_type=title_type
         )
 
+    # Do the actual fetching and storing
     if title_type == TitleType.movie:
         tmdb_data = await tmdb.fetch_movie(
             tmdb_id, 
             locale_ctx.preferred_iso_639_1, 
             locale_ctx.iso_639_1_comma_str
         )
-        return await _store_movie(db, tmdb_data, locale_ctx, fetch_collection)
-        
+        title_id = await _store_movie(
+            db=db,
+            tmdb_data=tmdb_data,
+            locale_ctx=locale_ctx,
+            jellyfin_map=jellyfin_map,
+            is_root_level_call=is_root_level_call,
+            title_ids_to_link=title_ids_to_link
+        )
     elif title_type == TitleType.tv:
         tmdb_data = await tmdb.fetch_tv(
             tmdb_id, 
             locale_ctx.preferred_iso_639_1, 
             locale_ctx.iso_639_1_comma_str
         )
-        return await _store_tv(db, tmdb_data, locale_ctx)
+        title_id = await _store_tv(
+            db=db,
+            tmdb_data=tmdb_data,
+            locale_ctx=locale_ctx,
+            jellyfin_map=jellyfin_map
+        )
+    else:
+        raise ValueError(f"Invalid title type: {title_type}")
     
-    raise ValueError(f"Invalid title type: {title_type}")
+    # Finalize links and such
+    if title_id not in title_ids_to_link:
+        title_ids_to_link.append(title_id)
+    
+    if is_root_level_call:
+        print(f"LINKING ALL FOUND TITLES: {title_ids_to_link}")
+        await link_video_assets(db=db, candidate_title_ids=title_ids_to_link)
+    
+    return title_id
 
 
 async def _store_movie(
     db: AsyncSession,
     tmdb_data: dict,
     locale_ctx: LanguageContext,
-    fetch_collection: bool = True
+    jellyfin_map: Optional[dict] = None,
+    is_root_level_call: bool = True,
+    title_ids_to_link: Optional[list[int]] = None
 ) -> int:
     release_date_str = tmdb_data.get("release_date")
     release_date = datetime.strptime(release_date_str, "%Y-%m-%d").date() if release_date_str else None
 
-    jellyfin_id = await fetch_jellyfin_id_by_imdb(tmdb_data["imdb_id"]) if JELLYFIN_URL and JELLYFIN_API_KEY else None
+    jellyfin_id = resolve_jellyfin_id(jellyfin_map, tmdb_data["imdb_id"])
 
     tmdb_collection_info = tmdb_data.get("belongs_to_collection") or {}
     tmdb_collection_id = tmdb_collection_info.get("id")
@@ -123,8 +156,11 @@ async def _store_movie(
     await _store_title_translation(db=db, title_id=title_id, tmdb_data=tmdb_data, locale_ctx=locale_ctx)
     await store_title_genres(db=db, title_id=title_id, genres=tmdb_data.get("genres", []))
     await _store_movie_age_ratings(db=db, title_id=title_id, ratings=tmdb_data.get("releases", {}).get("countries", []))
-    if tmdb_collection_id and fetch_collection:
-        await coordinate_tmdb_collection_fetching(db, tmdb_collection_id, locale_ctx, tmdb_data["id"])
+
+    if tmdb_collection_id and is_root_level_call:
+        await coordinate_tmdb_collection_fetching(
+            db, tmdb_collection_id, locale_ctx, tmdb_data["id"], jellyfin_map, title_ids_to_link
+        )
 
     await db.commit()
     return title_id
@@ -133,12 +169,13 @@ async def _store_movie(
 async def _store_tv(
     db: AsyncSession,
     tmdb_data: dict,
-    locale_ctx: LanguageContext
+    locale_ctx: LanguageContext,
+    jellyfin_map: Optional[dict] = None
 ) -> int:
     release_date_str = tmdb_data.get("first_air_date")
     release_date = datetime.strptime(release_date_str, "%Y-%m-%d").date() if release_date_str else None
 
-    jellyfin_id = await fetch_jellyfin_id_by_imdb(tmdb_data["external_ids"]["imdb_id"]) if JELLYFIN_URL and JELLYFIN_API_KEY else None
+    jellyfin_id = resolve_jellyfin_id(jellyfin_map, tmdb_data["external_ids"]["imdb_id"])
 
     # Insert or upsert the title without default images
     stmt = insert(Title).values(
