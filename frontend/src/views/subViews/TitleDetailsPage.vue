@@ -11,7 +11,7 @@ import SeasonsListing from '@/components/SeasonsListing.vue';
 import EpisodeMap from '@/components/EpisodeMap.vue';
 import ModalImages from '@/components/modal/ModalImages.vue';
 import KebabMenu from '@/components/KebabMenu.vue';
-import { AlbumCovers, AlertCircle, AlertTriangle, CheckCircle, ChevronDown, Clock, Heart, Images, InfoCircle, ListMinus, ListPlay, ListPlus, RefreshCw, Star, Translate } from '@boxicons/vue';
+import { AlbumCovers, AlertCircle, AlertTriangle, CheckCircle, Clock, Heart, Images, InfoCircle, ListMinus, ListPlay, ListPlus, RefreshCw, Star, Translate } from '@boxicons/vue';
 import ModalLocale from '@/components/modal/ModalLocale.vue';
 import { resolveAgeRating } from '@/utils/titleUtils';
 import { useSettingsStore } from '@/stores/settings';
@@ -310,37 +310,39 @@ const lastAirDate = computed(() => {
                             :title="titleDetails"
                         />
                         
-                        <!-- <div class="collection-actions"> -->
-                            <button
-                                :class="{'btn-favourite': titleDetails?.user_details?.is_favourite }"
-                                @click="toggleFavourite"
-                            >
-                                <Heart pack="filled" size="sm"/>
-                                <span>Favourite</span>
-                            </button>
-                            <button
-                                :class="{'btn-accent': titleDetails?.user_details?.in_watchlist }"
-                                @click="toggleWatchlist"
-                            >
-                                <Clock pack="filled" size="sm"/>
-                                <span>Watchlist</span>
-                            </button>
-                            <button
-                                @click="adjustCollections"
-                            >
-                                <AlbumCovers pack="filled" size="sm"/>
-                                <span>Collections</span>
-                            </button>
-                        <!-- </div> -->
-
                         <button
-                            v-if="titleDetails?.video_assets"
-                            @click="videoAssetOverlay.open()"
+                            class="btn-mobile-icon-padding"
+                            :class="{'btn-favourite': titleDetails?.user_details?.is_favourite }"
+                            @click="toggleFavourite"
                         >
-                            <ListPlay pack="filled" size="sm"/>
-                            <span>Video Assets</span>
+                            <Heart pack="filled" size="sm"/>
+                            <span class="desktop-only">Favourite</span>
                         </button>
+                        <button
+                            class="btn-mobile-icon-padding"
+                            :class="{'btn-accent': titleDetails?.user_details?.in_watchlist }"
+                            @click="toggleWatchlist"
+                        >
+                            <Clock pack="filled" size="sm"/>
+                            <span class="desktop-only">Watchlist</span>
+                        </button>
+                        <button
+                            class="btn-mobile-icon-padding"
+                            @click="adjustCollections"
+                        >
+                            <AlbumCovers pack="filled" size="sm"/>
+                            <span class="desktop-only">Collections</span>
+                        </button>
+
                     </div>
+                    
+                    <button
+                        v-if="titleDetails?.video_assets"
+                        @click="videoAssetOverlay.open()"
+                    >
+                        <ListPlay pack="filled" size="sm"/>
+                        <span>Video Assets</span>
+                    </button>
 
                     <SeasonsListing 
                         v-if="titleDetails?.title_type === 'tv'" 
@@ -651,14 +653,8 @@ img.poster {
 
 .actions {
     display: flex;
-    flex-wrap: wrap;
+    /* flex-wrap: wrap; */
     gap: var(--spacing-sm);
-
-    .collection-actions {
-        display: grid;
-        gap: var(--spacing-sm);
-        grid-template-columns: 1fr 1fr 1fr;
-    }
 }
 
 

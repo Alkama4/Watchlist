@@ -112,7 +112,7 @@ const assetSummary = computed(() => {
                     v-if="titleFolder?.is_linked"
                     :to="`/title/${titleFolder?.title_id}`"
                     target="_blank"
-                    class="btn no-deco"
+                    class="btn btn-mobile-icon-padding no-deco"
                     @click.stop
                 >
                     <ArrowOutUpRightSquare size="sm"/>
@@ -123,7 +123,7 @@ const assetSummary = computed(() => {
                     :to="`/search?q=${titleFolder?.title_folder_name?.split(' (')[0]}&tmdb=true`"
                     target="_blank"
                     @click.stop
-                    class="btn btn-primary no-deco"
+                    class="btn btn-primary btn-mobile-icon-padding no-deco"
                 >
                     <Search size="sm"/>
                     <span class="desktop-only">Search for title</span>
@@ -175,7 +175,7 @@ const assetSummary = computed(() => {
                         <div class="actions" @click.stop>
                             <a
                                 :href="buildVideoAssetUrl(asset, null, getDeviceHandler())"
-                                class="btn no-deco"
+                                class="btn btn-mobile-icon-padding no-deco"
                             >
                                 <Play pack="filled" size="sm"/>
                                 <span class="desktop-only">Play</span>

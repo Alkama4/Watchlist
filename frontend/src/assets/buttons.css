@@ -39,7 +39,12 @@ button:disabled, .btn:disabled {
 }
 
 .btn-even-padding {
-    padding: var(--spacing-sm)
+    padding: var(--spacing-sm);
+}
+@media(max-width: 768px) {
+    .btn-mobile-icon-padding {
+        padding: var(--spacing-sm) var(--spacing-md);
+    }
 }
 
 
