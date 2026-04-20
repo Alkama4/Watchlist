@@ -1,5 +1,5 @@
 <script setup>
-import { ArrowOutUpRightSquare, Check, ChevronDown, File, Folder, FolderCheck, Link, Play, Search, Unlink } from '@boxicons/vue';
+import { ArrowOutUpRightSquare, ChevronDown, File, Folder, FolderCheck, Link, Play, Search, Unlink } from '@boxicons/vue';
 import ExpandableWrapper from './ExpandableWrapper.vue';
 import { fastApi } from '@/utils/fastApi';
 import { computed, ref } from 'vue';
@@ -92,20 +92,21 @@ const assetSummary = computed(() => {
                         {{ titleFolder?.counts?.file_count - titleFolder?.counts?.unlinked_count }}/{{ titleFolder?.counts?.file_count }}
                         {{ isMobile ? 'Linked' : 'Assets Linked' }}
                     </span>
-                    <template v-if="titleFolder?.counts?.title_episode_count">
-                        <span class="seperator">&bull;</span>
+                </div>
+                <ExpandableWrapper :isExpanded="titleFolder?.isOpen">
+                    <div class="meta-row">
+                        <template v-for="(summary, index) in assetSummary">
+                            <span>{{ summary }}</span>
+                            <span v-if="index < assetSummary?.length - 1" class="seperator">&bull;</span>
+                        </template>
+                    </div>
+                    <div v-if="titleFolder?.counts?.title_episode_count" class="meta-row">
                         <span>
                             {{ titleFolder?.counts?.unique_episodes_linked }}/{{ titleFolder?.counts?.title_episode_count }}
                             {{ isMobile ? 'Episodes' : 'Episodes With Link' }}
                         </span>
-                    </template>
-                </div>
-                <div class="meta-row">
-                    <template v-for="(summary, index) in assetSummary">
-                        <span>{{ summary }}</span>
-                        <span v-if="index < assetSummary?.length - 1" class="seperator">&bull;</span>
-                    </template>
-                </div>
+                    </div>
+                </ExpandableWrapper>
             </div>
             <div>
                 <RouterLink
@@ -222,7 +223,6 @@ const assetSummary = computed(() => {
     flex-direction: column;
     align-items: start;
     flex: 1;
-    gap: var(--spacing-xs);
 }
 
 h5 {
@@ -242,6 +242,7 @@ h5 {
     color: var(--c-text-soft);
     font-weight: 400;
     align-items: center;
+    padding-top: var(--spacing-xs);
 
     span {
         text-align: start;
