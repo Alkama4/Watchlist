@@ -90,7 +90,12 @@ onMounted(async () => {
             </div>
         </section>
 
-        <h3>Unlinked Title Folders ({{ videoAssetTitleFolders?.unlinked_video_asset_title_folders?.length }})</h3>
+        <h3>
+            Unlinked Title Folders
+            <template v-if="videoAssetTitleFolders?.unlinked_video_asset_title_folders?.length">
+                ({{ videoAssetTitleFolders?.unlinked_video_asset_title_folders?.length }})
+            </template>
+        </h3>
         <div class="title-folder-wrapper">
             <template v-if="waitingFor?.pageLoad">
                 <div v-for="skeleton in 5" :key="skeleton" class="title-folder-skeleton loading-wave"></div>
@@ -104,7 +109,12 @@ onMounted(async () => {
             </template>
         </div>
         
-        <h3>Linked Title Folders ({{ videoAssetTitleFolders?.linked_video_asset_title_folders?.length }})</h3>
+        <h3>
+            Linked Title Folders
+            <template v-if="videoAssetTitleFolders?.linked_video_asset_title_folders?.length">
+                ({{ videoAssetTitleFolders?.linked_video_asset_title_folders?.length }})
+            </template>
+        </h3>
         <div class="title-folder-wrapper">
             <template v-if="waitingFor?.pageLoad">
                 <div v-for="skeleton in 5" :key="skeleton" class="title-folder-skeleton loading-wave"></div>
