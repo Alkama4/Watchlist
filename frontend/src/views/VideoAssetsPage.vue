@@ -96,7 +96,10 @@ onMounted(async () => {
                 ({{ videoAssetTitleFolders?.unlinked_video_asset_title_folders?.length }})
             </template>
         </h3>
-        <div class="title-folder-wrapper">
+        <div
+            v-if="waitingFor?.pageLoad || videoAssetTitleFolders?.unlinked_video_asset_title_folders"
+            class="title-folder-wrapper"
+        >
             <template v-if="waitingFor?.pageLoad">
                 <div v-for="skeleton in 5" :key="skeleton" class="title-folder-skeleton loading-wave"></div>
             </template>
@@ -108,6 +111,13 @@ onMounted(async () => {
                 />
             </template>
         </div>
+        <div
+            v-else
+            class="card not-found-section" 
+        >
+            <h2>All Folders Linked</h2>
+            <p>Everything is organized! All detected folders are currently associated with a title.</p>
+        </div>
         
         <h3>
             Linked Title Folders
@@ -115,7 +125,10 @@ onMounted(async () => {
                 ({{ videoAssetTitleFolders?.linked_video_asset_title_folders?.length }})
             </template>
         </h3>
-        <div class="title-folder-wrapper">
+        <div
+            v-if="waitingFor?.pageLoad || videoAssetTitleFolders?.linked_video_asset_title_folders"
+            class="title-folder-wrapper"
+        >
             <template v-if="waitingFor?.pageLoad">
                 <div v-for="skeleton in 5" :key="skeleton" class="title-folder-skeleton loading-wave"></div>
             </template>
@@ -126,6 +139,13 @@ onMounted(async () => {
                     :key="titleFolder.title_folder_path"
                 />
             </template>
+        </div>
+        <div
+            v-else
+            class="card not-found-section" 
+        >
+            <h2>No Folders Linked</h2>
+            <p>No assets have been linked yet. Get started by scanning for new assets and by searching for the unlinked titles.</p>
         </div>
     </div>
 </template>
