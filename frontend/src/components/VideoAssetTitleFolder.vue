@@ -45,8 +45,6 @@ function openModalAssetDetails(asset) {
     ModalAssetDetails.value.open();
 }
 
-
-const isMobile = useMediaQuery('(max-width: 768px)');
 const assetSummary = computed(() => {
     const counts = props.titleFolder?.counts || {};
     const parts = [];
@@ -90,7 +88,7 @@ const assetSummary = computed(() => {
                 <div class="meta-row">
                     <span>
                         {{ titleFolder?.counts?.file_count - titleFolder?.counts?.unlinked_count }}/{{ titleFolder?.counts?.file_count }}
-                        {{ isMobile ? 'Linked' : 'Assets Linked' }}
+                        Assets Linked
                     </span>
                 </div>
                 <ExpandableWrapper :isExpanded="titleFolder?.isOpen">
@@ -103,7 +101,7 @@ const assetSummary = computed(() => {
                     <div v-if="titleFolder?.counts?.title_episode_count" class="meta-row">
                         <span>
                             {{ titleFolder?.counts?.unique_episodes_linked }}/{{ titleFolder?.counts?.title_episode_count }}
-                            {{ isMobile ? 'Episodes' : 'Episodes With Link' }}
+                            Episodes With Link
                         </span>
                     </div>
                 </ExpandableWrapper>
@@ -175,7 +173,6 @@ const assetSummary = computed(() => {
                                 <span>{{ videoAssetFormatters.formatSize(asset?.filesize_bytes) }}</span>
                             </div>
                         </div>
-
     
                         <div class="actions" @click.stop>
                             <a
