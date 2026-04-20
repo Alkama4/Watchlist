@@ -1,5 +1,5 @@
 <script setup>
-import { ArrowOutUpRightSquare, Check, ChevronDown, File, Folder, FolderCheck, Play, Search } from '@boxicons/vue';
+import { ArrowOutUpRightSquare, Check, ChevronDown, File, Folder, FolderCheck, Link, Play, Search, Unlink } from '@boxicons/vue';
 import ExpandableWrapper from './ExpandableWrapper.vue';
 import { fastApi } from '@/utils/fastApi';
 import { computed, ref } from 'vue';
@@ -143,34 +143,38 @@ const assetSummary = computed(() => {
                         class="video-asset btn-text"
                         @click.prevent="openModalAssetDetails(asset)"
                     >
-                        <Check v-if="asset?.is_linked" pack="filled" color="var(--c-positive)"/>
-                        <File v-else color="var(--c-text-faint)"/>
+                        <div class="asset-icon-wrapper">
+                            <File v-if="!asset?.is_linked" color="var(--c-text-faint)" />
+                            <File v-else color="var(--c-positive)" pack="filled" />
+                        </div>
 
                         <div class="main-details">
                             <h5 class="file-name break-all">{{ asset?.file_name }}</h5>
 
                             <div class="meta-row">
-                                <div class="badge badge-sm" :class="asset?.video_type">{{ asset?.video_type }}</div>
+                                <div v-if="asset?.is_linked" class="badge badge-sm linked">
+                                    <Link size="xs"/>
+                                    <span>{{ asset?.title?.name }}
+                                        <template v-if="asset?.episode">
+                                            - S{{ String(asset?.episode?.season_number).padStart(2, '0') }}
+                                            E{{ String(asset?.episode?.episode_number).padStart(2, '0') }}
+                                        </template>
+                                    </span>
+                                </div>
+                                <div v-else class="badge badge-sm unlinked-placeholder">
+                                    <Unlink size="xs"/>
+                                    <span>Not Linked</span>
+                                </div>
+
+                                <span class="seperator">&bull;</span>
+                                <span>{{ asset?.video_type }}</span>
                                 <span class="seperator">&bull;</span>
                                 <span>{{ asset?.resolution }}</span>
                                 <span class="seperator">&bull;</span>
                                 <span>{{ videoAssetFormatters.formatSize(asset?.filesize_bytes) }}</span>
                             </div>
-
-                            <div class="meta-row">
-                                <template v-if="asset?.is_linked">
-                                    <span v-if="asset?.title">{{ isMobile ? '' : 'Linked to: ' }}{{ asset?.title?.name }}</span>
-                                    <span v-if="asset?.episode">
-                                        -
-                                        S{{ String(asset?.episode?.season_number).padStart(2, '0') }}
-                                        E{{ String(asset?.episode?.episode_number).padStart(2, '0') }}
-                                    </span>
-                                </template>
-                                <template v-else>
-                                    Not linked
-                                </template>
-                            </div>
                         </div>
+
     
                         <div class="actions" @click.stop>
                             <a
@@ -197,6 +201,7 @@ const assetSummary = computed(() => {
     background-color: var(--c-bg-level-1);
     border-radius: var(--border-radius-md);
     border: 1px solid var(--c-border);
+    overflow: hidden;
 }
 
 .main-button {
@@ -232,6 +237,7 @@ h5 {
 
 .meta-row {
     display: flex;
+    flex-wrap: wrap;
     gap: var(--spacing-xs);
     color: var(--c-text-soft);
     font-weight: 400;
@@ -247,17 +253,33 @@ h5 {
     display: flex;
     flex-direction: column;
     padding: var(--spacing-sm);
-    /* row-gap: var(--spacing-xs-sm); */
+    background-color: var(--c-bg);
+}
 
-    .video-asset {
-        display: flex;
-        gap: var(--spacing-md);
-        padding: var(--spacing-sm-md) var(--spacing-md);
+.video-asset {
+    display: flex;
+    gap: var(--spacing-md);
+    padding: var(--spacing-sm-md) var(--spacing-sm);
+}
+
+.asset-icon-wrapper {
+    display: flex;
+}
+
+.badge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 500;
+    background-color: var(--c-neutral);
+    color: var(--c-text);
+
+    &.unlinked-placeholder {
+        background-color: transparent;
+        border: 1px dashed var(--c-border);
+        color: var(--c-text-faint);
+        height: 20px;
+        box-sizing: border-box;
     }
-
-    .badge {
-        background-color: var(--c-neutral);
-        color: var(--c-text);
-    }   
 }
 </style>
