@@ -29,7 +29,8 @@ from app.models import (
     TitleUserDetails,
     SeasonUserDetails,
     EpisodeUserDetails,
-    TitleGenre
+    TitleGenre,
+    VideoAsset
 )
 
 
@@ -56,7 +57,7 @@ async def fetch_title_with_user_details(db: AsyncSession, title_id: int, user_id
             selectinload(Title.user_details.and_(TitleUserDetails.user_id == user_id)),
             selectinload(Title.genres).selectinload(TitleGenre.genre),
             selectinload(Title.age_ratings),
-            selectinload(Title.video_assets),
+            selectinload(Title.video_assets.and_(VideoAsset.episode_id == None)),
             
             # Load Seasons + filtered children
             selectinload(Title.seasons.and_(Season.season_number != 0)).options(
