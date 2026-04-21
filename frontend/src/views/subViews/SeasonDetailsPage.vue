@@ -204,7 +204,6 @@ onUnmounted(() => {
                     v-for="episode in activeSeason?.episodes"
                     :key="episode.episode_id"
                     class="episode"
-                    :class="{'expanded': episode.videoAssetListingVisible}"
                 >
                     <div
                         class="episode-backdrop-wrapper"
@@ -220,11 +219,11 @@ onUnmounted(() => {
                         >
                         <EyeSlash size="lg" class="eye-icon" />
                     </div>
-                    <div class="details">
+                    <div class="details" :class="{'spoilers-hidden': !isEpisodeSpoilerVisible(episode)}">
                         <h4>
                             <span class="number">{{ episode?.episode_number }}. </span>
                             <span class="name">
-                                {{ isEpisodeSpoilerVisible(episode) ? episode?.episode_name : 'Episode' }}
+                                {{ episode?.episode_name }}
                             </span>
                         </h4>
                         <div class="meta-row">
@@ -242,7 +241,12 @@ onUnmounted(() => {
                                 ({{ numberFormatters.formatCompactNumber(episode.tmdb_vote_count) }} votes)
                             </span>
                         </div>
-                        <p>{{ isEpisodeSpoilerVisible(episode) ? episode.overview : 'Episode overview hidden.' }}</p>
+                        <div class="overview-wrapper">
+                            <span class="overview">
+                                {{ episode.overview }}
+                            </span>
+                        </div>
+                        <!-- <p>{{ isEpisodeSpoilerVisible(episode) ? episode.overview : 'Episode overview hidden.' }}</p> -->
 
                         <div class="controls">
                             <WatchCountButtons
@@ -432,18 +436,18 @@ onUnmounted(() => {
             -webkit-line-clamp: 1;
             line-clamp: 1;
         }
-        p {
+        .overview-wrapper {
             -webkit-line-clamp: 4;
             line-clamp: 4;
         }
-        h4, p {
+        h4, .overview-wrapper {
             margin: 0;
             display: -webkit-box;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
 
-        p, .meta-row {
+        .overview-wrapper, .meta-row {
             color: var(--c-text-soft);
             font-size: var(--fs-neg-1);
         }
@@ -460,6 +464,32 @@ onUnmounted(() => {
             margin-top: var(--spacing-sm);
             display: flex;
             gap: var(--spacing-sm);
+        }
+
+        .overview-wrapper .overview,
+        h4 .name {
+            transition: background-color 0.1s var(--transition-ease-out),
+                        color 0.1s var(--transition-ease-out);
+        }
+
+        &.spoilers-hidden {
+            .overview-wrapper .overview,
+            h4 .name {
+                background-color: var(--c-neutral); 
+                border-radius: var(--border-radius-sm-md);
+                
+                box-decoration-break: clone;
+                -webkit-box-decoration-break: clone;
+            }
+
+            .overview-wrapper,
+            h4 {
+                color: transparent; 
+            }
+
+            h4 .number {
+                color: var(--c-text) !important;
+            }
         }
     }
 }
