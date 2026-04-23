@@ -162,18 +162,20 @@ onUnmounted(() => {
     display: flex;
     flex-direction: column;
     border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
-    padding: 0 var(--spacing-md);
+    padding: 0 var(--spacing-sm);
     transition: transform 0.25s var(--transition-ease-out);
 }
 
 .handle {
-    padding: var(--spacing-sm-md) 0;
+    padding: 0;
+    padding-top: var(--spacing-sm);
+    padding-bottom: var(--spacing-xs);
     touch-action: pan-y; 
 }
 
 .handle-pill {
-    width: 40px;
-    height: 5px;
+    width: 44px;
+    height: 4px;
     background-color: var(--c-border);
     border-radius: 100px;
     margin: 0 auto 0 auto;

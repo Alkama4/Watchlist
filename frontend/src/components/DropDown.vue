@@ -20,6 +20,10 @@ const props = defineProps({
     drawerHeader: {
         type: String,
         default: ''
+    },
+    roundButton: {
+        type: Boolean,
+        default: false
     }
 });
 
@@ -55,7 +59,7 @@ watch(
         @focusout="close"
     >
         <button 
-            class="btn-text btn-even-padding trigger-btn" 
+            class="btn-even-padding trigger-button" 
             :class="{'active': isActive}"
             @click="toggle"
             :disabled="disabled"
@@ -67,7 +71,7 @@ watch(
         <Transition name="options">
             <div 
                 v-if="isActive" 
-                class="options" 
+                class="desktop-options" 
                 :class="`align-${align}`" 
                 @mousedown.prevent
             >
@@ -78,7 +82,8 @@ watch(
 
     <div class="dropdown dropdown-mobile">
         <button
-            class="btn-text btn-even-padding trigger-btn" 
+            class="btn-even-padding trigger-button" 
+            :class="{'round': roundButton}"
             @click="drawer?.open()"
             :disabled="disabled"
         >
@@ -99,25 +104,29 @@ watch(
     display: inline-block; 
 }
 
-.trigger-btn {
+.trigger-button {
     position: relative;
     display: flex;
     align-items: center;
     gap: var(--spacing-xs, 4px);
     white-space: nowrap;
+
+    &.round {
+        border-radius: 100px;
+    }
 }
 
 .chevron {
     transition: transform 0.1s ease-out;
 }
 
-.trigger-btn.active .chevron {
+.trigger-button.active .chevron {
     transform: rotate(180deg);
 }
 
-.options {
+.desktop-options {
     position: absolute;
-    top: 100%;
+    top: calc(100% + var(--spacing-sm));
     max-height: clamp(300px, 50vh, 700px);
     overflow-y: auto;
     

@@ -1,59 +1,35 @@
 <script setup>
-import { DotsVerticalRounded } from '@boxicons/vue';
-import { ref, watch } from 'vue';
+import { DotsHorizontalRounded, DotsVerticalRounded } from '@boxicons/vue';
+import DropDown from './DropDown.vue';
 
 const props = defineProps({
-    disabled: {
-        type: Boolean,
-        default: false
-    },
-    modified: {
+    horizontalDots: {
         type: Boolean,
         default: false
     },
     menuItems: {
         type: Array,
         default: () => []
+    },
+    roundButton: {
+        type: Boolean,
+        default: false
     }
 });
-
-const isActive = ref(false);
-
-function toggle() {
-    if (!props.disabled) {
-        isActive.value = !isActive.value;
-    }
-}
-function close() {
-    isActive.value = false;
-}
-
-watch(
-    () => props.disabled,
-    (newDisabled) => {
-        if (newDisabled) {
-            close();
-        }
-    }
-);
 </script>
 
 <template>
-    <div 
-        class="kebab-menu" 
-        :class="{'disabled': disabled}" 
-        tabindex="-1"
-        @focusout="close"
-    >
-        <DotsVerticalRounded 
-            class="btn btn-text btn-even-padding" 
-            :class="{'active': isActive}"
-            @click="toggle"
-            :disabled="disabled"
+    <DropDown align="right" :roundButton="roundButton">
+        <component
+            :is="horizontalDots ? DotsHorizontalRounded : DotsVerticalRounded" 
         />
-        <Transition name="options">
-            <div v-if="isActive" class="options" @mousedown.prevent>
-                <button v-for="item in menuItems" @click="item?.action" class="btn-even-padding btn-text">
+        <template #content>
+            <div class="menu-options">
+                <button
+                    v-for="item in menuItems"
+                    class="btn-text option-button"
+                    @click="item?.action"
+                >
                     <component
                         :is="item?.iconComponent"
                         pack="filled"
@@ -62,36 +38,36 @@ watch(
                     <span>{{ item?.label }}</span>
                 </button>
             </div>
-        </Transition>
-    </div>
+        </template>
+    </DropDown>
 </template>
 
 <style scoped>
-.kebab-menu {
-    position: relative;
-}
-
-.options {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    z-index: 100;
-    background-color: var(--c-bg-opaque-base);
-    backdrop-filter: blur(var(--blur-subtle));
-    padding: var(--spacing-xs);
-    border-radius: var(--border-radius-md-lg);
-    border: 1px solid var(--c-border);
-
+.menu-options {
     display: flex;
     flex-direction: column;
-    /* gap: var(--spacing-xs); */
+}
 
-    button {
-        padding-right: var(--spacing-lg);
-        gap: var(--spacing-sm);
-        white-space: nowrap;
-        justify-content: start;
-        font-weight: 500;
+.option-button {
+    padding-left: var(--spacing-sm-md);
+    padding-right: var(--spacing-lg);
+    gap: var(--spacing-md);
+    white-space: nowrap;
+    justify-content: start;
+    font-weight: 500;
+}
+
+@media(max-width: 768px) {
+    .option-button {
+        padding: var(--spacing-sm-md) var(--spacing-md);
+        gap: var(--spacing-md-lg);
+        font-size: var(--fs-neg-1);
+        font-weight: 400;
+
+        svg {
+            width: 20px;
+            height: 20px;
+        }
     }
 }
 

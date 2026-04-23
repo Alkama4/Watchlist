@@ -11,7 +11,7 @@ import SeasonsListing from '@/components/SeasonsListing.vue';
 import EpisodeMap from '@/components/EpisodeMap.vue';
 import ModalImages from '@/components/modal/ModalImages.vue';
 import KebabMenu from '@/components/KebabMenu.vue';
-import { AlbumCovers, AlertCircle, AlertTriangle, CheckCircle, Clock, Heart, Images, InfoCircle, ListMinus, ListPlay, ListPlus, Play, RefreshCw, Star, Translate } from '@boxicons/vue';
+import { AlbumCovers, AlertCircle, AlertTriangle, CheckCircle, Clock, DotsHorizontalRounded, Heart, Images, InfoCircle, ListMinus, ListPlay, ListPlus, Play, RefreshCw, Star, Translate } from '@boxicons/vue';
 import ModalLocale from '@/components/modal/ModalLocale.vue';
 import { resolveAgeRating } from '@/utils/titleUtils';
 import { useSettingsStore } from '@/stores/settings';
@@ -21,6 +21,7 @@ import VideoAssetListing from '@/components/VideoAssetListing.vue';
 import ExternalResources from '@/components/ExternalResources.vue';
 import CollectionBannerCard from '@/components/CollectionBannerCard.vue';
 import ResponsiveOverlay from '@/components/ResponsiveOverlay.vue';
+import DropDown from '@/components/DropDown.vue';
 
 const props = defineProps({
     titleDetails: {
@@ -128,16 +129,6 @@ const tmdbEditAgeRatingUrl = computed(() => {
     return `${props.tmdbBaseUrl}/${path}`;
 })
 
-const jellyfinLink = computed(() => {
-    const baseUrl = props?.jellyfinConfig?.base_url
-    const serverId = props?.jellyfinConfig?.server_id
-    const jellyfinId = props?.titleDetails?.jellyfin_id
-
-    const serverIdParam = serverId ? `&serverId=${serverId}` : ''
-
-    return `${baseUrl}/web/#/details?id=${jellyfinId}${serverIdParam}`
-})
-
 const lastAirDate = computed(() => {
     const seasons = props?.titleDetails?.seasons;
     if (!seasons || seasons.length === 0) return undefined;
@@ -157,6 +148,19 @@ const lastAirDate = computed(() => {
 
     return undefined;
 });
+
+const kebabOptions = computed(() => {
+    return [
+        { iconComponent: RefreshCw, label: 'Update Details', action: updateTitleDetails },
+        { iconComponent: Images, label: 'Manage Images', action: ImagesModal.value?.open },
+        { iconComponent: Translate, label: 'Change Language', action: LocaleModal.value?.open },
+        {
+            iconComponent: props.titleDetails?.user_details?.in_library ? ListMinus : ListPlus,
+            label: props.titleDetails?.user_details?.in_library ? 'Remove from Library' : 'Add to Library',
+            action: props.titleDetails?.user_details?.in_library ? removeFromLibrary : addToLibrary
+        },
+    ]
+})
 </script>
 
 <template>
@@ -177,6 +181,10 @@ const lastAirDate = computed(() => {
                     :alt="`${titleDetails?.title_type} logo: ${titleDetails?.name}`"
                     class="logo"
                 >
+            </div>
+
+            <div class="mobile-kebab-wrapper mobile-only">
+                <KebabMenu :menuItems="kebabOptions" roundButton/>
             </div>
     
             <div class="main-info">
@@ -283,7 +291,7 @@ const lastAirDate = computed(() => {
                         <div
                             class="stat tmdb"
                             :class="{'btn-underline': titleDetails?.title_type == 'tv' }"
-                            @click="titleDetails?.title_type == 'tv' ?? $refs.EpisodeMapModal.open()"
+                            @click="titleDetails?.title_type == 'tv' ? $refs.EpisodeMapModal.open() : ''"
                         >
                             <div>
                                 <Tmdb/>
@@ -337,7 +345,9 @@ const lastAirDate = computed(() => {
                             <AlbumCovers pack="filled" size="sm"/>
                             <span class="desktop-only">Collections</span>
                         </button>
-
+                        <div class="desktop-only">
+                            <KebabMenu :menuItems="kebabOptions" horizontalDots/>
+                        </div>
                     </div>
                     
                     <template v-if="titleDetails?.video_assets">
@@ -362,19 +372,6 @@ const lastAirDate = computed(() => {
                         :class="{'layout-spacing-bottom': !similarTitles?.titles?.length > 0}"
                     />
                 </div>
-
-                <KebabMenu
-                    :menuItems="[
-                        { iconComponent: RefreshCw, label: 'Update Details', action: updateTitleDetails },
-                        { iconComponent: Images, label: 'Manage Images', action: ImagesModal?.open },
-                        { iconComponent: Translate, label: 'Change Language', action: LocaleModal?.open },
-                        {
-                            iconComponent: titleDetails?.user_details?.in_library ? ListMinus : ListPlus,
-                            label: titleDetails?.user_details?.in_library ? 'Remove from Library' : 'Add to Library',
-                            action: titleDetails?.user_details?.in_library ? removeFromLibrary : addToLibrary
-                        },
-                    ]"
-                />
             </div>
         </div>
 
@@ -546,6 +543,12 @@ img.backdrop {
     }
 }
 
+.mobile-kebab-wrapper {
+    position: absolute;
+    top: var(--spacing-md);
+    right: var(--spacing-md);
+}
+
 .notice {
     margin-bottom: var(--spacing-md);
 }
@@ -556,11 +559,7 @@ img.backdrop {
     gap: var(--spacing-md-lg);
     position: relative;
 
-    .kebab-menu {
-        position: absolute;
-        top: var(--spacing-xs-sm);
-        right: var(--spacing-xs-sm);
-    }
+
 
     /* background-color: var(--c-bg-opaque-base);
     backdrop-filter: blur(var(--blur-subtle));
@@ -779,12 +778,6 @@ hr {
         flex-direction: column;
         align-items: center;
         position: static;
-
-        .kebab-menu {
-            position: absolute;
-            top: var(--spacing-md);
-            right: var(--spacing-md);
-        }
     }
 
     .poster-section {
