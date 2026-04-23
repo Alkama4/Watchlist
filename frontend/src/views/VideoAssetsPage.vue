@@ -100,7 +100,7 @@ onMounted(async () => {
             </template>
         </h3>
         <div
-            v-if="waitingFor?.pageLoad || videoAssetTitleFolders?.unlinked_video_asset_title_folders"
+            v-if="waitingFor?.pageLoad || videoAssetTitleFolders?.unlinked_video_asset_title_folders?.length"
             class="title-folder-wrapper"
         >
             <template v-if="waitingFor?.pageLoad">
@@ -129,7 +129,7 @@ onMounted(async () => {
             </template>
         </h3>
         <div
-            v-if="waitingFor?.pageLoad || videoAssetTitleFolders?.linked_video_asset_title_folders"
+            v-if="waitingFor?.pageLoad || videoAssetTitleFolders?.linked_video_asset_title_folders?.length"
             class="title-folder-wrapper"
         >
             <template v-if="waitingFor?.pageLoad">
