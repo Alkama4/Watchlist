@@ -12,6 +12,7 @@ from app.models import (
     Title,
     Season,
     Episode,
+    TitleFolder,
     TitleTranslation,
     UserSetting,
     TitleUserDetails,
@@ -171,10 +172,11 @@ def _apply_filters(stmt, q: TitleQueryIn):
     if q.has_video_assets is not None:
         asset_exists_subq = (
             select(VideoAsset.video_asset_id)
+            .outerjoin(TitleFolder, VideoAsset.title_folder_id == TitleFolder.title_folder_id)
             .outerjoin(Episode, VideoAsset.episode_id == Episode.episode_id)
             .where(
                 or_(
-                    VideoAsset.title_id == Title.title_id,
+                    TitleFolder.title_id == Title.title_id,
                     Episode.title_id == Title.title_id
                 )
             )
