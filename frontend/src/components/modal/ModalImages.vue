@@ -118,6 +118,14 @@ function updateDomData(imageType, imagePath) {
         })
     }
 }
+
+function catHasUserChoise(category) {
+    const images = imageData.value?.[category.key]?.images;
+    
+    if (!images) return false;
+
+    return images.some(image => image?.is_user_choice);
+}
 </script>
 
 <template>
@@ -143,6 +151,7 @@ function updateDomData(imageType, imagePath) {
                         :disabled="!imageData[cat.key]?.total_count"
                         @click="activeType = cat.key"
                     >
+                        <Star :pack="catHasUserChoise(cat) ? 'filled' : ''" size="xs"/>
                         {{ cat.label }} ({{ imageData[cat.key]?.total_count || 0 }})
                     </button>
                 </div>
@@ -174,7 +183,7 @@ function updateDomData(imageType, imagePath) {
                 <div 
                     v-for="image in filteredImages"
                     :key="image.file_path"
-                    class="image"
+                    class="image-card"
                     :class="{'user-choice': image?.is_user_choice, 'default': image?.is_default}"
                 >
                     <a :href="buildImageUrl(image?.file_path, 'original', false)" target="_blank">
@@ -266,7 +275,7 @@ hr {
     margin: var(--spacing-xs) var(--spacing-sm);
 }
 
-.image {
+.image-card {
     position: relative;
     display: flex;
     flex-direction: column;
