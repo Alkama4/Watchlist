@@ -94,6 +94,7 @@ async function removeTitle() {
             <div 
                 v-if="searchStore.tmdbFallback || !titleInfo?.user_details?.in_library"
                 class="action-overlay"
+                :class="{'waiting': waiting?.library}"
             >
                 <LoadingButton 
                     v-if="!titleInfo?.user_details?.in_library" 
@@ -256,7 +257,8 @@ a.title-card:not(.in-library):hover img {
     opacity: 0;
     transition: opacity 0.1s var(--transition-ease-out);
 }
-.title-card:hover .action-overlay {
+.title-card:hover .action-overlay,
+.action-overlay.waiting {
     opacity: 1;
 }
 
