@@ -254,10 +254,10 @@ export const fastApi = {
                 method: 'get',
                 url: `/media/video_assets/title_folders`
             }),
-            titleFolderAssets: async (titleFolderPath) => fetchData({
+            titleFolderAssets: async (titleFolderId) => fetchData({
                 method: 'post',
                 url: `/media/video_assets/title_folder/assets`,
-                data: { title_folder_path: titleFolderPath }
+                data: { title_folder_id: titleFolderId }
             })
         }
     },

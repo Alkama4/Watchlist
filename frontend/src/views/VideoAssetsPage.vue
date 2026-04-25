@@ -6,12 +6,12 @@ import { RefreshCwAlt } from '@boxicons/vue';
 import { computed, onMounted, ref } from 'vue';
 
 const waitingFor = ref({});
-const videoAssetTitleFolders = ref({});
+const pageData = ref({});
 
-async function fetchVideoAssetTitleFolders() {
+async function fetchpageData() {
     waitingFor.value.pageLoad = true;
     try {
-        videoAssetTitleFolders.value = await fastApi.media.videoAssets.titleFolders();
+        pageData.value = await fastApi.media.videoAssets.titleFolders();
     } finally {
         waitingFor.value.pageLoad = false;
     }
@@ -21,27 +21,28 @@ async function syncVideoAssets() {
     waitingFor.value.vidoeAssetSync = true;
     try {
         const response = await fastApi.media.videoAssets.sync();
-        alert(`added_video_assets_count: ${response.details.added_video_assets_count}
-removed_video_assets_count: ${response.details.removed_video_assets_count}
-added_links_count: ${response.details.added_links_count}
-removed_links_count: ${response.details.removed_links_count}`)
+        alert(`added_folders: ${response.details.added_folders}
+added_links: ${response.details.added_links}
+added_video_assets: ${response.details.added_video_assets}
+removed_links: ${response.details.removed_links}
+removed_video_assets: ${response.details.removed_video_assets}`)
     } catch(e) {
         // alert(JSON.parse(e.request.response).detail);
     } finally {
         waitingFor.value.vidoeAssetSync = false;
-        await fetchVideoAssetTitleFolders();
+        await fetchpageData();
     }
 }
 
 const totalLinkedProgressPercent = computed(() => {
-    const total = videoAssetTitleFolders.value?.counts?.total_video_assets || 0;
-    const linked = videoAssetTitleFolders.value?.counts?.total_linked_video_assets || 0;
+    const total = pageData.value?.counts?.total_video_assets || 0;
+    const linked = pageData.value?.counts?.total_linked_video_assets || 0;
     if (total === 0) return 0;
     return Math.min(100, (linked / total) * 100);
 });
 
 onMounted(async () => {
-    await fetchVideoAssetTitleFolders();
+    await fetchpageData();
 });
 </script>
 
@@ -63,19 +64,19 @@ onMounted(async () => {
             <div class="cards-holder">
                 <div class="stat-card">
                     <label>Video Assets in Total</label>
-                    <strong>{{ videoAssetTitleFolders?.counts?.total_video_assets ?? '-' }}</strong>
+                    <strong>{{ pageData?.counts?.total_video_assets ?? '-' }}</strong>
                 </div>
                 <div class="stat-card">
                     <label>Movie Assets</label>
-                    <strong>{{ videoAssetTitleFolders?.counts?.total_movies ?? '-' }}</strong>
+                    <strong>{{ pageData?.counts?.total_movies ?? '-' }}</strong>
                 </div>
                 <div class="stat-card">
                     <label>Episode Assets</label>
-                    <strong>{{ videoAssetTitleFolders?.counts?.total_episodes ?? '-' }}</strong>
+                    <strong>{{ pageData?.counts?.total_episodes ?? '-' }}</strong>
                 </div>
                 <div class="stat-card">
                     <label>Featurette Assets</label>
-                    <strong>{{ videoAssetTitleFolders?.counts?.total_featurettes ?? '-' }}</strong>
+                    <strong>{{ pageData?.counts?.total_featurettes ?? '-' }}</strong>
                 </div>
             </div>
 
@@ -85,8 +86,8 @@ onMounted(async () => {
                     <div class="bar" :style="{'width': `${totalLinkedProgressPercent}%`}"></div>
                     
                     <div class="details">
-                        {{ videoAssetTitleFolders?.counts?.total_linked_video_assets ?? 0 }} /
-                        {{ videoAssetTitleFolders?.counts?.total_video_assets ?? 0 }}
+                        {{ pageData?.counts?.total_linked_video_assets ?? 0 }} /
+                        {{ pageData?.counts?.total_video_assets ?? 0 }}
                         ({{ totalLinkedProgressPercent.toFixed(2) }}%)
                     </div>
                 </div>
@@ -95,12 +96,12 @@ onMounted(async () => {
 
         <h3>
             Unlinked Title Folders
-            <template v-if="videoAssetTitleFolders?.unlinked_video_asset_title_folders?.length">
-                ({{ videoAssetTitleFolders?.unlinked_video_asset_title_folders?.length }})
+            <template v-if="pageData?.unlinked_folders?.length">
+                ({{ pageData?.unlinked_folders?.length }})
             </template>
         </h3>
         <div
-            v-if="waitingFor?.pageLoad || videoAssetTitleFolders?.unlinked_video_asset_title_folders?.length"
+            v-if="waitingFor?.pageLoad || pageData?.unlinked_folders?.length"
             class="title-folder-wrapper"
         >
             <template v-if="waitingFor?.pageLoad">
@@ -108,7 +109,7 @@ onMounted(async () => {
             </template>
             <template v-else>
                 <VideoAssetTitleFolder
-                    v-for="titleFolder in videoAssetTitleFolders?.unlinked_video_asset_title_folders"
+                    v-for="titleFolder in pageData?.unlinked_folders"
                     :titleFolder="titleFolder"
                     :key="titleFolder.title_folder_path"
                 />
@@ -124,12 +125,12 @@ onMounted(async () => {
         
         <h3>
             Linked Title Folders
-            <template v-if="videoAssetTitleFolders?.linked_video_asset_title_folders?.length">
-                ({{ videoAssetTitleFolders?.linked_video_asset_title_folders?.length }})
+            <template v-if="pageData?.linked_folders?.length">
+                ({{ pageData?.linked_folders?.length }})
             </template>
         </h3>
         <div
-            v-if="waitingFor?.pageLoad || videoAssetTitleFolders?.linked_video_asset_title_folders?.length"
+            v-if="waitingFor?.pageLoad || pageData?.linked_folders?.length"
             class="title-folder-wrapper"
         >
             <template v-if="waitingFor?.pageLoad">
@@ -137,7 +138,7 @@ onMounted(async () => {
             </template>
             <template v-else>
                 <VideoAssetTitleFolder
-                    v-for="titleFolder in videoAssetTitleFolders?.linked_video_asset_title_folders"
+                    v-for="titleFolder in pageData?.linked_folders"
                     :titleFolder="titleFolder"
                     :key="titleFolder.title_folder_path"
                 />

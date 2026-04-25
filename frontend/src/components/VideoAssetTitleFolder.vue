@@ -6,7 +6,6 @@ import { computed, ref } from 'vue';
 import { videoAssetFormatters } from '@/utils/formatters';
 import ModalVideoAssetDetails from './modal/ModalVideoAssetDetails.vue';
 import { buildVideoAssetUrl, getDeviceHandler } from '@/utils/videoAssetUtils';
-import { useMediaQuery } from '@/utils/useMediaQuery';
 
 const props = defineProps({
     titleFolder: {
@@ -22,7 +21,7 @@ async function fetchTitleFolderAssets() {
     props.titleFolder.loading = true;
     try {
         props.titleFolder.assets = await fastApi.media.videoAssets.titleFolderAssets(
-            props.titleFolder.title_folder_path
+            props.titleFolder.title_folder_id
         );
     } finally {
         props.titleFolder.loading = false;
@@ -67,6 +66,7 @@ const assetSummary = computed(() => {
 
 <template>
     <div class="video-asset-title-folder">
+        <!-- {{ titleFolder }} -->
         <button
             class="main-button btn-text"
             @click="toggleTitleFolderAsset(titleFolder)"
@@ -86,6 +86,15 @@ const assetSummary = computed(() => {
             <div class="main-details">
                 <h5 class="folder-name break-all">/{{ titleFolder?.title_folder_name }}</h5>
                 <div class="meta-row">
+                    <div v-if="titleFolder?.is_linked" class="badge badge-sm linked">
+                        <Link size="xs"/>
+                        <span>{{ titleFolder?.linked_title?.name }}</span>
+                    </div>
+                    <div v-else class="badge badge-sm unlinked-placeholder">
+                        <Unlink size="xs"/>
+                        <span>Not Linked</span>
+                    </div>
+                    <span class="seperator">&bull;</span>
                     <span>
                         {{ titleFolder?.counts?.file_count - titleFolder?.counts?.unlinked_count }}/{{ titleFolder?.counts?.file_count }}
                         Assets Linked
@@ -101,7 +110,7 @@ const assetSummary = computed(() => {
                     <div v-if="titleFolder?.counts?.title_episode_count" class="meta-row">
                         <span>
                             {{ titleFolder?.counts?.unique_episodes_linked }}/{{ titleFolder?.counts?.title_episode_count }}
-                            Episodes With Link
+                            Episodes with Video Asset
                         </span>
                     </div>
                 </ExpandableWrapper>
@@ -143,8 +152,8 @@ const assetSummary = computed(() => {
                         @click.prevent="openModalAssetDetails(asset)"
                     >
                         <div class="asset-icon-wrapper">
-                            <File v-if="!asset?.is_linked" color="var(--c-text-faint)" />
-                            <File v-else color="var(--c-positive)" pack="filled" />
+                            <File v-if="asset?.is_linked" color="var(--c-positive)" pack="filled" />
+                            <File v-else color="var(--c-text-faint)" />
                         </div>
 
                         <div class="main-details">
@@ -153,20 +162,19 @@ const assetSummary = computed(() => {
                             <div class="meta-row">
                                 <div v-if="asset?.is_linked" class="badge badge-sm linked">
                                     <Link size="xs"/>
-                                    <span>{{ asset?.title?.name }}
-                                        <template v-if="asset?.episode">
-                                            - S{{ String(asset?.episode?.season_number).padStart(2, '0') }}
-                                            E{{ String(asset?.episode?.episode_number).padStart(2, '0') }}
-                                        </template>
-                                    </span>
+                                    <template v-if="asset?.linked_episode">
+                                        S{{ String(asset?.linked_episode?.season_number).padStart(2, '0') }}
+                                        E{{ String(asset?.linked_episode?.episode_number).padStart(2, '0') }}
+                                    </template>
+                                    <template v-else>
+                                        {{ asset?.video_type }}
+                                    </template>
                                 </div>
                                 <div v-else class="badge badge-sm unlinked-placeholder">
                                     <Unlink size="xs"/>
-                                    <span>Not Linked</span>
+                                    <span>{{ asset?.video_type }}</span>
                                 </div>
 
-                                <span class="seperator">&bull;</span>
-                                <span>{{ asset?.video_type }}</span>
                                 <span class="seperator">&bull;</span>
                                 <span>{{ asset?.resolution }}</span>
                                 <span class="seperator">&bull;</span>
@@ -188,7 +196,7 @@ const assetSummary = computed(() => {
             </div>
         </ExpandableWrapper>
 
-        <ModalVideoAssetDetails ref="ModalAssetDetails" :videoAsset="modalAsset"/>
+        <ModalVideoAssetDetails ref="ModalAssetDetails" :videoAsset="modalAsset" :titleFolder="titleFolder"/>
     </div>
 </template>
 

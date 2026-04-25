@@ -13,6 +13,10 @@ const props = defineProps({
     videoAsset: {
         type: Object,
         required: true
+    },
+    titleFolder: {
+        type: Object,
+        required: true
     }
 })
 
@@ -51,26 +55,26 @@ const modalHeader = computed(() => {
                 </div>
             </section>
 
-            <section v-if="videoAsset?.title || videoAsset?.episode" class="linked-section">
+            <section v-if="videoAsset?.is_linked" class="linked-section">
                 <h4>Linked To</h4>
                 <RouterLink
-                    :to="videoAsset?.episode
-                        ? `/title/${videoAsset.title.title_id}?season=${videoAsset.episode.season_number}`
-                        : `/title/${videoAsset.title.title_id}`"
+                    :to="videoAsset?.linked_episode
+                        ? `/title/${titleFolder?.linked_title?.title_id}?season=${videoAsset?.linked_episode?.season_number}`
+                        : `/title/${titleFolder?.linked_title?.title_id}`"
                     class="linked-card btn no-deco"
                     target="_blank"
                 >
-                    <div class="title">{{ videoAsset.title.name }}</div>
-                    <div v-if="videoAsset?.episode" class="sub-details">
+                    <div class="title">{{ titleFolder?.linked_title?.name }}</div>
+                    <div v-if="videoAsset?.linked_episode" class="sub-details">
                         <div class="sub-detail">
-                            <span>S{{ String(videoAsset.episode.season_number).padStart(2, '0') }}</span>
+                            <span>S{{ String(videoAsset?.linked_episode?.season_number).padStart(2, '0') }}</span>
                             <span class="seperator">&bull;</span>
-                            <span class="name">{{ videoAsset.episode.season_name }}</span>
+                            <span class="name">{{ videoAsset?.linked_episode?.season_name }}</span>
                         </div>
                         <div class="sub-detail">
-                            <span>E{{ String(videoAsset.episode.episode_number).padStart(2, '0') }}</span>
+                            <span>E{{ String(videoAsset?.linked_episode?.episode_number).padStart(2, '0') }}</span>
                             <span class="seperator">&bull;</span>
-                            <span class="name">{{ videoAsset.episode.episode_name }}</span>
+                            <span class="name">{{ videoAsset?.linked_episode?.episode_name }}</span>
                         </div>
                     </div>
                     <div class="linked-card-arrow">
