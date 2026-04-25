@@ -458,16 +458,27 @@ class ImageLink(Base):
     tmdb_collection = relationship("TMDBCollection", back_populates="image_links")
 
 
+
+class TitleFolder(Base):
+    __tablename__ = "title_folders"
+
+    title_folder_id = Column(Integer, primary_key=True, autoincrement=True)
+    title_folder_path = Column(String(512), nullable=False)
+    title_folder_name = Column(String(256), nullable=False)
+
+    title_id = Column(Integer, ForeignKey("titles.title_id", ondelete="CASCADE"), nullable=True, unique=True)
+
+    title = relationship("Title", backref="title_folders")
+
+
 class VideoAsset(Base):
     __tablename__ = "video_assets"
 
     video_asset_id = Column(Integer, primary_key=True, autoincrement=True)
     file_path = Column(String(512), unique=True, nullable=False, index=True)
     file_name = Column(String(256), nullable=False)
-    title_folder_path = Column(String(512), nullable=False)
-    title_folder_name = Column(String(256), nullable=False)
 
-    title_id = Column(Integer, ForeignKey("titles.title_id", ondelete="CASCADE"), nullable=True)
+    title_folder_id = Column(Integer, ForeignKey("title_folders.title_folder_id", ondelete="CASCADE"), nullable=False)
     episode_id = Column(Integer, ForeignKey("episodes.episode_id", ondelete="CASCADE"), nullable=True)
     video_type = Column(Enum(VideoType), nullable=False)
     
@@ -482,8 +493,8 @@ class VideoAsset(Base):
     bit_depth = Column(Integer)
     frame_rate = Column(Float)
     
-    # Sync Logic
+    # Sync Logic (used to check if file has been modified after last scan)
     mtime = Column(Float)
 
-    title = relationship("Title", backref="video_assets")
+    title_folder = relationship("TitleFolder", backref="video_assets")
     episode = relationship("Episode", backref="video_assets")

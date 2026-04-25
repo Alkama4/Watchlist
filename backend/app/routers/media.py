@@ -13,8 +13,8 @@ from sqlalchemy.orm import selectinload
 from app.services.video_assets import sync_all_video_assets
 from app.services.languages import LanguageContext, get_user_language_context, pick_translation
 from app.dependencies import get_db
-from app.models import Episode, Season, Title, User, VideoAsset, VideoType
-from app.schemas import EpisodeMinimalOut, FolderPathRequest, TitleMinimalOut, VideoAssetExpandedOut, VideoAssetTitleFoldersOut
+from app.models import Episode, Season, Title, TitleFolder, User, VideoAsset, VideoType
+from app.schemas import EpisodeMinimalOut, FolderRequest, TitleMinimalOut, VideoAssetExpandedOut, TitleFoldersResponseOut
 from app.routers.auth import get_current_user
 
 router = APIRouter()
@@ -267,11 +267,14 @@ async def synchronize_video_assets_relationships_with_titles(
         "details": details
     }
 
-
-@router.get("/video_assets/title_folders", response_model=VideoAssetTitleFoldersOut)
+@router.get("/video_assets/title_folders", response_model=TitleFoldersResponseOut)
 async def get_list_of_video_asset_title_folders(
+    user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    locale_ctx = await get_user_language_context(db=db, user_id=user.user_id) # <-- ADDED
+
+    # Subquery remains exactly the same
     episodes_per_title = (
         select(
             Episode.title_id,
@@ -285,19 +288,16 @@ async def get_list_of_video_asset_title_folders(
 
     stmt = (
         select(
-            VideoAsset.title_folder_path,
-            VideoAsset.title_folder_name,
-            VideoAsset.title_id,
+            TitleFolder,
             func.count(VideoAsset.video_asset_id).label("file_count"),
             func.count(VideoAsset.video_asset_id).filter(VideoAsset.video_type == VideoType.movie).label("movie_count"),
             func.count(VideoAsset.video_asset_id).filter(VideoAsset.video_type == VideoType.featurette).label("featurette_count"),
             func.count(VideoAsset.video_asset_id).filter(VideoAsset.video_type == VideoType.episode).label("episodes_count"),
             func.count(distinct(VideoAsset.episode_id)).label("unique_episodes_linked_count"),
             
-            # Unlinked logic: No title assigned OR (is an episode and no specific episode_id assigned)
             func.count(VideoAsset.video_asset_id).filter(
                 or_(
-                    VideoAsset.title_id.is_(None),
+                    TitleFolder.title_id.is_(None),
                     and_(
                         VideoAsset.video_type == VideoType.episode,
                         VideoAsset.episode_id.is_(None)
@@ -307,44 +307,47 @@ async def get_list_of_video_asset_title_folders(
             
             func.coalesce(episodes_per_title.c.total_episode_meta_count, 0).label("title_episode_count")
         )
-        .outerjoin(episodes_per_title, VideoAsset.title_id == episodes_per_title.c.title_id)
+        .outerjoin(VideoAsset, TitleFolder.title_folder_id == VideoAsset.title_folder_id)
+        .outerjoin(episodes_per_title, TitleFolder.title_id == episodes_per_title.c.title_id)
+        .options(
+            selectinload(TitleFolder.title).selectinload(Title.translations)
+        )
         .group_by(
-            VideoAsset.title_folder_path,
-            VideoAsset.title_folder_name,
-            VideoAsset.title_id,
+            TitleFolder.title_folder_id,
             episodes_per_title.c.total_episode_meta_count
         )
-        .order_by(VideoAsset.title_id.is_(None).asc(), VideoAsset.title_folder_name.asc())
+        .order_by(TitleFolder.title_id.is_(None).asc(), TitleFolder.title_folder_name.asc())
     )
 
     result = await db.execute(stmt)
     rows = result.all()
     
-    linked_folders = []
-    unlinked_folders = []
-
-    # Initialize Global Totals
-    total_movie_count = 0
-    total_episode_count = 0
-    total_featurette_count = 0
-    total_linked_assets = 0
-    total_unlinked_assets = 0
-    total_video_assets = 0
+    linked_folders, unlinked_folders = [], []
+    metrics = {"total": 0, "movies": 0, "episodes": 0, "featurettes": 0, "linked": 0, "unlinked": 0}
 
     for row in rows:
-        # Update Global Totals
-        total_video_assets += row.file_count
-        total_movie_count += row.movie_count
-        total_episode_count += row.episodes_count
-        total_featurette_count += row.featurette_count
-        total_unlinked_assets += row.unlinked_count
-        total_linked_assets += (row.file_count - row.unlinked_count)
+        folder = row.TitleFolder
+        metrics["total"] += row.file_count
+        metrics["movies"] += row.movie_count
+        metrics["episodes"] += row.episodes_count
+        metrics["featurettes"] += row.featurette_count
+        metrics["unlinked"] += row.unlinked_count
+        metrics["linked"] += (row.file_count - row.unlinked_count)
+
+        # <-- ADDED: Build the linked_title object
+        title_out = None
+        if folder.title:
+            title_out = TitleMinimalOut(
+                title_id=folder.title.title_id,
+                name=pick_translation(folder.title.translations, locale_ctx.iso_639_1_list, "name")
+            )
 
         folder_data = {
-            "title_folder_path": row.title_folder_path,
-            "title_folder_name": row.title_folder_name,
-            "title_id": row.title_id,
-            "is_linked": row.title_id is not None,
+            "title_folder_id": folder.title_folder_id,
+            "title_folder_path": folder.title_folder_path,
+            "title_folder_name": folder.title_folder_name,
+            "linked_title": title_out,  # <-- ADDED
+            "is_linked": folder.title_id is not None,
             "counts": {
                 "file_count": row.file_count,
                 "movie_count": row.movie_count,
@@ -356,28 +359,27 @@ async def get_list_of_video_asset_title_folders(
             }
         }
 
-        if row.title_id is not None:
+        if folder.title_id is not None:
             linked_folders.append(folder_data)
         else:
             unlinked_folders.append(folder_data)
 
     return {
-        "linked_video_asset_title_folders": linked_folders,
-        "unlinked_video_asset_title_folders": unlinked_folders,
+        "linked_folders": linked_folders,
+        "unlinked_folders": unlinked_folders,
         "counts": {
-            "total_video_assets": total_video_assets,
-            "total_movies": total_movie_count,
-            "total_episodes": total_episode_count,
-            "total_featurettes": total_featurette_count,
-            "total_linked_video_assets": total_linked_assets,
-            "total_unlinked_video_assets": total_unlinked_assets,
+            "total_video_assets": metrics["total"],
+            "total_movies": metrics["movies"],
+            "total_episodes": metrics["episodes"],
+            "total_featurettes": metrics["featurettes"],
+            "total_linked_video_assets": metrics["linked"],
+            "total_unlinked_video_assets": metrics["unlinked"],
         }
     }
 
-
 @router.post("/video_assets/title_folder/assets", response_model=List[VideoAssetExpandedOut])
 async def get_folder_assets(
-    request_data: FolderPathRequest,
+    request_data: FolderRequest,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -385,18 +387,13 @@ async def get_folder_assets(
 
     stmt = (
         select(VideoAsset)
-        .where(VideoAsset.title_folder_path == request_data.title_folder_path)
+        .where(VideoAsset.title_folder_id == request_data.title_folder_id)
         .options(
-            selectinload(VideoAsset.title).selectinload(Title.translations),
+            selectinload(VideoAsset.title_folder),
             selectinload(VideoAsset.episode).selectinload(Episode.translations),
-            selectinload(VideoAsset.episode)
-                .selectinload(Episode.season)
-                .selectinload(Season.translations),
+            selectinload(VideoAsset.episode).selectinload(Episode.season).selectinload(Season.translations),
         )
-        .order_by(
-            VideoAsset.video_type.asc(),
-            VideoAsset.file_name.asc()
-        )
+        .order_by(VideoAsset.video_type.asc(), VideoAsset.file_name.asc())
     )
     result = await db.execute(stmt)
     assets = result.scalars().all()
@@ -405,13 +402,6 @@ async def get_folder_assets(
 
 
 def _build_expanded_out(asset: VideoAsset, locale_ctx: LanguageContext) -> VideoAssetExpandedOut:
-    title_out = None
-    if asset.title:
-        title_out = TitleMinimalOut(
-            title_id=asset.title.title_id,
-            name=pick_translation(asset.title.translations, locale_ctx.iso_639_1_list, "name"),
-        )
-
     episode_out = None
     if asset.episode:
         ep = asset.episode
@@ -425,18 +415,17 @@ def _build_expanded_out(asset: VideoAsset, locale_ctx: LanguageContext) -> Video
         )
 
     is_linked = bool(
-        asset.episode or 
-        (asset.title and asset.video_type in [VideoType.movie, VideoType.featurette])
+        asset.episode_id is not None or
+        (asset.title_folder.title_id is not None and asset.video_type in [VideoType.movie, VideoType.featurette])
     )
 
     asset_data = {
         k: v for k, v in asset.__dict__.items()
-        if not k.startswith("_sa") and k not in ("title", "episode")
+        if not k.startswith("_sa") and k != "episode"
     }
 
     return VideoAssetExpandedOut(
         **asset_data,
-        title=title_out,
-        episode=episode_out,
+        linked_episode=episode_out,
         is_linked=is_linked
     )
