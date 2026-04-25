@@ -86,7 +86,7 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: var(--spacing-lg) 2.5vw;
+    padding: 0 2.5vw;
     cursor: pointer;
     /* backdrop-filter: blur(var(--blur-subtle)); */
     z-index: var(--z-modal);
@@ -116,7 +116,7 @@ onUnmounted(() => {
 
 .card {
     cursor: auto;
-    max-height: 80vh;
+    max-height: 80%;
     max-width: 100%;
     box-sizing: border-box;
     display: flex;
@@ -127,6 +127,12 @@ onUnmounted(() => {
 }
 .card.min-content {
     width: min-content;
+}
+
+@media(max-width: 768px) {
+    .modal-backdrop {
+        padding: 0 1.5vw;
+    }
 }
 
 .header-row {

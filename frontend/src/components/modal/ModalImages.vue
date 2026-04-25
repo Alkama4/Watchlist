@@ -149,23 +149,25 @@ function updateDomData(imageType, imagePath) {
 
                 <hr>
 
-                <LabelDropDown
-                    label="Image Locale"
-                    :modified="localeFilters[activeType] != localeFilterDefaults[activeType]"
-                >
-                    <OptionPicker
-                        v-model="localeFilters[activeType]"
-                        defaultValue="all"
-                        :options="localeFilterOptions"
+                <div class="filters-wrapper">
+                    <LabelDropDown
+                        label="Image Locale"
+                        :modified="localeFilters[activeType] != localeFilterDefaults[activeType]"
+                    >
+                        <OptionPicker
+                            v-model="localeFilters[activeType]"
+                            defaultValue="all"
+                            :options="localeFilterOptions"
+                        />
+                    </LabelDropDown>
+    
+                    <RefreshCcwAltDot
+                        v-if="localeFilters[activeType] != localeFilterDefaults[activeType]"
+                        class="btn btn-text btn-even-padding"
+                        size="sm"
+                        @click="localeFilters[activeType] = localeFilterDefaults[activeType]"
                     />
-                </LabelDropDown>
-
-                <RefreshCcwAltDot
-                    v-if="localeFilters[activeType] != localeFilterDefaults[activeType]"
-                    class="btn btn-text btn-even-padding"
-                    size="sm"
-                    @click="localeFilters[activeType] = localeFilterDefaults[activeType]"
-                />
+                </div>
             </div>
 
             <div class="images-wrapper">
@@ -231,10 +233,20 @@ function updateDomData(imageType, imagePath) {
 
 .tab-buttons {
     display: flex;
+    overflow-x: auto;
+    flex-shrink: 0;
 
     .cat-buttons {
-        display: flex;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
         gap: var(--spacing-sm);
+        white-space: nowrap;
+    }
+
+    .filters-wrapper {
+        display: flex;
+        flex-direction: row;
+        gap: var(--spacing-xs-sm);
     }
 }
 
@@ -361,5 +373,24 @@ hr {
 .bottom-text {
     text-align: center;
     font-size: var(--fs-neg-2);
+}
+
+
+@media(max-width: 768px) {
+    /* .tab-buttons {
+        flex-direction: column;
+        row-gap: var(--spacing-sm);
+
+        hr {
+            margin: 0;
+        }
+    } */
+
+    .images-wrapper {
+        grid-template-columns: 1fr;
+    }
+    .posters .images-wrapper {
+        grid-template-columns: 1fr 1fr;
+    }
 }
 </style>
