@@ -135,6 +135,7 @@ class Title(Base):
     
     image_links = relationship("ImageLink", back_populates="title", cascade="all, delete-orphan")
     images = association_proxy("image_links", "image")
+    title_folder = relationship("TitleFolder", back_populates="title", uselist=False, cascade="all, delete-orphan")
 
     tmdb_collection = relationship("TMDBCollection", back_populates="titles")
 
@@ -468,7 +469,8 @@ class TitleFolder(Base):
 
     title_id = Column(Integer, ForeignKey("titles.title_id", ondelete="CASCADE"), nullable=True, unique=True)
 
-    title = relationship("Title", backref="title_folders")
+    title = relationship("Title", back_populates="title_folder")
+    video_assets = relationship("VideoAsset", back_populates="title_folder", cascade="all, delete-orphan")
 
 
 class VideoAsset(Base):
@@ -496,5 +498,5 @@ class VideoAsset(Base):
     # Sync Logic (used to check if file has been modified after last scan)
     mtime = Column(Float)
 
-    title_folder = relationship("TitleFolder", backref="video_assets")
+    title_folder = relationship("TitleFolder", back_populates="video_assets")
     episode = relationship("Episode", backref="video_assets")

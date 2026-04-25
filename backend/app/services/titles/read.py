@@ -22,6 +22,7 @@ from app.models import (
     Episode,
     Title,
     Season,
+    TitleFolder,
     TitleTranslation,
     SeasonTranslation,
     EpisodeTranslation,
@@ -57,7 +58,9 @@ async def fetch_title_with_user_details(db: AsyncSession, title_id: int, user_id
             selectinload(Title.user_details.and_(TitleUserDetails.user_id == user_id)),
             selectinload(Title.genres).selectinload(TitleGenre.genre),
             selectinload(Title.age_ratings),
-            selectinload(Title.video_assets.and_(VideoAsset.episode_id == None)),
+            selectinload(Title.title_folder).selectinload(
+                TitleFolder.video_assets.and_(VideoAsset.episode_id == None)
+            ),
             
             # Load Seasons + filtered children
             selectinload(Title.seasons.and_(Season.season_number != 0)).options(
@@ -160,9 +163,15 @@ def _build_title_out(title: Title, locale_ctx: LanguageContext, tmdb_collection_
     # Map Genres, Ratings & Video Assets
     title_dict["genres"] = [GenreElement.model_validate(tg.genre, from_attributes=True) for tg in title.genres]
     title_dict["age_ratings"] = [AgeRatingElement.model_validate(r, from_attributes=True) for r in title.age_ratings]
-    title_dict["video_assets"] = [
-        VideoAssetOut.model_validate(va, from_attributes=True) for va in title.video_assets
-    ] if title.video_assets else None
+    
+    folder = title.title_folder
+    if folder and folder.video_assets:
+        title_dict["video_assets"] = [
+            VideoAssetOut.model_validate(va, from_attributes=True) 
+            for va in folder.video_assets
+        ]
+    else:
+        title_dict["video_assets"] = None
 
     # Other simple fields
     title_dict["display_locale"] = locale_ctx.preferred_locale
