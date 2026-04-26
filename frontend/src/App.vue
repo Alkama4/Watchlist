@@ -36,7 +36,7 @@ const displayNav = computed(() => {
                             Collections
                         </router-link>
                     </li>
-                    <li>
+                    <!-- <li>
                         <router-link 
                             class="btn btn-text no-deco" 
                             to="/discover"
@@ -44,7 +44,7 @@ const displayNav = computed(() => {
                             <Compass pack="filled" size="sm"/>
                             Discover
                         </router-link>
-                    </li>
+                    </li> -->
                 </ul>
                 <router-link 
                     class="btn btn-user btn-even-padding no-deco"
@@ -69,10 +69,10 @@ const displayNav = computed(() => {
             <Search pack="basic"/>
             <span>Search</span>
         </router-link>
-        <router-link class="btn btn-text no-deco" to="/discover">
+        <!-- <router-link class="btn btn-text no-deco" to="/discover">
             <Compass pack="filled"/>
             <span>Discover</span>
-        </router-link>
+        </router-link> -->
         <router-link class="btn btn-text no-deco" to="/account">
             <User pack="filled"/>
             <span>Account</span>
