@@ -138,12 +138,14 @@ onUnmounted(() => {
                 <span>Back to Overview</span>
             </button>
 
-            <KebabMenu
-                roundButton=""
-                :menuItems="[
-                    { iconComponent: Images, label: 'Manage Images', action: ImagesModal?.open }
-                ]"
-            />
+            <div class="mobile-only">
+                <KebabMenu
+                    roundButton
+                    :menuItems="[
+                        { iconComponent: Images, label: 'Manage Images', action: ImagesModal?.open }
+                    ]"
+                />
+            </div>
         </div>
         <div v-if="activeSeason" :key="activeSeason.season_id" class="season layout-contained layout-spacing-bottom">
             <div class="season-details">
