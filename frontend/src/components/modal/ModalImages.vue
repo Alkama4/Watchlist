@@ -5,7 +5,7 @@ import { fastApi } from '@/utils/fastApi'
 import { buildImageUrl } from '@/utils/imagePath'
 import LabelDropDown from '../LabelDropDown.vue'
 import OptionPicker from '../OptionPicker.vue'
-import { ArrowOutUpRightSquare, InfoCircle, RefreshCcwAltDot, Star } from '@boxicons/vue';
+import { ArrowOutUpRightSquare, InfoCircle, RefreshCcwAltDot, Star, Trash } from '@boxicons/vue';
 import Tooltip from '../Tooltip.vue'
 
 
@@ -126,6 +126,19 @@ function catHasUserChoise(category) {
 
     return images.some(image => image?.is_user_choice);
 }
+
+async function clearUserChoice() {
+    const isTitle = !!props.titleId;
+    const id = props.titleId || props.seasonId;
+    const apiTarget = isTitle ? fastApi.titles : fastApi.seasons;
+
+    // Remove the 's' from 'posters', 'backdrops', or 'logos'
+    const singularType = activeType.value.slice(0, -1); 
+
+    // Update chganges on backend and DOM
+    await apiTarget.imagesSetPreference(id, singularType, { image_path: null });
+    updateDomData(singularType, null)
+}
 </script>
 
 <template>
@@ -138,44 +151,53 @@ function catHasUserChoise(category) {
     
                     <p><strong>Favoriting an image</strong> locks your selection. This overrides the automated system and ensures the image will never change unless you update it again yourself.</p>
     
-                    <p class="soft"><em>Note: Backdrops work best without text (No locale).</em></p>
+                    <p class="soft"><em>Note: The recommended locale filter for the image type is automatically applied.</em></p>
                 </div>
             </details>
 
-            <div class="tab-buttons">
-                <div class="cat-buttons">
+            <div class="modal-controls">
+                <div class="tabs">
                     <button 
                         v-for="cat in imageCategories" 
                         :key="cat.key"
-                        :class="{ 'btn-primary': activeType === cat.key }"
+                        class="tab-link btn-text btn-even-padding"
+                        :class="{ 'active': activeType === cat.key }"
                         :disabled="!imageData[cat.key]?.total_count"
                         @click="activeType = cat.key"
                     >
-                        <Star :pack="catHasUserChoise(cat) ? 'filled' : ''" size="xs"/>
                         {{ cat.label }} ({{ imageData[cat.key]?.total_count || 0 }})
                     </button>
                 </div>
 
-                <hr>
-
-                <div class="filters-wrapper">
-                    <LabelDropDown
-                        label="Image Locale"
-                        :modified="localeFilters[activeType] != localeFilterDefaults[activeType]"
-                    >
-                        <OptionPicker
-                            v-model="localeFilters[activeType]"
-                            defaultValue="all"
-                            :options="localeFilterOptions"
+                <div class="actions-bar">
+                    <div class="filters-wrapper">
+                        <LabelDropDown
+                            label="Image Locale"
+                            :modified="localeFilters[activeType] != localeFilterDefaults[activeType]"
+                        >
+                            <OptionPicker
+                                v-model="localeFilters[activeType]"
+                                defaultValue="all"
+                                :options="localeFilterOptions"
+                            />
+                        </LabelDropDown>
+        
+                        <RefreshCcwAltDot
+                            v-if="localeFilters[activeType] != localeFilterDefaults[activeType]"
+                            class="btn btn-text btn-even-padding"
+                            size="sm"
+                            @click="localeFilters[activeType] = localeFilterDefaults[activeType]"
                         />
-                    </LabelDropDown>
-    
-                    <RefreshCcwAltDot
-                        v-if="localeFilters[activeType] != localeFilterDefaults[activeType]"
-                        class="btn btn-text btn-even-padding"
-                        size="sm"
-                        @click="localeFilters[activeType] = localeFilterDefaults[activeType]"
-                    />
+                    </div>
+
+                    <button 
+                        v-if="catHasUserChoise({ key: activeType })"
+                        class="btn btn-even-padding"
+                        @click="clearUserChoice"
+                    >
+                        <Star size="sm"/>
+                        <span>Reset to Default</span>
+                    </button>
                 </div>
             </div>
 
@@ -240,25 +262,6 @@ function catHasUserChoise(category) {
     max-width: 100%;
 }
 
-.tab-buttons {
-    display: flex;
-    overflow-x: auto;
-    flex-shrink: 0;
-
-    .cat-buttons {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: var(--spacing-sm);
-        white-space: nowrap;
-    }
-
-    .filters-wrapper {
-        display: flex;
-        flex-direction: row;
-        gap: var(--spacing-xs-sm);
-    }
-}
-
 .images-wrapper {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -284,17 +287,20 @@ hr {
     padding: 0;
     border-radius: var(--border-radius-md);
     border: 2px solid var(--c-bg-level-1);
-
+    
     a {
         position: relative;
         display: flex;
-
+        flex-direction: column;
+        flex: 1;
+        justify-content: center;
+        
         img {
             width: 100%;
             height: auto;
             object-fit: cover;
-            border-radius: var(--border-radius-md);
-            background: var(--c-bg);
+            border-radius: var(--border-radius-sm-md);
+            background: var(--c-bg-level-2);
             transition: filter 0.1s ease-out;
         }
         svg {
@@ -348,7 +354,7 @@ hr {
             content: 'Default';
             position: absolute;
             bottom: calc(100% + 2px);
-            left: var(--spacing-md);
+            left: var(--spacing-sm-md);
             padding: 0px var(--spacing-sm);
             border-top-left-radius: var(--border-radius-sm);
             border-top-right-radius: var(--border-radius-sm);
@@ -369,7 +375,7 @@ hr {
     }
 }
 
-.logos .image img {
+.logos .image-card img {
     background: 
         conic-gradient(
             transparent 0deg 90deg,
@@ -393,4 +399,55 @@ hr {
         grid-template-columns: 1fr 1fr;
     }
 }
+
+.modal-controls {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+
+    .tabs {
+        display: flex;
+        overflow-x: auto;
+        border-bottom: 1px solid var(--c-border);
+        gap: var(--spacing-sm);
+        
+        /* Hide scrollbar for cleaner look */
+        scrollbar-width: none; 
+    }
+    .tabs::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .tab-link {
+        border-bottom: 2px solid transparent;
+        color: var(--c-text-soft);
+        white-space: nowrap;
+        border-radius: 0;
+    
+        &:not(:disabled):hover {
+            /* color: var(--c-text); */
+            background-color: transparent;
+        }
+        &.active {
+            color: var(--c-text);
+            border-bottom-color: var(--c-primary);
+        }
+    }
+    
+    .actions-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: var(--spacing-sm);
+    }
+    
+    .filters-wrapper {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: var(--spacing-xs-sm);
+    }
+}
+
 </style>
