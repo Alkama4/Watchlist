@@ -315,6 +315,10 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.season-details-page {
+    --spoiler-transition-setup: 0.35s var(--transition-ease-out-str);
+}
+
 .top-button-row {
     margin-bottom: var(--spacing-md);
     display: flex;
@@ -398,7 +402,7 @@ onUnmounted(() => {
             left: 50%;
             transform: translateX(-50%) translateY(-50%);
             opacity: 0;
-            transition: opacity 0.1s var(--transition-ease-out);
+            transition: opacity var(--spoiler-transition-setup);
         }
         
         img.episode-backdrop {
@@ -408,7 +412,7 @@ onUnmounted(() => {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: filter 0.1s var(--transition-ease-out);
+            transition: filter var(--spoiler-transition-setup);
         }
 
         &.unwatched {
@@ -473,27 +477,24 @@ onUnmounted(() => {
 
         .overview-wrapper .overview,
         h4 .name {
-            transition: background-color 0.1s var(--transition-ease-out),
-                        color 0.1s var(--transition-ease-out);
+            transition: filter var(--spoiler-transition-setup),
+                        opacity var(--spoiler-transition-setup);
         }
 
         &.spoilers-hidden {
+            h4 .name, .overview-wrapper {
+                mask-image: 
+                    linear-gradient(to bottom, transparent, black 8px, black calc(100% - 8px), transparent),
+                    linear-gradient(to right, transparent, black 8px, black calc(100% - 8px), transparent);
+                mask-composite: intersect;
+            }
+            
             .overview-wrapper .overview,
             h4 .name {
-                background-color: var(--c-neutral); 
-                border-radius: var(--border-radius-sm-md);
-                
-                box-decoration-break: clone;
-                -webkit-box-decoration-break: clone;
-            }
-
-            .overview-wrapper,
-            h4 {
-                color: transparent; 
-            }
-
-            h4 .number {
-                color: var(--c-text) !important;
+                filter: blur(6px);
+                opacity: 0.6;
+                user-select: none;
+                pointer-events: none;
             }
         }
     }
