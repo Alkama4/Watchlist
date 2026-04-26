@@ -132,11 +132,18 @@ onUnmounted(() => {
 
 <template>
     <div class="season-details-page">
-        <div class="back-button-row layout-contained layout-spacing-top">
+        <div class="top-button-row layout-contained layout-spacing-top">
             <button class="btn-text btn-even-padding" @click="handleBack">
                 <ChevronLeft/>
                 <span>Back to Overview</span>
             </button>
+
+            <KebabMenu
+                roundButton=""
+                :menuItems="[
+                    { iconComponent: Images, label: 'Manage Images', action: ImagesModal?.open }
+                ]"
+            />
         </div>
         <div v-if="activeSeason" :key="activeSeason.season_id" class="season layout-contained layout-spacing-bottom">
             <div class="season-details">
@@ -178,7 +185,7 @@ onUnmounted(() => {
                         />
 
                         <button
-                            class="btn-text btn-even-padding"
+                            class="btn-even-padding btn-mobile-icon-padding"
                             @click="toggleSeasonSpoilers"
                             :disabled="resolveSeasonWatchCount(activeSeason)"
                             :title="resolveSeasonWatchCount(activeSeason) 
@@ -189,11 +196,14 @@ onUnmounted(() => {
                         </button>
                     </div>
 
-                    <KebabMenu
-                        :menuItems="[
-                            { iconComponent: Images, label: 'Manage Images', action: ImagesModal?.open }
-                        ]"
-                    />
+                    <div class="desktop-only">
+                        <KebabMenu
+                            horizontalDots
+                            :menuItems="[
+                                { iconComponent: Images, label: 'Manage Images', action: ImagesModal?.open }
+                            ]"
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -255,7 +265,7 @@ onUnmounted(() => {
                                 :episode="episode"
                             />
                             <button
-                                class="btn-text btn-even-padding"
+                                class="btn-even-padding btn-mobile-icon-padding"
                                 @click="episode.spoilersVisible = !isEpisodeSpoilerVisible(episode)"
                                 :disabled="episode?.user_details?.watch_count"
                                 :title="episode?.user_details?.watch_count 
@@ -266,7 +276,7 @@ onUnmounted(() => {
                             </button>
                             <button
                                 v-if="episode?.video_assets"
-                                class="btn-text btn-even-padding"
+                                class="btn-even-padding btn-mobile-icon-padding"
                                 @click="openEpisodeVideoAssetListing(episode)"
                             >
                                 <ListPlay/>
@@ -306,10 +316,12 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.back-button-row {
+.top-button-row {
     margin-bottom: var(--spacing-md);
+    display: flex;
+    justify-content: space-between;
 }
-.back-button-row button {
+.top-button-row button {
     font-size: var(--fs-0);
 }
 
