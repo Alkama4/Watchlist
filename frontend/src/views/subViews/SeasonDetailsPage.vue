@@ -477,8 +477,7 @@ onUnmounted(() => {
 
         .overview-wrapper .overview,
         h4 .name {
-            transition: filter var(--spoiler-transition-setup),
-                        opacity var(--spoiler-transition-setup);
+            transition: filter var(--spoiler-transition-setup);
         }
 
         &.spoilers-hidden {
@@ -492,7 +491,6 @@ onUnmounted(() => {
             .overview-wrapper .overview,
             h4 .name {
                 filter: blur(6px);
-                opacity: 0.6;
                 user-select: none;
                 pointer-events: none;
             }
