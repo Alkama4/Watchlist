@@ -179,25 +179,22 @@ onUnmounted(() => {
                 </div>
                 <p :class="{'unavailable': !activeSeason?.overview}">{{ activeSeason?.overview || 'No overview available.' }}</p>
                 <div class="actions">
-                    <div class="primary-actions">
-                        <WatchCountButtons
-                            :watchCount="resolveSeasonWatchCount(activeSeason)"
-                            :title="titleDetails"
-                            :season="activeSeason"
-                        />
+                    <WatchCountButtons
+                        :watchCount="resolveSeasonWatchCount(activeSeason)"
+                        :title="titleDetails"
+                        :season="activeSeason"
+                    />
 
-                        <button
-                            class="btn-even-padding btn-mobile-icon-padding"
-                            @click="toggleSeasonSpoilers"
-                            :disabled="resolveSeasonWatchCount(activeSeason)"
-                            :title="resolveSeasonWatchCount(activeSeason) 
-                                ? 'All episodes watched - no spoilers to show.' 
-                                : (areSeasonSpoilersVisible ? 'Hide spoilers' : 'Show spoilers')"
-                        >
-                            <component :is="areSeasonSpoilersVisible ? EyeSlash : Eye"/>
-                        </button>
-                    </div>
-
+                    <button
+                        class="btn-even-padding btn-mobile-icon-padding"
+                        @click="toggleSeasonSpoilers"
+                        :disabled="resolveSeasonWatchCount(activeSeason)"
+                        :title="resolveSeasonWatchCount(activeSeason) 
+                            ? 'All episodes watched - no spoilers to show.' 
+                            : (areSeasonSpoilersVisible ? 'Hide spoilers' : 'Show spoilers')"
+                    >
+                        <component :is="areSeasonSpoilersVisible ? EyeSlash : Eye"/>
+                    </button>
                     <div class="desktop-only">
                         <KebabMenu
                             horizontalDots
@@ -363,12 +360,6 @@ onUnmounted(() => {
     .actions {
         display: flex;
         gap: var(--spacing-sm);
-        justify-content: space-between;
-
-        .primary-actions {
-            display: flex;
-            gap: var(--spacing-sm);
-        }
     }
 
     .unavailable {
