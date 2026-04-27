@@ -1,7 +1,7 @@
 <script setup>
 import { useRoute } from 'vue-router';
 import SearchBar from './components/SearchBar.vue';
-import { AlbumCovers, Compass, Home, Search, User } from '@boxicons/vue';
+import { AlbumCovers, Compass, Home, List, Search, User } from '@boxicons/vue';
 import { useAuthStore } from './stores/auth';
 import { computed } from 'vue';
 import LoadingIndicator from './components/LoadingIndicator.vue';
@@ -30,21 +30,21 @@ const displayNav = computed(() => {
                     <li>
                         <router-link 
                             class="btn btn-text no-deco" 
+                            to="/library"
+                        >
+                            <List pack="filled" size="sm"/>
+                            <span>Library</span>
+                        </router-link>
+                    </li>
+                    <li>
+                        <router-link 
+                            class="btn btn-text no-deco" 
                             to="/collections"
                         >
                             <AlbumCovers pack="filled" size="sm"/>
-                            Collections
+                            <span>Collections</span>
                         </router-link>
                     </li>
-                    <!-- <li>
-                        <router-link 
-                            class="btn btn-text no-deco" 
-                            to="/discover"
-                        >
-                            <Compass pack="filled" size="sm"/>
-                            Discover
-                        </router-link>
-                    </li> -->
                 </ul>
                 <router-link 
                     class="btn btn-user btn-even-padding no-deco"
@@ -61,18 +61,18 @@ const displayNav = computed(() => {
             <Home pack="filled"/>
             <span>Home</span>
         </router-link>
-        <router-link class="btn btn-text no-deco" to="/collections">
-            <AlbumCovers pack="filled"/>
-            <span>Collections</span>
+        <router-link class="btn btn-text no-deco" to="/library">
+            <List pack="filled"/>
+            <span>Library</span>
         </router-link>
         <router-link class="btn btn-text no-deco" to="/search">
             <Search pack="basic"/>
             <span>Search</span>
         </router-link>
-        <!-- <router-link class="btn btn-text no-deco" to="/discover">
-            <Compass pack="filled"/>
-            <span>Discover</span>
-        </router-link> -->
+        <router-link class="btn btn-text no-deco" to="/collections">
+            <AlbumCovers pack="filled"/>
+            <span>Collections</span>
+        </router-link>
         <router-link class="btn btn-text no-deco" to="/account">
             <User pack="filled"/>
             <span>Account</span>
