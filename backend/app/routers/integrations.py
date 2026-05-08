@@ -8,7 +8,7 @@ from app.models import Title
 router = APIRouter()
 
 @router.post("/jellyfin/sync")
-async def sync_jellyfin_links(db: AsyncSession = Depends(get_db)):
+async def sync_has_jellyfin_links(db: AsyncSession = Depends(get_db)):
     try:
         jellyfin_data = await fetch_jellyfin_titles()
     except RuntimeError as e:

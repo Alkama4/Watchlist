@@ -49,7 +49,7 @@ onMounted(async () => {
                 <Jellyfin class="custom"/>
                 <div class="text">
                     <div>Jellyfin</div>
-                    <div class="stats">{{ pageData?.smart_collection_sizes?.jellyfin_link }} Titles</div>
+                    <div class="stats">{{ pageData?.smart_collection_sizes?.has_jellyfin_link }} Titles</div>
                 </div>
             </router-link>
 

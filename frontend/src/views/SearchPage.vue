@@ -217,10 +217,10 @@ onUnmounted(() => {
                 <LabelDropDown 
                     label="Jellyfin" 
                     :disabled="searchStore.tmdbFallback"
-                    :modified="searchStore.isDirty('jellyfin_link')"
+                    :modified="searchStore.isDirty('has_jellyfin_link')"
                 >
                     <OptionPicker
-                        v-model="searchStore.searchParams.jellyfin_link"
+                        v-model="searchStore.searchParams.has_jellyfin_link"
                         :options="availabilityOptions"
                     />
                 </LabelDropDown>

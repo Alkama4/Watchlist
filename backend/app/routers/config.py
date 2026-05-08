@@ -6,7 +6,7 @@ router = APIRouter()
 
 
 @router.get("/jellyfin", response_model=ConfigJellyfinOut)
-def sync_jellyfin_links():
+def sync_has_jellyfin_links():
     return {
         "base_url": JELLYFIN_URL,
         "server_id": JELLYFIN_SERVER_ID

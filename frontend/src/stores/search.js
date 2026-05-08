@@ -7,7 +7,7 @@ const PARAM_MAP = {
     watch_status:     ['status',    'string'],
     is_favourite:     ['fav',       'boolean'],
     in_watchlist:     ['watchlist', 'boolean'],
-    jellyfin_link:    ['jellyfin',  'boolean'],
+    has_jellyfin_link:    ['jellyfin',  'boolean'],
     has_video_assets: ['video',     'boolean'],
     genres_include:   ['genres_inc','array'],
     genres_exclude:   ['genres_exc','array'],
@@ -20,7 +20,7 @@ const absoluteInitialSearchParams = {
     watch_status: null,
     is_favourite: null,
     in_watchlist: null,
-    jellyfin_link: null,
+    has_jellyfin_link: null,
     has_video_assets: null,
     genres_include: [],
     genres_exclude: [],
@@ -52,7 +52,7 @@ export const SMART_COLLECTIONS = {
     jellyfin: {
         header: 'Jellyfin',
         params: {
-            jellyfin_link: true
+            has_jellyfin_link: true
         }
     },
     video_assets: {

@@ -235,7 +235,7 @@ async def get_home_overview(
         select(
             func.count(case((TitleUserDetails.is_favourite == True, 1))).label("is_favourite"),
             func.count(case((TitleUserDetails.in_watchlist == True, 1))).label("in_watchlist"),
-            func.count(Title.jellyfin_id).label("jellyfin_link"),
+            func.count(Title.jellyfin_id).label("has_jellyfin_link"),
             func.count(case((Title.jellyfin_id != None, 1))).label("has_video_assets") 
         )
         .join(TitleUserDetails, Title.title_id == TitleUserDetails.title_id)
@@ -248,7 +248,7 @@ async def get_home_overview(
     smart_collection_sizes = {
         "is_favourite": stats_row.is_favourite,
         "in_watchlist": stats_row.in_watchlist,
-        "jellyfin_link": stats_row.jellyfin_link,
+        "has_jellyfin_link": stats_row.has_jellyfin_link,
         "has_video_assets": stats_row.has_video_assets
     }
 
