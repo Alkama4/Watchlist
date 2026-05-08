@@ -12,9 +12,7 @@ import { useRoute, useRouter } from 'vue-router';
 import TriStatePicker from '@/components/TriStatePicker.vue';
 import NotFoundPage from './NotFoundPage.vue';
 
-
 const searchStore = useSearchStore();
-
 
 //////////// URL AND STORE SYNCING ////////////
 const route = useRoute();
@@ -23,7 +21,7 @@ const router = useRouter();
 // Hydrate the store from the URL before doing anything else
 searchStore.hydrateFromRoute(route);
 
-// Rehydrate when navigating between smart collections or back to search.
+// Rehydrate when navigating between smart collections, library, or back to search.
 watch(
     () => [route.name, route.params.smart_collection_id],
     () => {
@@ -41,7 +39,7 @@ watch(
 );
 
 const isValidRoute = computed(() => {
-    if (route.name === 'Search') return true;
+    if (['Search', 'Library'].includes(route.name)) return true;
 
     if (route.name === 'Smart Collection') {
         return Object.keys(SMART_COLLECTIONS).includes(route.params.smart_collection_id);
@@ -49,7 +47,6 @@ const isValidRoute = computed(() => {
 
     return false;
 });
-
 
 //////////// SEARRCH PARAM OPTIONS ////////////
 const typeOptions = [
@@ -89,7 +86,6 @@ onMounted(async () => {
     searchStore.fetchGenres();
 });
 
-
 //////////// INFINITE SCROLL ////////////
 const loadMoreTrigger = ref(null);
 let observer = null;
@@ -117,7 +113,6 @@ watch(loadMoreTrigger, (newTrigger, oldTrigger) => {
 
 onUnmounted(() => {
     if (observer) observer.disconnect();
-    // Optional: Decide if you want to keep TMDB mode sticky or reset it when leaving
     searchStore.tmdbFallback = false;
 });
 </script>
@@ -145,12 +140,16 @@ onUnmounted(() => {
                 {{ searchStore.headerLabel }}
             </template>
         </h1>
-        <SearchBar 
-            v-if="route.name == 'Search'"
+
+        <SearchBar
+            v-if="route.name === 'Search'"
             class="mobile-only"
             placeholder="Search for titles" 
+            v-model="searchStore.query"
+            @submit="searchStore.submit"
         />
-        <div class="filters" :class="{'margin-fix': route.name !== 'Search'}">
+
+        <div v-if="route.name !== 'Search'" class="filters margin-fix">
             <div>
                 <LabelDropDown
                     label="Type"
@@ -235,6 +234,16 @@ onUnmounted(() => {
                         :options="availabilityOptions"
                     />
                 </LabelDropDown>
+
+                <div v-if="route.name !== 'Search'" class="flex-row">
+                    <hr>
+    
+                    <SearchBar 
+                        placeholder="Filter by title" 
+                        v-model="searchStore.query"
+                        @submit="searchStore.submit"
+                    />
+                </div>
 
                 <div v-if="searchStore.searchParamsIsDirty" class="flex-row">
                     <hr>
@@ -329,6 +338,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+/* Unchanged styles omitted for brevity, keep all your original CSS here */
 .mode-header {
     display: flex;
     gap: var(--spacing-md);
@@ -416,6 +426,4 @@ onUnmounted(() => {
         }
     }
 }
-
-
 </style>

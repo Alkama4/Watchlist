@@ -1,29 +1,21 @@
 <script setup>
 import { ref, useAttrs } from 'vue'
-import { useSearchStore } from '@/stores/search';
-import { useRoute, useRouter } from 'vue-router'; // Use the hooks
 import { Search, X } from '@boxicons/vue';
 
 const attrs = useAttrs()
-const searchStore = useSearchStore();
-const route = useRoute();
-const router = useRouter();
+
+// Two-way binding with the parent
+const query = defineModel({ type: String, default: '' });
+const emit = defineEmits(['submit', 'focus']);
+
 const inputSearch = ref(null);
 
-function onSearchFocus() {
-    if (route.name !== 'Search') {
-        router.push({ 
-            name: 'Search'
-        });
-    }
-}
-
 function onSearchSubmit() {
-    searchStore.submit();
+    emit('submit', query.value);
 }
 
 function handleClearButton() {
-    searchStore.query = "";
+    query.value = '';
     inputSearch.value.focus();
 }
 </script>
@@ -32,14 +24,14 @@ function handleClearButton() {
     <form role="search" @submit.prevent="onSearchSubmit" class="search-bar">
         <Search class="search" size="sm"/>
         <input
-            v-model="searchStore.query"
+            v-model="query"
             v-bind="attrs"
             ref="inputSearch"
             type="search"
-            @focus="onSearchFocus"
+            @focus="emit('focus')"
         >
         <X
-            v-if="searchStore.query"
+            v-if="query"
             size="sm"
             class="btn btn-text soft wipe"
             @click="handleClearButton"
@@ -48,7 +40,6 @@ function handleClearButton() {
 </template>
 
 <style scoped>
-
 form {
     position: relative;
 }
@@ -86,5 +77,4 @@ input[type="search"]::-webkit-search-results-decoration {
     -webkit-appearance: none;
     display: none;
 }
-
 </style>
