@@ -1,6 +1,9 @@
 import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
 import { fastApi } from '@/utils/fastApi';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const PARAM_MAP = {
     title_type:       ['type',      'string'],
@@ -256,28 +259,6 @@ export const useSearchStore = defineStore('search', () => {
         }
     }
 
-    // --- Watchers ---
-    watch(
-        [query, searchParams],
-        () => {
-            if (!tmdbFallback.value) {
-                runSearch(false);
-            }
-        },
-        { deep: true }
-    );
-
-    watch(
-        tmdbFallback,
-        (isTmdbMode) => {
-            if (query.value || !isTmdbMode) {
-                runSearch();
-            } else {
-                resetResults();
-            }
-        }
-    );
-    
     return {
         query,
         tmdbFallback,

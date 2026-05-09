@@ -8,6 +8,7 @@ import Imdb from '@/assets/icons/imdb.svg'
 import Tmdb from '@/assets/icons/tmdb.svg'
 import { ArrowDownNarrowWide, ArrowDownUp, ArrowDownWideNarrow, Calendar, Capitalize, ChartTrend, CheckCircle, Circle, CircleHalf, Clock, Film, Heart, History, ListPlus, RotateCcwDot, Shuffle, Timer, Tv, X, XCircle } from '@boxicons/vue';
 import SearchBar from '@/components/SearchBar.vue';
+import NameFilter from '@/components/NameFilter.vue';
 import { useRoute, useRouter } from 'vue-router';
 import TriStatePicker from '@/components/TriStatePicker.vue';
 import NotFoundPage from './NotFoundPage.vue';
@@ -18,15 +19,19 @@ const searchStore = useSearchStore();
 const route = useRoute();
 const router = useRouter();
 
-// Hydrate the store from the URL before doing anything else
+// Hydrate and run the initial search on mount
 searchStore.hydrateFromRoute(route);
+searchStore.runSearch(); 
 
-// Rehydrate when navigating between smart collections, library, or back to search.
+// Watch for ANY route changes (navigation, back button, or filter updates)
 watch(
-    () => [route.name, route.params.smart_collection_id],
+    () => [route.name, route.params.smart_collection_id, route.query],
     () => {
         searchStore.hydrateFromRoute(route);
-    }
+        // Automatically run search whenever the URL changes
+        searchStore.runSearch();
+    },
+    { deep: true }
 );
 
 // Watch the store's clean URL object and update the browser URL silently
@@ -144,9 +149,6 @@ onUnmounted(() => {
         <SearchBar
             v-if="route.name === 'Search'"
             class="mobile-only"
-            placeholder="Search for titles" 
-            v-model="searchStore.query"
-            @submit="searchStore.submit"
         />
 
         <div v-if="route.name !== 'Search'" class="filters margin-fix">
@@ -238,8 +240,7 @@ onUnmounted(() => {
                 <div v-if="route.name !== 'Search'" class="flex-row">
                     <hr>
     
-                    <SearchBar 
-                        placeholder="Filter by title" 
+                    <NameFilter 
                         v-model="searchStore.query"
                         @submit="searchStore.submit"
                     />

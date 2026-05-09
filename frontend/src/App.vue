@@ -1,7 +1,7 @@
 <script setup>
 import { useRoute } from 'vue-router';
 import SearchBar from './components/SearchBar.vue';
-import { AlbumCovers, Compass, Home, List, Search, User } from '@boxicons/vue';
+import { AlbumCovers, Home, List, Search, User } from '@boxicons/vue';
 import { useAuthStore } from './stores/auth';
 import { computed } from 'vue';
 import LoadingIndicator from './components/LoadingIndicator.vue';
@@ -22,9 +22,9 @@ const displayNav = computed(() => {
             <router-link to="/" class="no-deco">
                 <h2 class="name">Watchlist</h2>
             </router-link>
-            <SearchBar 
-                placeholder="Search for titles" 
-            />
+
+            <SearchBar/>
+            
             <div class="flex-row align-center">
                 <ul>
                     <li>

@@ -1,49 +1,52 @@
 <script setup>
-import { ref, useAttrs } from 'vue'
-import { Search, X } from '@boxicons/vue';
-import { useRouter } from 'vue-router';
+import { ref, watch, useAttrs } from 'vue'
+import { X } from '@boxicons/vue';
 
 const attrs = useAttrs()
+const query = defineModel({ type: String, default: '' });
+const emit = defineEmits(['focus']);
 
 const inputSearch = ref(null);
-const inputValue = ref('');
+const localQuery = ref(query.value);
 
-const suggestionsVisible = ref(false);
+let debounceTimeout = null;
 
-const router = useRouter();
+watch(localQuery, (newVal) => {
+    clearTimeout(debounceTimeout);
+    debounceTimeout = setTimeout(() => {
+        query.value = newVal; // This updates the store -> updates URL -> triggers search
+    }, 500);
+});
 
 function onSearchSubmit() {
-    router.push({
-        path: '/search',
-        query: inputValue.value ? { q: inputValue.value } : undefined
-    });
+    // If they press enter, skip the debounce delay and search immediately
+    clearTimeout(debounceTimeout);
+    query.value = localQuery.value;
 }
 
 function handleClearButton() {
-    inputValue.value = '';
+    localQuery.value = '';
+    onSearchSubmit();
     inputSearch.value.focus();
-    onSearchSubmit(); 
 }
 </script>
 
 <template>
     <form
         role="search"
-        @submit.prevent="onSearchSubmit"
-        @blur="suggestionsVisible = false"
         class="search-bar"
+        @submit.prevent="onSearchSubmit"
     >
-        <Search class="search" size="sm"/>
         <input
-            v-model="inputValue"
+            v-model="localQuery" 
             v-bind="attrs"
-            :placeholder="attrs?.placeholder ?? 'Search for titles'"
+            :placeholder="attrs?.placeholder ?? 'Filter by title'"
             ref="inputSearch"
             type="search"
-            @focus="suggestionsVisible = true"
+            @focus="emit('focus')"
         >
         <X
-            v-if="inputValue"
+            v-if="localQuery"
             size="sm"
             class="btn btn-text soft wipe"
             @click="handleClearButton"
@@ -57,7 +60,7 @@ form {
 }
 
 input {
-    padding-left: calc(var(--spacing-md) * 2 + var(--spacing-sm-md));
+    padding-left: var(--spacing-sm-md);
     padding-right: calc(var(--spacing-lg) + var(--spacing-xs));
     margin: 0;
     width: 100%;
