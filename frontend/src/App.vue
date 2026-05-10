@@ -54,6 +54,8 @@ const displayNav = computed(() => {
                 </router-link>
             </div>
         </nav>
+
+        <div class="background"></div>
     </header>
 
     <nav class="mobile-nav" :class="{'nav-visible': displayNav}">
@@ -99,14 +101,23 @@ header {
     right: 0;
     padding: var(--spacing-sm-md) var(--spacing-md);
     border-bottom: 1px solid var(--c-border);
-    backdrop-filter: blur(var(--blur-heavy));
-    background: var(--c-bg-opaque-base);
     z-index: var(--z-nav);
 
     nav {
         display: flex;
         justify-content: space-between;
         align-items: center;
+    }
+    
+    .background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        backdrop-filter: blur(var(--blur-heavy));
+        background: var(--c-bg-opaque-base);
     }
 }
 
