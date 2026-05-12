@@ -1,14 +1,15 @@
 <script setup>
-import { ref, useAttrs } from 'vue'
+import { ref, useAttrs, onMounted, onUnmounted } from 'vue'
 import { Clock, Search, X } from '@boxicons/vue';
 import { useRouter } from 'vue-router';
 
 const attrs = useAttrs()
 
+const formRef = ref(null);
 const inputSearch = ref(null);
 const inputValue = ref('');
+const overlayVisible = ref(false);
 
-const suggestionsVisible = ref(false);
 const suggestions = ref([
     { id: 1, title: 'Inception' },
     { id: 2, title: 'Breaking Bad' },
@@ -20,7 +21,9 @@ const suggestions = ref([
 const router = useRouter();
 
 function onSearchSubmit() {
-    suggestionsVisible.value = false;
+    inputSearch.value?.blur();
+    overlayVisible.value = false;
+
     router.push({
         path: '/search',
         query: inputValue.value ? { q: inputValue.value } : undefined
@@ -29,32 +32,37 @@ function onSearchSubmit() {
 
 function handleClearButton() {
     inputValue.value = '';
-    inputSearch.value.focus();
-    onSearchSubmit(); 
+    inputSearch.value?.focus();
 }
 
-// Set search input value when a recommendation is clicked
 function selectSuggestion(title) {
     inputValue.value = title;
-    suggestionsVisible.value = false;
     onSearchSubmit();
 }
 
-// Safely close the dropdown if focus leaves the search form completely
-function handleFocusOut(event) {
-    if (!event.currentTarget.contains(event.relatedTarget)) {
-        suggestionsVisible.value = false;
+// Safely close the dropdown if a click occurs entirely outside the form component
+function handleClickOutside(event) {
+    if (formRef.value && !formRef.value.contains(event.target)) {
+        overlayVisible.value = false;
     }
 }
+
+// Attach and detach global click listeners
+onMounted(() => {
+    document.addEventListener('click', handleClickOutside);
+});
+onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside);
+});
 </script>
 
 <template>
     <form
+        ref="formRef"
         role="search"
         @submit.prevent="onSearchSubmit"
-        @focusout="handleFocusOut"
         class="search-bar"
-        :class="{ 'suggestions-active': suggestionsVisible }"
+        :class="{ 'suggestions-active': overlayVisible }"
     >
         <div class="input-wrapper">
             <Search class="search" size="sm"/>
@@ -64,7 +72,7 @@ function handleFocusOut(event) {
                 :placeholder="attrs?.placeholder ?? 'Search for titles'"
                 ref="inputSearch"
                 type="search"
-                @focus="suggestionsVisible = true"
+                @focus="overlayVisible = true"
             >
             <X
                 v-if="inputValue"
@@ -74,19 +82,19 @@ function handleFocusOut(event) {
             />
         </div>
 
-        <div 
-            v-if="suggestionsVisible" 
-            class="suggestions"
-        >
-            <button
-                v-for="item in suggestions"
-                :key="item.id"
-                class="btn-text btn-even-padding"
-                @click="selectSuggestion(item.title)"
-            >
-                <Clock size="xs"/>
-                <span>{{ item.title }}</span>
-            </button>
+        <div v-if="overlayVisible" class="overlay">
+            <div class="suggestions">
+                <button
+                    v-for="item in suggestions"
+                    :key="item.id"
+                    type="button" 
+                    class="btn-text btn-even-padding"
+                    @click="selectSuggestion(item.title)"
+                >
+                    <Clock size="xs"/>
+                    <span>{{ item.title }}</span>
+                </button>
+            </div>
         </div>
     </form>
 </template>
@@ -98,6 +106,7 @@ form {
 
 .input-wrapper {
     position: relative;
+    z-index: 101;
 
     input {
         padding-left: calc(var(--spacing-md) * 2 + var(--spacing-sm-md));
@@ -135,13 +144,16 @@ form {
     }
 }
 
-.suggestions {
+.overlay {
+    --overlay-overdraw: var(--spacing-sm);
+    
     display: flex;
     flex-direction: column;
 
     position: absolute;
-    top: 100%;
-    width: 100%;
+    top: calc(-1 * var(--overlay-overdraw) - 1px);
+    left: calc(-1 * var(--overlay-overdraw) - 1px);
+    width: calc(100% + var(--overlay-overdraw) * 2);
     max-height: clamp(300px, 50vh, 700px);
     overflow-y: auto;
     box-sizing: border-box;
@@ -150,14 +162,21 @@ form {
     backdrop-filter: blur(var(--blur-subtle));
     border: 1px solid var(--c-border);
 
-    padding: var(--spacing-xs);
-    border-radius: var(--border-radius-md-lg);
+    padding: var(--overlay-overdraw);
+    border-radius: calc((38px + var(--spacing-md)) / 2);
+    border-bottom-left-radius: var(--border-radius-md-lg);
+    border-bottom-right-radius: var(--border-radius-md-lg);
     
     z-index: 100;
+}
+
+.suggestions {
+    display: flex;
+    flex-direction: column;
+    margin-top: calc(38px + var(--spacing-sm));
     
     button {
         justify-content: start;
     }
 }
-
 </style>
