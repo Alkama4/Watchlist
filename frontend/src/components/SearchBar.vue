@@ -40,19 +40,17 @@ function selectSuggestion(title) {
     onSearchSubmit();
 }
 
-// Safely close the dropdown if a click occurs entirely outside the form component
-function handleClickOutside(event) {
+function handleMouseDownOutside(event) {
     if (formRef.value && !formRef.value.contains(event.target)) {
         overlayVisible.value = false;
     }
 }
 
-// Attach and detach global click listeners
 onMounted(() => {
-    document.addEventListener('click', handleClickOutside);
+    document.addEventListener('mousedown', handleMouseDownOutside);
 });
 onUnmounted(() => {
-    document.removeEventListener('click', handleClickOutside);
+    document.removeEventListener('mousedown', handleMouseDownOutside);
 });
 </script>
 
