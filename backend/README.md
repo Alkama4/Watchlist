@@ -10,7 +10,9 @@
 
 2. **Create the python virtual environment**
 
-    Navigate to the backend directory in a command line if not already:
+    Install [Python 3.14.5](https://www.python.org/downloads/release/python-3145/) on your machine if you don't have it already.
+
+    Open the `/backend` directory in command line:
 
     ```bash
     cd backend
@@ -20,7 +22,7 @@
 
     ```bash
     # Create
-    python -m venv venv
+    py -3.14 -m venv venv
 
     # Activate
     source venv/bin/activate    # Linux/MacOS
