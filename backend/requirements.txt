@@ -12,3 +12,4 @@ pillow
 babel
 RapidFuzz
 pymediainfo
+alembic
