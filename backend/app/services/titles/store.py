@@ -9,11 +9,11 @@ from app.services.genres import store_title_genres
 from app.services.languages import LanguageContext, get_user_language_context
 from app.services.tmdb_collections import coordinate_tmdb_collection_fetching, init_tmdb_collection
 from app.services.video_assets import link_video_assets
+from app.enums import TitleType
 from app.models import (
     EpisodeTranslation,
     SeasonTranslation,
     TitleTranslation,
-    TitleType,
     Title,
     Season,
     Episode,

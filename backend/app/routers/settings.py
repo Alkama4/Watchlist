@@ -3,12 +3,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.dependencies import get_db
 from app.settings.config import REVERSE_TYPE_MAP
+from app.models import Setting
 from app.schemas import (
     EnumChoice,
     SettingOut
-)
-from app.models import (
-    Setting
 )
 
 router = APIRouter()

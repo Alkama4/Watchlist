@@ -6,9 +6,8 @@ from typing import Type
 from app.config import DEFAULT_MAX_QUERY_LIMIT
 from app.settings.config import DEFAULT_SETTINGS
 from app.services.languages import LanguageContext, fill_translated_fields_dynamically, get_user_language_context
+from app.enums import SortBy, SortDirection
 from app.models import (
-    SortBy,
-    SortDirection,
     Title,
     Season,
     Episode,

@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.services.titles.search_internal import run_title_search
 from app.schemas import TitleListOut, TitleQueryIn, TitleCardOut, TitleCardUserDetailsOut
-from app.models import SortBy
+from app.enums import SortBy
 
 
 async def fetch_similar_titles(

@@ -13,7 +13,8 @@ from sqlalchemy.orm import selectinload
 from app.services.video_assets import sync_all_video_assets
 from app.services.languages import LanguageContext, get_user_language_context, pick_translation
 from app.dependencies import get_db
-from app.models import Episode, Season, Title, TitleFolder, User, VideoAsset, VideoType
+from app.models import Episode, Season, Title, TitleFolder, User, VideoAsset
+from app.enums import VideoType
 from app.schemas import EpisodeMinimalOut, FolderRequest, TitleMinimalOut, VideoAssetExpandedOut, TitleFoldersResponseOut
 from app.routers.auth import get_current_user
 

@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
 from app.services.languages import get_user_language_context
 from app.services.ids import get_title_id_by_season_id
+from app.enums import ImageType
 from app.models import (
     SeasonTranslation,
     TMDBCollectionTranslation,
@@ -13,7 +14,6 @@ from app.models import (
     SeasonUserDetails,
     TitleUserDetails,
     ImageLink,
-    ImageType,
     Image
 )
 from app.schemas import (

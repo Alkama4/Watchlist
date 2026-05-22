@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from app.services.languages import LanguageContext, check_translation_availability, fill_translated_fields_dynamically, get_user_language_context
 from app.services.titles.store import coordinate_title_fetching
 from app.services.tmdb_collections import fetch_tmdb_collection_cards
+from app.enums import TitleType
 from app.schemas import (
     EpisodeOut,
     GenreElement,
@@ -26,7 +27,6 @@ from app.models import (
     TitleTranslation,
     SeasonTranslation,
     EpisodeTranslation,
-    TitleType,
     TitleUserDetails,
     SeasonUserDetails,
     EpisodeUserDetails,

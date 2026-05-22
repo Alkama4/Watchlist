@@ -15,9 +15,6 @@ config
 # Setup DB stuff
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-
     async with AsyncSessionLocal() as db:
         await init_settings(db)
         await update_genres(db, force_update=False)

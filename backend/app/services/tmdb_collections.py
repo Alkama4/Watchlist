@@ -10,6 +10,7 @@ from app.services.languages import LanguageContext, fill_translated_fields_dynam
 from app.integrations import tmdb
 from app.services.images import select_best_image, store_image_details
 from app.services.titles.search_internal import run_title_search
+from app.enums import SortBy, SortDirection
 from app.schemas import (
     TMDBCollectionCardOut,
     TMDBCollectionCardUserDetailsOut,
@@ -21,8 +22,6 @@ from app.schemas import (
     TitleQueryIn,
 )
 from app.models import(
-    SortBy,
-    SortDirection,
     TMDBCollection,
     TMDBCollectionTranslation,
     TMDBCollectionUserDetails,

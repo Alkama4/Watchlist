@@ -11,6 +11,8 @@ from app.services.user_flags import set_user_title_value, set_title_watch_count
 from app.services.titles.preset_searches import fetch_similar_titles
 from app.services.images import fetch_image_details, set_user_image_choice
 from app.services.languages import check_translation_availability, get_users_global_preferred_locale
+from app.enums import ImageType
+from app.models import Genre, User, Title
 from app.schemas import (
     GenresOut,
     ImageListsOut,
@@ -27,12 +29,6 @@ from app.schemas import (
     TitleCardUserDetailsOut,
     TitleListOut,
     TitleOut
-)
-from app.models import (
-    Genre,
-    ImageType,
-    User,
-    Title
 )
 
 router = APIRouter()
