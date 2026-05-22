@@ -2,13 +2,13 @@ from sqlalchemy import select, tuple_, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased
 from app.integrations import tmdb
+from app.enums import TitleType
 from app.schemas import (
     TMDBTitleQueryIn,
     TitleCardUserDetailsOut,
     TitleListOut
 )
 from app.models import (
-    TitleType,
     Title,
     TitleUserDetails
 )

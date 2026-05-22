@@ -9,7 +9,8 @@ from pymediainfo import MediaInfo
 from sqlalchemy import select, extract
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from app.models import Season, Title, Episode, VideoAsset, TitleFolder, VideoType
+from app.enums import VideoType
+from app.models import Season, Title, Episode, VideoAsset, TitleFolder
 
 # Regex patterns
 TITLE_REGEX = re.compile(r"^(.*)\s\((\d{4})\)")

@@ -2,7 +2,7 @@ from typing import List, Optional, Annotated
 from pydantic import BaseModel, Field, computed_field, AfterValidator, model_validator
 from datetime import datetime, date
 from babel import Locale, UnknownLocaleError
-from app.models import ImageType, TitleType, SortBy, SortDirection, VideoType
+from app.enums import ImageType, TitleType, SortBy, SortDirection, VideoType
 from app.config import DEFAULT_MAX_QUERY_LIMIT
 
 

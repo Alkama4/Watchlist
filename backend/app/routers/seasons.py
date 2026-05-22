@@ -4,14 +4,12 @@ from app.dependencies import get_db
 from app.routers.auth import get_current_user
 from app.services.images import fetch_image_details, set_user_image_choice
 from app.services.user_flags import set_season_watch_count
+from app.enums import ImageType
+from app.models import User
 from app.schemas import (
     ImageListsOut,
     ImagePreferenceIn,
     WatchCountIn
-)
-from app.models import (
-    ImageType,
-    User
 )
 
 router = APIRouter()
