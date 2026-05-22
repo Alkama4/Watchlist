@@ -1,20 +1,20 @@
-import enum
+from enum import Enum
 
-class TitleType(enum.Enum):
+class TitleType(str, Enum):
     movie = "movie"
     tv = "tv"
 
-class ImageType(enum.Enum):
+class ImageType(str, Enum):
     poster = "poster"
     backdrop = "backdrop"
     logo = "logo"
 
-class SortDirection(enum.Enum):
+class SortDirection(str, Enum):
     default = "default"
     asc = "asc"
     desc = "desc"
 
-class SortBy(enum.Enum):
+class SortBy(str, Enum):
     default = "default"
     tmdb_score = "tmdb_score"
     imdb_score = "imdb_score"
@@ -27,14 +27,14 @@ class SortBy(enum.Enum):
     similarity = "similarity"
     random = "random"
 
-class Themes(enum.Enum):
+class Themes(str, Enum):
     void = "void"
     midnight = "midnight"
     amethyst = "amethyst"
     flashbang = "flashbang"
     sixteen_bit = "16-bit"
 
-class VideoType(enum.Enum):
+class VideoType(str, Enum):
     movie = "movie"
     episode = "episode"
     featurette = "featurette"
