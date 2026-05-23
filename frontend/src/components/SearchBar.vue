@@ -12,21 +12,61 @@ const inputValue = ref('');
 const overlayVisible = ref(false);
 const waitingFor = ref({});
 
-const suggestions = ref([
-    { title_id: 1, name: 'Inception' },
-    { title_id: 2, name: 'Breaking Bad' },
-    { title_id: 3, name: 'Interstellar' },
-    { title_id: 4, name: 'Stranger Things' },
-    { title_id: 5, name: 'The Dark Knight' }
-]);
+const suggestions = ref([]);
+const recentSearches = ref([]);
+const LOCAL_STORAGE_KEY = 'search_history';
 
 const router = useRouter();
 
+function loadRecentSearches() {
+    try {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+        recentSearches.value = stored ? JSON.parse(stored) : [];
+    } catch (e) {
+        recentSearches.value = [];
+    }
+}
+
+function saveSearchToHistory(queryStr) {
+    if (!queryStr || !queryStr.trim()) return;
+    
+    const cleanedQuery = queryStr.trim();
+    
+    let updated = recentSearches.value.filter(item => item !== cleanedQuery);
+    updated.unshift(cleanedQuery);
+    
+    if (updated.length > 5) {
+        updated = updated.slice(0, 5);
+    }
+    
+    recentSearches.value = updated;
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+}
+
+function removeSearchFromHistory(queryStr) {
+    recentSearches.value = recentSearches.value.filter(item => item !== queryStr);
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(recentSearches.value));
+
+    fetchSuggestions();
+}
+
 async function fetchSuggestions() {
+    // If empty string, fall back instantly to local storage history without calling backend
+    if (!inputValue.value || !inputValue.value.trim()) {
+        suggestions.value = recentSearches.value.map((name, index) => ({
+            title_id: `history-${index}`, // uniquely identify list items
+            name: name,
+            isHistory: true
+        }));
+        return;
+    }
+
     waitingFor.suggestions = true;
     try {
         const response = await fastApi.titles.searchSuggestions({ query: inputValue.value })
-        suggestions.value = response.titles;
+        suggestions.value = response.titles.map(t => ({ ...t, isHistory: false }));
+    } catch (error) {
+        console.error("Failed to load search suggestions", error);
     } finally {
         waitingFor.suggestions = false;
     }
@@ -35,6 +75,8 @@ async function fetchSuggestions() {
 function onSearchSubmit() {
     inputSearch.value?.blur();
     overlayVisible.value = false;
+
+    saveSearchToHistory(inputValue.value);
 
     router.push({
         path: '/search',
@@ -47,8 +89,8 @@ function handleClearButton() {
     inputSearch.value?.focus();
 }
 
-function selectSuggestion(title) {
-    inputValue.value = title;
+function selectSuggestion(titleName) {
+    inputValue.value = titleName;
     onSearchSubmit();
 }
 
@@ -66,8 +108,12 @@ watch(
 );
 
 onMounted(() => {
+    // Run both so that the correct one does its thing
+    loadRecentSearches();
+    fetchSuggestions(); 
     document.addEventListener('mousedown', handleMouseDownOutside);
 });
+
 onUnmounted(() => {
     document.removeEventListener('mousedown', handleMouseDownOutside);
 });
@@ -100,19 +146,46 @@ onUnmounted(() => {
         </div>
 
         <div v-if="overlayVisible" class="overlay">
-            <div class="suggestions">
+            <div v-if="suggestions.length > 0" class="suggestions">
                 <button
                     v-for="item in suggestions"
                     :key="item.title_id"
                     type="button" 
-                    class="btn-text btn-even-padding"
+                    class="btn-text btn-even-padding suggestion-button"
                     @click="selectSuggestion(item.name)"
                 >
-                    <Clock size="xs"/>
+                    <!-- Show a history clock if it is local history, otherwise a discovery lens -->
+                    <Clock v-if="item.isHistory" size="xs"/>
+                    <Search v-else size="xs" style="color: var(--c-text-soft);"/>
+                    
                     <span>{{ item.name }}</span>
+
+                    <X
+                        v-if="inputValue.length == 0"
+                        size="sm"
+                        class="btn-text subtle remove-history-item-button"
+                        @click.stop="removeSearchFromHistory(item.name)"
+                    />
                 </button>
             </div>
+            <div v-else class="suggestions placeholder">
+                <h4>
+                    {{
+                        inputValue.length == 0
+                        ? 'Search for titles'
+                        : 'No suggestions found'
+                    }}
+                </h4>
+                <p>
+                    {{
+                        inputValue.length == 0
+                        ? 'Start searching for any movie or TV show.'
+                        : 'Press enter to search anyway, or to add the title.'
+                    }}
+                </p>
+            </div>
         </div>
+
     </form>
 </template>
 
@@ -196,4 +269,32 @@ form {
         justify-content: start;
     }
 }
+
+.suggestions.placeholder {
+    min-height: unset;
+    justify-content: center;
+    align-items: center;
+    padding: var(--spacing-md-lg);
+    gap: var(--spacing-xs-sm);
+
+    h4, p {
+        margin: 0;
+    }
+    p {
+        color: var(--c-text-soft);
+        /* font-size: var(--fs-neg-1) */
+    }
+}
+
+.suggestion-button {
+    position: relative;
+
+    .remove-history-item-button {
+        position: absolute;
+        right: var(--spacing-xs);
+        padding: var(--spacing-xs);
+        border-radius: var(--border-radius-md);
+    }
+}
+
 </style>
