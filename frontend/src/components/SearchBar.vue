@@ -1,7 +1,8 @@
 <script setup>
-import { ref, useAttrs, onMounted, onUnmounted } from 'vue'
+import { ref, useAttrs, onMounted, onUnmounted, watch } from 'vue'
 import { Clock, Search, X } from '@boxicons/vue';
 import { useRouter } from 'vue-router';
+import { fastApi } from '@/utils/fastApi';
 
 const attrs = useAttrs()
 
@@ -9,16 +10,27 @@ const formRef = ref(null);
 const inputSearch = ref(null);
 const inputValue = ref('');
 const overlayVisible = ref(false);
+const waitingFor = ref({});
 
 const suggestions = ref([
-    { id: 1, title: 'Inception' },
-    { id: 2, title: 'Breaking Bad' },
-    { id: 3, title: 'Interstellar' },
-    { id: 4, title: 'Stranger Things' },
-    { id: 5, title: 'The Dark Knight' }
+    { title_id: 1, name: 'Inception' },
+    { title_id: 2, name: 'Breaking Bad' },
+    { title_id: 3, name: 'Interstellar' },
+    { title_id: 4, name: 'Stranger Things' },
+    { title_id: 5, name: 'The Dark Knight' }
 ]);
 
 const router = useRouter();
+
+async function fetchSuggestions() {
+    waitingFor.suggestions = true;
+    try {
+        const response = await fastApi.titles.searchSuggestions({ query: inputValue.value })
+        suggestions.value = response.titles;
+    } finally {
+        waitingFor.suggestions = false;
+    }
+}
 
 function onSearchSubmit() {
     inputSearch.value?.blur();
@@ -45,6 +57,13 @@ function handleMouseDownOutside(event) {
         overlayVisible.value = false;
     }
 }
+
+watch(
+    () => inputValue.value,
+    async () => {
+        await fetchSuggestions();
+    }
+);
 
 onMounted(() => {
     document.addEventListener('mousedown', handleMouseDownOutside);
@@ -84,13 +103,13 @@ onUnmounted(() => {
             <div class="suggestions">
                 <button
                     v-for="item in suggestions"
-                    :key="item.id"
+                    :key="item.title_id"
                     type="button" 
                     class="btn-text btn-even-padding"
-                    @click="selectSuggestion(item.title)"
+                    @click="selectSuggestion(item.name)"
                 >
                     <Clock size="xs"/>
-                    <span>{{ item.title }}</span>
+                    <span>{{ item.name }}</span>
                 </button>
             </div>
         </div>
