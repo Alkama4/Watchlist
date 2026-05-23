@@ -34,7 +34,7 @@ function handleClearButton() {
 <template>
     <form
         role="search"
-        class="search-bar"
+        class="name-filter"
         @submit.prevent="onSearchSubmit"
     >
         <input
