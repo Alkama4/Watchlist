@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.dependencies import get_db
 from app.routers.auth import get_current_user
 from app.services.titles.read import fetch_title_with_user_details
-from app.services.titles.search_internal import run_title_search
+from app.services.titles.search_internal import get_title_search_suggestions, run_title_search
 from app.services.titles.search_tmdb import run_and_process_tmdb_search
 from app.services.titles.store import coordinate_title_fetching
 from app.services.user_flags import set_user_title_value, set_title_watch_count
@@ -17,6 +17,8 @@ from app.schemas import (
     ImagePreferenceIn,
     TitleIn,
     TitleLocaleIn,
+    TitleMinimalListOut,
+    TitleQuerySuggestionIn,
     WatchCountIn,
     TitleIsFavouriteIn,
     TitleInWatchlistIn,
@@ -49,6 +51,15 @@ async def search_for_titles(
     return await run_title_search(
         db, user.user_id, data, TitleCardOut, TitleCardUserDetailsOut
     )
+
+
+@router.post("/search/suggestions", response_model=TitleMinimalListOut)
+async def suggestions_for_internal_search(
+    data: TitleQuerySuggestionIn,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    return await get_title_search_suggestions(db, user.user_id, data.query)
 
 
 @router.post("/search/tmdb", response_model=TitleListOut)
