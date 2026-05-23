@@ -15,6 +15,12 @@ const routes = [
         meta: { requiresAuth: true }
     },
     {
+        path: '/library',
+        name: 'Library',
+        component: () => import('@/views/SearchPage.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
         path: '/smart_collection/:smart_collection_id',
         name: 'Smart Collection',
         component: () => import('@/views/SearchPage.vue'),

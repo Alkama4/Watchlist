@@ -8,27 +8,30 @@ import Imdb from '@/assets/icons/imdb.svg'
 import Tmdb from '@/assets/icons/tmdb.svg'
 import { ArrowDownNarrowWide, ArrowDownUp, ArrowDownWideNarrow, Calendar, Capitalize, ChartTrend, CheckCircle, Circle, CircleHalf, Clock, Film, Heart, History, ListPlus, RotateCcwDot, Shuffle, Timer, Tv, X, XCircle } from '@boxicons/vue';
 import SearchBar from '@/components/SearchBar.vue';
+import NameFilter from '@/components/NameFilter.vue';
 import { useRoute, useRouter } from 'vue-router';
 import TriStatePicker from '@/components/TriStatePicker.vue';
 import NotFoundPage from './NotFoundPage.vue';
 
-
 const searchStore = useSearchStore();
-
 
 //////////// URL AND STORE SYNCING ////////////
 const route = useRoute();
 const router = useRouter();
 
-// Hydrate the store from the URL before doing anything else
+// Hydrate and run the initial search on mount
 searchStore.hydrateFromRoute(route);
+searchStore.runSearch(); 
 
-// Rehydrate when navigating between smart collections or back to search.
+// Watch for ANY route changes (navigation, back button, or filter updates)
 watch(
-    () => [route.name, route.params.smart_collection_id],
+    () => [route.name, route.params.smart_collection_id, route.query],
     () => {
         searchStore.hydrateFromRoute(route);
-    }
+        // Automatically run search whenever the URL changes
+        searchStore.runSearch();
+    },
+    { deep: true }
 );
 
 // Watch the store's clean URL object and update the browser URL silently
@@ -41,7 +44,7 @@ watch(
 );
 
 const isValidRoute = computed(() => {
-    if (route.name === 'Search') return true;
+    if (['Search', 'Library'].includes(route.name)) return true;
 
     if (route.name === 'Smart Collection') {
         return Object.keys(SMART_COLLECTIONS).includes(route.params.smart_collection_id);
@@ -49,7 +52,6 @@ const isValidRoute = computed(() => {
 
     return false;
 });
-
 
 //////////// SEARRCH PARAM OPTIONS ////////////
 const typeOptions = [
@@ -89,7 +91,6 @@ onMounted(async () => {
     searchStore.fetchGenres();
 });
 
-
 //////////// INFINITE SCROLL ////////////
 const loadMoreTrigger = ref(null);
 let observer = null;
@@ -117,7 +118,6 @@ watch(loadMoreTrigger, (newTrigger, oldTrigger) => {
 
 onUnmounted(() => {
     if (observer) observer.disconnect();
-    // Optional: Decide if you want to keep TMDB mode sticky or reset it when leaving
     searchStore.tmdbFallback = false;
 });
 </script>
@@ -145,12 +145,13 @@ onUnmounted(() => {
                 {{ searchStore.headerLabel }}
             </template>
         </h1>
-        <SearchBar 
-            v-if="route.name == 'Search'"
+
+        <SearchBar
+            v-if="route.name === 'Search'"
             class="mobile-only"
-            placeholder="Search for titles" 
         />
-        <div class="filters" :class="{'margin-fix': route.name !== 'Search'}">
+
+        <div v-if="route.name !== 'Search'" class="filters margin-fix">
             <div>
                 <LabelDropDown
                     label="Type"
@@ -235,6 +236,15 @@ onUnmounted(() => {
                         :options="availabilityOptions"
                     />
                 </LabelDropDown>
+
+                <div v-if="route.name !== 'Search'" class="flex-row">
+                    <hr>
+    
+                    <NameFilter 
+                        v-model="searchStore.query"
+                        @submit="searchStore.submit"
+                    />
+                </div>
 
                 <div v-if="searchStore.searchParamsIsDirty" class="flex-row">
                     <hr>
@@ -329,6 +339,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+/* Unchanged styles omitted for brevity, keep all your original CSS here */
 .mode-header {
     display: flex;
     gap: var(--spacing-md);
@@ -416,6 +427,4 @@ onUnmounted(() => {
         }
     }
 }
-
-
 </style>

@@ -175,11 +175,7 @@ class TitleNotesIn(BaseModel):
 class TitleLocaleIn(BaseModel):
     locale: LocaleString
     
-
-class TMDBTitleQueryIn(BaseModel):
-    query: str
-    page: Optional[int] = Field(1, ge=1)
-
+# Queries/Searches
 class TitleQueryIn(BaseModel):
     query: Optional[str] = None
     title_type: Optional[TitleType] = None
@@ -212,6 +208,13 @@ class TitleQueryIn(BaseModel):
         if self.sort_by == SortBy.similarity and self.reference_title_id is None:
             raise ValueError("reference_title_id must be provided when sorting by similarity")
         return self
+
+class TitleQuerySuggestionIn(BaseModel):
+    query: Optional[str] = None
+
+class TMDBTitleQueryIn(BaseModel):
+    query: str
+    page: Optional[int] = Field(1, ge=1)
 
 
 # Card title out
@@ -271,6 +274,7 @@ class TitleHeroOut(TitleCardOut):
     user_details: Optional[TitleHeroUserDetailsOut] = None
 
 
+# Title lists
 class TitleListOut(BaseModel):
     header: Optional[str] = None
     titles: List[TitleCardOut | TitleHeroOut]
@@ -278,6 +282,9 @@ class TitleListOut(BaseModel):
     page_size: int
     total_items: int
     total_pages: int
+
+class TitleMinimalListOut(BaseModel):
+    titles: List[TitleMinimalOut]
 
 
 ####### Collections #######

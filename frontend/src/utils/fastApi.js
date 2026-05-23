@@ -142,6 +142,11 @@ export const fastApi = {
             url: '/titles/search',
             data
         }),
+        searchSuggestions: async (data) => fetchData({
+            method: 'post',
+            url: '/titles/search/suggestions',
+            data
+        }),
         searchTmdb: async (data) => fetchData({
             method: 'post',
             url: '/titles/search/tmdb',

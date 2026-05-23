@@ -26,6 +26,8 @@ from app.schemas import (
     TitleHeroUserDetailsOut,
     GenreElement,
     TitleListOut,
+    TitleMinimalListOut,
+    TitleMinimalOut,
     TitleQueryIn,
 )
 
@@ -482,3 +484,47 @@ async def run_title_search(
     result = await db.execute(stmt)
     rows = result.mappings().unique().all()
     return _build_title_list_out(rows, total, page, size, title_schema, user_title_details_schema, locale_ctx)
+
+
+async def get_title_search_suggestions(
+    db: AsyncSession,
+    user_id: int,
+    query,
+) -> TitleMinimalListOut:
+    locale_ctx = await get_user_language_context(db=db, user_id=user_id)
+    
+    stmt = (
+        select(Title)
+        .join(Title.translations)
+        .options(
+            selectinload(Title.translations.and_(
+                TitleTranslation.iso_639_1.in_(locale_ctx.iso_639_1_list)
+            )),
+        )
+        .where(TitleTranslation.name.ilike(f"%{query}%"))
+        .limit(5)
+    )
+
+    result = await db.execute(stmt)
+    result_titles = result.scalars().all()
+
+    suggestions = []
+    for title in result_titles:
+        title_data = {
+            "title_id": title.title_id,
+            "name": None
+        }
+        
+        fill_translated_fields_dynamically(
+            title_data, 
+            title.translations, 
+            locale_ctx.iso_639_1_list, 
+            TitleTranslation
+        )
+
+        if not title_data.get("name"):
+            title_data["name"] = title.original_title
+
+        suggestions.append(TitleMinimalOut(**title_data))
+
+    return TitleMinimalListOut(titles=suggestions)

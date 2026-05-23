@@ -1,6 +1,9 @@
 import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
 import { fastApi } from '@/utils/fastApi';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const PARAM_MAP = {
     title_type:       ['type',      'string'],
@@ -71,7 +74,6 @@ export const useSearchStore = defineStore('search', () => {
     const pageNumber = ref(1);
     const waitingFor = ref({ firstPage: false, additionalPage: false });
     
-    // Tracks the current route name so watchers know where we are saving to
     const currentRouteName = ref('');
 
     // Dynamic initial params based on current route
@@ -81,17 +83,11 @@ export const useSearchStore = defineStore('search', () => {
     const searchResults = ref({ ...initialSearchResults });
     const genres = ref([]);
 
-    // CACHE: to remember normal searches
-    const cachedMainSearch = ref({
-        query: '',
-        params: { ...absoluteInitialSearchParams }
-    });
-
     // --- URL Sync Utilities ---
     function hydrateFromRoute(route) {
+        currentRouteName.value = route.name;
         const isSmart = route.name === 'Smart Collection';
         const collectionId = route.params.smart_collection_id;
-        currentRouteName.value = route.name;
         
         let baseParams = { ...absoluteInitialSearchParams };
 
@@ -100,6 +96,8 @@ export const useSearchStore = defineStore('search', () => {
             const config = SMART_COLLECTIONS[collectionId];
             headerLabel.value = config.header;
             baseParams = { ...baseParams, ...config.params };
+        } else if (route.name === 'Library') {
+            headerLabel.value = 'Library';
         } else {
             headerLabel.value = '';
         }
@@ -107,19 +105,13 @@ export const useSearchStore = defineStore('search', () => {
         activeInitialParams.value = baseParams;
 
         const routeQuery = route.query;
-        const hasQueryParams = Object.keys(routeQuery).length > 0;
+        const newParams = { ...baseParams };
+        
+        query.value = routeQuery.q || '';
+        tmdbFallback.value = routeQuery.tmdb === 'true';
 
-        // If going back to normal search WITHOUT specific URL overrides, load from cache
-        if (!isSmart && !hasQueryParams) {
-            query.value = cachedMainSearch.value.query;
-            // JSON stringify trick to deep-clone arrays inside the state safely
-            searchParams.value = JSON.parse(JSON.stringify(cachedMainSearch.value.params));
-        } else {
-            // Start with current context baseline, override with URL params if they exist
-            const newParams = { ...baseParams };
-            query.value = routeQuery.q || '';
-            tmdbFallback.value = routeQuery.tmdb === 'true';
-
+        // Only parse filters if we are NOT on the barebones 'Search' route
+        if (route.name !== 'Search') {
             Object.entries(PARAM_MAP).forEach(([internalKey, [urlKey, type]]) => {
                 const rawValue = routeQuery[urlKey];
                 if (rawValue === undefined || rawValue === null) return;
@@ -135,9 +127,9 @@ export const useSearchStore = defineStore('search', () => {
                     newParams[internalKey] = rawValue;
                 }
             });
-
-            searchParams.value = newParams;
         }
+
+        searchParams.value = newParams;
     }
 
     const queryForUrl = computed(() => {
@@ -146,22 +138,25 @@ export const useSearchStore = defineStore('search', () => {
         if (query.value) params.q = query.value;
         if (tmdbFallback.value) params.tmdb = 'true';
 
-        Object.entries(PARAM_MAP).forEach(([internalKey, [urlKey, type]]) => {
-            const value = searchParams.value[internalKey];
-            const baseValue = activeInitialParams.value[internalKey]; // Diff against the current context
-            
-            if (type === 'array') {
-                const baseArray = Array.isArray(baseValue) ? baseValue : [];
-                if (Array.isArray(value) && value.length > 0) {
-                    if (value.length !== baseArray.length || !value.every((v, i) => v === baseArray[i])) {
-                        params[urlKey] = value.join(',');
+        // Omit filter params entirely if on the barebones 'Search' route
+        if (currentRouteName.value !== 'Search') {
+            Object.entries(PARAM_MAP).forEach(([internalKey, [urlKey, type]]) => {
+                const value = searchParams.value[internalKey];
+                const baseValue = activeInitialParams.value[internalKey];
+                
+                if (type === 'array') {
+                    const baseArray = Array.isArray(baseValue) ? baseValue : [];
+                    if (Array.isArray(value) && value.length > 0) {
+                        if (value.length !== baseArray.length || !value.every((v, i) => v === baseArray[i])) {
+                            params[urlKey] = value.join(',');
+                        }
                     }
+                } 
+                else if (value !== null && value !== undefined && value !== baseValue) {
+                    params[urlKey] = String(value);
                 }
-            } 
-            else if (value !== null && value !== undefined && value !== baseValue) {
-                params[urlKey] = String(value);
-            }
-        });
+            });
+        }
 
         return params;
     });
@@ -169,7 +164,7 @@ export const useSearchStore = defineStore('search', () => {
     // --- Helpers ---
     const isDirty = (key) => {
         const current = searchParams.value[key];
-        const initial = activeInitialParams.value[key]; // Changed from absolute to active
+        const initial = activeInitialParams.value[key];
 
         if (Array.isArray(current) && Array.isArray(initial)) {
             return current.length !== initial.length || 
@@ -178,7 +173,6 @@ export const useSearchStore = defineStore('search', () => {
         return current !== initial;
     };
 
-    // --- Computed ---
     const searchParamsIsDirty = computed(() => {
         return Object.keys(absoluteInitialSearchParams).some(key => isDirty(key));
     });
@@ -190,7 +184,6 @@ export const useSearchStore = defineStore('search', () => {
     }
 
     function resetFilters() {
-        // Now resets back to the SMART collection's default, not absolute default
         searchParams.value = JSON.parse(JSON.stringify(activeInitialParams.value)); 
     }
 
@@ -205,7 +198,6 @@ export const useSearchStore = defineStore('search', () => {
 
     async function fetchGenres() {
         if (genres.value.length > 0) return;
-
         try {
             const response = await fastApi.titles.genres();
             genres.value = response.genres.map(({ tmdb_genre_id, genre_name }) => ({
@@ -235,7 +227,8 @@ export const useSearchStore = defineStore('search', () => {
             const params = {
                 query: query.value,
                 page_number: pageNumber.value,
-                ...(tmdbFallback.value ? {} : searchParams.value)
+                // Only pass filters if we aren't using the TMDB fallback, AND we aren't on the bare search route
+                ...(tmdbFallback.value || currentRouteName.value === 'Search' ? {} : searchParams.value)
             };
 
             const response = await (tmdbFallback.value 
@@ -266,40 +259,7 @@ export const useSearchStore = defineStore('search', () => {
         }
     }
 
-    
-    // --- Watchers ---
-    watch(
-        [query, searchParams],
-        () => {
-            // Update cache silently whenever params change on the normal Search page
-            if (currentRouteName.value === 'Search') {
-                cachedMainSearch.value = {
-                    query: query.value,
-                    params: JSON.parse(JSON.stringify(searchParams.value))
-                };
-            }
-
-            if (!tmdbFallback.value) {
-                runSearch(false);
-            }
-        },
-        { deep: true }
-    );
-
-    watch(
-        tmdbFallback,
-        (isTmdbMode) => {
-            if (query.value || !isTmdbMode) {
-                runSearch();
-            } else {
-                resetResults();
-            }
-        }
-    );
-
-    
     return {
-        // State
         query,
         tmdbFallback,
         headerLabel,
@@ -310,14 +270,10 @@ export const useSearchStore = defineStore('search', () => {
         waitingFor,
         searchResults,
         genres,
-        // Sync
         hydrateFromRoute,
         queryForUrl,
-        // Helpers
         isDirty,
-        // Computed
         searchParamsIsDirty,
-        // Actions
         resetResults,
         resetFilters,
         cycleSort,
