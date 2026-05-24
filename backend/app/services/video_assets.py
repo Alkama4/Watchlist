@@ -191,55 +191,90 @@ def _extract_media_info(file_path: str) -> dict:
 
 # --------- TITLE AND VIDEO ASSET LINKING ---------
 
+
 async def link_video_assets(db: AsyncSession, candidate_title_ids: Optional[List[int]] = None) -> int:
     """Links TitleFolders to Titles, and VideoAssets to Episodes."""
     
-    # Step 1: Link Folders to Titles
     # Grab all folders
     stmt = select(TitleFolder).options(selectinload(TitleFolder.video_assets))
     folders = (await db.execute(stmt)).scalars().all()
-    if not folders: return 0
+    if not folders: 
+        return 0
 
     links_modified = 0
+    claimed_titles: Dict[int, Tuple[TitleFolder, int]] = {}
 
     for folder in folders:
         match = TITLE_REGEX.match(folder.title_folder_name)
-        if not match: continue
+        if not match: 
+            continue
 
         folder_name_raw, year_str = match.groups()
         target_name_norm = _normalize_string(folder_name_raw)
+        folder_year = int(year_str)
 
+        # Build Title Query
         title_stmt = select(Title).options(selectinload(Title.translations))
+        title_stmt = title_stmt.where(extract('year', Title.release_date) == folder_year)
         if candidate_title_ids:
             title_stmt = title_stmt.where(Title.title_id.in_(candidate_title_ids))
-        else:
-            title_stmt = title_stmt.where(extract('year', Title.release_date) == int(year_str))
 
         candidates = (await db.execute(title_stmt)).scalars().all()
-        matched_title = _fuzzy_match_title(candidates, target_name_norm)
         
-        # Link Folder
-        if matched_title and folder.title_id != matched_title.title_id:
-            folder.title_id = matched_title.title_id
-            links_modified += 1
+        matched_title, match_score = _fuzzy_match_title(candidates, target_name_norm)
+        
+        if matched_title:
+            t_id = matched_title.title_id
+            
+            # Check if another folder already claimed this title
+            if t_id in claimed_titles:
+                existing_folder, existing_score = claimed_titles[t_id]
+                print(f"[Warning] Multiple folders matched to Title ID {t_id} ('{matched_title.name_original}').")
+                print(f"  - Existing match:     '{existing_folder.title_folder_name}' (Score: {existing_score})")
+                print(f"  - New possible match: '{folder.title_folder_name}' (Score: {match_score})")
+                
+                # If current match has a better score, steal it. Otherwise, skip this folder.
+                if match_score > existing_score:
+                    print(f"  -> Switching to '{folder.title_folder_name}'")
+                    # Clear the link on the losing older folder
+                    if existing_folder.title_id == t_id:
+                        existing_folder.title_id = None
+                        links_modified += 1
+                    
+                    # Claim for the new folder
+                    claimed_titles[t_id] = (folder, match_score)
+                    if folder.title_id != t_id:
+                        folder.title_id = t_id
+                        links_modified += 1
+                else:
+                    print(f"  -> Keeping existing '{existing_folder.title_folder_name}'")
+                    if folder.title_id == t_id:
+                        folder.title_id = None
+                        links_modified += 1
+            else:
+                # No conflict, lock it in
+                claimed_titles[t_id] = (folder, match_score)
+                if folder.title_id != t_id:
+                    folder.title_id = t_id
+                    links_modified += 1
 
-        # Step 2: If the folder is linked to a title, link its episodes
+        # If the folder is successfully linked, link its assets
         if folder.title_id:
+            ep_list_stmt = (
+                select(Episode.episode_id, Season.season_number, Episode.episode_number)
+                .join(Season)
+                .where(Episode.title_id == folder.title_id)
+            )
+            ep_results = (await db.execute(ep_list_stmt)).all()
+
+            ep_lookup = {(r.season_number, r.episode_number): r.episode_id for r in ep_results}
+
             for asset in folder.video_assets:
                 if asset.video_type == VideoType.episode:
                     ep_match = EPISODE_REGEX.search(asset.file_name)
                     if ep_match:
                         s_num, e_num = map(int, ep_match.groups())
-                        ep_stmt = (
-                            select(Episode.episode_id)
-                            .join(Season)
-                            .where(
-                                Episode.title_id == folder.title_id,
-                                Season.season_number == s_num,
-                                Episode.episode_number == e_num
-                            )
-                        )
-                        ep_id = (await db.execute(ep_stmt)).scalar_one_or_none()
+                        ep_id = ep_lookup.get((s_num, e_num))
                         
                         if ep_id and asset.episode_id != ep_id:
                             asset.episode_id = ep_id
@@ -251,8 +286,8 @@ async def link_video_assets(db: AsyncSession, candidate_title_ids: Optional[List
     return links_modified
 
 
-def _fuzzy_match_title(candidates: List[Title], target_name_norm: str) -> Optional[Title]:
-    """Helper to handle the fuzzy matching logic for titles."""
+def _fuzzy_match_title(candidates: List[Title], target_name_norm: str) -> Tuple[Optional[Title], int]:
+    """Helper to handle the fuzzy matching logic for titles. Returns (Title, Score)."""
     best_fuzzy_score = 0
     matched_title = None
 
@@ -260,20 +295,23 @@ def _fuzzy_match_title(candidates: List[Title], target_name_norm: str) -> Option
         names_to_check = [("Original", candidate.name_original)]
         for trans in candidate.translations:
             if trans.name:
-                names_to_check.append((f"Translation ({trans.iso_639_1})", trans.name))
+                names_to_check.append(("Translation", trans.name))
 
         for _, raw_name in names_to_check:
             db_name_norm = _normalize_string(raw_name)
             if db_name_norm == target_name_norm:
-                return candidate # Instant 100% match
+                return candidate, 100  # Instant perfect match
             
-            score = max(fuzz.ratio(target_name_norm, db_name_norm), 
-                        fuzz.partial_ratio(target_name_norm, db_name_norm))
-            if score > best_fuzzy_score and score > 80:
-                best_fuzzy_score = score
-                matched_title = candidate
+            ratio_score = fuzz.ratio(target_name_norm, db_name_norm)
+            partial_score = fuzz.partial_ratio(target_name_norm, db_name_norm)
+            
+            if ratio_score > 85 or partial_score > 90:
+                score = max(ratio_score, partial_score)
+                if score > best_fuzzy_score:
+                    best_fuzzy_score = score
+                    matched_title = candidate
 
-    return matched_title
+    return matched_title, best_fuzzy_score
 
 
 def _normalize_string(s: str) -> str:

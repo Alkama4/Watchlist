@@ -85,7 +85,7 @@ async def coordinate_title_fetching(
         title_ids_to_link.append(title_id)
     
     if is_root_level_call:
-        print(f"LINKING ALL FOUND TITLES: {title_ids_to_link}")
+        print(f"Linking video assets for the following title_ids: {title_ids_to_link}")
         await link_video_assets(db=db, candidate_title_ids=title_ids_to_link)
     
     return title_id
