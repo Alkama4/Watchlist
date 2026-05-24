@@ -60,4 +60,5 @@ app.include_router(config.router, prefix="/config", tags=["Configurations"])
 
 @app.get("/", include_in_schema=False)
 async def redirect_to_docs():
-    return RedirectResponse(url="/docs")
+    redirect_url = f"{PROXY_ROOT_PATH}/docs" if PROXY_ROOT_PATH else "/docs"
+    return RedirectResponse(url=redirect_url)
