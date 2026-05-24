@@ -20,6 +20,8 @@ services:
       - watchlist-database
     env_file:
       - .env
+    environment:
+      - PROXY_ROOT_PATH=/api
     volumes:
       # Optionally persist downloaded images to disk
       # - ./images:/data/images

@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -11,6 +13,7 @@ from app.services.genres import update_genres
 
 # Setup ENVs
 config
+PROXY_ROOT_PATH = os.getenv("PROXY_ROOT_PATH", "")
 
 # Setup DB stuff
 @asynccontextmanager
@@ -21,7 +24,10 @@ async def lifespan(app: FastAPI):
 
     yield
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(
+    root_path=PROXY_ROOT_PATH,
+    lifespan=lifespan
+)
 
 origins=[
     "http://localhost:5173",
