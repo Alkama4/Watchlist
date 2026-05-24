@@ -1,0 +1,52 @@
+services:
+  watchlist-frontend:
+    image: ghcr.io/alkama4/watchlist-frontend:latest
+    container_name: watchlist-frontend
+    restart: unless-stopped
+    ports:    # Use either "ports" to expose through the port 8000 on host...
+      - "8000:80"
+    # expose: # ...or use "expose" to just mark the port 80 for proxy usage.
+    #   - "80"
+    depends_on:
+      - watchlist-backend
+    networks:
+      - watchlist_internal
+
+  watchlist-backend:
+    image: ghcr.io/alkama4/watchlist-backend:latest
+    container_name: watchlist-backend
+    restart: unless-stopped
+    depends_on:
+      - watchlist-database
+    env_file:
+      - .env
+    volumes:
+      # Optionally persist downloaded images to disk
+      # - ./images:/data/images
+      # Optionally provide movies/tv video files for streaming
+      # - ./your/movies:/data/movies
+      # - ./your/tv:/data/tv
+      # - ./your/mixed:/data/mixed
+    networks:
+      - watchlist_internal
+
+  watchlist-database:
+    image: postgres:18-alpine
+    container_name: watchlist-database
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - watchlist_internal
+
+volumes:
+  postgres_data:
+
+networks:
+  watchlist_internal:
+    external: false
+    driver: bridge
