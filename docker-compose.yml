@@ -24,9 +24,9 @@ services:
       # Optionally persist downloaded images to disk
       # - ./images:/data/images
       # Optionally provide movies/tv video files for streaming
-      # - ./your/movies:/data/movies
-      # - ./your/tv:/data/tv
-      # - ./your/mixed:/data/mixed
+      # - ./your/movies:/data/movies:ro
+      # - ./your/tv:/data/tv:ro
+      # - ./your/mixed:/data/mixed:ro
     networks:
       - watchlist_internal
 
