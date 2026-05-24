@@ -305,7 +305,7 @@ def _fuzzy_match_title(candidates: List[Title], target_name_norm: str) -> Tuple[
             ratio_score = fuzz.ratio(target_name_norm, db_name_norm)
             partial_score = fuzz.partial_ratio(target_name_norm, db_name_norm)
             
-            if ratio_score > 85 or partial_score > 90:
+            if ratio_score > 80 or partial_score > 80:
                 score = max(ratio_score, partial_score)
                 if score > best_fuzzy_score:
                     best_fuzzy_score = score
