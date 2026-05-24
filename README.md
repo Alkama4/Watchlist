@@ -5,10 +5,10 @@
 
 Watchlist is a full rewrite of the watchlist feature from a previous hobby project. This time it’s being built as a standalone application from the ground up, applying lessons learned to improve structure, maintainability, and overall design.
 
-![Alpha preview of the homepage](/images/home_page.png)
+![Alpha preview of the homepage](/docs/assets/home_page.png)
 
 > [!TIP]
-> **Want to see more?** Check out the full list of screenshots [here](SCREENSHOTS.md).
+> **Want to see more?** Check out the full list of screenshots [here](/docs/SCREENSHOTS.md).
 
 
 ## Planned key features
