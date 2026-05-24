@@ -5,13 +5,13 @@ A visual overview of the application.
 ## Desktop Views
 
 ### Home
-![Home Page](/images/home_page.png)
+![Home Page](/docs/assets/home_page.png)
 
 ### Search
-![Search](/images/search_page.png)
+![Search](/docs/assets/search_page.png)
 
 ### Title details
-![Details](/images/title_details.png)
+![Details](/docs/assets/title_details.png)
 
 <!-- ---
 
