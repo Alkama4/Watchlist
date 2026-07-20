@@ -524,4 +524,24 @@ class TitleFoldersResponseOut(BaseModel):
 class ConfigJellyfinOut(BaseModel):
     base_url: Optional[str] = None
     server_id: Optional[str] = None
+
+class TitleAuditOut(BaseModel):
+    title_folder_id: int
+    title_folder_path: str
+    title_folder_name: str
+    linked_title: Optional[TitleMinimalOut] = None
+    is_linked: bool
+    counts: TitleFolderCountsOut
     
+    # Audit specific fields
+    total_size_bytes: int
+    total_size_gb: float
+    completion_percentage: float
+    missing_episodes_count: int
+    max_resolution: Optional[str] = None
+    has_hdr: bool
+    is_in_watchlist: bool
+    watch_count: int
+
+    class Config:
+        from_attributes = True

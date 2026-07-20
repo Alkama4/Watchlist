@@ -263,8 +263,13 @@ export const fastApi = {
                 method: 'post',
                 url: `/media/video_assets/title_folder/assets`,
                 data: { title_folder_id: titleFolderId }
-            })
-        }
+            }),
+            audit: async (params) => fetchData({ 
+                method: 'get', 
+                url: '/media/video_assets/audit', 
+                config: { params } 
+            }),
+        },
     },
     integrations: {
         syncJellyfin: async () => fetchData({
