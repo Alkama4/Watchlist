@@ -199,6 +199,7 @@
     --collection-card-width: 475px;
 
     @media(max-width: 768px) {
+        --title-card-width: 150px;
         --collection-card-width: 100%
     }
 }

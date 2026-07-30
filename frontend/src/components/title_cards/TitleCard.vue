@@ -8,6 +8,7 @@ import { ref } from 'vue';
 import LoadingButton from '@/components/LoadingButton.vue';
 import { adjustWatchCount, toggleFavourite, toggleWatchlist } from '@/utils/titleActions';
 import { ArrowOutUpRightSquare, Check, Clock, Heart, ListMinus, ListPlus, Minus } from '@boxicons/vue';
+import { useMediaQuery } from '@/utils/useMediaQuery';
 
 const searchStore = useSearchStore();
 
@@ -30,6 +31,7 @@ const props = defineProps({
 })
 
 const waiting = ref({})
+const isMobile = useMediaQuery('(max-width: 768px)')
 
 async function addTitle() {
     waiting.value.library = true;
@@ -190,8 +192,8 @@ async function removeTitle() {
 
             <div v-if="!searchStore.tmdbFallback" class="detail-row">
                 <template v-if="titleInfo?.title_type === 'tv'">
-                    {{ titleInfo?.show_season_count }} seasons,
-                    {{ titleInfo?.show_episode_count }} episodes
+                    {{ titleInfo?.show_season_count }}{{ isMobile ? 'S' : ' seasons' }},
+                    {{ titleInfo?.show_episode_count }}{{ isMobile ? 'E' : ' episodes' }}
                 </template>
                 <template v-else>{{ timeFormatters.minutesToHrAndMin(titleInfo?.movie_runtime) }}</template>
             </div>
