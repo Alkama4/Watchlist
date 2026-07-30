@@ -8,7 +8,7 @@ import { ref } from 'vue';
 import LoadingButton from '@/components/LoadingButton.vue';
 import { adjustWatchCount, toggleFavourite, toggleWatchlist } from '@/utils/titleActions';
 import { ArrowOutUpRightSquare, Check, Clock, Heart, ListMinus, ListPlus, Minus } from '@boxicons/vue';
-import { useMediaQuery } from '@/utils/useMediaQuery';
+import { isMobile } from '@/utils/device';
 
 const searchStore = useSearchStore();
 
@@ -31,7 +31,6 @@ const props = defineProps({
 })
 
 const waiting = ref({})
-const isMobile = useMediaQuery('(max-width: 768px)')
 
 async function addTitle() {
     waiting.value.library = true;

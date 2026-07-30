@@ -1,6 +1,6 @@
 <script setup>
-import { useMediaQuery } from '@/utils/useMediaQuery';
-import { ref, onUnmounted, onMounted, computed, watch } from 'vue'
+import { isMobile } from '@/utils/device';
+import { ref, onUnmounted, onMounted, computed, watch } from 'vue';
 
 const visible = ref(false)
 const contentRef = ref(null)
@@ -18,7 +18,6 @@ watch(() => props.modelValue, (val) => {
 })
 
 
-const isMobile = useMediaQuery('(max-width: 768px)')
 watch(isMobile, (mobile) => {
     // If the screen grows to desktop while drawer is "open", clean up
     if (!mobile && visible.value) {
