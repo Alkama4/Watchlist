@@ -11,7 +11,7 @@ import SeasonsListing from '@/components/SeasonsListing.vue';
 import EpisodeMap from '@/components/EpisodeMap.vue';
 import ModalImages from '@/components/modal/ModalImages.vue';
 import KebabMenu from '@/components/KebabMenu.vue';
-import { AlbumCovers, AlertCircle, AlertTriangle, CheckCircle, Clock, DotsHorizontalRounded, Heart, Images, InfoCircle, ListMinus, ListPlay, ListPlus, Play, RefreshCw, Star, Translate } from '@boxicons/vue';
+import { AlbumCovers, AlertCircle, AlertTriangle, CheckCircle, Clock, Heart, Images, InfoCircle, ListMinus, ListPlay, ListPlus, RefreshCw, Star, Translate } from '@boxicons/vue';
 import ModalLocale from '@/components/modal/ModalLocale.vue';
 import { resolveAgeRating } from '@/utils/titleUtils';
 import { useSettingsStore } from '@/stores/settings';
@@ -21,7 +21,7 @@ import VideoAssetListing from '@/components/VideoAssetListing.vue';
 import ExternalResources from '@/components/ExternalResources.vue';
 import CollectionBannerCard from '@/components/CollectionBannerCard.vue';
 import ResponsiveOverlay from '@/components/ResponsiveOverlay.vue';
-import DropDown from '@/components/DropDown.vue';
+import { isMobile } from '@/utils/device';
 
 const props = defineProps({
     titleDetails: {
@@ -49,6 +49,7 @@ const props = defineProps({
 const settings = useSettingsStore();
 
 const waitingFor = ref({});
+const logoImageVisible = ref(false);
 const updateResponse = ref({});
 const AgeRatingsModal = ref(null);
 const videoAssetOverlay = ref(null);
@@ -194,6 +195,8 @@ const kebabOptions = computed(() => {
                         :key="getTitleImageUrl(titleDetails, '800', 'poster')"
                         :alt="`${titleDetails?.title_type} poster: ${titleDetails?.name}`"
                         class="poster"
+                        @load="logoImageVisible = true"
+                        @error="logoImageVisible = false"
                     >
 
                     <ExternalResources 
@@ -232,7 +235,7 @@ const kebabOptions = computed(() => {
                     />
 
                     <div class="name-part">
-                        <h1 class="name">
+                        <h1 v-if="!logoImageVisible && isMobile" class="name">
                             {{ titleDetails?.name }}
                         </h1>
                         <h4 v-if="titleDetails?.name_original != titleDetails?.name" class="name-original">
@@ -784,7 +787,12 @@ hr {
         display: none;
     }
 
+    .logo-wrapper {
+        padding-bottom: var(--spacing-md);
+    }
+
     .details-section {
+
         .name-part,
         .general-stats,
         .genres,
