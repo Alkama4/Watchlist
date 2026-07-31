@@ -1,5 +1,5 @@
-from typing import List, Optional, Annotated
-from pydantic import BaseModel, Field, computed_field, AfterValidator, model_validator
+from typing import Dict, List, Optional, Annotated
+from pydantic import BaseModel, ConfigDict, Field, computed_field, AfterValidator, model_validator
 from datetime import datetime, date
 from babel import Locale, UnknownLocaleError
 from app.enums import ImageType, TitleType, SortBy, SortDirection, VideoType
@@ -525,6 +525,16 @@ class ConfigJellyfinOut(BaseModel):
     base_url: Optional[str] = None
     server_id: Optional[str] = None
 
+
+####### Asset audit #######
+
+class QualitySummary(BaseModel):
+    resolutions: List[str]
+    hdr_types: List[str]
+    is_uniform: bool
+    primary_display: str
+
+
 class TitleAuditOut(BaseModel):
     title_folder_id: int
     title_folder_path: str
@@ -532,16 +542,59 @@ class TitleAuditOut(BaseModel):
     linked_title: Optional[TitleMinimalOut] = None
     is_linked: bool
     counts: TitleFolderCountsOut
-    
-    # Audit specific fields
+
+    # Audit Metrics
     total_size_bytes: int
     total_size_gb: float
     completion_percentage: float
     missing_episodes_count: int
-    max_resolution: Optional[str] = None
-    has_hdr: bool
+    quality_summary: QualitySummary
     is_in_watchlist: bool
     watch_count: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
+
+# --- Detail Schemas ---
+
+class VideoAssetOut(BaseModel):
+    video_asset_id: int
+    file_name: str
+    file_path: str
+    video_type: VideoType
+    resolution: Optional[str] = None
+    hdr_type: Optional[str] = None
+    filesize_bytes: int
+    filesize_gb: float
+    codec: Optional[str] = None
+    bit_depth: Optional[int] = None
+    frame_rate: Optional[float] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class MovieVariantDetail(BaseModel):
+    video_asset_id: int
+    file_name: str
+    video_type: VideoType
+    resolution: Optional[str] = None
+    hdr_type: Optional[str] = None
+    filesize_gb: float
+    codec: Optional[str] = None
+
+
+class EpisodeAuditDetail(BaseModel):
+    episode_id: int
+    season_number: int
+    episode_number: int
+    title: Optional[str] = None
+    is_missing: bool
+    assets: List[VideoAssetOut] = []
+
+
+class TitleAuditDetailOut(BaseModel):
+    title_folder_id: int
+    title_type: Optional[str] = "movie"
+    movie_variants: Optional[List[MovieVariantDetail]] = None
+    seasons: Optional[Dict[int, List[EpisodeAuditDetail]]] = None
+    

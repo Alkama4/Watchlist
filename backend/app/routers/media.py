@@ -16,7 +16,7 @@ from app.services.languages import LanguageContext, get_user_language_context, p
 from app.dependencies import get_db
 from app.models import Episode, Season, Title, TitleFolder, User, VideoAsset, TitleUserDetails
 from app.enums import TitleType, VideoType, SortBy, SortDirection
-from app.schemas import EpisodeMinimalOut, FolderRequest, TitleFolderCountsOut, TitleMinimalOut, VideoAssetExpandedOut, TitleFoldersResponseOut, TitleAuditOut
+from app.schemas import EpisodeAuditDetail, EpisodeMinimalOut, FolderRequest, MovieVariantDetail, QualitySummary, TitleAuditDetailOut, TitleFolderCountsOut, TitleMinimalOut, VideoAssetExpandedOut, TitleFoldersResponseOut, TitleAuditOut, VideoAssetOut
 from app.routers.auth import get_current_user
 from app.config import DEFAULT_MAX_QUERY_LIMIT
 
@@ -433,6 +433,63 @@ def _build_expanded_out(asset: VideoAsset, locale_ctx: LanguageContext) -> Video
         is_linked=is_linked
     )
 
+
+from typing import List, Optional, Dict
+from fastapi import APIRouter, Depends, Query, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, func, distinct, or_, and_, Float
+from sqlalchemy.orm import selectinload
+
+
+def build_quality_summary(
+    resolutions_raw: List[Optional[str]],
+    hdr_types_raw: List[Optional[str]],
+    file_count: int,
+    is_tv: bool,
+) -> QualitySummary:
+    """Computes high-level quality attributes and pre-formats display labels."""
+    resolutions = [r for r in set(resolutions_raw) if r]
+    hdr_types = [h for h in set(hdr_types_raw) if h]
+
+    if not resolutions:
+        return QualitySummary(
+            resolutions=[],
+            hdr_types=[],
+            is_uniform=True,
+            primary_display="No Video Files",
+        )
+
+    # Resolution hierarchy helper
+    res_rank = {"4K": 4, "2160p": 4, "1080p": 3, "720p": 2, "480p": 1, "SD": 1}
+    sorted_res = sorted(
+        resolutions, key=lambda x: res_rank.get(x, 0), reverse=True
+    )
+    max_res = sorted_res[0]
+    hdr_suffix = f" {hdr_types[0]}" if hdr_types else ""
+
+    if is_tv:
+        is_uniform = len(resolutions) <= 1 and len(hdr_types) <= 1
+        primary_display = (
+            f"{max_res}{hdr_suffix}"
+            if is_uniform
+            else f"{max_res} (Mixed Quality)"
+        )
+    else:
+        is_uniform = file_count <= 1
+        primary_display = (
+            f"{max_res}{hdr_suffix}"
+            if is_uniform
+            else f"{max_res}{hdr_suffix} ({file_count} versions)"
+        )
+
+    return QualitySummary(
+        resolutions=sorted_res,
+        hdr_types=hdr_types,
+        is_uniform=is_uniform,
+        primary_display=primary_display,
+    )
+
+
 @router.get("/video_assets/audit", response_model=List[TitleAuditOut])
 async def get_video_assets_audit(
     user: User = Depends(get_current_user),
@@ -444,11 +501,11 @@ async def get_video_assets_audit(
     sort_by: Optional[str] = None,
     sort_direction: Optional[SortDirection] = SortDirection.default,
     page_number: int = Query(1, ge=1),
-    page_size: int = Query(0, ge=0),
+    page_size: int = Query(20, ge=0),
 ):
     locale_ctx = await get_user_language_context(db=db, user_id=user.user_id)
 
-    # 1. Define subquery first so it can be safely referenced in the main query
+    # 1. Total metadata episodes subquery (excluding S0 / specials)
     episodes_per_title = (
         select(
             Episode.title_id,
@@ -460,13 +517,17 @@ async def get_video_assets_audit(
         .subquery()
     )
 
-    # 2. Build main query
+    # 2. Main aggregation query
     stmt = (
         select(
             TitleFolder,
-            func.coalesce(func.sum(VideoAsset.filesize_bytes), 0).label("total_size_bytes"),
-            func.max(VideoAsset.resolution).label("max_resolution"),
-            func.max(VideoAsset.hdr_type).label("has_hdr"),
+            func.coalesce(func.sum(VideoAsset.filesize_bytes), 0).label(
+                "total_size_bytes"
+            ),
+            func.array_agg(distinct(VideoAsset.resolution)).label(
+                "resolutions"
+            ),
+            func.array_agg(distinct(VideoAsset.hdr_type)).label("hdr_types"),
             func.count(distinct(VideoAsset.video_asset_id)).label("file_count"),
             func.count(distinct(VideoAsset.video_asset_id))
             .filter(VideoAsset.video_type == VideoType.movie)
@@ -477,7 +538,9 @@ async def get_video_assets_audit(
             func.count(distinct(VideoAsset.video_asset_id))
             .filter(VideoAsset.video_type == VideoType.episode)
             .label("episodes_count"),
-            func.count(distinct(VideoAsset.episode_id)).label("unique_episodes_linked_count"),
+            func.count(distinct(VideoAsset.episode_id)).label(
+                "unique_episodes_linked_count"
+            ),
             func.count(distinct(VideoAsset.video_asset_id))
             .filter(
                 or_(
@@ -489,12 +552,18 @@ async def get_video_assets_audit(
                 )
             )
             .label("unlinked_count"),
-            func.coalesce(episodes_per_title.c.total_episode_meta_count, 0).label("title_episode_count"),
-            # Use bool_or instead of max for boolean aggregation in PostgreSQL
-            func.bool_or(TitleUserDetails.in_watchlist).label("is_in_watchlist"),
+            func.coalesce(
+                episodes_per_title.c.total_episode_meta_count, 0
+            ).label("title_episode_count"),
+            func.bool_or(TitleUserDetails.in_watchlist).label(
+                "is_in_watchlist"
+            ),
             func.max(TitleUserDetails.watch_count).label("watch_count"),
         )
-        .outerjoin(VideoAsset, TitleFolder.title_folder_id == VideoAsset.title_folder_id)
+        .outerjoin(
+            VideoAsset,
+            TitleFolder.title_folder_id == VideoAsset.title_folder_id,
+        )
         .outerjoin(Title, TitleFolder.title_id == Title.title_id)
         .outerjoin(
             TitleUserDetails,
@@ -503,74 +572,83 @@ async def get_video_assets_audit(
                 TitleUserDetails.user_id == user.user_id,
             ),
         )
-        .outerjoin(episodes_per_title, TitleFolder.title_id == episodes_per_title.c.title_id)
-        .options(selectinload(TitleFolder.title).selectinload(Title.translations))
+        .outerjoin(
+            episodes_per_title,
+            TitleFolder.title_id == episodes_per_title.c.title_id,
+        )
+        .options(
+            selectinload(TitleFolder.title).selectinload(Title.translations)
+        )
         .group_by(
             TitleFolder.title_folder_id,
             episodes_per_title.c.total_episode_meta_count,
         )
     )
 
-    # 3. Apply HAVING / WHERE filters
+    # 3. Apply Filters
     if min_size_gb is not None:
-        stmt = stmt.having(func.sum(VideoAsset.filesize_bytes) >= (min_size_gb * (1024**3)))
-
-    if asset_status == 'missing_all':
-        # No video files linked to the folder/title
-        stmt = stmt.where(func.count(VideoAsset.id) == 0)
-
-    elif asset_status == 'incomplete':
-        # Has at least one asset, but missing episodes (or incomplete linked status)
-        stmt = stmt.where(
-            func.count(VideoAsset.id) > 0,
-            func.count(distinct(VideoAsset.episode_id)) < episodes_per_title.c.total_episode_meta_count
+        stmt = stmt.having(
+            func.sum(VideoAsset.filesize_bytes) >= (min_size_gb * (1024**3))
         )
 
-    elif asset_status == 'complete':
-        # Has assets AND either all episodes are present or it's a complete movie
+    if asset_status == "missing_all":
+        stmt = stmt.where(func.count(VideoAsset.video_asset_id) == 0)
+    elif asset_status == "incomplete":
         stmt = stmt.where(
-            func.count(VideoAsset.id) > 0,
-            func.count(distinct(VideoAsset.episode_id)) == episodes_per_title.c.total_episode_meta_count
+            func.count(VideoAsset.video_asset_id) > 0,
+            func.count(distinct(VideoAsset.episode_id))
+            < episodes_per_title.c.total_episode_meta_count,
+        )
+    elif asset_status == "complete":
+        stmt = stmt.where(
+            func.count(VideoAsset.video_asset_id) > 0,
+            func.count(distinct(VideoAsset.episode_id))
+            == episodes_per_title.c.total_episode_meta_count,
         )
 
     if in_watchlist is not None:
-        stmt = stmt.having(func.coalesce(func.bool_or(TitleUserDetails.in_watchlist), False) == in_watchlist)
+        stmt = stmt.having(
+            func.coalesce(func.bool_or(TitleUserDetails.in_watchlist), False)
+            == in_watchlist
+        )
 
-    # 4. Apply Sorting
-    is_desc = sort_direction == "desc"
-
-    # Filter by title_type if supplied ('movie' or 'tv')
     if title_type:
         stmt = stmt.where(Title.title_type == title_type)
 
-    # Define aggregates for ordering
+    # 4. Sorting & Pagination
+    is_desc = sort_direction == SortDirection.desc
     total_size_expr = func.coalesce(func.sum(VideoAsset.filesize_bytes), 0)
-
-    # Cast counts to Float to prevent integer division truncating to 0
     completion_expr = func.coalesce(
-        func.count(distinct(VideoAsset.episode_id)).cast(Float) / 
-        func.nullif(episodes_per_title.c.total_episode_meta_count, 0).cast(Float),
-        0.0
+        func.count(distinct(VideoAsset.episode_id)).cast(Float)
+        / func.nullif(episodes_per_title.c.total_episode_meta_count, 0).cast(
+            Float
+        ),
+        0.0,
     )
 
     if sort_by == "size":
-        stmt = stmt.order_by(total_size_expr.desc() if is_desc else total_size_expr.asc())
+        stmt = stmt.order_by(
+            total_size_expr.desc() if is_desc else total_size_expr.asc()
+        )
     elif sort_by == "completion":
-        stmt = stmt.order_by(completion_expr.desc() if is_desc else completion_expr.asc())
+        stmt = stmt.order_by(
+            completion_expr.desc() if is_desc else completion_expr.asc()
+        )
     else:
-        order_expr = TitleFolder.title_folder_name
-        stmt = stmt.order_by(order_expr.desc() if is_desc else order_expr.asc())
+        stmt = stmt.order_by(
+            TitleFolder.title_folder_name.desc()
+            if is_desc
+            else TitleFolder.title_folder_name.asc()
+        )
 
-    # 5. Apply Pagination
-    if page_size != 0:
+    if page_size > 0:
         offset = (page_number - 1) * page_size
         stmt = stmt.offset(offset).limit(page_size)
 
-    # Execute
     result = await db.execute(stmt)
     rows = result.all()
 
-    # 6. Map SQL rows to Pydantic models
+    # 5. Build Response Output
     audit_results = []
     for row in rows:
         folder = row.TitleFolder
@@ -578,7 +656,17 @@ async def get_video_assets_audit(
         total_episodes = row.title_episode_count or 0
         linked_episodes = row.unique_episodes_linked_count or 0
 
-        completion_pct = (linked_episodes / total_episodes * 100) if total_episodes > 0 else 0.0
+        completion_pct = (
+            (linked_episodes / total_episodes * 100) if total_episodes > 0 else 100.0
+        )
+        is_tv = folder.title and folder.title.title_type == TitleType.tv
+
+        quality = build_quality_summary(
+            resolutions_raw=row.resolutions or [],
+            hdr_types_raw=row.hdr_types or [],
+            file_count=row.file_count or 0,
+            is_tv=is_tv,
+        )
 
         audit_results.append(
             TitleAuditOut(
@@ -588,7 +676,12 @@ async def get_video_assets_audit(
                 linked_title=(
                     TitleMinimalOut(
                         title_id=folder.title.title_id,
-                        name=pick_translation(folder.title.translations, locale_ctx.iso_639_1_list, "name"),
+                        name=pick_translation(
+                            folder.title.translations,
+                            locale_ctx.iso_639_1_list,
+                            "name",
+                        ),
+                        type=folder.title.title_type,
                     )
                     if folder.title
                     else None
@@ -607,11 +700,116 @@ async def get_video_assets_audit(
                 total_size_gb=round(total_bytes / (1024**3), 2),
                 completion_percentage=round(completion_pct, 2),
                 missing_episodes_count=max(0, total_episodes - linked_episodes),
-                max_resolution=row.max_resolution,
-                has_hdr=bool(row.has_hdr),
+                quality_summary=quality,
                 is_in_watchlist=bool(row.is_in_watchlist),
                 watch_count=row.watch_count or 0,
             )
         )
 
     return audit_results
+
+
+@router.get(
+    "/video_assets/audit/{title_folder_id}/details",
+    response_model=TitleAuditDetailOut,
+)
+async def get_video_asset_audit_details(
+    title_folder_id: int,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Lazy-load endpoint for expanding row details (Movie variants or TV Show episode matrix)."""
+    # Load Folder + VideoAssets + Title + Seasons + Episodes
+    stmt = (
+        select(TitleFolder)
+        .where(TitleFolder.title_folder_id == title_folder_id)
+        .options(
+            selectinload(TitleFolder.video_assets),
+            selectinload(TitleFolder.title)
+            .selectinload(Title.seasons)
+            .selectinload(Season.episodes),
+        )
+    )
+    result = await db.execute(stmt)
+    folder = result.scalar_one_or_none()
+
+    if not folder:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Folder not found"
+        )
+
+    title = folder.title
+    is_tv = title and title.title_type == TitleType.tv
+
+    # Case A: Movie or Unlinked Folder -> Return Movie/File Variants
+    if not is_tv:
+        movie_variants = [
+            MovieVariantDetail(
+                video_asset_id=asset.video_asset_id,
+                file_name=asset.file_name,
+                video_type=asset.video_type,
+                resolution=asset.resolution,
+                hdr_type=asset.hdr_type,
+                filesize_gb=round((asset.filesize_bytes or 0) / (1024**3), 2),
+                codec=asset.codec,
+            )
+            for asset in folder.video_assets
+        ]
+        return TitleAuditDetailOut(
+            title_folder_id=title_folder_id,
+            title_type="movie",
+            movie_variants=movie_variants,
+        )
+
+    # Case B: TV Show -> Group by Season and map Episode Video Assets
+    assets_by_episode_id: Dict[int, List[VideoAssetOut]] = {}
+    for asset in folder.video_assets:
+        if asset.episode_id:
+            assets_by_episode_id.setdefault(asset.episode_id, []).append(
+                VideoAssetOut(
+                    video_asset_id=asset.video_asset_id,
+                    file_name=asset.file_name,
+                    file_path=asset.file_path,
+                    video_type=asset.video_type,
+                    resolution=asset.resolution,
+                    hdr_type=asset.hdr_type,
+                    filesize_bytes=asset.filesize_bytes or 0,
+                    filesize_gb=round(
+                        (asset.filesize_bytes or 0) / (1024**3), 2
+                    ),
+                    codec=asset.codec,
+                    bit_depth=asset.bit_depth,
+                    frame_rate=asset.frame_rate,
+                )
+            )
+
+    seasons_dict: Dict[int, List[EpisodeAuditDetail]] = {}
+    sorted_seasons = sorted(
+        [s for s in title.seasons if s.season_number != 0],
+        key=lambda s: s.season_number,
+    )
+
+    for season in sorted_seasons:
+        ep_details = []
+        sorted_episodes = sorted(
+            season.episodes, key=lambda e: e.episode_number
+        )
+        for ep in sorted_episodes:
+            ep_assets = assets_by_episode_id.get(ep.episode_id, [])
+            ep_details.append(
+                EpisodeAuditDetail(
+                    episode_id=ep.episode_id,
+                    season_number=season.season_number,
+                    episode_number=ep.episode_number,
+                    title=getattr(ep, "name", f"Episode {ep.episode_number}"),
+                    is_missing=len(ep_assets) == 0,
+                    assets=ep_assets,
+                )
+            )
+        seasons_dict[season.season_number] = ep_details
+
+    return TitleAuditDetailOut(
+        title_folder_id=title_folder_id,
+        title_type="tv",
+        seasons=seasons_dict,
+    )

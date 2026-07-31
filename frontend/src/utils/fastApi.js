@@ -269,6 +269,10 @@ export const fastApi = {
                 url: '/media/video_assets/audit', 
                 config: { params } 
             }),
+            getAuditDetails: async (folderId) => fetchData({ 
+                method: 'get', 
+                url: `/media/video_assets/audit/${folderId}/details`, 
+            }),
         },
     },
     integrations: {

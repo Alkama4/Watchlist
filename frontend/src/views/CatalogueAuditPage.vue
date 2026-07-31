@@ -9,6 +9,8 @@ import {
     ArrowDownWideNarrow,
     Capitalize,
     CheckCircle,
+    ChevronDown,
+    ChevronRight,
     Clock,
     Film,
     HardDrive,
@@ -16,12 +18,18 @@ import {
     PieChart,
     RefreshCwAlt,
     Tv,
-    XCircle
+    XCircle,
+    AlertTriangle
 } from '@boxicons/vue';
 import { ref, reactive, watch, onMounted } from 'vue';
 
 const items = ref([]);
 const loading = ref(false);
+
+// Row expansion and drill-down detail caches
+const expandedRows = ref(new Set());
+const detailsData = ref({});
+const loadingDetails = ref({});
 
 const filters = reactive({
     min_size_gb: null,
@@ -34,7 +42,7 @@ const filters = reactive({
     page_size: 20
 });
 
-// Options for OptionPickers
+// Options
 const typeOptions = [
     { icon: Film, label: 'Movie', value: 'movie', type: 'primary' },
     { icon: Tv, label: 'TV-show', value: 'tv', type: 'primary' }
@@ -73,12 +81,30 @@ async function fetchAuditData() {
     }
 }
 
-function cycleSortDirection() {
-    if (filters.sort_direction === 'default' || filters.sort_direction === 'asc') {
-        filters.sort_direction = 'desc';
-    } else {
-        filters.sort_direction = 'asc';
+async function toggleRow(folderId) {
+    if (expandedRows.value.has(folderId)) {
+        expandedRows.value.delete(folderId);
+        return;
     }
+
+    expandedRows.value.add(folderId);
+
+    // Fetch details on demand if not cached
+    if (!detailsData.value[folderId]) {
+        loadingDetails.value[folderId] = true;
+        try {
+            const data = await fastApi.media.videoAssets.getAuditDetails(folderId);
+            detailsData.value[folderId] = data;
+        } catch (error) {
+            console.error(`Failed to load details for folder ${folderId}:`, error);
+        } finally {
+            loadingDetails.value[folderId] = false;
+        }
+    }
+}
+
+function cycleSortDirection() {
+    filters.sort_direction = filters.sort_direction === 'asc' ? 'desc' : 'asc';
 }
 
 function isDirty(key) {
@@ -91,7 +117,7 @@ function isDirty(key) {
 watch(
     () => [
         filters.min_size_gb,
-        filters.has_missing_episodes,
+        filters.asset_status,
         filters.in_watchlist,
         filters.title_type,
         filters.sort_by,
@@ -106,9 +132,7 @@ watch(
 
 watch(() => filters.page_number, fetchAuditData);
 
-onMounted(() => {
-    fetchAuditData();
-});
+onMounted(fetchAuditData);
 </script>
 
 <template>
@@ -121,37 +145,19 @@ onMounted(() => {
             </LoadingButton>
         </header>
 
-        <!-- Filters Toolbar using LabelDropDown & OptionPicker -->
+        <!-- Filters Toolbar -->
         <div class="filters margin-fix">
             <div class="left-filters">
-                <LabelDropDown
-                    label="Type"
-                    :modified="isDirty('title_type')"
-                >
-                    <OptionPicker
-                        v-model="filters.title_type"
-                        :options="typeOptions"
-                    />
+                <LabelDropDown label="Type" :modified="isDirty('title_type')">
+                    <OptionPicker v-model="filters.title_type" :options="typeOptions" />
                 </LabelDropDown>
 
-                <LabelDropDown
-                    label="Asset status"
-                    :modified="isDirty('asset_status')"
-                >
-                    <OptionPicker
-                        v-model="filters.asset_status"
-                        :options="assetStatusOptions"
-                    />
+                <LabelDropDown label="Asset status" :modified="isDirty('asset_status')">
+                    <OptionPicker v-model="filters.asset_status" :options="assetStatusOptions" />
                 </LabelDropDown>
 
-                <LabelDropDown
-                    label="Watchlist"
-                    :modified="isDirty('in_watchlist')"
-                >
-                    <OptionPicker
-                        v-model="filters.in_watchlist"
-                        :options="watchlistOptions"
-                    />
+                <LabelDropDown label="Watchlist" :modified="isDirty('in_watchlist')">
+                    <OptionPicker v-model="filters.in_watchlist" :options="watchlistOptions" />
                 </LabelDropDown>
 
                 <div class="min-size-filter">
@@ -168,15 +174,8 @@ onMounted(() => {
             </div>
 
             <div class="right-filters">
-                <LabelDropDown
-                    label="Sort by"
-                    :modified="isDirty('sort_by')"
-                >
-                    <OptionPicker
-                        v-model="filters.sort_by"
-                        :options="sortByOptions"
-                        :defaultValue="'default'"
-                    />
+                <LabelDropDown label="Sort by" :modified="isDirty('sort_by')">
+                    <OptionPicker v-model="filters.sort_by" :options="sortByOptions" :defaultValue="'default'" />
                 </LabelDropDown>
 
                 <button
@@ -196,11 +195,11 @@ onMounted(() => {
             <table class="audit-table">
                 <thead>
                     <tr>
+                        <th style="width: 32px;"></th>
                         <th>Folder / Title</th>
                         <th>Type</th>
-                        <th>Status</th>
-                        <th>Files</th>
                         <th>Completion</th>
+                        <th>Files</th>
                         <th>Size</th>
                         <th>Quality</th>
                     </tr>
@@ -213,59 +212,129 @@ onMounted(() => {
                     </template>
 
                     <template v-else-if="items.length > 0">
-                        <tr v-for="item in items" :key="item.title_folder_id">
-                            <td>
-                                <div class="folder-name">{{ item.title_folder_name }}</div>
-                                <div v-if="item.linked_title" class="linked-title">
-                                    Linked: {{ item.linked_title.name }}
-                                </div>
-                                <div v-else class="unlinked-tag">Unlinked</div>
-                            </td>
-                            <td>
-                                <span v-if="item.linked_title" class="title-type">
-                                    {{ item.linked_title.type === 'movie' ? 'Movie' : 'TV Show' }}
-                                </span>
-                                <span v-else class="text-subtle">-</span>
-                            </td>
-                            <td>
-                                <span class="badge" :class="{ 'in-watchlist': item.is_in_watchlist }">
-                                    {{ item.is_in_watchlist ? 'In Watchlist' : 'Not Saved' }}
-                                </span>
-                            </td>
-                            <td>
-                                <div class="file-counts">
-                                    <span><strong>Total:</strong> {{ item.counts.file_count }}</span>
-                                    <span v-if="item.counts.episodes_count"><strong>Eps:</strong> {{ item.counts.episodes_count }}</span>
-                                    <span v-if="item.counts.unlinked_count" class="warning-text">
-                                        <strong>Unlinked:</strong> {{ item.counts.unlinked_count }}
-                                    </span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="completion-box">
-                                    <div class="progress-bar">
-                                        <div 
-                                            class="fill" 
-                                            :style="{ width: `${item.completion_percentage}%` }"
-                                            :class="{ complete: item.completion_percentage === 100 }"
-                                        ></div>
+                        <template v-for="item in items" :key="item.title_folder_id">
+                            <!-- Main Row -->
+                            <tr class="main-row" @click="toggleRow(item.title_folder_id)">
+                                <td class="expand-cell">
+                                    <component
+                                        :is="expandedRows.has(item.title_folder_id) ? ChevronDown : ChevronRight"
+                                        size="sm"
+                                    />
+                                </td>
+                                <td>
+                                    <div class="folder-name">{{ item.title_folder_name }}</div>
+                                    <div v-if="item.linked_title" class="linked-title">
+                                        Linked: {{ item.linked_title.name }}
                                     </div>
-                                    <span class="pct">{{ item.completion_percentage }}%</span>
-                                    <small v-if="item.missing_episodes_count > 0" class="missing-text">
-                                        ({{ item.missing_episodes_count }} missing)
-                                    </small>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="size-text">{{ item.total_size_gb }} GB</span>
-                            </td>
-                            <td>
-                                <div class="tags">
-                                    <span v-if="item.max_resolution" class="tag">{{ item.max_resolution }}</span>
-                                    <span v-if="item.has_hdr" class="tag hdr">HDR</span>
-                                </div>
-                            </td>
-                        </tr>
+                                    <div v-else class="unlinked-tag">Unlinked</div>
+                                </td>
+                                <td>
+                                    <span v-if="item.linked_title" class="title-type">
+                                        {{ item.linked_title.type === 'movie' ? 'Movie' : 'TV Show' }}
+                                    </span>
+                                    <span v-else class="text-subtle">-</span>
+                                </td>
+                                <td>
+                                    <div class="completion-box">
+                                        <div class="progress-bar">
+                                            <div
+                                                class="fill"
+                                                :style="{ width: `${item.completion_percentage}%` }"
+                                                :class="{ complete: item.completion_percentage === 100 }"
+                                            ></div>
+                                        </div>
+                                        <span class="pct">{{ item.completion_percentage }}%</span>
+                                        <small v-if="item.missing_episodes_count > 0" class="missing-text">
+                                            ({{ item.missing_episodes_count }} missing)
+                                        </small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="file-counts">
+                                        <span><strong>Total:</strong> {{ item.counts.file_count }}</span>
+                                        <span v-if="item.counts.episodes_count"><strong>Eps:</strong> {{ item.counts.episodes_count }}</span>
+                                        <span v-if="item.counts.unlinked_count" class="warning-text">
+                                            <strong>Unlinked:</strong> {{ item.counts.unlinked_count }}
+                                        </span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="size-text">{{ item.total_size_gb }} GB</span>
+                                </td>
+                                <td>
+                                    <div class="tags">
+                                        <span class="tag">{{ item.quality_summary.primary_display }}</span>
+                                        <span v-if="!item.quality_summary.is_uniform" class="tag warning">Mixed</span>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Expandable Details Row -->
+                            <tr v-if="expandedRows.has(item.title_folder_id)" class="detail-row">
+                                <td colspan="7">
+                                    <div v-if="loadingDetails[item.title_folder_id]" class="detail-loading">
+                                        <RefreshCwAlt class="spin" size="sm" /> Fetching breakdown details...
+                                    </div>
+
+                                    <div v-else-if="detailsData[item.title_folder_id]" class="detail-container">
+                                        <!-- MOVIE VARIANTS VIEW -->
+                                        <div v-if="detailsData[item.title_folder_id].title_type === 'movie'" class="variants-container">
+                                            <h4 class="detail-heading">Video Assets / Versions</h4>
+                                            <div class="variant-list">
+                                                <div
+                                                    v-for="variant in detailsData[item.title_folder_id].movie_variants"
+                                                    :key="variant.video_asset_id"
+                                                    class="variant-card"
+                                                >
+                                                    <span class="badge-type">{{ variant.video_type }}</span>
+                                                    <span class="file-name">{{ variant.file_name }}</span>
+                                                    <div class="variant-specs">
+                                                        <span class="spec-tag">{{ variant.resolution || 'Unknown' }}</span>
+                                                        <span class="spec-tag hdr">{{ variant.hdr_type || 'SDR' }}</span>
+                                                        <span class="spec-tag">{{ variant.codec }}</span>
+                                                        <span class="spec-size">{{ variant.filesize_gb }} GB</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- TV SHOW SEASONS & EPISODES GRID -->
+                                        <div v-else-if="detailsData[item.title_folder_id].title_type === 'tv'" class="tv-container">
+                                            <div
+                                                v-for="(episodes, seasonNum) in detailsData[item.title_folder_id].seasons"
+                                                :key="seasonNum"
+                                                class="season-block"
+                                            >
+                                                <h4 class="detail-heading">Season {{ seasonNum }}</h4>
+                                                <div class="episode-grid">
+                                                    <div
+                                                        v-for="ep in episodes"
+                                                        :key="ep.episode_number"
+                                                        class="ep-card"
+                                                        :class="{ missing: ep.is_missing }"
+                                                    >
+                                                        <div class="ep-header">
+                                                            <span class="ep-num">E{{ ep.episode_number }}</span>
+                                                            <span v-if="ep.is_missing" class="badge-missing">Missing</span>
+                                                        </div>
+
+                                                        <div v-if="!ep.is_missing && ep.assets.length > 0" class="ep-content">
+                                                            <div class="ep-res">
+                                                                {{ ep.assets[0].resolution }}
+                                                                <small v-if="ep.assets[0].hdr_type">{{ ep.assets[0].hdr_type }}</small>
+                                                            </div>
+                                                            <div class="ep-meta">
+                                                                {{ ep.assets[0].codec }} • {{ ep.assets[0].filesize_gb }} GB
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </template>
                     </template>
 
                     <template v-else>
@@ -282,186 +351,169 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--spacing-md);
-}
-
-.filters {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-
-    &.margin-fix {
-        margin-bottom: var(--spacing-md);
-    }
-
-    .left-filters, .right-filters {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: var(--spacing-xs);
-    }
-}
-
-.min-size-filter {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    
-    .input-label {
-        font-size: var(--fs-neg-1);
-        color: var(--c-text-subtle);
-    }
-
-    .size-input {
-        width: 70px;
-        background-color: var(--c-bg-level-1);
-        border: 1px solid var(--c-bg-level-2);
-        color: var(--c-text);
-        padding: 4px 8px;
-        border-radius: var(--border-radius-sm);
-        outline: none;
-
-        &:focus {
-            border-color: var(--c-primary);
-        }
-    }
-}
-
-.card {
-    background-color: var(--c-bg-level-1);
-    border-radius: var(--border-radius-md-lg);
-    padding: var(--spacing-md);
-}
-
-.table-container {
-    overflow-x: auto;
-}
-
 .audit-table {
     width: 100%;
     border-collapse: collapse;
-    text-align: left;
-
-    th, td {
-        padding: var(--spacing-md) var(--spacing-sm);
-        border-bottom: 1px solid var(--c-bg-level-2);
-    }
-
-    th {
-        font-size: var(--fs-neg-1);
-        color: var(--c-text-subtle);
-        font-weight: 600;
-    }
 }
 
-.folder-name {
-    font-weight: 600;
-    color: var(--c-text);
+.main-row {
+    cursor: pointer;
+    transition: background-color 0.15s ease;
 }
 
-.linked-title {
-    font-size: var(--fs-neg-1);
-    color: var(--c-primary);
+.main-row:hover {
+    background-color: rgba(255, 255, 255, 0.03);
 }
 
-.unlinked-tag {
-    font-size: var(--fs-neg-2);
-    color: var(--c-text-subtle);
-    font-style: italic;
-}
-
-.title-type {
-    font-size: var(--fs-neg-1);
-    text-transform: capitalize;
-}
-
-.badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: var(--border-radius-sm);
-    font-size: var(--fs-neg-2);
-    background-color: var(--c-bg-level-2);
-    color: var(--c-text-subtle);
-
-    &.in-watchlist {
-        background-color: rgba(var(--c-primary-rgb, 0, 120, 255), 0.15);
-        color: var(--c-primary);
-    }
-}
-
-.file-counts {
-    display: flex;
-    flex-direction: column;
-    font-size: var(--fs-neg-1);
-
-    .warning-text {
-        color: var(--c-danger, #ff4d4f);
-    }
-}
-
-.completion-box {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    width: 120px;
-
-    .progress-bar {
-        height: 6px;
-        background-color: var(--c-bg-level-2);
-        border-radius: 3px;
-        overflow: hidden;
-
-        .fill {
-            height: 100%;
-            background-color: var(--c-warning, #faad14);
-
-            &.complete {
-                background-color: var(--c-success, #52c41a);
-            }
-        }
-    }
-
-    .pct {
-        font-size: var(--fs-neg-1);
-        font-weight: 600;
-    }
-
-    .missing-text {
-        font-size: var(--fs-neg-2);
-        color: var(--c-danger, #ff4d4f);
-    }
-}
-
-.tags {
-    display: flex;
-    gap: 4px;
-
-    .tag {
-        font-size: var(--fs-neg-2);
-        padding: 2px 6px;
-        border-radius: 4px;
-        background-color: var(--c-bg-level-2);
-
-        &.hdr {
-            background-color: var(--c-accent, #722ed1);
-            color: white;
-        }
-    }
-}
-
-.skeleton {
-    height: 30px;
-    border-radius: var(--border-radius-sm);
-}
-
-.empty-state {
+.expand-cell {
     text-align: center;
-    padding: var(--spacing-xl) 0;
-    color: var(--c-text-subtle);
+    color: var(--text-subtle, #888);
+}
+
+.detail-row td {
+    padding: 0;
+    background-color: rgba(0, 0, 0, 0.15);
+    border-bottom: 1px solid var(--border-color, #222);
+}
+
+.detail-container {
+    padding: 1rem 1.5rem;
+}
+
+.detail-heading {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-subtle, #aaa);
+}
+
+.detail-loading {
+    padding: 1.5rem;
+    text-align: center;
+    color: var(--text-subtle, #aaa);
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Movie Variants */
+.variant-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.variant-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 6px;
+    font-size: 0.85rem;
+}
+
+.badge-type {
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.file-name {
+    flex: 1;
+    font-family: monospace;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.variant-specs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.spec-tag {
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    background: #333;
+    border-radius: 4px;
+}
+
+.spec-tag.hdr {
+    background: #4a3b00;
+    color: #ffd700;
+}
+
+.spec-size {
+    font-weight: bold;
+}
+
+/* TV Episode Grid */
+.season-block {
+    margin-bottom: 1.25rem;
+}
+
+.episode-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 0.5rem;
+}
+
+.ep-card {
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.ep-card.missing {
+    border-color: rgba(220, 53, 69, 0.4);
+    background: rgba(220, 53, 69, 0.08);
+}
+
+.ep-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ep-num {
+    font-weight: bold;
+    font-size: 0.85rem;
+}
+
+.badge-missing {
+    color: #ff6b6b;
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+.ep-res {
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.ep-meta {
+    font-size: 0.7rem;
+    color: var(--text-subtle, #888);
+}
+
+.tag.warning {
+    background: #5c4300;
+    color: #ffcc00;
 }
 </style>
