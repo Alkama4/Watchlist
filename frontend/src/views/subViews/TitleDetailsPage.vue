@@ -11,7 +11,7 @@ import SeasonsListing from '@/components/SeasonsListing.vue';
 import EpisodeMap from '@/components/EpisodeMap.vue';
 import ModalImages from '@/components/modal/ModalImages.vue';
 import KebabMenu from '@/components/KebabMenu.vue';
-import { AlbumCovers, AlertCircle, AlertTriangle, CheckCircle, Clock, Heart, Images, InfoCircle, ListMinus, ListPlay, ListPlus, RefreshCw, Star, Translate } from '@boxicons/vue';
+import { AlbumCovers, AlertCircle, AlertTriangle, CheckCircle, Clock, Heart, Images, InfoCircle, ListMinus, ListPlay, ListPlus, Note, RefreshCw, Star, Translate } from '@boxicons/vue';
 import ModalLocale from '@/components/modal/ModalLocale.vue';
 import { resolveAgeRating } from '@/utils/titleUtils';
 import { useSettingsStore } from '@/stores/settings';
@@ -22,6 +22,7 @@ import ExternalResources from '@/components/ExternalResources.vue';
 import CollectionBannerCard from '@/components/CollectionBannerCard.vue';
 import ResponsiveOverlay from '@/components/ResponsiveOverlay.vue';
 import { isMobile } from '@/utils/device';
+import ModalConfimation from '@/components/modal/ModalConfimation.vue';
 
 const props = defineProps({
     titleDetails: {
@@ -55,6 +56,11 @@ const AgeRatingsModal = ref(null);
 const videoAssetOverlay = ref(null);
 const ImagesModal = ref(null);
 const LocaleModal = ref(null);
+
+const NotesModal = ref(null);
+const ModalClearNotesConfirm = ref(null);
+const isEditingNotes = ref(false);
+const notesInput = ref('');
 
 async function updateTitleDetails() {
     waitingFor.value.titleUpdate = true;
@@ -108,6 +114,40 @@ async function toggleWatchlist() {
 function adjustCollections() {
     alert("Collections are under construction.")
 }
+
+function openNotesModal() {
+    const existingNotes = props.titleDetails?.user_details?.notes || '';
+    notesInput.value = existingNotes;
+    // If notes exist, show read view; otherwise jump straight to edit view
+    isEditingNotes.value = !existingNotes;
+    NotesModal.value.open();
+}
+function startEditingNotes() {
+    notesInput.value = props.titleDetails?.user_details?.notes || '';
+    isEditingNotes.value = true;
+}
+async function saveNotes(saveEmpty = false) {
+    if (saveEmpty) {
+        NotesModal.value.close();
+        const confirmed = await ModalClearNotesConfirm.value.query();
+        if (!confirmed) return;
+    }
+
+    const valueToSave = saveEmpty ? '' : notesInput.value;
+    const response = await fastApi.titles.updateNotes(
+        props.titleDetails.title_id, 
+        valueToSave
+    );
+    if (!response) return;
+    
+    props.titleDetails.user_details.notes = response.notes;
+    props.titleDetails.user_details.in_library = response.in_library;
+
+    // Reset UI state & close modal
+    isEditingNotes.value = false;
+    NotesModal.value.close();
+}
+
 
 async function removeFromLibrary() {
     const response = await fastApi.titles.library.remove(props.titleDetails.title_id);
@@ -333,6 +373,7 @@ const kebabOptions = computed(() => {
                             <Heart pack="filled" size="sm"/>
                             <span class="desktop-only">Favourite</span>
                         </button>
+
                         <button
                             class="btn-mobile-icon-padding"
                             :class="{'btn-accent': titleDetails?.user_details?.in_watchlist }"
@@ -341,18 +382,27 @@ const kebabOptions = computed(() => {
                             <Clock pack="filled" size="sm"/>
                             <span class="desktop-only">Watchlist</span>
                         </button>
-                        <button
-                            class="btn-mobile-icon-padding"
-                            @click="adjustCollections"
-                        >
+
+                        <button class="btn-mobile-icon-padding" @click="adjustCollections">
                             <AlbumCovers pack="filled" size="sm"/>
                             <span class="desktop-only">Collections</span>
                         </button>
+
+                        <button 
+                            class="btn-mobile-icon-padding" 
+                            @click="openNotesModal"
+                        >
+                            <Note pack="filled" size="sm"/>
+                            <span class="desktop-only">
+                                {{ titleDetails?.user_details?.notes ? 'View Notes' : 'Add Note' }}
+                            </span>
+                        </button>
+
                         <div class="desktop-only">
                             <KebabMenu :menuItems="kebabOptions" horizontalDots/>
                         </div>
                     </div>
-                    
+
                     <template v-if="titleDetails?.video_assets">
                         <hr>
 
@@ -483,6 +533,57 @@ const kebabOptions = computed(() => {
                 :title="titleDetails"
             />
         </ResponsiveOverlay>
+
+        <ModalConfimation
+            ref="ModalClearNotesConfirm"
+            header="Delete notes"
+            message="Are you sure you want to wipe your notes?"
+            confirmLabel="Delete the notes"
+        />
+
+        <ModalBase header="Your Notes" ref="NotesModal" smallCard>
+            <div class="modal-notes-contents">
+                <template v-if="titleDetails?.user_details?.notes && !isEditingNotes">
+                    <div class="notes-display">
+                        <p class="notes-text" style="white-space: pre-wrap;">
+                            {{ titleDetails?.user_details?.notes }}
+                        </p>
+                    </div>
+                    
+                    <div class="button-row">
+                        <button class="btn btn-danger-subtle" @click="saveNotes(true)">
+                            Delete
+                        </button>
+                        <button class="btn btn-primary" @click="startEditingNotes">
+                            Edit Note
+                        </button>
+                    </div>
+                </template>
+    
+                <template v-else>
+                    <p class="subtle">Your personal notes for this title.</p>
+                    
+                    <textarea 
+                        v-model="notesInput" 
+                        ref="notesTextarea"
+                        placeholder="Add notes, favorite episodes etc..."
+                    ></textarea>
+    
+                    <div class="button-row">
+                        <button 
+                            v-if="titleDetails?.user_details?.notes" 
+                            class="btn" 
+                            @click="isEditingNotes = false"
+                        >
+                            Cancel
+                        </button>
+                        <button class="btn btn-primary" @click="saveNotes(false)">
+                            Save Notes
+                        </button>
+                    </div>
+                </template>
+            </div>
+        </ModalBase>
     </div>
 </template>
 
@@ -894,6 +995,19 @@ hr {
     .title-details-page > *:not(.main-area) {
         /* Raise everything else above the main-info::after blur */
         z-index: 2;
+    }
+}
+
+
+.modal-notes-contents {
+    width: 1000px;
+    max-width: 100%;
+
+    p {
+        margin-top: 0;
+    }
+    textarea {
+        margin-bottom: var(--spacing-md);
     }
 }
 </style>

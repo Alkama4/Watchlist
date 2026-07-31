@@ -11,10 +11,12 @@ defineProps({
         type: String,
         required: false
     },
+    // Limits the cards size so that it remains small.
     smallCard: {
         type: Boolean,
         default: false,
     },
+    // Tries to minimize the size of the modal.
     minimumCard: {
         type: Boolean,
         default: false
