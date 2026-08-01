@@ -451,61 +451,63 @@ const kebabOptions = computed(() => {
 
         <!-- Modals -->
 
-        <ModalBase header="Age ratings" ref="AgeRatingsModal" :minimumCard="true">
-            <p>The following list shows age ratings by country for the current title. The star icon indicates your <Star pack="filled" size="xs" class="inline"/> preferred language (or <Star size="xs" class="inline"/> fallback). You can adjust your preffered languages in the <router-link to="/account">application settings</router-link>.</p>
-            <div class="age-ratings-table">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Default</th>
-                            <th>iso_3166_1</th>
-                            <th>Country</th>
-                            <th>Rating</th>
-                            <th>Descriptors</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="ageRating in titleDetails?.age_ratings">
-                            <td>
-                                <span>
-                                    <Star
-                                        v-if="ageRating.iso_3166_1 === settings.primaryCountry"
-                                        pack="filled"
-                                        title="Your preferred language"
-                                        size="sm"
-                                    />
-                                    <Star
-                                        v-else-if="settings.preferredCountries.includes(ageRating.iso_3166_1)"
-                                        title="Default backup"
-                                        size="sm"
-                                    />
-                                </span>
-                            </td>
-                            <td>{{ ageRating.iso_3166_1 }}</td>
-                            <td>{{ isoFormatters.iso_3166_1ToCountry(ageRating.iso_3166_1) }}</td>
-                            <td>{{ ageRating.rating }}</td>
-                            <td>{{ ageRating.descriptors }}</td>
-                        </tr>
-                        <tr v-if="!titleDetails?.age_ratings?.length >= 1">
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                        </tr>
-                    </tbody>
-                </table>
+        <ModalBase header="Age ratings" ref="AgeRatingsModal">
+            <div class="modal-age-ratings-contents">
+                <p>The following list shows age ratings by country for the current title. The star icon indicates your <Star pack="filled" size="xs" class="inline"/> preferred language (or <Star size="xs" class="inline"/> fallback). You can adjust your preffered languages in the <router-link to="/account">application settings</router-link>.</p>
+                <div class="age-ratings-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Default</th>
+                                <th>iso_3166_1</th>
+                                <th>Country</th>
+                                <th>Rating</th>
+                                <th>Descriptors</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="ageRating in titleDetails?.age_ratings">
+                                <td>
+                                    <span>
+                                        <Star
+                                            v-if="ageRating.iso_3166_1 === settings.primaryCountry"
+                                            pack="filled"
+                                            title="Your preferred language"
+                                            size="sm"
+                                        />
+                                        <Star
+                                            v-else-if="settings.preferredCountries.includes(ageRating.iso_3166_1)"
+                                            title="Default backup"
+                                            size="sm"
+                                        />
+                                    </span>
+                                </td>
+                                <td>{{ ageRating.iso_3166_1 }}</td>
+                                <td>{{ isoFormatters.iso_3166_1ToCountry(ageRating.iso_3166_1) }}</td>
+                                <td>{{ ageRating.rating }}</td>
+                                <td>{{ ageRating.descriptors }}</td>
+                            </tr>
+                            <tr v-if="!titleDetails?.age_ratings?.length >= 1">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <span class="subtle details-missing-note">
+                    Missing age ratings for your country?
+                    <a class="subtle" target="_blank" :href="tmdbEditAgeRatingUrl">Add them on TMDB</a>.
+                    <Tooltip>
+                        <InfoCircle pack="filled" size="xs" class="inline"/>
+                        <template #content>
+                            TMDB takes a moment to process changes. They will appear here once the changes go live, and the titles details are updated.
+                        </template>
+                    </Tooltip>
+                </span>
             </div>
-            <span class="subtle details-missing-note">
-                Missing age ratings for your country?
-                <a class="subtle" target="_blank" :href="tmdbEditAgeRatingUrl">Add them on TMDB</a>.
-                <Tooltip>
-                    <InfoCircle pack="filled" size="xs" class="inline"/>
-                    <template #content>
-                        TMDB takes a moment to process changes. They will appear here once the changes go live, and the titles details are updated.
-                    </template>
-                </Tooltip>
-            </span>
         </ModalBase>
 
         <ModalBase header="Episode Map" ref="EpisodeMapModal">
@@ -541,7 +543,7 @@ const kebabOptions = computed(() => {
             confirmLabel="Delete the notes"
         />
 
-        <ModalBase header="Your Notes" ref="NotesModal" smallCard>
+        <ModalBase header="Your Notes" ref="NotesModal" smallCard fullWidth>
             <div class="modal-notes-contents">
                 <template v-if="titleDetails?.user_details?.notes && !isEditingNotes">
                     <div class="notes-display">
@@ -813,9 +815,18 @@ hr {
     }
 }
 
+.modal-age-ratings-contents {
+    width: min-content;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    overflow-x: hidden;
+}
 
 .age-ratings-table {
-    overflow-y: auto;
+    max-width: 100%;
+    overflow: auto;
     width: fit-content;
 }
 .age-ratings-table span {
@@ -998,11 +1009,7 @@ hr {
     }
 }
 
-
 .modal-notes-contents {
-    width: 1000px;
-    max-width: 100%;
-
     p {
         margin-top: 0;
     }

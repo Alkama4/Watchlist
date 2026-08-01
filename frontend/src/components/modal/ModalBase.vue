@@ -11,16 +11,16 @@ defineProps({
         type: String,
         required: false
     },
-    // Limits the cards size so that it remains small.
+    // Limits the cards width so that it remains small.
     smallCard: {
         type: Boolean,
         default: false,
     },
-    // Tries to minimize the size of the modal.
-    minimumCard: {
+    // Expand width to fit the limit (small or view width)
+    fullWidth: {
         type: Boolean,
         default: false
-    }
+    },
 })
 
 function open() {
@@ -63,7 +63,7 @@ onUnmounted(() => {
             >
                 <div 
                     class="card" 
-                    :class="{'small': smallCard, 'min-content': minimumCard}"
+                    :class="{ 'small': smallCard, 'full-width': fullWidth }"
                     @click.stop
                 >
                     <div class="header-row">
@@ -127,8 +127,8 @@ onUnmounted(() => {
 .card.small {
     max-width: 600px;
 }
-.card.min-content {
-    width: min-content;
+.card.full-width {
+    width: 100%;
 }
 
 @media(max-width: 768px) {
