@@ -275,7 +275,7 @@ const kebabOptions = computed(() => {
                     />
 
                     <div class="name-part">
-                        <h1 v-if="!logoImageVisible && isMobile" class="name">
+                        <h1 v-if="!(logoImageVisible && isMobile)" class="name">
                             {{ titleDetails?.name }}
                         </h1>
                         <h4 v-if="titleDetails?.name_original != titleDetails?.name" class="name-original">
