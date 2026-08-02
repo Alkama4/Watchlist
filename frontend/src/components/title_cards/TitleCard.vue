@@ -30,7 +30,10 @@ const props = defineProps({
     }
 })
 
-const waiting = ref({})
+const waiting = ref({
+    poster: true,
+    library: false
+});
 
 async function addTitle() {
     waiting.value.library = true;
@@ -85,11 +88,14 @@ async function removeTitle() {
         :draggable="gridMode"
         :title="titleInfo?.name"
     >
-        <div class="poster-wrapper">
-            <img 
+        <div class="poster-wrapper" :class="{ 'loading-wave': waiting?.poster }">
+            <img
+                v-show="!waiting.poster"
                 :src="getTitleImageUrl(titleInfo, '800', 'poster', storeImageFlag)"
                 :alt="`${titleInfo?.title_type === 'tv' ? 'TV show' : 'Movie'} poster: ${titleInfo?.name}`"
                 :draggable="gridMode"
+                @load="waiting.poster = false"
+                @error="waiting.poster = false"
             >
 
             <div 
@@ -230,6 +236,7 @@ async function removeTitle() {
     aspect-ratio: 2/3;
     border-radius: var(--border-radius-md);
     overflow: hidden;
+    background-color: var(--c-neutral);
 }
 
 .poster-wrapper img {
