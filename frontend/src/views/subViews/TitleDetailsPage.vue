@@ -216,11 +216,14 @@ const kebabOptions = computed(() => {
     
             <div class="logo-wrapper">
                 <img 
+                    v-show="logoImageVisible"
                     v-if="getTitleImageUrl(titleDetails, 'original', 'logo')"
                     :src="getTitleImageUrl(titleDetails, 'original', 'logo')"
                     :key="getTitleImageUrl(titleDetails, 'original', 'logo')"
                     :alt="(logoImageVisible && isMobile) ? titleDetails?.name : ''"
                     class="logo"
+                    @load="logoImageVisible = true"
+                    @error="logoImageVisible = false"
                 >
             </div>
 
@@ -235,8 +238,6 @@ const kebabOptions = computed(() => {
                         :key="getTitleImageUrl(titleDetails, '800', 'poster')"
                         alt=""
                         class="poster"
-                        @load="logoImageVisible = true"
-                        @error="logoImageVisible = false"
                     >
 
                     <ExternalResources 
