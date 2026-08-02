@@ -7,7 +7,10 @@ import { adjustWatchCount, toggleFavourite, toggleWatchlist } from '@/utils/titl
 import LoadingButton from '../LoadingButton.vue';
 import { Check, Clock, Heart, Minus } from '@boxicons/vue';
 
-const waitingfor = ref({});
+const waitingFor = ref({
+    backdrop: true,
+    logo: true
+});
 
 const props = defineProps({
     title: {
@@ -66,26 +69,34 @@ const detailsStyle = computed(() => ({
         :to="`/title/${title.title_id}`"
         draggable="false"
     >
-        <div class="backdrop-wrapper">
+        <div class="backdrop-wrapper" :class="{ 'loading-wave': waitingFor?.backdrop }">
             <img
+                v-show="!waitingFor?.backdrop"
                 :src="getTitleImageUrl(title, 'original', 'backdrop')"
                 :style="backdropStyle"
                 alt=""
                 class="backdrop"
                 draggable="false"
+                @load="waitingFor.backdrop = false"
+                @error="waitingFor.backdrop = false"
             >
         </div>
 
         <img
+            v-show="!waitingFor?.logo"
             :src="getTitleImageUrl(title, 'original', 'logo')"
             :style="logoStyle"
-            alt=""
+            :alt="title?.name ?? ''"
             class="logo"
             draggable="false"
+            @load="waitingFor.logo = false"
+            @error="waitingFor.logo = false"
         >
-
+        
         <div class="details-wrapper">
             <div class="details no-deco" :style="detailsStyle">
+                <h2 v-if="waitingFor.logo">{{ title?.name }}</h2>
+
                 <div class="stats">
                     <span>{{ timeFormatters.timestampToYear(title.release_date) }}</span>
 
@@ -126,8 +137,8 @@ const detailsStyle = computed(() => ({
                         <LoadingButton
                             class="btn-even-padding inner-action add-button"
                             :class="{'btn-positive': title?.user_details?.watch_count}"
-                            :loading="waitingfor[`titleWcAdd_${title?.title_id}`]"
-                            @click.prevent="adjustWatchCount.title.add(title, waitingfor)"
+                            :loading="waitingFor[`titleWcAdd_${title?.title_id}`]"
+                            @click.prevent="adjustWatchCount.title.add(title, waitingFor)"
                         >
                             <template v-if="title?.user_details?.watch_count >= 2">
                                 {{ title?.user_details?.watch_count }}
@@ -137,8 +148,8 @@ const detailsStyle = computed(() => ({
 
                         <LoadingButton
                             class="btn-even-padding inner-action"
-                            :loading="waitingfor[`titleWcSub_${title?.title_id}`]"
-                            @click.prevent="adjustWatchCount.title.subtract(title, waitingfor)"
+                            :loading="waitingFor[`titleWcSub_${title?.title_id}`]"
+                            @click.prevent="adjustWatchCount.title.subtract(title, waitingFor)"
                         >
                             <Minus/>
                         </LoadingButton>
@@ -151,8 +162,8 @@ const detailsStyle = computed(() => ({
                                 'btn-favourite': title?.user_details?.is_favourite
                             }"
                             class="btn-even-padding favourite"
-                            :loading="waitingfor?.favourite"
-                            @click.prevent="toggleFavourite(title, waitingfor)" 
+                            :loading="waitingFor?.favourite"
+                            @click.prevent="toggleFavourite(title, waitingFor)" 
                         >
                             <Heart pack="filled" size="sm"/>
                         </LoadingButton>
@@ -165,8 +176,8 @@ const detailsStyle = computed(() => ({
                                 'btn-accent': title?.user_details?.in_watchlist
                             }"
                             class="btn-even-padding watchlist"
-                            :loading="waitingfor?.watchlist"
-                            @click.prevent="toggleWatchlist(title, waitingfor)" 
+                            :loading="waitingFor?.watchlist"
+                            @click.prevent="toggleWatchlist(title, waitingFor)" 
                         >
                             <Clock pack="filled" size="sm"/>
                         </LoadingButton>
