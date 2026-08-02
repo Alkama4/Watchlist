@@ -152,7 +152,7 @@ onUnmounted(() => {
                 <img 
                     :src="getTitleImageUrl(activeSeason, '800', 'poster')"
                     :key="getTitleImageUrl(activeSeason, '800', 'poster')"
-                    :alt="`Season poster: ${activeSeason?.season_name}`"
+                    alt=""
                     class="season-poster"
                 >
                 <h3>{{ activeSeason?.season_name }}</h3>
@@ -223,7 +223,7 @@ onUnmounted(() => {
                     >
                         <img 
                             :src="getTitleImageUrl(episode, '800', 'backdrop')"
-                            :alt="`Episode backdrop: ${episode?.episode_number}. ${episode?.episode_name}`"
+                            alt=""
                             class="episode-backdrop"
                         >
                         <EyeSlash size="lg" class="eye-icon" />

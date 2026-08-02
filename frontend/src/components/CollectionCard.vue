@@ -18,7 +18,7 @@ defineProps({
     >
         <img
             :src="getTitleImageUrl(tmdbCollection, 400, 'poster')"
-            alt="Collection poster"
+            alt=""
             class="poster"
         />
 

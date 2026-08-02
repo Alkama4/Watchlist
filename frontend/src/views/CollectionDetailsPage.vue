@@ -55,7 +55,7 @@ onMounted(async () => {
     <div class="collection-details-page layout-spacing-top layout-spacing-bottom">
         <img
             :src="getTitleImageUrl(collectionDetails, 'original', 'backdrop')"
-            alt="Collection backdrop"
+            alt=""
             class="backdrop"
         >
 
@@ -63,7 +63,7 @@ onMounted(async () => {
             <div>
                 <img
                     :src="getTitleImageUrl(collectionDetails, '800', 'poster')"
-                    alt="Collection poster"
+                    alt=""
                     class="poster"
                 >
             </div>

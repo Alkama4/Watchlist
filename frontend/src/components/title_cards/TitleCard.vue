@@ -92,7 +92,7 @@ async function removeTitle() {
             <img
                 v-show="!waiting.poster"
                 :src="getTitleImageUrl(titleInfo, '800', 'poster', storeImageFlag)"
-                :alt="`${titleInfo?.title_type === 'tv' ? 'TV show' : 'Movie'} poster: ${titleInfo?.name}`"
+                alt=""
                 :draggable="gridMode"
                 @load="waiting.poster = false"
                 @error="waiting.poster = false"

@@ -69,8 +69,8 @@ const detailsStyle = computed(() => ({
         <div class="backdrop-wrapper">
             <img
                 :src="getTitleImageUrl(title, 'original', 'backdrop')"
-                :alt="`${title.title_type} backdrop: ${title.name}`"
                 :style="backdropStyle"
+                alt=""
                 class="backdrop"
                 draggable="false"
             >
@@ -78,8 +78,8 @@ const detailsStyle = computed(() => ({
 
         <img
             :src="getTitleImageUrl(title, 'original', 'logo')"
-            :alt="`Logo for the title ${title.name}`"
             :style="logoStyle"
+            alt=""
             class="logo"
             draggable="false"
         >

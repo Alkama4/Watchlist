@@ -210,7 +210,7 @@ const kebabOptions = computed(() => {
             <img 
                 :src="getTitleImageUrl(titleDetails, 'original', 'backdrop')"
                 :key="getTitleImageUrl(titleDetails, 'original', 'backdrop')"
-                :alt="`${titleDetails?.title_type} backdrop: ${titleDetails?.name}`"
+                alt=""
                 class="backdrop"
             >
     
@@ -219,7 +219,7 @@ const kebabOptions = computed(() => {
                     v-if="getTitleImageUrl(titleDetails, 'original', 'logo')"
                     :src="getTitleImageUrl(titleDetails, 'original', 'logo')"
                     :key="getTitleImageUrl(titleDetails, 'original', 'logo')"
-                    :alt="`${titleDetails?.title_type} logo: ${titleDetails?.name}`"
+                    :alt="(logoImageVisible && isMobile) ? titleDetails?.name : ''"
                     class="logo"
                 >
             </div>
@@ -233,7 +233,7 @@ const kebabOptions = computed(() => {
                     <img 
                         :src="getTitleImageUrl(titleDetails, '800', 'poster')"
                         :key="getTitleImageUrl(titleDetails, '800', 'poster')"
-                        :alt="`${titleDetails?.title_type} poster: ${titleDetails?.name}`"
+                        alt=""
                         class="poster"
                         @load="logoImageVisible = true"
                         @error="logoImageVisible = false"

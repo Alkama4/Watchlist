@@ -44,7 +44,7 @@ const computedHeight = computed(() => {
                 >
                     <img 
                         :src="getTitleImageUrl(season, '800', 'poster')"
-                        :alt="`Season poster: ${season?.season_name}`"
+                        alt=""
                         class="poster"
                     >
 

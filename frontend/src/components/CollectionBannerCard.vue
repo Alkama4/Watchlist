@@ -18,13 +18,13 @@ defineProps({
     >
         <img
             :src="getTitleImageUrl(tmdbCollection, 800, 'backdrop')"
-            alt="Collection backdrop"
+            alt=""
             class="backdrop"
-        />
+        />2
 
         <img
             :src="getTitleImageUrl(tmdbCollection, 400, 'poster')"
-            alt="Collection poster"
+            alt=""
             class="poster"
         />
 

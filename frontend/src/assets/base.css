@@ -251,6 +251,12 @@ table tr *:last-child {
 }
 
 
+img {
+  color: var(--c-text-subtle);
+  font-size: var(--fs-neg-1);
+}
+
+
 details {
     summary {
         cursor: pointer;
