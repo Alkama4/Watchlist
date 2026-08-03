@@ -49,7 +49,7 @@ class UserSetting(Base):
         primary_key=True
     )
     key = Column(
-        String(100),
+        String(128),
         ForeignKey("settings.key", ondelete="CASCADE"),
         primary_key=True
     )
@@ -89,8 +89,9 @@ class Title(Base):
     translations = relationship("TitleTranslation", back_populates="title", lazy="noload")
     user_details = relationship("TitleUserDetails", back_populates="title", lazy="noload")
     seasons = relationship("Season", back_populates="title", cascade="all, delete-orphan")
+    episodes = relationship("Episode", back_populates="title", cascade="all, delete-orphan")
     genres = relationship("TitleGenre", back_populates="title", cascade="all, delete-orphan")
-    age_ratings = relationship("TitleAgeRatings", cascade="all, delete-orphan")
+    age_ratings = relationship("TitleAgeRatings", back_populates="title", cascade="all, delete-orphan")
     
     image_links = relationship("ImageLink", back_populates="title", cascade="all, delete-orphan")
     images = association_proxy("image_links", "image")
@@ -148,7 +149,8 @@ class Episode(Base):
     translations = relationship("EpisodeTranslation", back_populates="episode", lazy="noload")
     user_details = relationship("EpisodeUserDetails", back_populates="episode", lazy="noload")
     season = relationship("Season", back_populates="episodes")
-    title = relationship("Title")
+    title = relationship("Title", back_populates="episodes")
+    video_assets = relationship("VideoAsset", back_populates="episode")
 
 
 ##### TITLE USER DETAILS #####
@@ -163,9 +165,9 @@ class TitleUserDetails(Base):
     in_watchlist = Column(Boolean, default=False)
     watch_count = Column(Integer, default=0)
     notes = Column(Text)
-    chosen_poster_image_path = Column(String(255), ForeignKey("images.file_path"))
-    chosen_backdrop_image_path = Column(String(255), ForeignKey("images.file_path"))
-    chosen_logo_image_path = Column(String(255), ForeignKey("images.file_path"))
+    chosen_poster_image_path = Column(String(64), ForeignKey("images.file_path"))
+    chosen_backdrop_image_path = Column(String(64), ForeignKey("images.file_path"))
+    chosen_logo_image_path = Column(String(64), ForeignKey("images.file_path"))
     chosen_locale = Column(String(16))
 
     added_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -183,7 +185,7 @@ class SeasonUserDetails(Base):
 
     user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), primary_key=True)
     season_id = Column(Integer, ForeignKey("seasons.season_id", ondelete="CASCADE"), primary_key=True)
-    chosen_poster_image_path = Column(String(255), ForeignKey("images.file_path"))
+    chosen_poster_image_path = Column(String(64), ForeignKey("images.file_path"))
     notes = Column(Text)
 
     season = relationship("Season", back_populates="user_details")
@@ -249,9 +251,9 @@ class EpisodeTranslation(Base):
     overview = Column(Text)
 
     episode = relationship("Episode", back_populates="translations")
-    
 
-##### GENERES AND OTHER MANY TO ONE DETAILS #####
+
+##### GENRES AND OTHER MANY TO ONE DETAILS #####
 
 class Genre(Base):
     __tablename__ = "genres"
@@ -293,7 +295,7 @@ class TitleAgeRatings(Base):
     rating = Column(String(64))
     descriptors = Column(Text)
 
-    title = relationship("Title")
+    title = relationship("Title", back_populates="age_ratings")
 
 
 ##### COLLECTIONS #####
@@ -312,7 +314,7 @@ class TMDBCollection(Base):
     image_links = relationship("ImageLink", back_populates="tmdb_collection", cascade="all, delete-orphan")
     images = association_proxy("image_links", "image")
     user_details = relationship("TMDBCollectionUserDetails", back_populates="collection", cascade="all, delete-orphan")
-    
+
 
 class TMDBCollectionUserDetails(Base):
     __tablename__ = "tmdb_collection_user_details"
@@ -320,8 +322,8 @@ class TMDBCollectionUserDetails(Base):
     user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), primary_key=True)
     tmdb_collection_id = Column(Integer, ForeignKey("tmdb_collections.tmdb_collection_id", ondelete="CASCADE"), primary_key=True)
 
-    chosen_poster_image_path = Column(String(255), ForeignKey("images.file_path"))
-    chosen_backdrop_image_path = Column(String(255), ForeignKey("images.file_path"))
+    chosen_poster_image_path = Column(String(64), ForeignKey("images.file_path"))
+    chosen_backdrop_image_path = Column(String(64), ForeignKey("images.file_path"))
     chosen_locale = Column(String(16))
     last_viewed_at = Column(DateTime(timezone=True))
 
@@ -358,7 +360,9 @@ class UserCollection(Base):
 
     user = relationship("User", back_populates="collections")
     titles = relationship("UserCollectionTitle", back_populates="collection", cascade="all, delete-orphan")
-    child_collections = relationship("UserCollection", backref="parent_collection", remote_side=[collection_id])
+    
+    parent_collection = relationship("UserCollection", back_populates="child_collections", remote_side=[collection_id])
+    child_collections = relationship("UserCollection", back_populates="parent_collection")
 
 
 class UserCollectionTitle(Base):
@@ -399,7 +403,6 @@ class ImageLink(Base):
     season_id = Column(Integer, ForeignKey("seasons.season_id", ondelete="CASCADE"), nullable=True)
     tmdb_collection_id = Column(Integer, ForeignKey("tmdb_collections.tmdb_collection_id", ondelete="CASCADE"), nullable=True)
 
-    # Unique Constraint to prevent duplicate links
     __table_args__ = (
         UniqueConstraint(
             'file_path', 'title_id', 'season_id', 'tmdb_collection_id',
@@ -416,7 +419,6 @@ class ImageLink(Base):
     title = relationship("Title", back_populates="image_links")
     season = relationship("Season", back_populates="image_links")
     tmdb_collection = relationship("TMDBCollection", back_populates="image_links")
-
 
 
 class TitleFolder(Base):
@@ -454,8 +456,8 @@ class VideoAsset(Base):
     bit_depth = Column(Integer)
     frame_rate = Column(Float)
     
-    # Sync Logic (used to check if file has been modified after last scan)
+    # Sync Logic
     mtime = Column(Float)
 
     title_folder = relationship("TitleFolder", back_populates="video_assets")
-    episode = relationship("Episode", backref="video_assets")
+    episode = relationship("Episode", back_populates="video_assets")
