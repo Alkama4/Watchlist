@@ -20,7 +20,7 @@ defineProps({
             :src="getTitleImageUrl(tmdbCollection, 800, 'backdrop')"
             alt=""
             class="backdrop"
-        />2
+        />
 
         <img
             :src="getTitleImageUrl(tmdbCollection, 400, 'poster')"
