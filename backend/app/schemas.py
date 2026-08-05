@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Annotated
+from typing import Dict, List, Literal, Optional, Annotated
 from pydantic import BaseModel, ConfigDict, Field, computed_field, AfterValidator, model_validator
 from datetime import datetime, date
 from babel import Locale, UnknownLocaleError
@@ -597,4 +597,144 @@ class TitleAuditDetailOut(BaseModel):
     title_type: Optional[str] = "movie"
     movie_variants: Optional[List[MovieVariantDetail]] = None
     seasons: Optional[Dict[int, List[EpisodeAuditDetail]]] = None
-    
+
+
+from typing import List, Optional, Literal
+from datetime import date, datetime
+from pydantic import BaseModel, Field, ConfigDict
+
+
+# --- Shared / Embedded Schemas ---
+
+class MediaSpecsOut(BaseModel):
+    resolution: Optional[str] = "Unknown"
+    hdr_type: Optional[str] = "SDR"
+    video_codec: Optional[str] = "Unknown"
+    bit_depth: Optional[int] = None
+    frame_rate: Optional[float] = None
+    audio_tracks: List[str] = Field(default_factory=list)
+
+
+class TitleMinimalOut(BaseModel):
+    id: int
+    tmdb_id: Optional[int] = None
+    name: str
+    type: Literal["movie", "tv"]
+    release_year: Optional[int] = None
+
+
+class UserWatchInfo(BaseModel):
+    user_id: int
+    username: str
+    watch_count: int
+    last_watched_at: Optional[datetime] = None
+
+
+# --- Dashboard Schemas (Tier 1 & Tier 2) ---
+
+class AssetSummaryStats(BaseModel):
+    total_storage_gb: float
+    total_video_assets: int
+    total_linked_assets: int
+    linked_percentage: float
+    unlinked_folders_count: int
+    incomplete_tv_shows_count: int
+    watchlist_deficit_count: int
+
+
+class CompletionStats(BaseModel):
+    percentage: float
+    missing_episodes_count: int
+    total_expected_episodes: int
+
+
+class MetricStats(BaseModel):
+    file_count: int
+    version_count: int
+    total_size_gb: float
+
+
+class QualitySummary(BaseModel):
+    primary_badge: str
+    is_uniform: bool
+
+
+class EngagementStats(BaseModel):
+    in_watchlist: bool
+    active_watchers_count: int
+
+
+class AssetItemOut(BaseModel):
+    folder_id: int
+    folder_name: str
+    folder_path: str
+    status: Literal["linked", "unlinked"]
+    linked_title: Optional[TitleMinimalOut] = None
+    completion: CompletionStats
+    metrics: MetricStats
+    quality_summary: QualitySummary
+    engagement: EngagementStats
+
+
+class PaginationOut(BaseModel):
+    page: int
+    page_size: int
+    total_items: int
+    total_pages: int
+
+
+class AssetDashboardResponse(BaseModel):
+    summary: AssetSummaryStats
+    items: List[AssetItemOut]
+    pagination: PaginationOut
+
+
+# --- Inspection Schemas (Tier 3) ---
+
+class MovieVariantAsset(BaseModel):
+    video_asset_id: int
+    file_name: str
+    file_path: str
+    file_size_gb: float
+    variant_type: str
+    is_default: bool
+    specs: MediaSpecsOut
+
+
+class VideoAssetFileOut(BaseModel):
+    video_asset_id: int
+    file_name: str
+    file_path: str
+    file_size_gb: float
+    specs: MediaSpecsOut
+
+
+class EpisodeDetailOut(BaseModel):
+    episode_id: Optional[int] = None
+    episode_number: int
+    episode_title: Optional[str] = None
+    is_missing: bool
+    user_views: List[UserWatchInfo] = Field(default_factory=list)
+    assets: List[VideoAssetFileOut] = Field(default_factory=list)
+
+
+class SeasonDetailOut(BaseModel):
+    season_number: int
+    episodes: List[EpisodeDetailOut]
+
+
+class UnmatchedFileOut(BaseModel):
+    file_name: str
+    file_path: str
+    file_size_gb: float
+    reason: Literal["unknown_extension", "parse_failure", "orphaned"]
+
+
+class AssetDetailResponse(BaseModel):
+    folder_id: int
+    folder_name: str
+    folder_path: str
+    title_type: Literal["movie", "tv", "unlinked"]
+    movie_variants: Optional[List[MovieVariantAsset]] = None
+    seasons: Optional[List[SeasonDetailOut]] = None
+    unmatched_files: List[UnmatchedFileOut] = Field(default_factory=list)

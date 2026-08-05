@@ -57,6 +57,11 @@ const routes = [
         meta: { requiresAuth: true }
     },
     {
+        path: '/asset_manager',
+        name: 'Asset Manager',
+        component: () => import('@/views/VideoAssetManagerPage.vue'),
+        meta: { requiresAuth: true }
+    },    {
         path: '/account',
         name: 'Account',
         component: () => import('@/views/AccountPage.vue'),

@@ -273,6 +273,15 @@ export const fastApi = {
                 method: 'get', 
                 url: `/media/video_assets/audit/${folderId}/details`, 
             }),
+            getDashboard: async (params) => fetchData({ 
+                method: 'get', 
+                url: `/media/dashboard`, 
+                config: { params } 
+            }),
+            getDetails: async (folderId) => fetchData({ 
+                method: 'get', 
+                url: `/media/folders/${folderId}/details`
+            }),
         },
     },
     integrations: {
