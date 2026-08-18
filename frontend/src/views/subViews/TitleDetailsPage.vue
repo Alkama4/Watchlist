@@ -225,6 +225,9 @@ const kebabOptions = computed(() => {
                     @load="logoImageVisible = true"
                     @error="logoImageVisible = false"
                 >
+                <h1 v-if="isMobile && !logoImageVisible" class="name">
+                    {{ titleDetails?.name }}
+                </h1>
             </div>
 
             <div class="mobile-kebab-wrapper mobile-only">
@@ -276,7 +279,7 @@ const kebabOptions = computed(() => {
                     />
 
                     <div class="name-part">
-                        <h1 v-if="!(logoImageVisible && isMobile)" class="name">
+                        <h1 v-if="!isMobile" class="name">
                             {{ titleDetails?.name }}
                         </h1>
                         <h4 v-if="titleDetails?.name_original != titleDetails?.name" class="name-original">
@@ -646,7 +649,13 @@ img.backdrop {
         max-height: 300px;
         box-sizing: border-box;
     
+    }
+    img.logo,
+    .name {
         z-index: 5;
+    }
+    .name {
+        text-align: center;
     }
 }
 
