@@ -183,10 +183,10 @@ onUnmounted(() => {
                         :watchCount="resolveSeasonWatchCount(activeSeason)"
                         :title="titleDetails"
                         :season="activeSeason"
+                        style="flex: 1;"
                     />
 
                     <button
-                        class="btn-even-padding btn-mobile-icon-padding"
                         @click="toggleSeasonSpoilers"
                         :disabled="resolveSeasonWatchCount(activeSeason)"
                         :title="resolveSeasonWatchCount(activeSeason) 
@@ -264,7 +264,6 @@ onUnmounted(() => {
                                 :episode="episode"
                             />
                             <button
-                                class="btn-even-padding btn-mobile-icon-padding"
                                 @click="episode.spoilersVisible = !isEpisodeSpoilerVisible(episode)"
                                 :disabled="episode?.user_details?.watch_count"
                                 :title="episode?.user_details?.watch_count 
@@ -275,7 +274,6 @@ onUnmounted(() => {
                             </button>
                             <button
                                 v-if="episode?.video_assets"
-                                class="btn-even-padding btn-mobile-icon-padding"
                                 @click="openEpisodeVideoAssetListing(episode)"
                             >
                                 <ListPlay/>

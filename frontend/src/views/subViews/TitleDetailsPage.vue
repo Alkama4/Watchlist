@@ -11,18 +11,17 @@ import SeasonsListing from '@/components/SeasonsListing.vue';
 import EpisodeMap from '@/components/EpisodeMap.vue';
 import ModalImages from '@/components/modal/ModalImages.vue';
 import KebabMenu from '@/components/KebabMenu.vue';
-import { AlbumCovers, AlertCircle, AlertTriangle, CheckCircle, Clock, Heart, Images, InfoCircle, ListMinus, ListPlay, ListPlus, Note, RefreshCw, Star, Translate } from '@boxicons/vue';
+import { AlbumCovers, AlertCircle, AlertTriangle, CheckCircle, Clock, Heart, Images, InfoCircle, ListMinus, ListPlus, Note, RefreshCw, Star, Translate } from '@boxicons/vue';
 import ModalLocale from '@/components/modal/ModalLocale.vue';
 import { resolveAgeRating } from '@/utils/titleUtils';
 import { useSettingsStore } from '@/stores/settings';
 import Tooltip from '@/components/Tooltip.vue';
 import WatchCountButtons from '@/components/WatchCountButtons.vue';
-import VideoAssetListing from '@/components/VideoAssetListing.vue';
 import ExternalResources from '@/components/ExternalResources.vue';
 import CollectionBannerCard from '@/components/CollectionBannerCard.vue';
-import ResponsiveOverlay from '@/components/ResponsiveOverlay.vue';
 import { isMobile } from '@/utils/device';
 import ModalConfimation from '@/components/modal/ModalConfimation.vue';
+import VideoAssetButton from '@/components/VideoAssetButton.vue';
 
 const props = defineProps({
     titleDetails: {
@@ -53,7 +52,6 @@ const waitingFor = ref({});
 const logoImageVisible = ref(false);
 const updateResponse = ref({});
 const AgeRatingsModal = ref(null);
-const videoAssetOverlay = ref(null);
 const ImagesModal = ref(null);
 const LocaleModal = ref(null);
 
@@ -364,64 +362,53 @@ const kebabOptions = computed(() => {
                     <p>{{ titleDetails?.overview }}</p>
 
                     <div class="actions">
-                        <WatchCountButtons
-                            :watchCount="titleDetails?.user_details?.watch_count"
-                            :title="titleDetails"
+                        <VideoAssetButton
+                            :titleDetails="titleDetails"
                         />
-                        
-                        <button
-                            class="btn-mobile-icon-padding"
-                            :class="{'btn-favourite': titleDetails?.user_details?.is_favourite }"
-                            @click="toggleFavourite"
-                        >
-                            <Heart pack="filled" size="sm"/>
-                            <span class="desktop-only">Favourite</span>
-                        </button>
 
-                        <button
-                            class="btn-mobile-icon-padding"
-                            :class="{'btn-accent': titleDetails?.user_details?.in_watchlist }"
-                            @click="toggleWatchlist"
-                        >
-                            <Clock pack="filled" size="sm"/>
-                            <span class="desktop-only">Watchlist</span>
-                        </button>
+                        <div class="title-actions">
+                            <WatchCountButtons
+                                :watchCount="titleDetails?.user_details?.watch_count"
+                                :title="titleDetails"
+                            />
 
-                        <button class="btn-mobile-icon-padding" @click="adjustCollections">
-                            <AlbumCovers pack="filled" size="sm"/>
-                            <span class="desktop-only">Collections</span>
-                        </button>
+                            <div class="simple-actions">
+                                <button
+                                    :class="{'btn-favourite': titleDetails?.user_details?.is_favourite }"
+                                    title="Favourite"
+                                    @click="toggleFavourite"
+                                >
+                                    <Heart pack="filled" size="sm"/>
+                                </button>
+    
+                                <button
+                                    :class="{'btn-accent': titleDetails?.user_details?.in_watchlist }"
+                                    title="Watchlist"
+                                    @click="toggleWatchlist"
+                                >
+                                    <Clock pack="filled" size="sm"/>
+                                </button>
+    
+                                <button
+                                    title="Collections"
+                                    @click="adjustCollections"
+                                >
+                                    <AlbumCovers pack="filled" size="sm"/>
+                                </button>
+    
+                                <button 
+                                    :title="titleDetails?.user_details?.notes ? 'View Notes' : 'Add Note'"
+                                    @click="openNotesModal"
+                                >
+                                    <Note pack="filled" size="sm"/>
+                                </button>
+                            </div>
 
-                        <button 
-                            class="btn-mobile-icon-padding" 
-                            @click="openNotesModal"
-                        >
-                            <Note pack="filled" size="sm"/>
-                            <span class="desktop-only">
-                                {{ titleDetails?.user_details?.notes ? 'View Notes' : 'Add Note' }}
-                            </span>
-                        </button>
-
-                        <div class="desktop-only">
-                            <KebabMenu :menuItems="kebabOptions" horizontalDots/>
+                            <div class="desktop-only">
+                                <KebabMenu :menuItems="kebabOptions" horizontalDots/>
+                            </div>
                         </div>
                     </div>
-
-                    <template v-if="titleDetails?.video_assets">
-                        <hr>
-
-                        <button
-                            class="video-assets-button"
-                            @click="videoAssetOverlay.open()"
-                        >
-                            <ListPlay pack="filled"/>
-
-                            <div class="details">
-                                <h5>Video Assets</h5>
-                                <div class="description">The featurettes and movies for a title</div>
-                            </div>
-                        </button>
-                    </template>
 
                     <SeasonsListing 
                         v-if="titleDetails?.title_type === 'tv'" 
@@ -435,7 +422,6 @@ const kebabOptions = computed(() => {
         <div v-if="titleDetails?.tmdb_collection_card" class="layout-contained">
             <h3>Part of a Collection</h3>
             <CollectionBannerCard :tmdbCollection="titleDetails?.tmdb_collection_card"/>
-
         </div>
         
         <div class="layout-contained mobile-only">
@@ -532,13 +518,6 @@ const kebabOptions = computed(() => {
             :fetchTitleDetails="fetchTitleDetails"
             :waitingFor="waitingFor"
         />
-
-        <ResponsiveOverlay ref="videoAssetOverlay" header="Video Assets">
-            <VideoAssetListing
-                :videoAssets="titleDetails?.video_assets"
-                :title="titleDetails"
-            />
-        </ResponsiveOverlay>
 
         <ModalConfimation
             ref="ModalClearNotesConfirm"
@@ -778,9 +757,31 @@ img.poster {
     flex-wrap: wrap;
 }
 
-.actions {
+.video-asset-button-wrapper {
+    margin: var(--spacing-md-lg) 0;
+}
+
+.stuff-row {
     display: flex;
-    /* flex-wrap: wrap; */
+    align-items: center;
+    gap: var(--spacing-md);
+
+}
+hr {
+    margin: 0 !important;
+    height: 40px;
+}
+
+.actions {
+    margin-top: var(--spacing-md-lg);
+    display: flex;
+    gap: var(--spacing-md-lg);
+    align-items: center;
+}
+
+.title-actions,
+.simple-actions {
+    display: flex;
     gap: var(--spacing-sm);
 }
 
@@ -941,46 +942,28 @@ hr {
         }
 
         .actions {
-            display: flex;
+            margin-top: 0;
+            flex-direction: column;
+            gap: var(--spacing-md-lg);
+        }
+        .title-actions {
             flex-direction: row;
-            gap: var(--spacing-sm);
-            overflow: hidden;
+            flex-wrap: wrap;
+            width: 100%;
 
             .watch-count-buttons {
-                width: 100%;
+                flex: 6;
+                white-space: nowrap;
             }
-
-            .search-filter-mobile {
-                display: flex;
-                flex-direction: column;
+            .simple-actions {
+                flex: 7;
             }
 
             button {
                 flex: 1;
-                white-space: nowrap;
+                padding-inline: 0;
+                min-width: 40px;
             }
-
-            /* .collection-actions {
-                overflow: auto;
-                align-items: center;
-
-                button {
-                    flex: 1;
-                }
-
-                @media(max-width: 512px) {
-                    button {
-                        flex-direction: column;
-                        padding-inline: 0;
-
-                        span {
-                            display: none; */
-                            /* color: var(--c-text-subtle);
-                            font-size: var(--fs-neg-4); */
-                        /* }
-                    }
-                }
-            } */
         }
 
         .external-resources {

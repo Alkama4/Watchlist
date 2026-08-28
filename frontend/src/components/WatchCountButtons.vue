@@ -40,7 +40,7 @@ const handleAction = (action) => {
 <template>
     <div class="watch-count-buttons">
         <LoadingButton
-            :class="watchCount ? 'btn-positive' : 'btn-primary'"
+            :class="watchCount ? 'btn-positive' : ''"
             :loading="waitingFor[`${entity.type}WcAdd_${entity.id}`]"
             @click="handleAction('add')"
         >
@@ -51,7 +51,7 @@ const handleAction = (action) => {
                 <Check size="sm"/> Watched
             </template>
             <template v-else-if="watchCount > 1">
-                Watched {{ watchCount }} times
+                {{ watchCount }} Watches
             </template>
         </LoadingButton>
 
@@ -68,7 +68,7 @@ const handleAction = (action) => {
 <style scoped>
 .watch-count-buttons {
     display: flex;
-    width: 220px;
+    width: 200px;
 
     button:first-child {
         flex: 2;
