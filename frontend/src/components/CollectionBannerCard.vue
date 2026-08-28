@@ -66,7 +66,7 @@ defineProps({
     padding: var(--spacing-sm-md);
     gap: var(--spacing-md);
     box-sizing: border-box;
-    height: 277.5px;
+    height: 200px;
     align-items: center;
 
     overflow: hidden;

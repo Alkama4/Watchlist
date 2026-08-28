@@ -166,9 +166,9 @@
     --fs-3:     calc(var(--fs-2) * var(--fs-ratio));
     --fs-4:     calc(var(--fs-3) * var(--fs-ratio));
 
-    /* @media(max-width: 768px) {
-        --font-size-base: 0.9rem;
-    } */
+    @media(max-width: 768px) {
+        --font-size-base: 0.925rem;
+    }
 }
 
 
