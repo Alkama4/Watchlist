@@ -37,29 +37,50 @@ const targetEpisode = computed(() => {
     return season?.episodes?.find((e) => e.episode_number === props.episodeNum) ?? null;
 });
 
-const defaultVideoAsset = computed(() => {
-    const rawAssets = isEpisodeMode.value 
+const allAssets = computed(() => {
+    const assets = isEpisodeMode.value 
         ? targetEpisode.value?.video_assets 
-        : props.titleDetails?.video_assets?.filter(asset => asset.video_type === 'movie');
+        : props.titleDetails?.video_assets;
 
-    if (!rawAssets || rawAssets.length === 0) return null;
+    return assets?.length ? assets : null;
+});
 
-    return [...rawAssets].sort((a, b) => b.filesize_bytes - a.filesize_bytes)[0];
+const defaultVideoAsset = computed(() => {
+    if (!allAssets.value) return null;
+
+    const playables = isEpisodeMode.value
+        ? allAssets.value
+        : allAssets.value.filter(asset => asset.video_type === 'movie');
+
+    if (!playables.length) return null;
+
+    return [...playables].sort((a, b) => b.filesize_bytes - a.filesize_bytes)[0];
 });
 </script>
 
 <template>
-    <div class="video-asset-button" v-if="defaultVideoAsset">
+    <div class="video-asset-button" v-if="allAssets">
         <a
+            v-if="defaultVideoAsset"
             :href="buildVideoAssetUrl(defaultVideoAsset, titleDetails, getDeviceHandler(), seasonNum, episodeNum)"
-            class="btn no-deco"
+            class="btn no-deco play-button"
             :class="{'btn-primary': isPrimary}"
         >
             <Play pack="filled"/>
             Play
         </a>
         <button
-            class="btn-even-padding"
+            v-else
+            disabled
+            class="btn no-deco play-button"
+            :class="{'btn-primary': isPrimary}"
+        >
+            <Play pack="filled"/>
+            Play
+        </button>
+
+        <button
+            class="btn-even-padding more-button"
             :class="{'btn-primary': isPrimary}"
             @click="videoAssetOverlay.open()"
         >
@@ -82,7 +103,7 @@ const defaultVideoAsset = computed(() => {
     display: flex;
     width: fit-content;
     
-    a {
+    .play-button {
         padding: var(--spacing-sm-md) var(--spacing-md-lg);
 
         border-top-left-radius: 1000px;
@@ -91,7 +112,7 @@ const defaultVideoAsset = computed(() => {
         border-bottom-right-radius: 0;
         flex: 1;
     }
-    button {
+    .more-button {
         border-top-right-radius: 1000px;
         border-bottom-right-radius: 1000px;
         border-top-left-radius: 0;
