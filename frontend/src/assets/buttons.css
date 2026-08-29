@@ -42,14 +42,13 @@ button:disabled, .btn:disabled {
 /* Padding variants */
 @media(max-width: 768px) {
     button, .btn {
-        padding: calc(var(--spacing-sm) * 1.25) var(--spacing-md-lg);
+        min-height: calc(40px - var(--spacing-sm) * 2);
     }
 }
 
 .btn-even-padding {
-    padding: var(--spacing-sm);
+    padding-inline: var(--spacing-sm-md);
 }
-
 
 
 /* Button text */

@@ -15,18 +15,16 @@ export function getDeviceHandler() {
     return 'mpv-handler';
 }
 
-export function buildVideoAssetUrl(video, titleDetails, type = "base", season = null, episode = null) {
+export function buildVideoAssetUrl(video, titleDetails, type = "base", seasonNum = null, episodeNum = null) {
     const titleName = titleDetails?.name;
     let label = null;
 
     if (!titleName) {
         // Fallback to file name
         label = video.file_name.split(".")[0];
-    } else if (episode?.episode_number !== undefined) {
+    } else if (episodeNum !== undefined) {
         // Episodes
-        const sNum = season?.season_number;
-        const eNum = episode?.episode_number;
-        label = `${titleName} - S${sNum}E${eNum}`;
+        label = `${titleName} - S${seasonNum}E${episodeNum}`;
     } else if (video?.video_type === "movie") {
         // Movies
         label = titleName;

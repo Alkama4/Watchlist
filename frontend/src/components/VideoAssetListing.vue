@@ -5,8 +5,8 @@ import VideoAssetCard from './VideoAssetCard.vue';
 const props = defineProps({
     videoAssets: { type: [Object, Array], default: () => [] },
     title: { type: Object, default: () => ({}) },
-    season: { type: [Object, Number, String], default: null },
-    episode: { type: Object, default: () => ({}) },
+    seasonNum: { type: [Object, Number, String], default: null },
+    episodeNum: { type: Object, default: () => ({}) },
 });
 
 // Group assets by video_type
@@ -50,8 +50,8 @@ const formatHeader = (type) => {
                 :key="video?.video_asset_id"
                 :video="video"
                 :title="title"
-                :season="season"
-                :episode="episode"
+                :seasonNum="seasonNum"
+                :episodeNum="episodeNum"
             />
         </div>
     </div>

@@ -11,6 +11,7 @@ import WatchCountButtons from '@/components/WatchCountButtons.vue';
 import KebabMenu from '@/components/KebabMenu.vue';
 import VideoAssetListing from '@/components/VideoAssetListing.vue';
 import ResponsiveOverlay from '@/components/ResponsiveOverlay.vue';
+import VideoAssetButton from '@/components/VideoAssetButton.vue';
 
 const props = defineProps({
     titleDetails: {
@@ -64,13 +65,6 @@ function toggleSeasonSpoilers() {
 function isEpisodeSpoilerVisible(episode) {
     return !!(episode?.spoilersVisible || episode?.user_details?.watch_count > 0);
 }
-
-
-function openEpisodeVideoAssetListing(episode) {''
-    videoAssetEpisode.value = episode;
-    videoAssetOverlay.value.open();
-}
-
 
 const handleBack = () => {
     // If we came from the overview of the SAME title
@@ -187,6 +181,7 @@ onUnmounted(() => {
                     />
 
                     <button
+                        class="btn-even-padding"
                         @click="toggleSeasonSpoilers"
                         :disabled="resolveSeasonWatchCount(activeSeason)"
                         :title="resolveSeasonWatchCount(activeSeason) 
@@ -258,26 +253,28 @@ onUnmounted(() => {
                         <!-- <p>{{ isEpisodeSpoilerVisible(episode) ? episode.overview : 'Episode overview hidden.' }}</p> -->
 
                         <div class="controls">
-                            <WatchCountButtons
-                                :watchCount="episode?.user_details?.watch_count"
-                                :title="titleDetails"
-                                :episode="episode"
+                            <VideoAssetButton
+                                :titleDetails="titleDetails"
+                                :seasonNum="activeSeason.season_number"
+                                :episodeNum="episode.episode_number"
                             />
-                            <button
-                                @click="episode.spoilersVisible = !isEpisodeSpoilerVisible(episode)"
-                                :disabled="episode?.user_details?.watch_count"
-                                :title="episode?.user_details?.watch_count 
-                                    ? 'Episode watched - no spoilers to show.' 
-                                    : (isEpisodeSpoilerVisible(episode) ? 'Hide spoilers' : 'Show spoilers')"
-                            >
-                                <component :is="isEpisodeSpoilerVisible(episode) ? EyeSlash : Eye"/>
-                            </button>
-                            <button
-                                v-if="episode?.video_assets"
-                                @click="openEpisodeVideoAssetListing(episode)"
-                            >
-                                <ListPlay/>
-                            </button>
+                            <div class="episode-controls">
+                                <WatchCountButtons
+                                    :watchCount="episode?.user_details?.watch_count"
+                                    :title="titleDetails"
+                                    :episode="episode"
+                                />
+                                <button
+                                    class="btn-even-padding"
+                                    @click="episode.spoilersVisible = !isEpisodeSpoilerVisible(episode)"
+                                    :disabled="episode?.user_details?.watch_count"
+                                    :title="episode?.user_details?.watch_count 
+                                        ? 'Episode watched - no spoilers to show.' 
+                                        : (isEpisodeSpoilerVisible(episode) ? 'Hide spoilers' : 'Show spoilers')"
+                                >
+                                    <component :is="isEpisodeSpoilerVisible(episode) ? EyeSlash : Eye"/>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -300,15 +297,6 @@ onUnmounted(() => {
             :userDetails="activeSeason?.user_details"
             :tmdbBaseUrl="tmdbBaseUrl"
         />
-
-        <ResponsiveOverlay ref="videoAssetOverlay" header="Video Assets">
-            <VideoAssetListing
-                :videoAssets="videoAssetEpisode?.video_assets"
-                :title="titleDetails"
-                :season="activeSeason"
-                :episode="videoAssetEpisode"
-            />
-        </ResponsiveOverlay>
     </div>
 </template>
 
@@ -374,7 +362,6 @@ onUnmounted(() => {
     display: flex;
     flex-direction: column;
     max-height: 100%;
-    /* gap: var(--spacing-lg); */
 }
 
 .episode {
@@ -469,6 +456,14 @@ onUnmounted(() => {
 
         .controls {
             margin-top: var(--spacing-sm);
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: var(--spacing-md);
+            align-items: center;
+        }
+
+        .episode-controls {
+            width: 100%;
             display: flex;
             gap: var(--spacing-sm);
         }
@@ -555,7 +550,7 @@ onUnmounted(() => {
     }
 
     .episodes-wrapper {
-        gap: var(--spacing-md-lg);
+        gap: var(--spacing-lg);
     }
 
     .episode {

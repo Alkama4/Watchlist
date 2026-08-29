@@ -7,8 +7,8 @@ import { buildVideoAssetUrl, getDeviceHandler } from '@/utils/videoAssetUtils';
 const props = defineProps({
     video: { type: Object, required: true },
     title: { type: Object, default: () => ({}) },
-    season: { type: [Object, Number, String], default: null },
-    episode: { type: Object, default: () => ({}) },
+    seasonNum: { type: Number, default: null },
+    episodeNum: { type: Number, default: () => ({}) },
 });
 
 const showSpecs = ref(false);
@@ -27,7 +27,7 @@ const getVideoLabel = (video) => {
     if (!props.title) {
         return video?.file_name || 'Unknown File';
     } else if (video?.video_type === 'episode') {
-        return `${props.title?.name} (${timeFormatters.timestampToYear(props.title?.release_date)}) - S${props.season?.season_number}E${props.episode?.episode_number}`;
+        return `${props.title?.name} (${timeFormatters.timestampToYear(props.title?.release_date)}) - S${props.seasonNum}E${props.episodeNum}`;
     } else if (video?.video_type === 'movie') {
         return `${props.title?.name} (${timeFormatters.timestampToYear(props.title?.release_date)})`;
     } else {
@@ -45,7 +45,7 @@ const msToMin = (ms) => {
 
 const videoAssetUrl = computed(() => {
     const handlerType = getDeviceHandler();
-    return buildVideoAssetUrl(props.video, props.title, handlerType, props.season, props.episode);
+    return buildVideoAssetUrl(props.video, props.title, handlerType, props.seasonNum, props.episodeNum);
 });
 
 </script>
