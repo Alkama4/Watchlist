@@ -350,7 +350,7 @@ const kebabOptions = computed(() => {
 
                     <div class="genres">
                         <router-link
-                            v-for="(genre, index) in titleDetails?.genres"
+                            v-for="genre in titleDetails?.genres"
                             :key="genre.tmdb_genre_id"
                             :to="`/library?genres_inc=${genre.tmdb_genre_id}`"
                             class="btn btn-pill no-deco"
@@ -415,13 +415,13 @@ const kebabOptions = computed(() => {
                         :titleDetails="titleDetails"
                         :class="{'layout-spacing-bottom': !similarTitles?.titles?.length > 0}"
                     />
+
+                    <template v-if="titleDetails?.tmdb_collection_card" class="">
+                        <h3>Part of a Collection</h3>
+                        <CollectionBannerCard :tmdbCollection="titleDetails?.tmdb_collection_card"/>
+                    </template>
                 </div>
             </div>
-        </div>
-
-        <div v-if="titleDetails?.tmdb_collection_card" class="layout-contained">
-            <h3>Part of a Collection</h3>
-            <CollectionBannerCard :tmdbCollection="titleDetails?.tmdb_collection_card"/>
         </div>
         
         <div class="layout-contained mobile-only">
@@ -774,6 +774,7 @@ hr {
 
 .actions {
     margin-top: var(--spacing-md-lg);
+    margin-bottom: var(--spacing-lg-xl);
     display: flex;
     gap: var(--spacing-md-lg);
     align-items: center;

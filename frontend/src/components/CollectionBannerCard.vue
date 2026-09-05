@@ -1,7 +1,7 @@
 <script setup>
 import { getTitleImageUrl } from '@/utils/imagePath';
 import Tmdb from '@/assets/icons/tmdb.svg';
-import { timeFormatters } from '@/utils/formatters';
+import { numberFormatters, timeFormatters } from '@/utils/formatters';
 
 defineProps({
     tmdbCollection: {
@@ -14,14 +14,8 @@ defineProps({
 <template>
     <router-link
         :to="`/collection/${tmdbCollection?.tmdb_collection_id}`"
-        class="collection-banner-card no-deco"
+        class="collection-banner-card btn btn-even-padding no-deco"
     >
-        <img
-            :src="getTitleImageUrl(tmdbCollection, 800, 'backdrop')"
-            alt=""
-            class="backdrop"
-        />
-
         <img
             :src="getTitleImageUrl(tmdbCollection, 400, 'poster')"
             alt=""
@@ -29,9 +23,10 @@ defineProps({
         />
 
         <div class="details">
-            <h3>{{ tmdbCollection?.name }}</h3>
-            <div class="stats">
-                <div>
+            <h4>{{ tmdbCollection?.name }}</h4>
+
+            <div class="meta-row">
+                <span class="meta-item">
                     {{ timeFormatters.timestampToYear(tmdbCollection?.first_release_date) }}
                     <template v-if="
                         timeFormatters.timestampToYear(tmdbCollection?.first_release_date)
@@ -39,118 +34,106 @@ defineProps({
                     ">
                         - {{ timeFormatters.timestampToYear(tmdbCollection?.last_release_date) }}
                     </template>
-                </div>
-                
-                <span>&bull;</span>
+                </span>
 
-                <div class="stats-group">
-                    <div>{{ tmdbCollection?.title_count }} Titles</div>
-                    <span class="separator">&bull;</span>
-                    <div>{{ timeFormatters.minutesToHrAndMin(tmdbCollection?.total_runtime) }}</div>
-                </div>
+                <span class="seperator">&bull;</span>
 
-                <span class="separator">&bull;</span>
-                
-                <div><Tmdb/> {{ tmdbCollection?.tmdb_vote_average }}</div>
+                <span class="meta-item">
+                    {{ tmdbCollection?.title_count }} Titles
+                </span>
+
+                <span class="seperator">&bull;</span>
+
+                <span class="meta-item">
+                    {{ timeFormatters.minutesToHrAndMin(tmdbCollection?.total_runtime) }}
+                </span>
+
+                <span class="seperator">&bull;</span>
+
+                <span class="meta-item">
+                    <Tmdb class="tmdb-icon"/>
+                    {{ numberFormatters.formatNumberToLocale(tmdbCollection?.tmdb_vote_average) }}
+                </span>
             </div>
-            <p>{{ tmdbCollection?.overview }}</p>
+
+            <p class="overview" :class="{'unavailable': !tmdbCollection?.overview}">
+                {{ tmdbCollection?.overview || "No overview available." }}
+            </p>
         </div>
     </router-link>
 </template>
 
 <style scoped>
 .collection-banner-card {
-    display: flex;
     position: relative;
+    display: flex;
+    flex-direction: row;
+    gap: 0;
     min-width: var(--collection-card-width);
-    padding: var(--spacing-sm-md);
-    gap: var(--spacing-md);
-    box-sizing: border-box;
-    height: 200px;
-    align-items: center;
-
+    padding: 0;
+    text-align: left;
+    font-weight: 400;
     overflow: hidden;
     border-radius: var(--border-radius-md-lg);
-}
-
-img.backdrop {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-    object-fit: cover;
-    opacity: 0.5;
-    filter: brightness(0.5);
+    transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
 img.poster {
-    height: 100%;
+    height: 144px;
     aspect-ratio: 2 / 3;
-    border-radius: var(--border-radius-md);
-    z-index: 1;
     object-fit: cover;
+    flex-shrink: 0;
 }
 
 .details {
-    z-index: 1;
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-sm);
+    flex-grow: 1;
+    min-width: 0; /* Prevents text overflow from pushing flex layout */
+    gap: var(--spacing-xs);
+    padding-inline: var(--spacing-md);
 
-    h3 {
+    h4 {
         margin: 0;
+        margin-bottom: var(--spacing-xs);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: flex;
+        gap: var(--spacing-sm);
+        align-items: center;
+    }
+
+    .meta-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--spacing-xs);
+        font-size: var(--fs-neg-2);
+        color: var(--c-text-soft);
+        font-weight: 600;
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+    }
+
+    .overview {
+        margin: 0;
+        font-size: var(--fs-neg-2);
+        color: var(--c-text-soft);
         display: -webkit-box;
         -webkit-line-clamp: 2;
         line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
-    }
+        line-height: 1.4;
 
-    .stats,
-    p {
-        font-size: var(--fs-neg-1);
-        color: var(--c-text-soft);
-    }
-
-    .stats {
-        display: flex;
-        gap: var(--spacing-xs) var(--spacing-sm);
-        flex-wrap: wrap;
-        align-items: center;
-        font-weight: 600;
-
-        .stats-group {
-            display: flex;
-            gap: var(--spacing-sm);
-            align-items: center;
-        }
-
-        div {
-            white-space: nowrap;
-        }
-    }
-
-    p {
-        margin: 0;
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        line-clamp: 3;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-}
-
-@media(max-width: 768px) {
-    .stats {
-        & > .separator {
-            display: none;
-        }
-
-        .stats-group {
-            flex-basis: 100%;
-            order: 2; 
+        &.unavailable {
+            color: var(--c-text-subtle);
+            font-style: italic;
         }
     }
 }
