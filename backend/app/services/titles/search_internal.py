@@ -489,19 +489,31 @@ async def run_title_search(
 async def get_title_search_suggestions(
     db: AsyncSession,
     user_id: int,
-    query,
+    query: str,
 ) -> TitleMinimalListOut:
     locale_ctx = await get_user_language_context(db=db, user_id=user_id)
+    
+    clean_query = query.strip()
+    word_sim = func.word_similarity(clean_query, TitleTranslation.name)
     
     stmt = (
         select(Title)
         .join(Title.translations)
+        .join(
+            TitleUserDetails,
+            (TitleUserDetails.title_id == Title.title_id) & 
+            (TitleUserDetails.user_id == user_id)
+        )
         .options(
             selectinload(Title.translations.and_(
                 TitleTranslation.iso_639_1.in_(locale_ctx.iso_639_1_list)
             )),
         )
-        .where(TitleTranslation.name.ilike(f"%{query}%"))
+        .where(
+            TitleUserDetails.in_library.is_(True),
+            word_sim > 0.3
+        )
+        .order_by(word_sim.desc())
         .limit(5)
     )
 
@@ -523,7 +535,7 @@ async def get_title_search_suggestions(
         )
 
         if not title_data.get("name"):
-            title_data["name"] = title.original_title
+            title_data["name"] = title.name_original
 
         suggestions.append(TitleMinimalOut(**title_data))
 

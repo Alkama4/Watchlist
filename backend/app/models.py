@@ -1,5 +1,5 @@
 import enum
-from sqlalchemy import CheckConstraint, Column, Float, Integer, String, DECIMAL, BigInteger, Date, Text, Boolean, Enum, ForeignKey, UniqueConstraint, DateTime
+from sqlalchemy import CheckConstraint, Column, Float, Integer, String, DECIMAL, BigInteger, Date, Text, Boolean, Enum, ForeignKey, UniqueConstraint, DateTime, Index
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -224,6 +224,15 @@ class TitleTranslation(Base):
     default_poster = relationship("Image", foreign_keys=[default_poster_image_path], viewonly=True)
     default_backdrop = relationship("Image", foreign_keys=[default_backdrop_image_path], viewonly=True)
     default_logo = relationship("Image", foreign_keys=[default_logo_image_path], viewonly=True)
+
+    __table_args__ = (
+        Index(
+            "idx_title_translations_name_trgm",
+            "name",
+            postgresql_using="gin",
+            postgresql_ops={"name": "gin_trgm_ops"},
+        ),
+    )
 
 
 class SeasonTranslation(Base):
