@@ -352,7 +352,7 @@ const kebabOptions = computed(() => {
                         <router-link
                             v-for="(genre, index) in titleDetails?.genres"
                             :key="genre.tmdb_genre_id"
-                            :to="`/search?genres_inc=${genre.tmdb_genre_id}`"
+                            :to="`/library?genres_inc=${genre.tmdb_genre_id}`"
                             class="btn btn-pill no-deco"
                         >
                             {{ genre?.genre_name }}
