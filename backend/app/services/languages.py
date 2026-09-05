@@ -151,4 +151,7 @@ def fill_translated_fields_dynamically(target_dict: dict, translations: list, pr
             if (current_val is None or (isinstance(current_val, str) and not current_val.strip())):
                 if val is not None and (not isinstance(val, str) or val.strip()):
                     target_dict[field] = val
+
     
+def get_iso_639_1_from_locale(locale_str: str) -> str:
+    return locale_str.split("-")[0].lower() if locale_str else ""

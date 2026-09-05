@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Type
 from app.config import DEFAULT_MAX_QUERY_LIMIT
 from app.settings.config import DEFAULT_SETTINGS
-from app.services.languages import LanguageContext, fill_translated_fields_dynamically, get_user_language_context
+from app.services.languages import LanguageContext, fill_translated_fields_dynamically, get_iso_639_1_from_locale, get_user_language_context
 from app.enums import SortBy, SortDirection
 from app.models import (
     Title,
@@ -40,19 +40,17 @@ def _base_title_query(user_id: int, title_schema, locale_ctx: LanguageContext):
             and_(
                 TitleUserDetails.title_id == Title.title_id,
                 TitleUserDetails.user_id == user_id,
-            )
+            ),
         )
         .options(
-            selectinload(Title.translations.and_(
-                TitleTranslation.iso_639_1.in_(locale_ctx.iso_639_1_list)
-            )),
+            selectinload(Title.translations),
         )
     )
 
     if title_schema is TitleHeroOut:
         stmt = stmt.options(
             selectinload(Title.age_ratings),
-            selectinload(Title.genres).selectinload(TitleGenre.genre)
+            selectinload(Title.genres).selectinload(TitleGenre.genre),
         )
 
     return stmt
@@ -397,7 +395,7 @@ def _build_title_list_out(
     rows, total, page, size,
     title_schema: Type[TitleCardOut | TitleHeroOut],
     user_title_details_schema: Type[TitleCardUserDetailsOut | TitleHeroUserDetailsOut],
-    locale_ctx
+    locale_ctx: LanguageContext
 ) -> TitleListOut:
     titles = []
 
@@ -408,18 +406,25 @@ def _build_title_list_out(
         episode_count = row["show_episode_count"]
         sim_score = row.get("similarity_score")
 
-        # Base data from Title
+        # Use the custom per title local if exists. Use global preferences as backup.
+        custom_locale = user_details.chosen_locale if user_details else None
+        if custom_locale:
+            custom_iso = get_iso_639_1_from_locale(custom_locale)
+            effective_iso_list = [custom_iso] + [iso for iso in locale_ctx.iso_639_1_list if iso != custom_iso]
+        else:
+            effective_iso_list = locale_ctx.iso_639_1_list
+
         title_data = {
             f: getattr(title, f)
             for f in title_schema.model_fields
             if hasattr(title, f) and f not in {"genres", "user_details"}
         }
 
-        # Apply Dynamic Field-Level Fallback (using the new iso_639_1_list)
+        # Dynamically populate translated fields using title-specific preference
         fill_translated_fields_dynamically(
             title_data, 
             title.translations, 
-            locale_ctx.iso_639_1_list, 
+            effective_iso_list, 
             TitleTranslation
         )
 
