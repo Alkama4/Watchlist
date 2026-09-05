@@ -135,7 +135,7 @@ const detailsStyle = computed(() => ({
                         @click.prevent
                     >
                         <LoadingButton
-                            class="btn-even-padding inner-action add-button"
+                            class="inner-action add-button"
                             :class="{'btn-positive': title?.user_details?.watch_count}"
                             :loading="waitingFor[`titleWcAdd_${title?.title_id}`]"
                             @click.prevent="adjustWatchCount.title.add(title, waitingFor)"
@@ -147,7 +147,7 @@ const detailsStyle = computed(() => ({
                         </LoadingButton>
 
                         <LoadingButton
-                            class="btn-even-padding inner-action"
+                            class="inner-action"
                             :loading="waitingFor[`titleWcSub_${title?.title_id}`]"
                             @click.prevent="adjustWatchCount.title.subtract(title, waitingFor)"
                         >
@@ -161,7 +161,7 @@ const detailsStyle = computed(() => ({
                                 'active': title?.user_details?.is_favourite,
                                 'btn-favourite': title?.user_details?.is_favourite
                             }"
-                            class="btn-even-padding favourite"
+                            class="favourite"
                             :loading="waitingFor?.favourite"
                             @click.prevent="toggleFavourite(title, waitingFor)" 
                         >
@@ -175,7 +175,7 @@ const detailsStyle = computed(() => ({
                                 'active': title?.user_details?.in_watchlist,
                                 'btn-accent': title?.user_details?.in_watchlist
                             }"
-                            class="btn-even-padding watchlist"
+                            class="watchlist"
                             :loading="waitingFor?.watchlist"
                             @click.prevent="toggleWatchlist(title, waitingFor)" 
                         >
@@ -307,6 +307,7 @@ img.logo {
 
             button {
                 border-radius: 100px;
+                padding: var(--spacing-sm);
             }
 
             .watch-count-buttons {

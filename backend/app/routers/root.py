@@ -41,10 +41,10 @@ async def get_home_overview(
     hero_cards_options = {
         "header": "Latest titles",
         "filters": {
-            "sort_by": "release_date",
-            "sort_direction": "desc",
+            "sort_by": "random",
             "is_released": True,
-            "page_size": 5
+            "watch_status": "not_watched",
+            "page_size": 5,
         }
     }
     hero_cards = await run_title_search(
@@ -66,16 +66,6 @@ async def get_home_overview(
                 "title_type": "tv",
                 "in_watchlist": True,
                 "sort_by": "last_viewed_at",
-                "sort_direction": "desc",
-                "page_size": 25
-            }
-        },
-        {
-            "header": "Random picks",
-            "filters": {
-                "is_released": True,
-                "watch_status": "not_watched",
-                "sort_by": "random",
                 "sort_direction": "desc",
                 "page_size": 25
             }
@@ -139,6 +129,16 @@ async def get_home_overview(
                 "watch_status": "not_watched",
                 "min_tmdb_rating": 8,
                 "sort_by": "popularity",
+                "sort_direction": "desc",
+                "page_size": 25
+            }
+        },
+        {
+            "header": "Random picks",
+            "filters": {
+                "is_released": True,
+                "watch_status": "not_watched",
+                "sort_by": "random",
                 "sort_direction": "desc",
                 "page_size": 25
             }
