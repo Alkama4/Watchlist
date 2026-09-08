@@ -37,13 +37,13 @@ const jellyfinLink = computed(() => {
 
 <template>
     <div class="external-resources">
-        <h3 class="mobile-only">External Resources</h3>
-        <h4 class="desktop-only">External Resources</h4>
+        <h3 class="mobile-only">External Links</h3>
+        <h4 class="desktop-only">External Links</h4>
         <div class="links-wrapper">
             <a
                 :href="tmdbBaseUrl"
                 target="_blank"
-                class="btn btn-even-padding btn-text"
+                class="btn btn-even-padding btn-text wide-icon"
                 title="View on TMDB"
             >
                 <Tmdb class="four-letter"/>
@@ -52,7 +52,7 @@ const jellyfinLink = computed(() => {
                 v-if="titleDetails?.imdb_id"
                 :href="`https://www.imdb.com/title/${titleDetails?.imdb_id}`"
                 target="_blank"
-                class="btn btn-even-padding btn-text"
+                class="btn btn-even-padding btn-text wide-icon"
                 title="View on IMDB"
             >
                 <Imdb class="four-letter"/>
@@ -101,6 +101,10 @@ const jellyfinLink = computed(() => {
         display: flex;
         align-items: center;
         text-decoration: none;
+        
+        &.wide-icon {
+            padding-inline: var(--spacing-sm);
+        }
 
         svg {
             width: 27.65px;
@@ -111,5 +115,6 @@ const jellyfinLink = computed(() => {
             height: auto;
         }
     }
+    
 }
 </style>

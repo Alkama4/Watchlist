@@ -47,7 +47,8 @@ button:disabled, .btn:disabled {
 }
 
 .btn-even-padding {
-    padding-inline: var(--spacing-sm-md);
+    /* padding-inline: var(--spacing-sm-md); */
+    padding-inline: calc(var(--spacing-sm) * 1.25);
 }
 
 
