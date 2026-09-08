@@ -60,13 +60,11 @@ onMounted(async () => {
         >
 
         <div class="collection-details layout-contained">
-            <div>
-                <img
-                    :src="getTitleImageUrl(collectionDetails, '800', 'poster')"
-                    alt=""
-                    class="poster"
-                >
-            </div>
+            <img
+                :src="getTitleImageUrl(collectionDetails, '800', 'poster')"
+                alt=""
+                class="poster"
+            >
             <div class="collection-info">
                 <div class="collection-name">
                     <h1>{{ collectionDetails?.name }}</h1>
@@ -90,7 +88,7 @@ onMounted(async () => {
                     <router-link
                         v-for="genre in combinedGenres"
                         :key="genre.tmdb_genre_id"
-                        :to="`/search?genres_inc=${genre.tmdb_genre_id}`"
+                        :to="`/library?genres_inc=${genre.tmdb_genre_id}`"
                         class="btn btn-pill no-deco"
                     >
                         {{ genre?.genre_name }}
@@ -197,6 +195,37 @@ img.backdrop {
 
     .title-card {
         width: unset;
+    }
+}
+
+@media(max-width: 768px) {
+    img.backdrop {
+        height: 100vh;
+    }
+
+    
+    .collection-details {
+        flex-direction: column;
+        align-items: center;
+        height: unset;
+        margin-bottom: unset;
+
+        img.poster {
+            width: 66%;
+            max-width: min(calc(50vh / 3 * 2), 300px);
+        }
+        
+        .collection-info {
+            align-items: center;
+
+            h1 {
+                text-align: center;
+            }
+
+            p {
+                text-align: justify;
+            }
+        }
     }
 }
 
