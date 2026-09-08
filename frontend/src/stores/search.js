@@ -95,6 +95,7 @@ export const useSearchStore = defineStore('search', () => {
         if (isSmart && SMART_COLLECTIONS[collectionId]) {
             const config = SMART_COLLECTIONS[collectionId];
             headerLabel.value = config.header;
+            document.title = `${config.header} - Watchlist`
             baseParams = { ...baseParams, ...config.params };
         } else if (route.name === 'Library') {
             headerLabel.value = 'Library';

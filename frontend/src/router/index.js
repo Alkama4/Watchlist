@@ -12,71 +12,73 @@ const routes = [
         path: '/search',
         name: 'Search',
         component: () => import('@/views/SearchPage.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, title: 'Search' }
     },
     {
         path: '/library',
         name: 'Library',
         component: () => import('@/views/SearchPage.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, title: 'Library' }
     },
     {
         path: '/smart_collection/:smart_collection_id',
         name: 'Smart Collection',
         component: () => import('@/views/SearchPage.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, title: 'Smart Collection' }
     },
     {
         path: '/collections',
         name: 'Collections',
         component: () => import('@/views/CollectionsPage.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, title: 'Collections' }
     },
     {
         path: `/title/:title_id`,
         name: 'Title details',
         component: () => import('@/views/TitleController.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, title: 'Title Details' }
     },
     {
         path: `/collection/:tmdb_collection_id`,
         name: 'Collection details',
         component: () => import('@/views/CollectionDetailsPage.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, title: 'Collection Details' }
     },
     {
         path: '/video_assets',
         name: 'Video Assets',
         component: () => import('@/views/VideoAssetsPage.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, title: 'Video Assets' }
     },
     {
         path: '/account',
         name: 'Account',
         component: () => import('@/views/AccountPage.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, title: 'Account' }
     },
     {
         path: '/login',
         name: 'Login',
         component: () => import('@/views/LogInPage.vue'),
-        meta: { redirectAuthToAccount: true }
+        meta: { redirectAuthToAccount: true, title: 'Login' }
     },
     {
         path: '/register',
         name: 'Register',
         component: () => import('@/views/RegisterPage.vue'),
-        meta: { redirectAuthToAccount: true }
+        meta: { redirectAuthToAccount: true, title: 'Register' }
     },
     {
         path: '/debug',
         name: 'Debug',
-        component: () => import('@/views/DebugPage.vue')
+        component: () => import('@/views/DebugPage.vue'),
+        meta: { title: 'Debug' }
     },
     {
         path: '/:pathMatch(.*)*',
         name: '404',
-        component: () => import('@/views/NotFoundPage.vue')
+        component: () => import('@/views/NotFoundPage.vue'),
+        meta: { title: 'Not Found' }
     }
 ]
 
@@ -113,6 +115,10 @@ router.beforeEach(async (to, from, next) => {
     }
 
     next();
+});
+
+router.afterEach((to) => {
+    document.title = to.meta.title ? `${to.meta.title} - Watchlist` : 'Watchlist';
 });
 
 export default router

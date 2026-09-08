@@ -12,6 +12,13 @@ const route = useRoute();
 async function fetchCollectionDetails() {
     const tmdb_collection_id = route.params.tmdb_collection_id;
     collectionDetails.value = await fastApi.collections.tmdb.getById(tmdb_collection_id);
+
+    const documentTitle =
+        collectionDetails.value.name ||
+        collectionDetails.value.name_original ||
+        'Collection Details';
+        
+    document.title = `${documentTitle} - Watchlist`;
 }
 
 const firstYear = computed(() => {

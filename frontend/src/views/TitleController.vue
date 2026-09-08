@@ -23,6 +23,13 @@ async function fetchTitleDetails() {
     const title_id = route.params.title_id;
     titleDetails.value = await fastApi.titles.getById(title_id)
 
+    const documentTitle =
+        titleDetails.value.name ||
+        titleDetails.value.name_original ||
+        'Title Details';
+
+    document.title = `${documentTitle} - Watchlist`;
+
     // Check if we need to fetch the config
     await fetchJellyfinConfig();
 }
@@ -40,6 +47,7 @@ async function loadTitleData() {
     } catch (e) {
         console.error('Failed to fetch title', e);
         titleDetails.value = false; // signal invalid title
+        document.title = 'Not Found - Watchlist'
     } finally {
         pageLoading.value = false;
     }
