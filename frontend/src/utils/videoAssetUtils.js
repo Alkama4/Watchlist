@@ -22,7 +22,7 @@ export function buildVideoAssetUrl(video, titleDetails, type = "base", seasonNum
     if (!titleName) {
         // Fallback to file name
         label = video.file_name.split(".")[0];
-    } else if (episodeNum !== undefined) {
+    } else if (episodeNum) {
         // Episodes
         label = `${titleName} - S${seasonNum}E${episodeNum}`;
     } else if (video?.video_type === "movie") {
