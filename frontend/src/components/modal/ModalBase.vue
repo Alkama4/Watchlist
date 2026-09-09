@@ -11,8 +11,13 @@ defineProps({
         type: String,
         required: false
     },
-    // Limits the cards width so that it remains small.
+    // Limits the cards width so that it remains small
     smallCard: {
+        type: Boolean,
+        default: false,
+    },
+    // Limits the cards width so that it remains at the normal content limits
+    regularCard: {
         type: Boolean,
         default: false,
     },
@@ -63,7 +68,11 @@ onUnmounted(() => {
             >
                 <div 
                     class="card" 
-                    :class="{ 'small': smallCard, 'full-width': fullWidth }"
+                    :class="{
+                        'small': smallCard,
+                        'regular': regularCard,
+                        'full-width': fullWidth
+                    }"
                     @click.stop
                 >
                     <div class="header-row">
@@ -125,7 +134,10 @@ onUnmounted(() => {
     flex-direction: column;
 }
 .card.small {
-    max-width: 600px;
+    max-width: min(600px, 100%);
+}
+.card.regular {
+    max-width: min(1600px, 100%);
 }
 .card.full-width {
     width: 100%;

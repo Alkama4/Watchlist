@@ -142,7 +142,7 @@ async function clearUserChoice() {
 </script>
 
 <template>
-    <ModalBase :header="titleId ? 'Title Images' : 'Season Images'" ref="modalRef">
+    <ModalBase :header="titleId ? 'Title Images' : 'Season Images'" ref="modalRef" regularCard>
         <div class="modal-images" :class="activeType">
             <details>
                 <summary>How are images selected?</summary>
