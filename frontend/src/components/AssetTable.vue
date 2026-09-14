@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive } from 'vue';
+import { computed, ref, reactive } from 'vue';
 import { ChevronDown, ChevronRight, Eye, Film, Tv } from '@boxicons/vue';
 import { fastApi } from '@/utils/fastApi';
 import AssetInspector from './AssetInspector.vue';
@@ -10,17 +10,35 @@ const props = defineProps({
   loading: { type: Boolean, default: false }
 });
 
+const emit = defineEmits(['page-change', 'refresh']);
+
 const expandedRows = ref(new Set());
 const detailsCache = reactive({});
 const loadingDetails = reactive({});
+const pageNumbers = computed(() => {
+  const totalPages = props.pagination?.total_pages || 0;
+  const currentPage = props.pagination?.page || 1;
+  const start = Math.max(1, Math.min(currentPage - 2, totalPages - 4));
+  const end = Math.min(totalPages, start + 4);
+  return Array.from({ length: Math.max(0, end - start + 1) }, (_, index) => start + index);
+});
+
+function changePage(page) {
+  const totalPages = props.pagination?.total_pages || 1;
+  if (page >= 1 && page <= totalPages && page !== props.pagination?.page) {
+    emit('page-change', page);
+  }
+}
 
 async function toggleRow(folderId) {
   if (expandedRows.value.has(folderId)) {
-    expandedRows.value.delete(folderId);
+    const nextRows = new Set(expandedRows.value);
+    nextRows.delete(folderId);
+    expandedRows.value = nextRows;
     return;
   }
 
-  expandedRows.value.add(folderId);
+  expandedRows.value = new Set([...expandedRows.value, folderId]);
 
   if (!detailsCache[folderId]) {
     loadingDetails[folderId] = true;
@@ -121,7 +139,119 @@ async function toggleRow(folderId) {
             </tr>
           </template>
         </template>
+
+        <tr v-else>
+          <td colspan="8" class="empty-state">No assets match the current filters.</td>
+        </tr>
       </tbody>
     </table>
+
+    <footer v-if="pagination && pagination.total_items > 0" class="table-footer">
+      <span class="result-count">
+        Showing {{ ((pagination.page - 1) * pagination.page_size) + 1 }}-{{ Math.min(pagination.page * pagination.page_size, pagination.total_items) }} of {{ pagination.total_items }} folders
+      </span>
+      <nav class="pagination" aria-label="Asset pages">
+        <button class="btn btn-even-padding page-button" :disabled="pagination.page <= 1" aria-label="Previous page" @click="changePage(pagination.page - 1)">
+          <ChevronRight class="previous-icon" size="sm" />
+        </button>
+        <button
+          v-for="page in pageNumbers"
+          :key="page"
+          class="btn btn-even-padding page-button"
+          :class="{ 'btn-primary': page === pagination.page }"
+          :aria-current="page === pagination.page ? 'page' : undefined"
+          @click="changePage(page)"
+        >
+          {{ page }}
+        </button>
+        <button class="btn btn-even-padding page-button" :disabled="pagination.page >= pagination.total_pages" aria-label="Next page" @click="changePage(pagination.page + 1)">
+          <ChevronRight size="sm" />
+        </button>
+      </nav>
+    </footer>
   </div>
 </template>
+
+<style scoped>
+.table-card {
+  overflow: hidden;
+}
+.asset-table {
+  width: 100%;
+}
+.master-row {
+  cursor: pointer;
+}
+.expand-cell {
+  width: 40px;
+  text-align: center;
+}
+.folder-name {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.linked-title {
+  margin-top: 3px;
+}
+.completion-bar-wrapper {
+  display: flex;
+  align-items: center;
+  min-width: 120px;
+  gap: var(--spacing-sm);
+}
+.progress-bar {
+  width: 74px;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+}
+.progress-bar .fill {
+  height: 100%;
+  border-radius: inherit;
+  transition: width 300ms ease;
+}
+.quality-tag { white-space: nowrap; }
+.watch-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.inspector-row td { padding: 0; }
+.inspector-loading {
+  min-height: 150px;
+  padding: var(--spacing-lg);
+  text-align: center;
+}
+.skeleton-row td { padding: var(--spacing-sm-md) var(--spacing-md); }
+.skeleton-row .loading-wave {
+  height: 42px;
+  border-radius: var(--border-radius-sm);
+}
+.empty-state {
+  padding: var(--spacing-lg) !important;
+  text-align: center;
+}
+.table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm-md) var(--spacing-md);
+}
+.result-count { font-size: var(--fs-neg-2); }
+.pagination { display: flex; gap: var(--spacing-xs); }
+.page-button {
+  min-width: 36px;
+}
+.previous-icon { transform: rotate(180deg); }
+@media (max-width: 900px) {
+  .table-card { overflow-x: auto; }
+  .asset-table { min-width: 820px; }
+  .table-footer { min-width: 820px; }
+}
+@media (max-width: 600px) {
+  .table-footer { align-items: flex-start; flex-direction: column; }
+}
+</style>

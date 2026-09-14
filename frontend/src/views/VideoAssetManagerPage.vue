@@ -13,7 +13,7 @@ const filters = reactive({
   preset: 'all', // 'all' | 'needs_action' | 'incomplete_tv' | 'multi_version' | 'watchlist_deficit'
   search: '',
   title_type: null,
-  sort_by: 'folder_name',
+  sort_by: 'size',
   sort_direction: 'asc',
   page: 1,
   page_size: 20
@@ -70,3 +70,15 @@ onMounted(fetchDashboard);
     />
   </div>
 </template>
+
+<style scoped>
+.video-assets-manager {
+  padding-bottom: var(--spacing-lg-xl);
+}
+@media (max-width: 760px) {
+  .video-assets-manager {
+    padding-right: var(--spacing-md);
+    padding-left: var(--spacing-md);
+  }
+}
+</style>

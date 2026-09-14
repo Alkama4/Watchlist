@@ -3,10 +3,11 @@ import asyncio
 import aiofiles
 import httpx
 import shutil
+import math
 from PIL import Image
 from typing import List, Optional, Dict
 from pydantic import Field
-from fastapi import APIRouter, HTTPException, Query, Request, Response, Depends
+from fastapi import APIRouter, HTTPException, Query, Request, Response, Depends, status
 from fastapi.responses import FileResponse, StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, or_, and_, distinct, Float
@@ -14,18 +15,19 @@ from sqlalchemy.orm import selectinload
 from app.services.video_assets import sync_all_video_assets
 from app.services.languages import LanguageContext, get_user_language_context, pick_translation
 from app.dependencies import get_db
-from app.models import Episode, Season, Title, TitleFolder, User, VideoAsset, TitleUserDetails
+from app.models import Episode, EpisodeUserDetails, Season, Title, TitleFolder, User, VideoAsset, TitleUserDetails
 from app.enums import TitleType, VideoType, SortBy, SortDirection
-from app.schemas import EpisodeAuditDetail, EpisodeMinimalOut, FolderRequest, MovieVariantDetail, QualitySummary, TitleAuditDetailOut, TitleFolderCountsOut, TitleMinimalOut, VideoAssetExpandedOut, TitleFoldersResponseOut, TitleAuditOut, VideoAssetOut
+from app.schemas import (
+    AssetDashboardResponse, AssetSummaryStats, AssetItemOut, TitleMinimalOut,
+    CompletionStats, MetricStats, QualitySummary, EngagementStats, PaginationOut,
+    AssetDetailResponse, MovieVariantAsset, SeasonDetailOut, EpisodeDetailOut,
+    VideoAssetFileOut, MediaSpecsOut, UserWatchInfo, UnmatchedFileOut,
+    EpisodeAuditDetail, EpisodeMinimalOut, FolderRequest, MovieVariantDetail,
+    TitleAuditDetailOut, TitleFolderCountsOut, VideoAssetExpandedOut,
+    TitleFoldersResponseOut, TitleAuditOut, VideoAssetOut,
+)
 from app.routers.auth import get_current_user
 from app.config import DEFAULT_MAX_QUERY_LIMIT
-
-
-from fastapi import APIRouter, Depends, Query, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, distinct, or_, and_, Float
-from sqlalchemy.orm import selectinload
-
 router = APIRouter()
 
 TMDB_IMAGE_BASE_PATH = "https://image.tmdb.org/t/p"
@@ -283,7 +285,6 @@ async def get_list_of_video_asset_title_folders(
 ):
     locale_ctx = await get_user_language_context(db=db, user_id=user.user_id) # <-- ADDED
 
-    # Subquery remains exactly the same
     episodes_per_title = (
         select(
             Episode.title_id,
@@ -303,28 +304,21 @@ async def get_list_of_video_asset_title_folders(
             func.count(VideoAsset.video_asset_id).filter(VideoAsset.video_type == VideoType.featurette).label("featurette_count"),
             func.count(VideoAsset.video_asset_id).filter(VideoAsset.video_type == VideoType.episode).label("episodes_count"),
             func.count(distinct(VideoAsset.episode_id)).label("unique_episodes_linked_count"),
-            
             func.count(VideoAsset.video_asset_id).filter(
                 or_(
                     TitleFolder.title_id.is_(None),
                     and_(
                         VideoAsset.video_type == VideoType.episode,
-                        VideoAsset.episode_id.is_(None)
-                    )
+                        VideoAsset.episode_id.is_(None),
+                    ),
                 )
             ).label("unlinked_count"),
-            
-            func.coalesce(episodes_per_title.c.total_episode_meta_count, 0).label("title_episode_count")
+            func.coalesce(episodes_per_title.c.total_episode_meta_count, 0).label("title_episode_count"),
         )
         .outerjoin(VideoAsset, TitleFolder.title_folder_id == VideoAsset.title_folder_id)
         .outerjoin(episodes_per_title, TitleFolder.title_id == episodes_per_title.c.title_id)
-        .options(
-            selectinload(TitleFolder.title).selectinload(Title.translations)
-        )
-        .group_by(
-            TitleFolder.title_folder_id,
-            episodes_per_title.c.total_episode_meta_count
-        )
+        .options(selectinload(TitleFolder.title).selectinload(Title.translations))
+        .group_by(TitleFolder.title_folder_id, episodes_per_title.c.total_episode_meta_count)
         .order_by(TitleFolder.title_id.is_(None).asc(), TitleFolder.title_folder_name.asc())
     )
 
@@ -575,16 +569,12 @@ async def get_video_assets_audit(
             episodes_per_title,
             TitleFolder.title_id == episodes_per_title.c.title_id,
         )
-        .options(
-            selectinload(TitleFolder.title).selectinload(Title.translations)
-        )
+        .options(selectinload(TitleFolder.title).selectinload(Title.translations))
         .group_by(
             TitleFolder.title_folder_id,
             episodes_per_title.c.total_episode_meta_count,
         )
     )
-
-    # 3. Apply Filters
     if min_size_gb is not None:
         stmt = stmt.having(
             func.sum(VideoAsset.filesize_bytes) >= (min_size_gb * (1024**3))
@@ -815,30 +805,11 @@ async def get_video_asset_audit_details(
 
 
 
-import math
-from typing import List, Optional
-from fastapi import APIRouter, Depends, Query, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, or_, and_, distinct, case
-from sqlalchemy.orm import selectinload, joinedload
-
-# Import your models, database session, and helper functions
-from app.models import (
-    TitleFolder, VideoAsset, Title, Episode, Season,
-    TitleUserDetails, EpisodeUserDetails, VideoType, TitleType
-)
-from app.schemas import (
-    AssetDashboardResponse, AssetSummaryStats, AssetItemOut, TitleMinimalOut,
-    CompletionStats, MetricStats, QualitySummary, EngagementStats, PaginationOut,
-    AssetDetailResponse, MovieVariantAsset, SeasonDetailOut, EpisodeDetailOut,
-    VideoAssetFileOut, MediaSpecsOut, UserWatchInfo, UnmatchedFileOut
-)
-
 @router.get("/dashboard", response_model=AssetDashboardResponse)
 async def get_asset_dashboard(
     preset: str = Query("all", regex="^(all|needs_action|incomplete_tv|multi_version|watchlist_deficit)$"),
     search: Optional[str] = None,
-    title_type: Optional[str] = Query(None, regex="^(movie|tv)$"),
+    title_type: Optional[str] = Query(None, regex="^(movie|tv|unknown)$"),
     sort_by: str = Query("folder_name", regex="^(folder_name|size|completion)$"),
     sort_direction: str = Query("asc", regex="^(asc|desc)$"),
     page: int = Query(1, ge=1),
@@ -901,6 +872,24 @@ async def get_asset_dashboard(
         .subquery()
     )
 
+    duplicate_groups = (
+        select(
+            VideoAsset.title_folder_id,
+            VideoAsset.episode_id,
+            func.count(VideoAsset.video_asset_id).label("duplicate_count"),
+        )
+        .group_by(VideoAsset.title_folder_id, VideoAsset.episode_id)
+        .subquery()
+    )
+    max_versions = (
+        select(
+            duplicate_groups.c.title_folder_id,
+            func.max(duplicate_groups.c.duplicate_count).label("max_version_count"),
+        )
+        .group_by(duplicate_groups.c.title_folder_id)
+        .subquery()
+    )
+
     stmt = (
         select(
             TitleFolder,
@@ -914,12 +903,14 @@ async def get_asset_dashboard(
             func.max(VideoAsset.hdr_type).label("primary_hdr"),
             func.max(VideoAsset.codec).label("primary_codec"),
             func.coalesce(episodes_per_title.c.expected_episodes, 0).label("expected_episodes"),
+            func.coalesce(max_versions.c.max_version_count, 0).label("max_version_count"),
             TitleUserDetails.in_watchlist.label("user_in_watchlist"),
             func.count(distinct(EpisodeUserDetails.user_id)).label("active_watchers_count")
         )
         .outerjoin(Title, TitleFolder.title_id == Title.title_id)
         .outerjoin(VideoAsset, TitleFolder.title_folder_id == VideoAsset.title_folder_id)
         .outerjoin(episodes_per_title, TitleFolder.title_id == episodes_per_title.c.title_id)
+        .outerjoin(max_versions, TitleFolder.title_folder_id == max_versions.c.title_folder_id)
         .outerjoin(
             TitleUserDetails, 
             and_(TitleFolder.title_id == TitleUserDetails.title_id, TitleUserDetails.user_id == user.user_id)
@@ -927,7 +918,13 @@ async def get_asset_dashboard(
         .outerjoin(Episode, VideoAsset.episode_id == Episode.episode_id)
         .outerjoin(EpisodeUserDetails, Episode.episode_id == EpisodeUserDetails.episode_id)
         .options(selectinload(TitleFolder.title).selectinload(Title.translations))
-        .group_by(TitleFolder.title_folder_id, Title.title_id, episodes_per_title.c.expected_episodes, TitleUserDetails.in_watchlist)
+        .group_by(
+            TitleFolder.title_folder_id,
+            Title.title_id,
+            episodes_per_title.c.expected_episodes,
+            max_versions.c.max_version_count,
+            TitleUserDetails.in_watchlist,
+        )
     )
 
     # 3. Apply Filters & Sorting
@@ -938,23 +935,45 @@ async def get_asset_dashboard(
         ))
 
     if title_type:
-        stmt = stmt.where(Title.title_type == title_type)
+        if title_type == "unknown":
+            stmt = stmt.where(Title.title_type.is_(None))
+        else:
+            stmt = stmt.where(Title.title_type == title_type)
 
     if preset == "needs_action":
-        stmt = stmt.where(or_(TitleFolder.title_id.is_(None), VideoAsset.episode_id.is_(None)))
+        stmt = stmt.where(or_(
+            TitleFolder.title_id.is_(None),
+            and_(VideoAsset.video_type == VideoType.episode, VideoAsset.episode_id.is_(None)),
+        ))
     elif preset == "incomplete_tv":
-        stmt = stmt.where(
-            Title.title_type == TitleType.tv,
-            func.count(distinct(VideoAsset.episode_id)) < episodes_per_title.c.expected_episodes
+        stmt = stmt.where(Title.title_type == TitleType.tv).having(
+            func.count(distinct(VideoAsset.episode_id)) < func.coalesce(
+                episodes_per_title.c.expected_episodes, 0
+            )
         )
     elif preset == "multi_version":
-        stmt = stmt.having(func.count(VideoAsset.video_asset_id) > func.count(distinct(VideoAsset.episode_id)))
+        stmt = stmt.having(func.coalesce(max_versions.c.max_version_count, 0) > 1)
     elif preset == "watchlist_deficit":
-        stmt = stmt.where(TitleUserDetails.in_watchlist.is_(True))
+        stmt = stmt.where(TitleUserDetails.in_watchlist.is_(True)).having(or_(
+            and_(
+                Title.title_type == TitleType.tv,
+                func.count(distinct(VideoAsset.episode_id)) < func.coalesce(
+                    episodes_per_title.c.expected_episodes, 0
+                ),
+            ),
+            and_(
+                Title.title_type == TitleType.movie,
+                func.count(VideoAsset.video_asset_id) == 0,
+            ),
+        ))
 
     # Order Execution
     if sort_by == "size":
         order_col = func.sum(VideoAsset.filesize_bytes)
+    elif sort_by == "completion":
+        order_col = func.count(distinct(VideoAsset.episode_id)) / func.nullif(
+            episodes_per_title.c.expected_episodes, 0
+        )
     else:
         order_col = TitleFolder.title_folder_name
 
@@ -1016,7 +1035,7 @@ async def get_asset_dashboard(
             ),
             metrics=MetricStats(
                 file_count=row.file_count,
-                version_count=row.file_count if (not title or title.title_type == TitleType.movie) else (row.file_count - row.unique_linked_episodes + 1),
+                version_count=row.max_version_count,
                 total_size_gb=round(row.total_bytes / (1024**3), 2)
             ),
             quality_summary=QualitySummary(
@@ -1074,15 +1093,15 @@ async def get_folder_details(
     seasons_out = []
     unmatched_files = []
 
-    # 1. Inspect Movie Folders
-    if title_type == "movie":
+    # 1. Inspect movie and unlinked folders as a flat file-variant list.
+    if title_type in ("movie", "unlinked"):
         for asset in folder.video_assets:
             movie_variants.append(MovieVariantAsset(
                 video_asset_id=asset.video_asset_id,
                 file_name=asset.file_name,
                 file_path=asset.file_path,
                 file_size_gb=round((asset.filesize_bytes or 0) / (1024**3), 2),
-                variant_type=asset.video_type.value.capitalize(),
+                variant_type=(asset.video_type.value if asset.video_type else "unknown").capitalize(),
                 is_default=(asset.video_type == VideoType.movie),
                 specs=MediaSpecsOut(
                     resolution=asset.resolution or "Unknown",
@@ -1155,7 +1174,7 @@ async def get_folder_details(
         folder_name=folder.title_folder_name,
         folder_path=folder.title_folder_path,
         title_type=title_type,
-        movie_variants=movie_variants if title_type == "movie" else None,
+        movie_variants=movie_variants if title_type in ("movie", "unlinked") else None,
         seasons=seasons_out if title_type == "tv" else None,
         unmatched_files=unmatched_files
     )

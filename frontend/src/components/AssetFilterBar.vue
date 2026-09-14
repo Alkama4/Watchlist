@@ -1,11 +1,11 @@
 <script setup>
-import { Search, Filter, ArrowDownUp } from '@boxicons/vue';
+import { Search, ArrowDownUp } from '@boxicons/vue';
 
 const props = defineProps({
   preset: { type: String, default: 'all' },
   search: { type: String, default: '' },
   titleType: { type: String, default: null },
-  sortBy: { type: String, default: 'folder_name' },
+  sortBy: { type: String, default: 'size' },
   sortDirection: { type: String, default: 'asc' }
 });
 
@@ -32,8 +32,8 @@ const presets = [
       <button
         v-for="p in presets"
         :key="p.id"
-        class="pill-button"
-        :class="{ active: preset === p.id }"
+        class="btn btn-pill"
+        :class="{ 'btn-primary': preset === p.id }"
         @click="emit('update:preset', p.id)"
       >
         {{ p.label }}
@@ -51,14 +51,27 @@ const presets = [
         />
       </div>
 
-      <select :value="titleType" @change="emit('update:titleType', $event.target.value || null)">
-        <option :value="null">All Types</option>
-        <option value="movie">Movies</option>
-        <option value="tv">TV Shows</option>
-      </select>
+      <label>
+        Title type
+        <select :value="titleType" @change="emit('update:titleType', $event.target.value || null)">
+          <option value="">Any</option>
+          <option value="movie">Movies</option>
+          <option value="tv">TV Shows</option>
+          <option value="unknown">Unknown</option>
+        </select>
+      </label>
+
+      <label>
+        Sort by
+        <select :value="sortBy" @change="emit('update:sortBy', $event.target.value)">
+          <option value="folder_name">Folder name</option>
+          <option value="size">Storage size</option>
+          <option value="completion">Completion</option>
+        </select>
+      </label>
 
       <button
-        class="btn-icon"
+        class="btn btn-even-padding"
         :title="`Sort Direction: ${sortDirection}`"
         @click="emit('update:sortDirection', sortDirection === 'asc' ? 'desc' : 'asc')"
       >
@@ -67,3 +80,48 @@ const presets = [
     </div>
   </div>
 </template>
+
+<style scoped>
+.filter-bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  margin: var(--spacing-lg) 0 var(--spacing-md);
+}
+
+.preset-pills {
+  display: flex;
+  overflow-x: auto;
+  gap: var(--spacing-sm);
+  padding-bottom: 2px;
+}
+
+.filter-controls {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto auto auto;
+  align-items: end;
+  gap: var(--spacing-sm-md);
+}
+.filter-controls label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+.search-input {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+.search-input input {
+  flex: 1;
+  min-width: 0;
+}
+@media (max-width: 760px) {
+  .filter-controls { grid-template-columns: 1fr 1fr; }
+  .search-input { grid-column: 1 / -1; }
+}
+@media (max-width: 440px) {
+  .filter-controls { grid-template-columns: 1fr; }
+  .search-input { grid-column: auto; }
+}
+</style>
