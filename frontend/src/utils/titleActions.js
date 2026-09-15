@@ -45,26 +45,58 @@ async function _updateWatchCount(item, title, wait, key, api, delta) {
         const current = item.user_details?.watch_count || resolveSeasonWatchCount(item) || 0;
         const { watch_count: next } = await api(id, Math.max(0, current + delta));
 
-        // Update the item itself
-        if (!item.user_details) item.user_details = {};
-        item.user_details.watch_count = next;
+        const today = new Date().toISOString().slice(0, 10);
 
-        // Cascade changes down (Title -> Seasons -> Episodes)
+        // Update the item itself (not relevant for seasons since their count is always derived)
+        if (item.title_id || item.episode_id) {
+            if (!item.user_details) item.user_details = {};
+            item.user_details.watch_count = next;
+        }
+
+        // Update relevant episodes within a title or season.
+        // Season 0 (when not updated directly) and unreleased episodes are ignored.
         if (item.title_id) {
-            title.seasons?.forEach(s => s.episodes?.forEach(e => {
-                e.user_details = { ...e.user_details, watch_count: next };
-            }));
+            title.seasons?.forEach(s => {
+                if (s.season_number > 0) {
+                    s.episodes?.forEach(e => {
+                        if (e.air_date && e.air_date <= today) {
+                            e.user_details = {
+                                ...e.user_details,
+                                watch_count: next
+                            };
+                        }
+                    });
+                }
+            });
         } else if (item.season_id) {
             item.episodes?.forEach(e => {
-                e.user_details = { ...e.user_details, watch_count: next };
+                if (e.air_date && e.air_date <= today) {
+                    e.user_details = {
+                        ...e.user_details,
+                        watch_count: next
+                    };
+                }
             });
         }
 
-        // Sync changes up (Episode/Season -> Title)
+        // Keep a TV-shows watch count up to date
         if (!item.title_id && title?.seasons) {
-            const allEps = title.seasons.flatMap(s => s.episodes ?? []);
-            const minWatch = Math.min(...allEps.map(e => e.user_details?.watch_count ?? 0));
-            title.user_details = { ...title.user_details, watch_count: minWatch };
+            const allEps = title.seasons.flatMap(s =>
+                s.season_number > 0
+                    ? (s.episodes ?? []).filter(e =>
+                        e.air_date && e.air_date <= today
+                    )
+                    : []
+            );
+
+            const minWatch = allEps.length
+                ? Math.min(...allEps.map(e => e.user_details?.watch_count ?? 0))
+                : 0;
+
+            title.user_details = {
+                ...title.user_details,
+                watch_count: minWatch
+            };
         }
     } finally {
         wait[loader] = false;
