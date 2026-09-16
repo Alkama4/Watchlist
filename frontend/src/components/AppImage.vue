@@ -18,25 +18,25 @@ const onLoad = () => {
 
 <template>
     <div class="image-wrapper">
-        <div
-            v-if="loading"
-            class="loading-wave"
-        ></div>
-
-        <div
-            v-else-if="notFound"
-            class="not-found"
-        >
-            <Image pack="filled"/>
-        </div>
-
         <img
             v-bind="attrs"
-            v-show="!loading && !notFound"
+            v-show="!loading && !notFound && attrs?.src"
             :key="attrs?.src"
             @error="onError"
             @load="onLoad"
         >
+
+        <div
+            v-if="loading && attrs?.src"
+            class="loading-wave"
+        ></div>
+
+        <div
+            v-else-if="notFound || !attrs?.src"
+            class="not-found"
+        >
+            <Image pack="filled"/>
+        </div>
     </div>
 </template>
 
@@ -44,7 +44,6 @@ const onLoad = () => {
 .image-wrapper {
     position: relative;
     overflow: hidden;
-    /* background-color: var(--c-bg-backdrop); */
 }
 
 .image-wrapper > * {
