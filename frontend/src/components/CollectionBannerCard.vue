@@ -2,6 +2,7 @@
 import { getTitleImageUrl } from '@/utils/imagePath';
 import Tmdb from '@/assets/icons/tmdb.svg';
 import { numberFormatters, timeFormatters } from '@/utils/formatters';
+import AppImage from './AppImage.vue';
 
 defineProps({
     tmdbCollection: {
@@ -16,7 +17,7 @@ defineProps({
         :to="`/collection/${tmdbCollection?.tmdb_collection_id}`"
         class="collection-banner-card btn btn-even-padding no-deco"
     >
-        <img
+        <AppImage
             :src="getTitleImageUrl(tmdbCollection, 400, 'poster')"
             alt=""
             class="poster"
@@ -78,11 +79,12 @@ defineProps({
     transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
-img.poster {
+.poster {
     height: 144px;
     aspect-ratio: 2 / 3;
     object-fit: cover;
     flex-shrink: 0;
+    background-color: var(--c-bg-opaque-level-1);
 }
 
 .details {

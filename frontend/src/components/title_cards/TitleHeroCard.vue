@@ -6,6 +6,7 @@ import { computed, ref } from 'vue';
 import { adjustWatchCount, toggleFavourite, toggleWatchlist } from '@/utils/titleActions';
 import LoadingButton from '../LoadingButton.vue';
 import { Check, Clock, Heart, Minus } from '@boxicons/vue';
+import AppImage from '../AppImage.vue';
 
 const waitingFor = ref({
     backdrop: true,
@@ -69,17 +70,14 @@ const detailsStyle = computed(() => ({
         :to="`/title/${title.title_id}`"
         draggable="false"
     >
-        <div class="backdrop-wrapper" :class="{ 'loading-wave': waitingFor?.backdrop }">
-            <img
-                v-show="!waitingFor?.backdrop"
+        <div class="backdrop-wrapper">
+            <AppImage
                 :src="getTitleImageUrl(title, 'original', 'backdrop')"
                 :style="backdropStyle"
                 alt=""
                 class="backdrop"
                 draggable="false"
-                @load="waitingFor.backdrop = false"
-                @error="waitingFor.backdrop = false"
-            >
+            />
         </div>
 
         <img
@@ -90,7 +88,7 @@ const detailsStyle = computed(() => ({
             class="logo"
             draggable="false"
             @load="waitingFor.logo = false"
-            @error="waitingFor.logo = false"
+            @error="waitingFor.logo = true"
         >
         
         <div class="details-wrapper">
@@ -224,10 +222,11 @@ const detailsStyle = computed(() => ({
     width: 100%;
     height: 100%;
 
-    img.backdrop {
+    .backdrop {
         width: 100%;
         height: 100%;
         object-fit: cover;
+        background-color: var(--c-bg-opaque-level-1);
     
         mask-image: linear-gradient(
             to top,
@@ -237,7 +236,7 @@ const detailsStyle = computed(() => ({
     }
 }
 
-img.logo {
+.logo {
     object-fit: contain;
     object-position: bottom center;
     position: absolute;

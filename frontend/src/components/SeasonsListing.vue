@@ -5,6 +5,7 @@ import { numberFormatters, timeFormatters } from '@/utils/formatters';
 import Tmdb from '@/assets/icons/tmdb.svg'
 import { Check, ChevronDown, ChevronUp } from '@boxicons/vue';
 import { resolveSeasonWatchCount } from '@/utils/titleUtils';
+import AppImage from './AppImage.vue';
 
 defineProps({
     titleDetails: {
@@ -42,11 +43,11 @@ const computedHeight = computed(() => {
                     class="season-card btn btn-even-padding no-deco"
                     :to="`/title/${titleDetails?.title_id}?season=${season?.season_number}`"
                 >
-                    <img 
+                    <AppImage
                         :src="getTitleImageUrl(season, '800', 'poster')"
                         alt=""
                         class="poster"
-                    >
+                    />
 
                     <div class="details">
                         <h4>
@@ -137,12 +138,13 @@ const computedHeight = computed(() => {
     transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
-img.poster {
+.poster {
     height: 128px;
     aspect-ratio: 2/3;
     /* border-radius: var(--border-radius-md-lg); */
     object-fit: cover;
     flex-shrink: 0;
+    background-color: var(--c-bg-opaque-level-1);
 }
 
 .details {

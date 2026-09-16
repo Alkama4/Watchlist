@@ -12,6 +12,7 @@ import KebabMenu from '@/components/KebabMenu.vue';
 import VideoAssetListing from '@/components/VideoAssetListing.vue';
 import ResponsiveOverlay from '@/components/ResponsiveOverlay.vue';
 import VideoAssetButton from '@/components/VideoAssetButton.vue';
+import AppImage from '@/components/AppImage.vue';
 
 const props = defineProps({
     titleDetails: {
@@ -143,12 +144,11 @@ onUnmounted(() => {
         </div>
         <div v-if="activeSeason" :key="activeSeason.season_id" class="season layout-contained layout-spacing-bottom">
             <div class="season-details">
-                <img 
+                <AppImage 
                     :src="getTitleImageUrl(activeSeason, '800', 'poster')"
-                    :key="getTitleImageUrl(activeSeason, '800', 'poster')"
                     alt=""
                     class="season-poster"
-                >
+                />
                 <h3>{{ activeSeason?.season_name }}</h3>
                 <div class="meta-row">
                     <span>
@@ -216,11 +216,11 @@ onUnmounted(() => {
                             'spoilers-visible': isEpisodeSpoilerVisible(episode)
                         }"
                     >
-                        <img 
+                        <AppImage 
                             :src="getTitleImageUrl(episode, '800', 'backdrop')"
                             alt=""
                             class="episode-backdrop"
-                        >
+                        />
                         <EyeSlash size="lg" class="eye-icon" />
                     </div>
                     <div class="details" :class="{'spoilers-hidden': !isEpisodeSpoilerVisible(episode)}">
@@ -331,7 +331,7 @@ onUnmounted(() => {
     /* padding-bottom: var(--spacing-lg); */
     border-radius: var(--border-radius-lg);
 
-    img.season-poster {
+    .season-poster {
         width: 100%;
         aspect-ratio: 2/3;
         background-color: var(--c-bg-level-2);
@@ -390,7 +390,7 @@ onUnmounted(() => {
             transition: opacity var(--spoiler-transition-setup);
         }
         
-        img.episode-backdrop {
+        .episode-backdrop {
             position: absolute;
             top: 0;
             left: 0;
@@ -403,7 +403,7 @@ onUnmounted(() => {
         &.unwatched {
             user-select: none;
 
-            img.episode-backdrop {
+            .episode-backdrop {
                 filter: blur(var(--blur-heavy));
             }
             
@@ -414,7 +414,7 @@ onUnmounted(() => {
                 opacity: 0;
             }
 
-            &.spoilers-visible img.episode-backdrop {
+            &.spoilers-visible .episode-backdrop {
                 filter: blur(0px) opacity(1);
             }
         }
@@ -530,7 +530,7 @@ onUnmounted(() => {
         flex-direction: column;
         align-items: center;
 
-        img.season-poster {
+        .season-poster {
             width: 50%;
         }
 

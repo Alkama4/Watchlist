@@ -22,6 +22,7 @@ import CollectionBannerCard from '@/components/CollectionBannerCard.vue';
 import { isMobile } from '@/utils/device';
 import ModalConfimation from '@/components/modal/ModalConfimation.vue';
 import VideoAssetButton from '@/components/VideoAssetButton.vue';
+import AppImage from '@/components/AppImage.vue';
 
 const props = defineProps({
     titleDetails: {
@@ -234,12 +235,11 @@ const kebabOptions = computed(() => {
     
             <div class="main-info">
                 <div class="poster-section">
-                    <img 
+                    <AppImage
                         :src="getTitleImageUrl(titleDetails, '800', 'poster')"
-                        :key="getTitleImageUrl(titleDetails, '800', 'poster')"
-                        alt=""
                         class="poster"
-                    >
+                        alt=""
+                    />
 
                     <ExternalResources 
                         :titleDetails="titleDetails"
@@ -681,7 +681,7 @@ img.backdrop {
 }
 
 
-img.poster {
+.poster {
     width: 100%;
     aspect-ratio: 2/3;
     object-fit: cover;

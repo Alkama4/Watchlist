@@ -9,6 +9,7 @@ import LoadingButton from '@/components/LoadingButton.vue';
 import { adjustWatchCount, toggleFavourite, toggleWatchlist } from '@/utils/titleActions';
 import { ArrowOutUpRightSquare, Check, Clock, Heart, ListMinus, ListPlus, Minus } from '@boxicons/vue';
 import { isMobile } from '@/utils/device';
+import AppImage from '../AppImage.vue';
 
 const searchStore = useSearchStore();
 
@@ -31,7 +32,6 @@ const props = defineProps({
 })
 
 const waiting = ref({
-    poster: true,
     library: false
 });
 
@@ -88,15 +88,13 @@ async function removeTitle() {
         :draggable="gridMode"
         :title="titleInfo?.name"
     >
-        <div class="poster-wrapper" :class="{ 'loading-wave': waiting?.poster }">
-            <img
-                v-show="!waiting.poster"
+        <div class="poster-wrapper"">
+            <AppImage
                 :src="getTitleImageUrl(titleInfo, '800', 'poster', storeImageFlag)"
                 alt=""
                 :draggable="gridMode"
-                @load="waiting.poster = false"
-                @error="waiting.poster = false"
-            >
+                class="poster"
+            />
 
             <div 
                 v-if="searchStore.tmdbFallback || !titleInfo?.user_details?.in_library"
@@ -239,19 +237,19 @@ async function removeTitle() {
     background-color: var(--c-neutral);
 }
 
-.poster-wrapper img {
+.poster-wrapper .poster {
     width: 100%;
     height: 100%;
     object-fit: cover;
     transition: filter 0.1s var(--transition-ease-out);
 }
-a.title-card:hover img {
+a.title-card:hover .poster {
     filter: brightness(0.75);
 }
-.title-card:not(.in-library) img {
+.title-card:not(.in-library) .poster {
     filter: brightness(0.5) grayscale(1);
 }
-a.title-card:not(.in-library):hover img {
+a.title-card:not(.in-library):hover .poster {
     filter: brightness(0.4) grayscale(1);
 }
 

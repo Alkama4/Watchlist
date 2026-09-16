@@ -1,4 +1,5 @@
 <script setup>
+import AppImage from '@/components/AppImage.vue';
 import TitleCard from '@/components/title_cards/TitleCard.vue';
 import { fastApi } from '@/utils/fastApi';
 import { timeFormatters } from '@/utils/formatters';
@@ -67,11 +68,11 @@ onMounted(async () => {
         >
 
         <div class="collection-details layout-contained">
-            <img
+            <AppImage
                 :src="getTitleImageUrl(collectionDetails, '800', 'poster')"
                 alt=""
                 class="poster"
-            >
+            />
             <div class="collection-info">
                 <div class="collection-name">
                     <h1>{{ collectionDetails?.name }}</h1>
@@ -154,9 +155,11 @@ img.backdrop {
     gap: var(--spacing-md-lg);
     height: var(--details-height);
 
-    img.poster {
+    .poster {
         width: 300px;
+        aspect-ratio: 2/3;
         border-radius: var(--border-radius-lg);
+        background-color: var(--c-bg-level-1);
     }
 
     .collection-info {
@@ -217,7 +220,7 @@ img.backdrop {
         height: unset;
         margin-bottom: unset;
 
-        img.poster {
+        .poster {
             width: 66%;
             max-width: min(calc(50vh / 3 * 2), 300px);
         }

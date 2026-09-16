@@ -2,6 +2,7 @@
 import { getTitleImageUrl } from '@/utils/imagePath';
 import Tmdb from '@/assets/icons/tmdb.svg';
 import { timeFormatters } from '@/utils/formatters';
+import AppImage from './AppImage.vue';
 
 defineProps({
     tmdbCollection: {
@@ -16,7 +17,7 @@ defineProps({
         :to="`/collection/${tmdbCollection?.tmdb_collection_id}`"
         class="tmdb-collection-card btn no-deco"
     >
-        <img
+        <AppImage
             :src="getTitleImageUrl(tmdbCollection, 400, 'poster')"
             alt=""
             class="poster"
@@ -58,10 +59,10 @@ defineProps({
     border-radius: var(--border-radius-md-lg);
 }
 
-img.poster {
+.poster {
     height: 100%;
     aspect-ratio: 2 / 3;
-    /* border-radius: var(--border-radius-md); */
+    background-color: var(--c-bg-opaque-level-1);
     z-index: 1;
     object-fit: cover;
 }
