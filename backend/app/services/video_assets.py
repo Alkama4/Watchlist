@@ -106,17 +106,19 @@ async def _sync_directory_to_db(db: AsyncSession, directory_path: str) -> Dict[s
             elif rel_parts: v_type = VideoType.featurette
             else: v_type = VideoType.movie
 
-            is_new = await _upsert_base_media_asset(
+            is_new = _upsert_base_media_asset(
                 db=db, 
                 existing_asset=asset_map.get(path_str),
                 v_type=v_type, 
                 file_path=file,
-                folder_id=tf.title_folder_id,  # <-- Pass the ID here!
+                folder_id=tf.title_folder_id,
                 current_mtime=file_mtimes[path_str],
                 metadata=metadata
             )
             seen_file_paths.add(path_str)
             if is_new: metrics["added_assets"] += 1
+
+        await db.commit()
 
     # Prune stale files 
     stale_assets, stale_links = await _prune_stale_assets(db, directory_path, seen_file_paths)
@@ -127,9 +129,14 @@ async def _sync_directory_to_db(db: AsyncSession, directory_path: str) -> Dict[s
     return metrics
 
 
-async def _upsert_base_media_asset(
-    db: AsyncSession, existing_asset: Optional[VideoAsset], v_type: VideoType, 
-    file_path: Path, folder_id: int, current_mtime: float, metadata: Optional[Dict[str, Any]]
+def _upsert_base_media_asset(
+    db: AsyncSession,
+    existing_asset: Optional[VideoAsset],
+    v_type: VideoType, 
+    file_path: Path,
+    folder_id: int,
+    current_mtime: float,
+    metadata: Optional[Dict[str, Any]]
 ) -> bool:
     str_path = str(file_path.absolute())
     is_new = False
@@ -139,14 +146,14 @@ async def _upsert_base_media_asset(
         asset = VideoAsset(
             file_path=str_path,
             file_name=file_path.name,
-            title_folder_id=folder_id, # Updated!
+            title_folder_id=folder_id,
             video_type=v_type
         )
         db.add(asset)
         is_new = True
     else:
         asset.file_name = file_path.name 
-        asset.title_folder_id = folder_id # Updated!
+        asset.title_folder_id = folder_id
         asset.video_type = v_type
 
     if metadata is not None:
@@ -154,7 +161,6 @@ async def _upsert_base_media_asset(
             setattr(asset, k, v)
         asset.mtime = current_mtime
 
-    await db.commit()
     return is_new
 
 
@@ -352,7 +358,11 @@ async def _prune_removed_libraries(db: AsyncSession, active_paths: List[str]) ->
 
 async def _prune_stale_assets(db: AsyncSession, root_path: str, seen_paths: Set[str]) -> Tuple[int, int]:
     search_path = os.path.join(root_path, '')
-    stmt = select(VideoAsset).where(VideoAsset.file_path.like(f"{search_path}%"))
+    stmt = (
+        select(VideoAsset)
+        .where(VideoAsset.file_path.like(f"{search_path}%"))
+        .options(selectinload(VideoAsset.title_folder))
+    )
     result = await db.execute(stmt)
     db_assets = result.scalars().all()
 
@@ -361,7 +371,7 @@ async def _prune_stale_assets(db: AsyncSession, root_path: str, seen_paths: Set[
     
     for asset in db_assets:
         if asset.file_path not in seen_paths:
-            if asset.title_id or asset.episode_id:
+            if asset.title_folder.title_id or asset.episode_id:
                 pruned_links += 1
             await db.delete(asset)
             pruned_assets += 1
