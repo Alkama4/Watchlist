@@ -7,7 +7,7 @@ import { Check, ChevronDown, ChevronUp } from '@boxicons/vue';
 import { resolveSeasonWatchCount } from '@/utils/titleUtils';
 import AppImage from './AppImage.vue';
 
-defineProps({
+const { titleDetails } = defineProps({
     titleDetails: {
         type: Object,
         required: true
@@ -30,6 +30,27 @@ const computedHeight = computed(() => {
     if (!limitOverflow.value) return scrollHeight.value  // content fits, use natural height
     return expanded.value ? scrollHeight.value + 38 + 12 : limitHeight
 })
+
+function seasonProgress(season) {
+    const episodes = season?.episodes;
+    if (!episodes?.length) return '0%';
+
+    const titleWatchCount = titleDetails?.user_details?.watch_count ?? 0;
+
+    const watchedEpisodeCount = episodes.reduce(
+        (count, episode) =>
+            count + (episode?.user_details?.watch_count > titleWatchCount),
+        0
+    );
+
+    return `${(watchedEpisodeCount / episodes.length) * 100}%`;
+}
+
+function hasSeasonProgress(season) {
+    const watchCount = resolveSeasonWatchCount(season);
+    if (titleDetails?.user_details?.watch_count) return watchCount > 0;
+    return watchCount > 1;
+}
 </script>
 
 <template>
@@ -43,6 +64,11 @@ const computedHeight = computed(() => {
                     class="season-card btn btn-even-padding no-deco"
                     :to="`/title/${titleDetails?.title_id}?season=${season?.season_number}`"
                 >
+
+                    <div class="season-progress" :class="{ 'has-progress': hasSeasonProgress(season) }">
+                        <div class="season-progress-bar" :style="{ width: seasonProgress(season) }"></div>
+                    </div>
+
                     <AppImage
                         :src="getTitleImageUrl(season, '800', 'poster')"
                         alt=""
@@ -137,6 +163,37 @@ const computedHeight = computed(() => {
     font-weight: 400;
     transition: transform 0.2s ease, background-color 0.2s ease;
 }
+
+.season-progress {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(128px / 3 * 2);
+    right: 0;
+    z-index: -10;
+    opacity: 0.5;
+
+    .season-progress-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 0%;  /* Initial value, set on element to match state */
+        background-color: var(--c-positive-transparent);
+        /* border-top-right-radius: var(--border-radius-md);
+        border-bottom-right-radius: var(--border-radius-md); */
+        /* mask-image: linear-gradient(to right, black calc(100% - 16px), transparent); */
+    }
+    
+    &.has-progress {
+        background-color: var(--c-positive-transparent);
+
+        .season-progress-bar {
+            background-color: var(--c-positive-border);
+        }
+    }
+}
+
 
 .poster {
     height: 128px;
