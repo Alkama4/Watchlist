@@ -23,13 +23,6 @@ async function fetchTitleDetails() {
     const title_id = route.params.title_id;
     titleDetails.value = await fastApi.titles.getById(title_id)
 
-    const documentTitle =
-        titleDetails.value.name ||
-        titleDetails.value.name_original ||
-        'Title Details';
-
-    document.title = `${documentTitle} - Watchlist`;
-
     // Check if we need to fetch the config
     await fetchJellyfinConfig();
 }
@@ -47,7 +40,6 @@ async function loadTitleData() {
     } catch (e) {
         console.error('Failed to fetch title', e);
         titleDetails.value = false; // signal invalid title
-        document.title = 'Not Found - Watchlist'
     } finally {
         pageLoading.value = false;
     }
@@ -103,6 +95,32 @@ watch(pageLoading, (newLoading) => {
     });
   }
 });
+
+
+function updateDocumentTitle() {
+    const documentTitle =
+        titleDetails.value ? (
+            titleDetails.value.name ||
+            titleDetails.value.name_original ||
+            'Title Details'
+        ) : 'Not Found';
+
+    const seasonTag = route.query.season
+        ? ` S${route.query.season}`
+        : '';
+
+    document.title = `${documentTitle}${seasonTag} - Watchlist`;
+};
+
+// Watches the season query params to keep the document title up to date.
+// The router is set to ignore this path, so this component is solely responsible
+// of keeping the value up to date.
+watch(
+    [titleDetails, () => route.query.season],
+    () => {
+        updateDocumentTitle();
+    }
+);
 </script>
 
 <template>

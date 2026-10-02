@@ -36,7 +36,7 @@ const routes = [
         path: `/title/:title_id`,
         name: 'Title details',
         component: () => import('@/views/TitleController.vue'),
-        meta: { requiresAuth: true, title: 'Title Details' }
+        meta: { requiresAuth: true, dynamicTitle: true }
     },
     {
         path: `/collection/:tmdb_collection_id`,
@@ -118,7 +118,13 @@ router.beforeEach(async (to, from, next) => {
 });
 
 router.afterEach((to) => {
-    document.title = to.meta.title ? `${to.meta.title} - Watchlist` : 'Watchlist';
+    // Leave the title updating to the component itself
+    if (to.meta.dynamicTitle) return;
+
+    // Use the router defined static title
+    document.title = to.meta.title
+        ? `${to.meta.title} - Watchlist`
+        : 'Watchlist';
 });
 
 export default router
