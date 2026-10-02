@@ -4,7 +4,7 @@ import { SMART_COLLECTIONS, useSearchStore } from '@/stores/search';
 import TitleCard from '@/components/title_cards/TitleCard.vue';
 import LabelDropDown from '@/components/LabelDropDown.vue';
 import OptionPicker from '@/components/OptionPicker.vue';
-import Imdb from '@/assets/icons/imdb.svg'
+// import Imdb from '@/assets/icons/imdb.svg'
 import Tmdb from '@/assets/icons/tmdb.svg'
 import { ArrowDownNarrowWide, ArrowDownUp, ArrowDownWideNarrow, Calendar, Capitalize, ChartTrend, CheckCircle, Circle, CircleHalf, Clock, Film, Heart, History, ListPlus, RotateCcwDot, Shuffle, Timer, Tv, X, XCircle } from '@boxicons/vue';
 import SearchBar from '@/components/SearchBar.vue';
@@ -77,7 +77,7 @@ const availabilityOptions = [
 ];
 const sortByOptions = [
     { icon: Tmdb, label: 'TMDB', value: 'tmdb_score', type: 'primary' },
-    { icon: Imdb, label: 'IMDB', value: 'imdb_score', type: 'primary' },
+    // { icon: Imdb, label: 'IMDB', value: 'imdb_score', type: 'primary' },
     { icon: ChartTrend, label: 'Popularity', value: 'popularity', type: 'primary' },
     { icon: Capitalize, label: 'Alphabetical', value: 'title_name', type: 'primary' },
     { icon: Timer, label: 'Runtime', value: 'runtime', type: 'primary' },
