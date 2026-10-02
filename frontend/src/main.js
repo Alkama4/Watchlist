@@ -11,6 +11,11 @@ import '@/assets/classes.css'
 import '@/assets/themes.css'
 import "@egjs/vue3-flicking/dist/flicking-inline.css";
 
+window.addEventListener('vite:preloadError', (event) => {
+    event.preventDefault()
+    window.location.reload()
+})
+
 const app = createApp(App)
 const pinia = createPinia()
 
