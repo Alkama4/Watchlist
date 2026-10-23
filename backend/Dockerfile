@@ -7,9 +7,11 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /backend-root
 
 # Install system dependencies needed for PostgreSQL adapter (psycopg2)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    libpq-dev \
+RUN apt-get update \
+    && apt-get upgrade -y --no-install-recommends \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy and install dependencies first
