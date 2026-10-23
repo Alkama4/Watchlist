@@ -13,5 +13,5 @@ pymediainfo==7.0.1
 python-dotenv==1.2.4
 python_jose==3.5.0
 rapidfuzz==3.14.6
-SQLAlchemy==2.1.6
+SQLAlchemy[asyncio]==2.1.6
 uvicorn==0.54.0
