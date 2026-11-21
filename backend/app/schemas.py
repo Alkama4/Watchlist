@@ -113,6 +113,7 @@ class ImageListsOut(BaseModel):
     season_id: Optional[int] = None
     episode_id: Optional[int] = None
     posters: ImageListOut
+    banners: ImageListOut
     backdrops: ImageListOut
     logos: ImageListOut
 
@@ -225,6 +226,7 @@ class TitleCardUserDetailsOut(BaseModel):
     watch_count: int = 0
 
     chosen_poster_image_path: Optional[str] = None
+    chosen_banner_image_path: Optional[str] = None
     chosen_backdrop_image_path: Optional[str] = None
     chosen_logo_image_path: Optional[str] = None
 
@@ -242,6 +244,7 @@ class TitleCardOut(BaseModel):
     # similarity_score: Optional[float] = None
 
     default_poster_image_path: Optional[str] = None
+    default_banner_image_path: Optional[str] = None
     default_backdrop_image_path: Optional[str] = None
     default_logo_image_path: Optional[str] = None
 
@@ -389,6 +392,7 @@ class TitleUserDetailsOut(BaseModel):
     watch_count: int = 0
     notes: Optional[str] = None
     chosen_poster_image_path: Optional[str] = None
+    chosen_banner_image_path: Optional[str] = None
     chosen_backdrop_image_path: Optional[str] = None
     chosen_logo_image_path: Optional[str] = None
     chosen_locale: Optional[str] = None
@@ -458,6 +462,7 @@ class TitleOut(BaseModel):
     awards: Optional[str]
     homepage: Optional[str]
     default_poster_image_path: Optional[str] = None
+    default_banner_image_path: Optional[str] = None
     default_backdrop_image_path: Optional[str] = None
     default_logo_image_path: Optional[str] = None
     last_updated: datetime

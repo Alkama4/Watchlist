@@ -23,11 +23,12 @@ defineExpose({ open })
 const updateChosenImage = inject('updateChosenImage')
 const imageCategories = [
     { key: 'posters', label: 'Posters' },
+    { key: 'banners', label: 'Banners' },
     { key: 'backdrops', label: 'Backdrops' },
     { key: 'logos', label: 'Logos' }
 ]
 const modalRef = ref(null)
-const imageData = ref({ posters: {}, backdrops: {}, logos: {} })
+const imageData = ref({ posters: {}, banners: {}, backdrops: {}, logos: {} })
 const activeType = ref('posters')
 const localeFilters = ref({})
 
@@ -43,6 +44,7 @@ const currentCategory = computed(() => {
 const localeFilterDefaults = computed(() => {
     return {
         posters: imageData.value?.posters?.images?.find(x => x.is_default)?.locale,
+        banners: imageData.value?.banners?.images?.find(x => x.is_default)?.locale,
         backdrops: imageData.value?.backdrops?.images?.find(x => x.is_default)?.locale,
         logos: imageData.value?.logos?.images?.find(x => x.is_default)?.locale
     }
@@ -132,7 +134,7 @@ async function clearUserChoice() {
     const id = props.titleId || props.seasonId;
     const apiTarget = isTitle ? fastApi.titles : fastApi.seasons;
 
-    // Remove the 's' from 'posters', 'backdrops', or 'logos'
+    // Remove the 's' from 'posters', 'banners', 'backdrops', or 'logos'
     const singularType = activeType.value.slice(0, -1); 
 
     // Update chganges on backend and DOM
@@ -147,7 +149,7 @@ async function clearUserChoice() {
             <details>
                 <summary>How are images selected?</summary>
                 <div class="content">
-                    <p>The system automatically displays the highest-rated images available (tagged "Default") with some caveats. For <strong>posters and logos</strong> it prioritizes your language preferences (set in setttings), and for <strong>backdrops</strong> it prefers the textless versions. If an image with a higher rating is found, the system will swap it out automatically.</p>
+                    <p>The system automatically displays the highest-rated images available (tagged "Default") with some caveats. For <strong>posters, banners and logos</strong> it prioritizes your language preferences (set in setttings), and for <strong>backdrops</strong> it prefers the textless versions. If an image with a higher rating is found, the system will swap it out automatically.</p>
     
                     <p><strong>Favoriting an image</strong> locks your selection. This overrides the automated system and ensures the image will never change unless you update it again yourself.</p>
     

@@ -312,6 +312,7 @@ async def _store_title_translation(
     # Pick the best images for the language
     chosen_images = {
         "poster": select_best_image(tmdb_data.get("images", {}).get("posters") or [], [locale_ctx.preferred_iso_639_1, None]),
+        "banner": select_best_image(tmdb_data.get("images", {}).get("backdrops") or [], [locale_ctx.preferred_iso_639_1, None,]),
         "backdrop": select_best_image(tmdb_data.get("images", {}).get("backdrops") or [], [None, locale_ctx.preferred_iso_639_1]),
         "logo": select_best_image(tmdb_data.get("images", {}).get("logos") or [], [locale_ctx.preferred_iso_639_1, None])
     }
@@ -323,6 +324,7 @@ async def _store_title_translation(
         tagline=tmdb_data["tagline"],
         overview=tmdb_data["overview"],
         default_poster_image_path=chosen_images["poster"],
+        default_banner_image_path=chosen_images["banner"],
         default_backdrop_image_path=chosen_images["backdrop"],
         default_logo_image_path=chosen_images["logo"]
     ).on_conflict_do_update(
@@ -332,6 +334,7 @@ async def _store_title_translation(
             "tagline": tmdb_data["tagline"],
             "overview": tmdb_data["overview"],
             "default_poster_image_path": chosen_images["poster"],
+            "default_banner_image_path": chosen_images["banner"],
             "default_backdrop_image_path": chosen_images["backdrop"],
             "default_logo_image_path": chosen_images["logo"]
         }

@@ -3,7 +3,7 @@ from sqlalchemy import CheckConstraint, Column, Float, Integer, String, DECIMAL,
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from app.enums import ImageType, TitleType, VideoType
+from app.enums import ImageStorageType, TitleType, VideoType
 from app.database import Base
 
 
@@ -166,6 +166,7 @@ class TitleUserDetails(Base):
     watch_count = Column(Integer, default=0)
     notes = Column(Text)
     chosen_poster_image_path = Column(String(64), ForeignKey("images.file_path"))
+    chosen_banner_image_path = Column(String(64), ForeignKey("images.file_path"))
     chosen_backdrop_image_path = Column(String(64), ForeignKey("images.file_path"))
     chosen_logo_image_path = Column(String(64), ForeignKey("images.file_path"))
     chosen_locale = Column(String(16))
@@ -176,6 +177,7 @@ class TitleUserDetails(Base):
 
     title = relationship("Title", back_populates="user_details")
     chosen_poster = relationship("Image", foreign_keys=[chosen_poster_image_path], viewonly=True)
+    chosen_banner = relationship("Image", foreign_keys=[chosen_banner_image_path], viewonly=True)
     chosen_backdrop = relationship("Image", foreign_keys=[chosen_backdrop_image_path], viewonly=True)
     chosen_logo = relationship("Image", foreign_keys=[chosen_logo_image_path], viewonly=True)
 
@@ -217,11 +219,13 @@ class TitleTranslation(Base):
     tagline = Column(String(255))
 
     default_poster_image_path = Column(String(64), ForeignKey("images.file_path"), nullable=True)
+    default_banner_image_path = Column(String(64), ForeignKey("images.file_path"), nullable=True)
     default_backdrop_image_path = Column(String(64), ForeignKey("images.file_path"), nullable=True)
     default_logo_image_path = Column(String(64), ForeignKey("images.file_path"), nullable=True)
 
     title = relationship("Title", back_populates="translations")
     default_poster = relationship("Image", foreign_keys=[default_poster_image_path], viewonly=True)
+    default_banner = relationship("Image", foreign_keys=[default_banner_image_path], viewonly=True)
     default_backdrop = relationship("Image", foreign_keys=[default_backdrop_image_path], viewonly=True)
     default_logo = relationship("Image", foreign_keys=[default_logo_image_path], viewonly=True)
 
@@ -391,7 +395,7 @@ class Image(Base):
     __tablename__ = "images"
 
     file_path = Column(String(64), primary_key=True)
-    type = Column(Enum(ImageType), nullable=False)
+    type = Column(Enum(ImageStorageType), nullable=False)
     width = Column(Integer)
     height = Column(Integer)
     iso_3166_1 = Column(String(5))

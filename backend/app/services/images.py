@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
 from app.services.languages import get_user_language_context
 from app.services.ids import get_title_id_by_season_id
-from app.enums import ImageType
+from app.enums import ImageStorageType, ImageType
 from app.models import (
     SeasonTranslation,
     TMDBCollectionTranslation,
@@ -56,9 +56,9 @@ async def store_image_details(
         return
 
     type_map = {
-        "backdrops": ImageType.backdrop,
-        "posters": ImageType.poster,
-        "logos": ImageType.logo,
+        "posters": ImageStorageType.poster,
+        "backdrops": ImageStorageType.backdrop,
+        "logos": ImageStorageType.logo,
     }
 
     # Use dictionaries keyed by unique identifiers to prevent batch duplicates
@@ -119,24 +119,30 @@ async def store_image_details(
     await db.commit()
 
 
+CATEGORY_FIELD_MAP: dict[ImageType, tuple[str, str]] = {
+    ImageType.poster: ("default_poster_image_path", "chosen_poster_image_path"),
+    ImageType.banner: ("default_banner_image_path", "chosen_banner_image_path"),
+    ImageType.backdrop: ("default_backdrop_image_path", "chosen_backdrop_image_path"),
+    ImageType.logo: ("default_logo_image_path", "chosen_logo_image_path"),
+}
+
+
 async def fetch_image_details(
-    db: AsyncSession, 
-    user_id: int, 
-    title_id: int = None, 
+    db: AsyncSession,
+    user_id: int,
+    title_id: int = None,
     season_id: int = None,
-    tmdb_collection_id: int = None
+    tmdb_collection_id: int = None,
 ) -> ImageListsOut:
-    
     if title_id:
         locale_title_id = title_id
     elif season_id:
         locale_title_id = await get_title_id_by_season_id(db=db, season_id=season_id)
-    else: # If collection
-        locale_title_id = None 
+    else:
+        locale_title_id = None
 
     locale_ctx = await get_user_language_context(db=db, user_id=user_id, title_id=locale_title_id)
-    
-    # 1. Configuration Mapping
+
     CONFIG = {
         "title_id": {
             "val": title_id,
@@ -144,8 +150,6 @@ async def fetch_image_details(
             "user_model": TitleUserDetails,
             "pk": TitleTranslation.title_id,
             "user_pk": TitleUserDetails.title_id,
-            "path_fields": ["default_poster_image_path", "default_backdrop_image_path", "default_logo_image_path"],
-            "user_fields": ["chosen_poster_image_path", "chosen_backdrop_image_path", "chosen_logo_image_path"]
         },
         "season_id": {
             "val": season_id,
@@ -153,8 +157,6 @@ async def fetch_image_details(
             "user_model": SeasonUserDetails,
             "pk": SeasonTranslation.season_id,
             "user_pk": SeasonUserDetails.season_id,
-            "path_fields": ["default_poster_image_path"],
-            "user_fields": ["chosen_poster_image_path"]
         },
         "tmdb_collection_id": {
             "val": tmdb_collection_id,
@@ -162,19 +164,16 @@ async def fetch_image_details(
             "user_model": TMDBCollectionUserDetails,
             "pk": TMDBCollectionTranslation.tmdb_collection_id,
             "user_pk": TMDBCollectionUserDetails.tmdb_collection_id,
-            "path_fields": ["default_poster_image_path", "default_backdrop_image_path"],
-            "user_fields": ["chosen_poster_image_path", "chosen_backdrop_image_path"]
-        }
+        },
     }
 
     active_key = next((k for k, v in CONFIG.items() if v["val"] is not None), None)
     if not active_key:
-        raise ValueError("One of title_id or season_id must be provided.")
-    
+        raise ValueError("One of title_id, season_id or tmdb_collection_id must be provided.")
+
     cfg = CONFIG[active_key]
     val = cfg["val"]
 
-    # 2. Build the Query
     stmt = select(cfg["model"]).where(cfg["pk"] == val)
 
     if hasattr(cfg["model"], "iso_639_1"):
@@ -182,80 +181,99 @@ async def fetch_image_details(
 
     if cfg["user_model"]:
         stmt = stmt.add_columns(cfg["user_model"]).outerjoin(
-            cfg["user_model"], 
-            (cfg["user_pk"] == val) & (cfg["user_model"].user_id == user_id)
+            cfg["user_model"],
+            (cfg["user_pk"] == val) & (cfg["user_model"].user_id == user_id),
         )
-    
+
     res = await db.execute(stmt)
     row = res.first()
 
     if not row:
-        return ImageListsOut(**{active_key: val}, posters=ImageListOut(total_count=0), 
-                             backdrops=ImageListOut(total_count=0), logos=ImageListOut(total_count=0))
+        return ImageListsOut(
+            **{active_key: val},
+            posters=ImageListOut(total_count=0),
+            banners=ImageListOut(total_count=0),
+            backdrops=ImageListOut(total_count=0),
+            logos=ImageListOut(total_count=0),
+        )
 
     main_obj = row[0]
     user_details = row[1] if len(row) > 1 else None
 
-    # 3. Collect Defaults and Choices
-    defaults = {getattr(main_obj, field, None) for field in cfg["path_fields"]}
-    user_choices = set()
-    if user_details:
-        user_choices = {getattr(user_details, field, None) for field in cfg["user_fields"]}
+    # Per-category defaults and user choices
+    category_meta: dict[ImageType, dict] = {}
+    for img_type, (default_attr, chosen_attr) in CATEGORY_FIELD_MAP.items():
+        category_meta[img_type] = {
+            "imgs": [],
+            "locales": set(),
+            "default_path": getattr(main_obj, default_attr, None),
+            "chosen_path": getattr(user_details, chosen_attr, None) if user_details else None,
+        }
 
-    # 4. Fetch Linked Images
     img_stmt = (
         select(Image)
         .join(ImageLink, Image.file_path == ImageLink.file_path)
         .where(getattr(ImageLink, active_key) == val)
         .where(
-            (Image.iso_639_1.in_(locale_ctx.iso_639_1_list)) | 
-            (Image.iso_639_1.is_(None))
+            (Image.iso_639_1.in_(locale_ctx.iso_639_1_list))
+            | (Image.iso_639_1.is_(None))
         )
         .order_by(Image.vote_average.desc())
     )
     img_res = await db.execute(img_stmt)
     images = img_res.scalars().all()
 
-    # 5. Categorization Logic
-    categories = {
-        ImageType.poster: {"imgs": [], "locales": set()},
-        ImageType.backdrop: {"imgs": [], "locales": set()},
-        ImageType.logo: {"imgs": [], "locales": set()},
-    }
-
     for img in images:
-        current_locale = (f"{img.iso_639_1}-{img.iso_3166_1}" 
-                         if img.iso_639_1 and img.iso_3166_1 
-                         else img.iso_639_1 or img.iso_3166_1)
-        
-        img_data = ImageOut(
-            file_path=img.file_path,
-            type=img.type,
-            width=img.width,
-            height=img.height,
-            iso_3166_1=img.iso_3166_1,
-            iso_639_1=img.iso_639_1,
-            vote_average=float(img.vote_average) if img.vote_average else 0.0,
-            vote_count=img.vote_count,
-            is_default=img.file_path in defaults,
-            is_user_choice=img.file_path in user_choices
+        current_locale = (
+            f"{img.iso_639_1}-{img.iso_3166_1}"
+            if img.iso_639_1 and img.iso_3166_1
+            else img.iso_639_1 or img.iso_3166_1
         )
 
-        cat = categories.get(img.type)
-        if cat:
-            cat["imgs"].append(img_data)
-            cat["locales"].add(current_locale)
+        # Swap `img.type` for `img.storage_type` if you renamed the column on `Image`
+        storage_type = getattr(img, "storage_type", img.type)
+
+        if storage_type == ImageStorageType.backdrop:
+            target_types = (ImageType.backdrop, ImageType.banner)
+        elif storage_type == ImageStorageType.poster:
+            target_types = (ImageType.poster,)
+        elif storage_type == ImageStorageType.logo:
+            target_types = (ImageType.logo,)
+        else:
+            target_types = ()
+
+        for target_type in target_types:
+            meta = category_meta[target_type]
+            img_out = ImageOut(
+                file_path=img.file_path,
+                type=target_type,
+                width=img.width,
+                height=img.height,
+                iso_3166_1=img.iso_3166_1,
+                iso_639_1=img.iso_639_1,
+                vote_average=float(img.vote_average) if img.vote_average else 0.0,
+                vote_count=img.vote_count,
+                is_default=(img.file_path == meta["default_path"]),
+                is_user_choice=(img.file_path == meta["chosen_path"]),
+            )
+            meta["imgs"].append(img_out)
+            meta["locales"].add(current_locale)
 
     def build_list_out(img_type: ImageType) -> ImageListOut:
-        data = categories[img_type]
+        data = category_meta[img_type]
         sorted_locales = sorted(list(data["locales"]), key=lambda x: (x is not None, x))
-        return ImageListOut(total_count=len(data["imgs"]), available_locale=sorted_locales, images=data["imgs"])
+        return ImageListOut(
+            total_count=len(data["imgs"]),
+            available_locale=sorted_locales,
+            images=data["imgs"],
+        )
 
     return ImageListsOut(
         **{active_key: val},
         posters=build_list_out(ImageType.poster),
+        banners=build_list_out(ImageType.banner),
         backdrops=build_list_out(ImageType.backdrop),
-        logos=build_list_out(ImageType.logo)
+        logos=build_list_out(ImageType.logo),
     )
 
 
@@ -306,6 +324,7 @@ async def set_user_image_choice(
             "id_val": title_id,
             "col_map": {
                 ImageType.poster: "chosen_poster_image_path",
+                ImageType.banner: "chosen_banner_image_path",
                 ImageType.backdrop: "chosen_backdrop_image_path",
                 ImageType.logo: "chosen_logo_image_path"
             }

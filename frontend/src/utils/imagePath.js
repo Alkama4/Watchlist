@@ -3,6 +3,7 @@ import { API_BASE_URL } from "./conf"
 const BASE_IMAGE_URL = "/media/image"
 const IMAGE_TYPE_MAP = {
     poster: { default: 'default_poster_image_path', user: 'chosen_poster_image_path' },
+    banner: { default: 'default_banner_image_path', user: 'chosen_banner_image_path' },
     backdrop: { default: 'default_backdrop_image_path', user: 'chosen_backdrop_image_path' },
     logo: { default: 'default_logo_image_path', user: 'chosen_logo_image_path' }
 };

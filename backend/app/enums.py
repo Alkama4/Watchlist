@@ -4,8 +4,14 @@ class TitleType(str, Enum):
     movie = "movie"
     tv = "tv"
 
+class ImageStorageType(str, Enum):
+    poster = "poster"
+    backdrop = "backdrop"
+    logo = "logo"
+
 class ImageType(str, Enum):
     poster = "poster"
+    banner = "banner"
     backdrop = "backdrop"
     logo = "logo"
 
