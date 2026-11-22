@@ -26,6 +26,10 @@ const props = defineProps({
         type: Boolean,
         default: false
     },
+    bannerMode: {
+        type: Boolean,
+        default: false
+    },
     index: {
         type: Number,
     }
@@ -81,7 +85,8 @@ async function removeTitle() {
         :style="`animation-delay: ${(index ?? titleInfo?.batchIndex ?? 0) * 0.01}s`"
         class="title-card"
         :class="{
-            'grid-mode': gridMode, 
+            'grid-mode': gridMode,
+            'banner-mode': bannerMode,
             'in-library': titleInfo?.user_details?.in_library,
             'is-search-mode': searchStore.tmdbFallback
         }"
@@ -90,7 +95,7 @@ async function removeTitle() {
     >
         <div class="poster-wrapper"">
             <AppImage
-                :src="getTitleImageUrl(titleInfo, '800', 'poster', storeImageFlag)"
+                :src="getTitleImageUrl(titleInfo, '800', bannerMode ? 'banner' : 'poster', storeImageFlag)"
                 alt=""
                 :draggable="gridMode"
                 class="poster"
@@ -222,6 +227,9 @@ async function removeTitle() {
     &.grid-mode {
         margin-right: 0;
     }
+    &.banner-mode {
+        width: var(--title-banner-card-width);
+    }
 }
 
 @keyframes fadeIn {
@@ -235,6 +243,9 @@ async function removeTitle() {
     border-radius: var(--border-radius-md);
     overflow: hidden;
     background-color: var(--c-neutral);
+}
+.banner-mode .poster-wrapper {
+    aspect-ratio: 16/9;
 }
 
 .poster-wrapper .poster {

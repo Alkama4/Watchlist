@@ -369,6 +369,13 @@ onUnmounted(() => {
     }
 }
 
+@media(max-width: 768px) {
+    .mode-header {
+        overflow: scroll;
+        white-space: nowrap;
+    }
+}
+
 .search-bar {
     width: 100%;
     max-width: unset;

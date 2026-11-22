@@ -12,7 +12,7 @@ defineProps({
 </script>
 
 <template>
-    <div class="title-carousel layout-full-contained">
+    <section class="title-carousel layout-full-contained">
         <div v-if="carouselData?.header" class="layout-contained">
             <h3>{{ carouselData?.header }}</h3>
         </div>
@@ -27,6 +27,7 @@ defineProps({
             <TitleCard 
                 v-for="(title, index) in carouselData?.titles"
                 :titleInfo="title"
+                :bannerMode="carouselData.style === 'banner'"
                 :index="index"
                 :key="title.title_id"
             />
@@ -40,7 +41,7 @@ defineProps({
                 <ArrowRightStroke size="md"/>
             </router-link>
         </Flicking>
-    </div>
+    </section>
 </template>
 
 <style scoped>

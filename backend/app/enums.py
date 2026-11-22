@@ -44,3 +44,8 @@ class VideoType(str, Enum):
     movie = "movie"
     episode = "episode"
     featurette = "featurette"
+
+class TitleListStyle(str, Enum):
+    hero = "hero"
+    poster = "poster"
+    banner = "banner"

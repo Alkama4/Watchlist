@@ -26,8 +26,9 @@ onMounted(async () => {
 <template>
     <LoadingIndicator v-if="pageLoading"/>
 
-    <div v-else class="collections-page layout-contained layout-spacing-top layout-spacing-bottom">
-        <h3 class="no-top">Smart Collections</h3>
+    <div v-else class="collections-page layout-contained layout-spacing-bottom">
+        <h1>Collections</h1>
+
         <div class="default-collections">
             <router-link to="/smart_collection/favourites" class="btn btn-favourite no-deco">
                 <Heart pack="filled"/>
@@ -62,16 +63,7 @@ onMounted(async () => {
             </router-link>
         </div>
 
-        <h3 class="icon-header">TMDB Collections</h3>
-        <div class="tmdb-collection-cards-wrapper">
-            <CollectionCard
-                v-for="tmdbCollection in pageData?.tmdb_collections"
-                :key="tmdbCollection?.tmdb_collection_id"
-                :tmdbCollection="tmdbCollection"
-            />
-        </div>
-
-        <h3 class="icon-header">Custom Collections</h3>
+        <h3 class="icon-header">Your Collections</h3>
         <div
             v-if="!pageData?.collections?.length"
             class="card not-found-section" 
@@ -79,6 +71,15 @@ onMounted(async () => {
             <h2>No collections found</h2>
             <p>You don't have any custom collections.</p>
             <button>Create your first collection</button>
+        </div>
+
+        <h3 class="icon-header">TMDB Collections</h3>
+        <div class="tmdb-collection-cards-wrapper">
+            <CollectionCard
+                v-for="tmdbCollection in pageData?.tmdb_collections"
+                :key="tmdbCollection?.tmdb_collection_id"
+                :tmdbCollection="tmdbCollection"
+            />
         </div>
     </div>
 </template>

@@ -289,6 +289,8 @@ async def set_user_image_choice(
     Set the chosen image paths in user title/season details tables
     after running validation checks on if the request is coherent.
     """
+
+    image_storage_type = ImageType.backdrop if image_type is ImageType.banner else image_type
     
     if image_path is not None:
         # Build query to check if the image exists AND is linked to this specific entity
@@ -298,7 +300,7 @@ async def set_user_image_choice(
             .join(ImageLink, Image.file_path == ImageLink.file_path)
             .where(
                 Image.file_path == image_path,
-                Image.type == image_type  # Constraint: Must match the enum type
+                Image.type == image_storage_type
             )
         )
 

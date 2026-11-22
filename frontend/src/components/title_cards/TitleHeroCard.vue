@@ -48,7 +48,7 @@ const cardVisibility = computed(() => {
 });
 
 const backdropStyle = computed(() => ({
-    opacity: cardVisibility.value * 0.5 + 0.5
+    opacity: cardVisibility.value * 0.66 + 0.33
 }));
 
 const logoStyle = computed(() => ({
@@ -70,10 +70,9 @@ const detailsStyle = computed(() => ({
         :to="`/title/${title.title_id}`"
         draggable="false"
     >
-        <div class="backdrop-wrapper">
+        <div class="backdrop-wrapper" :style="backdropStyle">
             <AppImage
                 :src="getTitleImageUrl(title, 'original', 'backdrop')"
-                :style="backdropStyle"
                 alt=""
                 class="backdrop"
                 draggable="false"

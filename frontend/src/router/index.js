@@ -9,6 +9,12 @@ const routes = [
         meta: { requiresAuth: true }
     },
     {
+        path: '/explore',
+        name: 'Explore',
+        component: () => import('@/views/ExplorePage.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
         path: '/search',
         name: 'Search',
         component: () => import('@/views/SearchPage.vue'),
