@@ -34,6 +34,7 @@ defineProps({
             <router-link 
                 v-if="carouselData?.total_pages > 1"
                 class="fake-card no-deco btn"
+                :class="{'banner': carouselData.style === 'banner'}"
                 :to="'/search'"
                 draggable="false"
             >
@@ -70,6 +71,10 @@ defineProps({
     flex-direction: column;
     justify-content: center;
     align-items: center;
+}
+.fake-card.banner {
+    width: var(--title-banner-card-width);
+    aspect-ratio: 16/9;
 }
 .fake-card svg {
     transition: 0.3s transform var(--transition-bounce),

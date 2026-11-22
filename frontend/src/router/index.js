@@ -12,7 +12,7 @@ const routes = [
         path: '/explore',
         name: 'Explore',
         component: () => import('@/views/ExplorePage.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, title: 'Explore' }
     },
     {
         path: '/search',

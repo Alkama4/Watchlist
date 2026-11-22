@@ -124,22 +124,22 @@ async def get_home_overview(
             }
         },
         {
-            "header": "Recently Added",
-            "style": TitleListStyle.poster,
-            "filters": {
-                "is_released": True,
-                "sort_by": SortBy.added_at,
-                "sort_direction": SortDirection.desc,
-                "page_size": 25
-            }
-        },
-        {
             "header": "Highest rated",
             "style": TitleListStyle.banner,
             "filters": {
                 "is_released": True,
                 "watch_status": "not_watched",
                 "sort_by": SortBy.tmdb_score,
+                "sort_direction": SortDirection.desc,
+                "page_size": 25
+            }
+        },
+        {
+            "header": "Recently Added",
+            "style": TitleListStyle.poster,
+            "filters": {
+                "is_released": True,
+                "sort_by": SortBy.added_at,
                 "sort_direction": SortDirection.desc,
                 "page_size": 25
             }
@@ -156,17 +156,6 @@ async def get_home_overview(
             }
         },
         {
-            "header": "Quick movies",
-            "style": TitleListStyle.poster,
-            "filters": {
-                "is_released": True,
-                "title_type": "movie",
-                "sort_by": SortBy.runtime,
-                "sort_direction": SortDirection.asc,
-                "page_size": 25
-            }
-        },
-        {
             "header": "Most popular",
             "style": TitleListStyle.banner,
             "filters": {
@@ -174,6 +163,17 @@ async def get_home_overview(
                 "watch_status": "not_watched",
                 "sort_by": SortBy.popularity,
                 "sort_direction": SortDirection.desc,
+                "page_size": 25
+            }
+        },
+        {
+            "header": "Quick movies",
+            "style": TitleListStyle.poster,
+            "filters": {
+                "is_released": True,
+                "title_type": "movie",
+                "sort_by": SortBy.runtime,
+                "sort_direction": SortDirection.asc,
                 "page_size": 25
             }
         },
@@ -202,17 +202,6 @@ async def get_home_overview(
             }
         },
         {
-            "header": "Titles you've forgotten",
-            "style": TitleListStyle.poster,
-            "filters": {
-                "is_released": True,
-                "watch_status": "not_watched",
-                "sort_by": SortBy.last_viewed_at,
-                "sort_direction": SortDirection.asc,
-                "page_size": 25
-            }
-        },
-        {
             "header": "Critically Acclaimed",
             "style": TitleListStyle.banner,
             "filters": {
@@ -221,6 +210,17 @@ async def get_home_overview(
                 "min_tmdb_rating": 8,
                 "sort_by": SortBy.popularity,
                 "sort_direction": SortDirection.desc,
+                "page_size": 25
+            }
+        },
+        {
+            "header": "Titles you've forgotten",
+            "style": TitleListStyle.poster,
+            "filters": {
+                "is_released": True,
+                "watch_status": "not_watched",
+                "sort_by": SortBy.last_viewed_at,
+                "sort_direction": SortDirection.asc,
                 "page_size": 25
             }
         },
