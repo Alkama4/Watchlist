@@ -196,10 +196,12 @@
 /* ----------- Specials ----------- */
 :root {
     --title-card-width: 185px;
+    --title-banner-card-width: 350px;
     --collection-card-width: 475px;
 
     @media(max-width: 768px) {
         --title-card-width: 150px;
+        --title-banner-card-width: 275px;
         --collection-card-width: 100%
     }
 }

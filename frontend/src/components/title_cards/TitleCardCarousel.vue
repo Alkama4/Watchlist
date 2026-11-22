@@ -27,6 +27,7 @@ defineProps({
             <TitleCard 
                 v-for="(title, index) in carouselData?.titles"
                 :titleInfo="title"
+                :bannerMode="carouselData.style === 'banner'"
                 :index="index"
                 :key="title.title_id"
             />
