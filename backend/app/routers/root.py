@@ -9,222 +9,101 @@ from app.services.genres import update_genres
 from app.services.tmdb_collections import fetch_tmdb_collection_cards
 from app.schemas import (
     CollectionsOverViewOut,
+    TitleListOut,
     TitleQueryIn,
     TitleCardOut,
     TitleCardUserDetailsOut,
     TitleHeroOut,
     TitleHeroUserDetailsOut,
-    HomeOverviewOut
 )
 from app.models import (
     Title,
     TitleUserDetails,
     User
 )
-
+from app.enums import (
+    SortBy,
+    SortDirection,
+    TitleListStyle,
+    TitleType
+)
 router = APIRouter()
 
 
-@router.get("/home", response_model=HomeOverviewOut)
+@router.get("/home", response_model=list[TitleListOut])
 async def get_home_overview(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """
-    Return a curated overview of titles for the authenticated user.
-    """
-
     # Fetch the fallback iso here so we don't have to do it for each query
     locale_ctx = await get_user_language_context(db=db, user_id=user.user_id)
 
-    # ------ Hero cards ------
-    hero_cards_options = {
-        "header": "Latest titles",
-        "filters": {
-            "sort_by": "random",
-            "is_released": True,
-            "watch_status": "not_watched",
-            "page_size": 5,
-        }
-    }
-    hero_cards = await run_title_search(
-        db,
-        user.user_id,
-        TitleQueryIn(**hero_cards_options["filters"]),
-        TitleHeroOut,
-        TitleHeroUserDetailsOut,
-        locale_ctx
-    )
-    hero_cards.header = hero_cards_options["header"]
-
-    # ------ Normal cards ------
-    normal_cards_lists_options = [
+    list_configs = [
+        {
+            "header": "Latest titles",
+            "style": TitleListStyle.hero,
+            "filters": {
+                "sort_by": SortBy.random,
+                "is_released": True,
+                "watch_status": "not_watched",
+                "page_size": 5,
+            }
+        },
         {
             "header": "Continue watching",
+            "style": TitleListStyle.banner,
             "filters": {
                 "watch_status": "partial",
-                "title_type": "tv",
+                "title_type": TitleType.tv,
                 "in_watchlist": True,
-                "sort_by": "last_viewed_at",
-                "sort_direction": "desc",
+                "sort_by": SortBy.last_viewed_at,
+                "sort_direction": SortDirection.desc,
                 "page_size": 25
             }
         },
         {
-            "header": "Highest rated",
+            "header": "Recently added Movies",
+            "style": TitleListStyle.poster,
             "filters": {
-                "is_released": True,
-                "watch_status": "not_watched",
-                "sort_by": "tmdb_score",
-                "sort_direction": "desc",
+                "title_type": TitleType.movie,
+                "sort_by": SortBy.added_at,
+                "sort_direction": SortDirection.desc,
                 "page_size": 25
             }
         },
         {
-            "header": "Most popular",
+            "header": "Recently added TV-shows",
+            "style": TitleListStyle.poster,
             "filters": {
-                "is_released": True,
-                "watch_status": "not_watched",
-                "sort_by": "popularity",
-                "sort_direction": "desc",
-                "page_size": 25
-            }
-        },
-        {
-            "header": "Quick movies",
-            "filters": {
-                "is_released": True,
-                "title_type": "movie",
-                "sort_by": "runtime",
-                "sort_direction": "asc",
-                "page_size": 25
-            }
-        },
-        {
-            "header": "Hidden Gems",
-            "filters": {
-                "is_released": True,
-                "watch_status": "not_watched",
-                "min_tmdb_rating": 7,
-                "sort_by": "popularity",
-                "sort_direction": "asc",
-                "page_size": 25
-            }
-        },
-        {
-            "header": "Classics from 90s & 00s",
-            "filters": {
-                "release_year_min": 1990,
-                "release_year_max": 2009,
-                "min_tmdb_rating": 7,
-                "sort_by": "popularity",
-                "sort_direction": "desc",
-                "page_size": 25
-            }
-        },
-        {
-            "header": "Critically Acclaimed",
-            "filters": {
-                "is_released": True,
-                "watch_status": "not_watched",
-                "min_tmdb_rating": 8,
-                "sort_by": "popularity",
-                "sort_direction": "desc",
-                "page_size": 25
-            }
-        },
-        {
-            "header": "Random picks",
-            "filters": {
-                "is_released": True,
-                "watch_status": "not_watched",
-                "sort_by": "random",
-                "sort_direction": "desc",
-                "page_size": 25
-            }
-        },
-        {
-            "header": "Recently Added",
-            "filters": {
-                "is_released": True,
-                "sort_by": "added_at",
-                "sort_direction": "desc",
-                "page_size": 25
-            }
-        },
-        {
-            "header": "Titles you've forgotten",
-            "filters": {
-                "is_released": True,
-                "watch_status": "not_watched",
-                "sort_by": "last_viewed_at",
-                "sort_direction": "asc",
-                "page_size": 25
-            }
-        },
-        {
-            "header": "Bottom of the barrel",
-            "filters": {
-                "is_released": True,
-                "watch_status": "not_watched",
-                "min_tmdb_rating": 1,
-                "sort_by": "tmdb_score",
-                "sort_direction": "asc",
-                "page_size": 25
-            }
-        },
-        {
-            "header": "Dive back in",
-            "filters": {
-                "is_released": True,
-                "watch_status": "completed",
-                "sort_by": "last_viewed_at",
-                "sort_direction": "asc",
-                "page_size": 25
-            }
-        },
-        {
-            "header": "Just released",
-            "filters": {
-                "is_released": True,
-                "sort_by": "release_date",
-                "sort_direction": "desc",
-                "page_size": 25
-            }
-        },
-        {
-            "header": "Upcoming",
-            "filters": {
-                "is_released": False,
-                "sort_by": "release_date",
-                "sort_direction": "asc",
+                "title_type": TitleType.tv,
+                "sort_by": SortBy.added_at,
+                "sort_direction": SortDirection.desc,
                 "page_size": 25
             }
         },
     ]
-    normal_cards = []
-    for normal_card_list in normal_cards_lists_options:
+
+    cards = []
+    for list_config in list_configs:
         title_list = await run_title_search(
             db,
             user.user_id,
-            TitleQueryIn(**normal_card_list["filters"]),
-            TitleCardOut,
-            TitleCardUserDetailsOut,
+            TitleQueryIn(**list_config["filters"]),
+            TitleHeroOut if list_config["style"] is TitleListStyle.hero else TitleCardOut,
+            TitleHeroUserDetailsOut if list_config["style"] is TitleListStyle.hero else TitleCardUserDetailsOut,
             locale_ctx
         )
-        title_list.header = normal_card_list["header"]
+        title_list.header = list_config["header"]
+        title_list.style = list_config["style"]
 
         if (len(title_list.titles) > 0):
-            normal_cards.append(title_list)
+            cards.append(title_list)
 
-    return HomeOverviewOut(
-        hero_cards=hero_cards,
-        normal_cards=normal_cards
-    )
+    return cards
 
 
 @router.get("/collections", response_model=CollectionsOverViewOut)
-async def get_home_overview(
+async def get_collections_overview(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):

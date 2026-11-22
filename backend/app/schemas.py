@@ -2,7 +2,7 @@ from typing import List, Optional, Annotated
 from pydantic import BaseModel, Field, computed_field, AfterValidator, model_validator
 from datetime import datetime, date
 from babel import Locale, UnknownLocaleError
-from app.enums import ImageType, TitleType, SortBy, SortDirection, VideoType
+from app.enums import ImageType, TitleListStyle, TitleType, SortBy, SortDirection, VideoType
 from app.config import DEFAULT_MAX_QUERY_LIMIT
 
 
@@ -280,6 +280,7 @@ class TitleHeroOut(TitleCardOut):
 # Title lists
 class TitleListOut(BaseModel):
     header: Optional[str] = None
+    style: Optional[TitleListStyle] = None
     titles: List[TitleCardOut | TitleHeroOut]
     page_number: int
     page_size: int
@@ -349,11 +350,6 @@ class TMDBCollectionCardOut(BaseModel):
 
 
 ####### Pages and views #######
-
-class HomeOverviewOut(BaseModel):
-    hero_cards: Optional[TitleListOut] = None  
-    normal_cards: List[TitleListOut]
-
 
 class SmartCollectionCounts(BaseModel):
     is_favourite: Optional[int] = 0

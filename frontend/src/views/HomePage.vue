@@ -1,18 +1,19 @@
 <script setup>
 import TitleCardCarousel from '@/components/title_cards/TitleCardCarousel.vue';
+import TitleHeroCardCarousel from '@/components/title_cards/TitleHeroCardCarousel.vue';
+import LoadingIndicator from '@/components/LoadingIndicator.vue';
 import { fastApi } from '@/utils/fastApi';
 import { onMounted, ref } from 'vue';
-import { Captions, Disc, Film, FilmRollAlt, Happy, HappyBeaming, ListPlay, Movie, Pause, Play, PlayCircle, Popcorn, StopCircle, Tv, Video, VideoCinema } from '@boxicons/vue';
-import LoadingIndicator from '@/components/LoadingIndicator.vue';
-import TitleHeroCardCarousel from '@/components/title_cards/TitleHeroCardCarousel.vue';
+import { Captions, Film, FilmRollAlt, ListPlay, Movie, Pause, Play, Popcorn, StopCircle, Tv, Video, VideoCinema } from '@boxicons/vue';
 
-const homeData = ref({});
+const homeData = ref([]);
 const waiting = ref(true);
 
 async function fetchHome() {
     waiting.value = true;
     try {
-        homeData.value = await fastApi.home();
+        const response = await fastApi.home();
+        homeData.value = Array.isArray(response) ? response : [];
     } finally {
         waiting.value = false;
     }
@@ -23,18 +24,18 @@ onMounted(async () => {
 });
 
 const iconList = [
-    { comp: FilmRollAlt,  scale: 1.0},
-    { comp: Video,        scale: 1.0},
-    { comp: ListPlay,     scale: 1.2},
-    { comp: Play,         scale: 1.1},
-    { comp: Film,         scale: 1.5},
-    { comp: VideoCinema,  scale: 2.0},
-    { comp: Tv,           scale: 1.4},
-    { comp: Pause,        scale: 0.9},
-    { comp: Popcorn,      scale: 1.8},
-    { comp: Captions,     scale: 0.8},
-    { comp: Movie,        scale: 1.6},
-    { comp: StopCircle,   scale: 0.8},
+    { comp: FilmRollAlt,  scale: 1.0 },
+    { comp: Video,        scale: 1.0 },
+    { comp: ListPlay,     scale: 1.2 },
+    { comp: Play,         scale: 1.1 },
+    { comp: Film,         scale: 1.5 },
+    { comp: VideoCinema,  scale: 2.0 },
+    { comp: Tv,           scale: 1.4 },
+    { comp: Pause,        scale: 0.9 },
+    { comp: Popcorn,      scale: 1.8 },
+    { comp: Captions,     scale: 0.8 },
+    { comp: Movie,        scale: 1.6 },
+    { comp: StopCircle,   scale: 0.8 },
 ];
 
 const rows = 3;
@@ -67,16 +68,25 @@ const scatteredIcons = iconList.map((icon, index) => {
 </script>
 
 <template>
-    <div v-if="homeData?.normal_cards?.length > 0" class="home-page layout-spacing-bottom layout-spacing-top">
+    <div v-if="homeData.length > 0" class="home-page layout-spacing-bottom layout-spacing-top">
         <div class="layout-contained">
             <h1 class="no-top mobile-only">Watchlist</h1>
         </div>
-        <TitleHeroCardCarousel :heroCards="homeData?.hero_cards" />
-        <TitleCardCarousel v-for="list in homeData?.normal_cards" :carouselData="list"/>
+
+        <template v-for="list in homeData" :key="`${list.style}-${list.header}`">
+            <TitleHeroCardCarousel
+                v-if="list?.style === 'hero'"
+                :heroCards="list"
+            />
+            <TitleCardCarousel
+                v-else-if="list?.style === 'poster' || list?.style === 'banner'"
+                :carouselData="list"
+            />
+        </template>
     </div>
 
-    <LoadingIndicator v-else-if="waiting"/>
-    
+    <LoadingIndicator v-else-if="waiting" />
+
     <div v-else class="home-page-initial layout-contained layout-spacing-bottom layout-spacing-top">
         <div class="initial-greeting card">
             <h1>Your library starts here</h1>
@@ -85,18 +95,18 @@ const scatteredIcons = iconList.map((icon, index) => {
             </p>
             <RouterLink to="/search" class="btn btn-primary no-deco">
                 Find your first title
-            </RouterLink> 
+            </RouterLink>
         </div>
 
         <div class="icon-cloud">
-            <div 
-                v-for="(icon, index) in scatteredIcons" 
+            <div
+                v-for="(icon, index) in scatteredIcons"
                 :key="index"
                 class="icon-wrapper"
                 :style="icon.style"
             >
-                <component 
-                    :is="icon.comp" 
+                <component
+                    :is="icon.comp"
                     pack="filled"
                     class="scattered-icon"
                     size="xl"
