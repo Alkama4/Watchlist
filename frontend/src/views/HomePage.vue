@@ -4,7 +4,7 @@ import TitleHeroCardCarousel from '@/components/title_cards/TitleHeroCardCarouse
 import LoadingIndicator from '@/components/LoadingIndicator.vue';
 import { fastApi } from '@/utils/fastApi';
 import { onMounted, ref } from 'vue';
-import { Captions, Film, FilmRollAlt, ListPlay, Movie, Pause, Play, Popcorn, StopCircle, Tv, Video, VideoCinema } from '@boxicons/vue';
+import { Captions, Film, FilmRollAlt, ListPlay, Movie, Pause, Play, Popcorn, Search, StopCircle, Tv, Video, VideoCinema } from '@boxicons/vue';
 
 const homeData = ref([]);
 const waiting = ref(true);
@@ -71,6 +71,9 @@ const scatteredIcons = iconList.map((icon, index) => {
     <div v-if="homeData.length > 0" class="home-page layout-spacing-bottom layout-spacing-top">
         <div class="layout-contained mobile-header">
             <h1 class="no-top mobile-only">Watchlist</h1>
+            <router-link to="/search" class="btn btn-text btn-even-padding mobile-only">
+                <Search pack="basic"/>
+            </router-link>
         </div>
         <template v-for="list in homeData" :key="`${list.style}-${list.header}`">
             <TitleHeroCardCarousel
@@ -118,7 +121,21 @@ const scatteredIcons = iconList.map((icon, index) => {
 <style scoped>
 .mobile-header {
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     z-index: 100;
+
+    margin-bottom: var(--spacing-md);
+
+    h1 {
+        margin: 0;
+    }
+
+    svg {
+        width: 28px;
+        height: 28px;
+    }
 }
 
 .home-page-initial {

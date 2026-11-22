@@ -70,6 +70,10 @@ export const fastApi = {
         method: 'get',
         url: '/home'
     }),
+    explore: async () => fetchData({
+        method: 'get',
+        url: '/explore'
+    }),
     collectionsView: async () => fetchData({
         method: 'get',
         url: '/collections'
