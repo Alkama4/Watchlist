@@ -5,13 +5,19 @@ A visual overview of the application.
 ## Desktop Views
 
 ### Home
-![Home Page](/docs/assets/home_page.png)
+![Home Page](/docs/assets/home_page.webp)
 
-### Search
-![Search](/docs/assets/search_page.png)
+### Library
+![Library](/docs/assets/library.webp)
+
+### Explore
+![Explore](/docs/assets/explore.webp)
 
 ### Title details
-![Details](/docs/assets/title_details.png)
+![Title details](/docs/assets/title_details.webp)
+
+### Season details
+![Season details](/docs/assets/season_details.webp)
 
 <!-- ---
 
