@@ -50,7 +50,7 @@ async def get_home_overview(
             }
         },
         {
-            "header": "Continue watching",
+            "header": "In Progress",
             "style": TitleListStyle.banner,
             "filters": {
                 "watch_status": "partial",

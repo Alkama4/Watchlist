@@ -69,10 +69,9 @@ const scatteredIcons = iconList.map((icon, index) => {
 
 <template>
     <div v-if="homeData.length > 0" class="home-page layout-spacing-bottom layout-spacing-top">
-        <div class="layout-contained">
+        <div class="layout-contained mobile-header">
             <h1 class="no-top mobile-only">Watchlist</h1>
         </div>
-
         <template v-for="list in homeData" :key="`${list.style}-${list.header}`">
             <TitleHeroCardCarousel
                 v-if="list?.style === 'hero'"
@@ -117,6 +116,11 @@ const scatteredIcons = iconList.map((icon, index) => {
 </template>
 
 <style scoped>
+.mobile-header {
+    position: relative;
+    z-index: 100;
+}
+
 .home-page-initial {
     position: relative;
     min-height: 80vh;
