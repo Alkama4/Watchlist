@@ -61,7 +61,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
             <AppImage
                 v-for="layer in backdropLayers"
                 :key="layer.title.title_id"
-                :src="getTitleImageUrl(layer.title, '400', 'backdrop')"
+                :src="getTitleImageUrl(layer.title, '50', 'backdrop')"
                 alt=""
                 class="ambient-layer"
                 :style="{

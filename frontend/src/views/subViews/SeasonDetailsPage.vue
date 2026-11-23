@@ -145,7 +145,7 @@ onUnmounted(() => {
         <div v-if="activeSeason" :key="activeSeason.season_id" class="season layout-contained layout-spacing-bottom">
             <div class="season-details">
                 <AppImage 
-                    :src="getTitleImageUrl(activeSeason, '800', 'poster')"
+                    :src="getTitleImageUrl(activeSeason, '900', 'poster')"
                     alt=""
                     class="season-poster"
                 />
@@ -217,7 +217,7 @@ onUnmounted(() => {
                         }"
                     >
                         <AppImage 
-                            :src="getTitleImageUrl(episode, '800', 'backdrop')"
+                            :src="getTitleImageUrl(episode, '600', 'backdrop')"
                             alt=""
                             class="episode-backdrop"
                         />
@@ -324,7 +324,7 @@ onUnmounted(() => {
 }
 
 .season-details {
-    width: 400px;
+    width: 325px;
     height: fit-content;
     background-color: var(--c-bg-level-1);
     padding: var(--spacing-md);

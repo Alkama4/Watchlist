@@ -70,7 +70,7 @@ function hasSeasonProgress(season) {
                     </div>
 
                     <AppImage
-                        :src="getTitleImageUrl(season, '800', 'poster')"
+                        :src="getTitleImageUrl(season, '300', 'poster')"
                         alt=""
                         class="poster"
                     />

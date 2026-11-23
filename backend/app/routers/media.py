@@ -23,7 +23,7 @@ router = APIRouter()
 TMDB_IMAGE_BASE_PATH = "https://image.tmdb.org/t/p"
 LOCAL_IMAGE_BASE_PATH = os.environ["IMAGE_STORAGE_PATH"]
 
-BUCKETS = [400, 800, 1600]  # original handled separately
+BUCKETS = [50, 300, 600, 900, 1200]  # "original" is handled separately
 
 http_client = httpx.AsyncClient(timeout=None)
 
@@ -34,15 +34,12 @@ def pick_bucket(long_side: int):
     return None
 
 async def _resize_image(original_path: str, target_path: str, long_side: int):
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
 
     def _resize():
-        with Image.open(original_path) as img:
-            if img.format == 'SVG':
-                os.makedirs(os.path.dirname(target_path), exist_ok=True)
-                shutil.copy2(original_path, target_path)
-                return
+        os.makedirs(os.path.dirname(target_path), exist_ok=True)
 
+        with Image.open(original_path) as img:
             width, height = img.size
             if width >= height:
                 new_width = long_side
@@ -50,20 +47,15 @@ async def _resize_image(original_path: str, target_path: str, long_side: int):
             else:
                 new_height = long_side
                 new_width = int(width * (long_side / height))
-            
+
             img_resized = img.resize((new_width, new_height), Image.LANCZOS)
 
-            os.makedirs(os.path.dirname(target_path), exist_ok=True)
-
-            # Check if image has transparency
             if img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info):
-                # Keep as PNG to preserve transparency
                 img_resized.save(target_path, "PNG", optimize=True)
             else:
-                # Convert to RGB and save as progressive JPEG
                 if img_resized.mode != "RGB":
                     img_resized = img_resized.convert("RGB")
-                img_resized.save(target_path, "JPEG", progressive=True, quality=85)
+                img_resized.save(target_path, "JPEG", progressive=True, optimize=True, quality=75)
 
     await loop.run_in_executor(None, _resize)
 
@@ -119,16 +111,22 @@ async def get_image(
     store: bool = Query(True)
 ):
     """
-    Valid size values: `400`, `800`, `1600` & `original`.
-    
+    Valid size values: `50`, `300`, `600`, `900`, `1200` & `original`.
+
     If store=false:
     - Checks local storage first to save bandwidth.
     - If not found, proxies directly from TMDB without saving.
     - Note: This mode is intended for search result posters; quality is forced to w500.
+
+    If file is SVG
+    - Served and stored only as original.
+    - Requesting resized versions only serves the original.
     """
 
+    is_svg = image_path.lower().endswith(".svg")
+
     # Determine local pathing
-    if size == "original":
+    if size == "original" or is_svg:
         bucket = None
         target_folder = os.path.join(LOCAL_IMAGE_BASE_PATH, "original")
     else:
@@ -146,16 +144,16 @@ async def get_image(
     if os.path.exists(local_file_path):
         return FileResponse(local_file_path)
 
-    # Passthrough
+    # If we don't want to store the file, just proxy it
     if not store:
         return await _proxy_image(image_path, size)
 
-    # Store originial
-    if size == "original":
+    # Store original
+    if size == "original" or is_svg:
         temp_original = local_file_path + ".tmp"
         await _download_original(image_path, temp_original)
         
-        if image_path.lower().endswith('.svg'):
+        if is_svg:
             os.replace(temp_original, local_file_path)
         else:
             await _make_progressive(temp_original, local_file_path)
@@ -163,12 +161,18 @@ async def get_image(
             
         return FileResponse(local_file_path)
 
-    # Store resized
+    # Store resized (or serve original if larger than largest bucket)
     else:
         original_path = os.path.join(LOCAL_IMAGE_BASE_PATH, "original", image_path)
         if not os.path.exists(original_path):
-            await _download_original(image_path, original_path)
-        
+            temp_original = original_path + ".tmp"
+            await _download_original(image_path, temp_original)
+            await _make_progressive(temp_original, original_path)
+            os.remove(temp_original)
+
+        if bucket is None:
+            return FileResponse(original_path)
+
         await _resize_image(original_path, local_file_path, bucket)
         return FileResponse(local_file_path)
 

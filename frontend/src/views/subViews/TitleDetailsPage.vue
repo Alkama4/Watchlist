@@ -236,7 +236,7 @@ const kebabOptions = computed(() => {
             <div class="main-info">
                 <div class="poster-section">
                     <AppImage
-                        :src="getTitleImageUrl(titleDetails, '800', 'poster')"
+                        :src="getTitleImageUrl(titleDetails, '900', 'poster')"
                         class="poster"
                         alt=""
                     />

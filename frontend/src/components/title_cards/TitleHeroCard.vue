@@ -72,7 +72,7 @@ const detailsStyle = computed(() => ({
     >
         <div class="backdrop-wrapper" :style="backdropStyle">
             <AppImage
-                :src="getTitleImageUrl(title, 'original', 'backdrop')"
+                :src="getTitleImageUrl(title, '1200', 'backdrop')"
                 alt=""
                 class="backdrop"
                 draggable="false"
@@ -81,7 +81,7 @@ const detailsStyle = computed(() => ({
 
         <img
             v-show="!waitingFor?.logo"
-            :src="getTitleImageUrl(title, 'original', 'logo')"
+            :src="getTitleImageUrl(title, '600', 'logo')"
             :style="logoStyle"
             :alt="title?.name ?? ''"
             class="logo"

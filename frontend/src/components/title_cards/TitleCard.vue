@@ -95,7 +95,7 @@ async function removeTitle() {
     >
         <div class="poster-wrapper"">
             <AppImage
-                :src="getTitleImageUrl(titleInfo, '800', bannerMode ? 'banner' : 'poster', storeImageFlag)"
+                :src="getTitleImageUrl(titleInfo, '600', bannerMode ? 'banner' : 'poster', storeImageFlag)"
                 alt=""
                 :draggable="gridMode"
                 class="poster"

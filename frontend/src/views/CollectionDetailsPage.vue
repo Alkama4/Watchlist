@@ -69,7 +69,7 @@ onMounted(async () => {
 
         <div class="collection-details layout-contained">
             <AppImage
-                :src="getTitleImageUrl(collectionDetails, '800', 'poster')"
+                :src="getTitleImageUrl(collectionDetails, '600', 'poster')"
                 alt=""
                 class="poster"
             />

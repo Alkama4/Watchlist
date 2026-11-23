@@ -18,7 +18,7 @@ defineProps({
         class="collection-banner-card btn btn-even-padding no-deco"
     >
         <AppImage
-            :src="getTitleImageUrl(tmdbCollection, 400, 'poster')"
+            :src="getTitleImageUrl(tmdbCollection, 300, 'poster')"
             alt=""
             class="poster"
         />
