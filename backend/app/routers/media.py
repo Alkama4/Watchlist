@@ -3,7 +3,7 @@ import asyncio
 import aiofiles
 import httpx
 import shutil
-from PIL import Image
+from PIL import Image, ImageFilter
 from typing import List
 from fastapi import APIRouter, HTTPException, Query, Request, Response, Depends
 from fastapi.responses import FileResponse, StreamingResponse
@@ -23,7 +23,9 @@ router = APIRouter()
 TMDB_IMAGE_BASE_PATH = "https://image.tmdb.org/t/p"
 LOCAL_IMAGE_BASE_PATH = os.environ["IMAGE_STORAGE_PATH"]
 
-BUCKETS = [50, 300, 600, 900, 1200]  # "original" is handled separately
+BUCKETS = [300, 600, 900, 1200]  # "original" and "blur" are handled separately
+BLUR_LONG_SIDE = 360
+BLUR_RADIUS = 18.0
 
 http_client = httpx.AsyncClient(timeout=None)
 
@@ -33,6 +35,23 @@ def pick_bucket(long_side: int):
             return b
     return None
 
+def _compute_dimensions(width: int, height: int, long_side: int) -> tuple[int, int]:
+    if width >= height:
+        new_width = long_side
+        new_height = max(1, int(height * (long_side / width)))
+    else:
+        new_height = long_side
+        new_width = max(1, int(width * (long_side / height)))
+    return new_width, new_height
+
+def _save_pillow_image(img: Image.Image, target_path: str, jpeg_quality: int = 75):
+    if img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info):
+        img.save(target_path, "PNG", optimize=True)
+    else:
+        if img.mode != "RGB":
+            img = img.convert("RGB")
+        img.save(target_path, "JPEG", progressive=True, optimize=True, quality=jpeg_quality)
+
 async def _resize_image(original_path: str, target_path: str, long_side: int):
     loop = asyncio.get_running_loop()
 
@@ -41,23 +60,32 @@ async def _resize_image(original_path: str, target_path: str, long_side: int):
 
         with Image.open(original_path) as img:
             width, height = img.size
-            if width >= height:
-                new_width = long_side
-                new_height = int(height * (long_side / width))
-            else:
-                new_height = long_side
-                new_width = int(width * (long_side / height))
-
+            new_width, new_height = _compute_dimensions(width, height, long_side)
             img_resized = img.resize((new_width, new_height), Image.LANCZOS)
-
-            if img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info):
-                img_resized.save(target_path, "PNG", optimize=True)
-            else:
-                if img_resized.mode != "RGB":
-                    img_resized = img_resized.convert("RGB")
-                img_resized.save(target_path, "JPEG", progressive=True, optimize=True, quality=75)
+            _save_pillow_image(img_resized, target_path, jpeg_quality=75)
 
     await loop.run_in_executor(None, _resize)
+
+async def _blur_image(
+    original_path: str,
+    target_path: str,
+    long_side: int = BLUR_LONG_SIDE,
+    radius: float = BLUR_RADIUS,
+):
+    loop = asyncio.get_running_loop()
+
+    def _blur():
+        os.makedirs(os.path.dirname(target_path), exist_ok=True)
+
+        with Image.open(original_path) as img:
+            width, height = img.size
+            new_width, new_height = _compute_dimensions(width, height, long_side)
+            # Bilinear is fast and clean before applying a wide Gaussian blur
+            small = img.resize((new_width, new_height), Image.Resampling.BILINEAR)
+            blurred = small.filter(ImageFilter.GaussianBlur(radius=radius))
+            _save_pillow_image(blurred, target_path, jpeg_quality=70)
+
+    await loop.run_in_executor(None, _blur)
 
 async def _download_original(image_path: str, local_path: str):
     url = f"{TMDB_IMAGE_BASE_PATH}/original/{image_path}"
@@ -75,22 +103,20 @@ async def _make_progressive(input_path: str, output_path: str):
     def _process():
         with Image.open(input_path) as img:
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
-            
+
             if (img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info)):
-                # Keep as PNG to preserve transparency
                 img.save(output_path, "PNG", optimize=True)
             else:
-                # Convert to RGB and save as progressive JPEG
                 if img.mode != "RGB":
                     img = img.convert("RGB")
                 img.save(output_path, "JPEG", progressive=True, quality=95)
-    
+
     loop = asyncio.get_event_loop()
     await loop.run_in_executor(None, _process)
 
-async def _proxy_image(image_path: str, size: int):
+async def _proxy_image(image_path: str, size: str):
     url = f"{TMDB_IMAGE_BASE_PATH}/{'original' if size == 'original' else 'w500'}/{image_path}"
-    
+
     req = http_client.build_request("GET", url)
     resp = await http_client.send(req, stream=True)
 
@@ -99,43 +125,47 @@ async def _proxy_image(image_path: str, size: int):
         raise HTTPException(status_code=resp.status_code, detail="TMDB error")
 
     return StreamingResponse(
-        resp.aiter_bytes(), 
+        resp.aiter_bytes(),
         media_type=resp.headers.get("Content-Type", "image/jpeg"),
         background=resp.aclose
     )
 
+async def _ensure_original(image_path: str) -> str:
+    original_path = os.path.join(LOCAL_IMAGE_BASE_PATH, "original", image_path)
+    if not os.path.exists(original_path):
+        temp_original = original_path + ".tmp"
+        await _download_original(image_path, temp_original)
+        await _make_progressive(temp_original, original_path)
+        if os.path.exists(temp_original):
+            os.remove(temp_original)
+    return original_path
+
 @router.get("/image/{size}/{image_path:path}")
 async def get_image(
-    size: str, 
-    image_path: str, 
+    size: str,
+    image_path: str,
     store: bool = Query(True)
 ):
     """
-    Valid size values: `50`, `300`, `600`, `900`, `1200` & `original`.
-
-    If store=false:
-    - Checks local storage first to save bandwidth.
-    - If not found, proxies directly from TMDB without saving.
-    - Note: This mode is intended for search result posters; quality is forced to w500.
-
-    If file is SVG
-    - Served and stored only as original.
-    - Requesting resized versions only serves the original.
+    Valid size values: `blur`, `300`, `600`, `900`, `1200` & `original`.
     """
-
     is_svg = image_path.lower().endswith(".svg")
+    is_blur = size == "blur"
 
     # Determine local pathing
     if size == "original" or is_svg:
         bucket = None
         target_folder = os.path.join(LOCAL_IMAGE_BASE_PATH, "original")
+    elif is_blur:
+        bucket = None
+        target_folder = os.path.join(LOCAL_IMAGE_BASE_PATH, "blur")
     else:
         try:
             requested_size = int(size)
             bucket = pick_bucket(requested_size)
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid size")
-        
+
         target_folder = os.path.join(LOCAL_IMAGE_BASE_PATH, str(bucket) if bucket else "original")
 
     local_file_path = os.path.join(target_folder, image_path)
@@ -152,29 +182,30 @@ async def get_image(
     if size == "original" or is_svg:
         temp_original = local_file_path + ".tmp"
         await _download_original(image_path, temp_original)
-        
+
         if is_svg:
             os.replace(temp_original, local_file_path)
         else:
             await _make_progressive(temp_original, local_file_path)
-            os.remove(temp_original)
-            
+            if os.path.exists(temp_original):
+                os.remove(temp_original)
+
+        return FileResponse(local_file_path)
+
+    # Store blur
+    if is_blur:
+        original_path = await _ensure_original(image_path)
+        await _blur_image(original_path, local_file_path)
         return FileResponse(local_file_path)
 
     # Store resized (or serve original if larger than largest bucket)
-    else:
-        original_path = os.path.join(LOCAL_IMAGE_BASE_PATH, "original", image_path)
-        if not os.path.exists(original_path):
-            temp_original = original_path + ".tmp"
-            await _download_original(image_path, temp_original)
-            await _make_progressive(temp_original, original_path)
-            os.remove(temp_original)
+    original_path = await _ensure_original(image_path)
 
-        if bucket is None:
-            return FileResponse(original_path)
+    if bucket is None:
+        return FileResponse(original_path)
 
-        await _resize_image(original_path, local_file_path, bucket)
-        return FileResponse(local_file_path)
+    await _resize_image(original_path, local_file_path, bucket)
+    return FileResponse(local_file_path)
 
 
 @router.get("/video/{video_asset_id}/{title}")

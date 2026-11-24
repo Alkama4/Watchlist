@@ -29,7 +29,7 @@
     --c-border: oklch(40% 0.01 230 / 66%);
 
     --hero-backdrop-opacity: 0.3;
-    --hero-backdrop-blur-opacity: 0.2;
+    --hero-backdrop-blur-opacity: 0.35;
     --details-backdrop-fade-intensity: 0.5;
     --details-backdrop-min-brightness: 1;
 }

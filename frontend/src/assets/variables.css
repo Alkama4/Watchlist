@@ -33,7 +33,7 @@
     --a-trans: 0.66;
 
     --hero-backdrop-opacity: 0.4;
-    --hero-backdrop-blur-opacity: 0.4;
+    --hero-backdrop-blur-opacity: 0.5;
     --hero-backdrop-color: var(--c-bg);
     --details-backdrop-fade-intensity: 0.5;
     --details-backdrop-min-brightness: 1;

@@ -35,14 +35,12 @@ const backdropLayers = computed(() => {
     const p = wrappedProgress.value;
     const count = total.value;
 
-    return titles.value.map((title, index) => {
-        const weight = getTitleWeight(index, p, count);
-        return {
+    return titles.value
+        .map((title, index) => ({
             title,
-            opacity: weight,
-            zIndex: weight > 0.5 ? 2 : weight > 0 ? 1 : 0
-        };
-    });
+            opacity: getTitleWeight(index, p, count)
+        }))
+        .filter((layer) => layer.opacity > 0);
 });
 
 function handleKeydown(e) {
@@ -61,13 +59,10 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
             <AppImage
                 v-for="layer in backdropLayers"
                 :key="layer.title.title_id"
-                :src="getTitleImageUrl(layer.title, '50', 'backdrop')"
+                :src="getTitleImageUrl(layer.title, 'blur', 'backdrop')"
                 alt=""
                 class="ambient-layer"
-                :style="{
-                    opacity: layer.opacity,
-                    zIndex: layer.zIndex
-                }"
+                :style="{ opacity: layer.opacity }"
             />
         </div>
 
@@ -141,7 +136,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
         radial-gradient(
             circle at 50% 20%,
             rgba(0, 0, 0, var(--hero-backdrop-blur-opacity)) 0%,
-            rgba(0, 0, 0, 0) 90%
+            rgba(0, 0, 0, 0) 100%
         ),
         linear-gradient(
             to bottom,
@@ -157,8 +152,6 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
     width: 100%;
     height: 100%;
     object-fit: cover;
-    filter: blur(48px) saturate(1.35);
-    transform: scale(1.15); /* prevents blurred edge shrink */
     will-change: opacity;
 }
 
