@@ -216,9 +216,9 @@ const kebabOptions = computed(() => {
             <div class="logo-wrapper">
                 <img 
                     v-show="logoImageVisible"
-                    v-if="getTitleImageUrl(titleDetails, 'original', 'logo')"
-                    :src="getTitleImageUrl(titleDetails, 'original', 'logo')"
-                    :key="getTitleImageUrl(titleDetails, 'original', 'logo')"
+                    v-if="getTitleImageUrl(titleDetails, '1200', 'logo')"
+                    :src="getTitleImageUrl(titleDetails, '1200', 'logo')"
+                    :key="getTitleImageUrl(titleDetails, '1200', 'logo')"
                     :alt="(logoImageVisible && isMobile) ? titleDetails?.name : ''"
                     class="logo"
                     @load="logoImageVisible = true"
